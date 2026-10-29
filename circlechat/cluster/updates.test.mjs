@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide, parseAptUpgradable, cvesInChangelog, parseSoftwareUpdate, SOAK_MS } from "./updates.mjs";
+import { decide, parseAptUpgradable, cvesInChangelog, parseSoftwareUpdate, SOAK_MS, toolVersion, vmToolLines, VM_TOOLS } from "./updates.mjs";
 
 test("an update waits 7 days from first sight, then installs; a reboot update is held", () => {
   const seen = {}, t = 1_800_000_000_000;
@@ -67,4 +67,22 @@ test("an image version marked as failed is never used, and a later version still
 test("the weekly image job holds a tagged image for 7 days, and leaves a digest-pinned or built service to the pins and the build", () => {
   const services = { caddy: { image: "caddy:2@sha256:0123abcd" }, presidio: { image: "presidio:latest" }, api: { image: "cc-api", build: { context: "." } }, none: {} };
   assert.deepEqual(taggedServices(services).map(([svc]) => svc), ["presidio"]);
+});
+
+test("reads Lima's and Colima's versions, and a release tag", () => {
+  assert.equal(toolVersion("colima version 0.10.3\ngit commit: abc\n"), "0.10.3");
+  assert.equal(toolVersion("limactl version 2.2.1\n"), "2.2.1");
+  assert.equal(toolVersion("v0.11.0"), "0.11.0");
+  assert.equal(toolVersion(""), null);
+  assert.deepEqual(VM_TOOLS.map((t) => [t.name, t.repo, t.pin]), [["Colima", "abiosoft/colima", "COLIMA_VERSION"], ["Lima", "lima-vm/lima", "LIMA_VERSION"]]);
+});
+
+test("a new Lima or Colima release posts once in Slack after 7 days, with the pin to move", () => {
+  const seen = {}, t0 = 1_800_000_000_000;
+  const found = [{ name: "Colima", pin: "COLIMA_VERSION", installed: "0.10.3", latest: "0.11.0" }, { name: "Lima", pin: "LIMA_VERSION", installed: "2.2.1", latest: "2.2.1" }];
+  assert.deepEqual(vmToolLines(found, seen, t0), [], "the release waits 7 days");
+  const lines = vmToolLines(found, seen, t0 + SOAK_MS);
+  assert.deepEqual(lines, ["Colima 0.11.0 is out, and this computer runs 0.10.3. Move COLIMA_VERSION and its checksum in circlechat/tenant/setup-pc.sh to 0.11.0 by pull request, then rerun setup-pc.sh."]);
+  assert.deepEqual(vmToolLines(found, seen, t0 + SOAK_MS + 3600_000), [], "once per release");
+  assert.deepEqual(vmToolLines([{ name: "Lima", pin: "LIMA_VERSION", installed: "2.3.0", latest: "2.2.1" }], {}, t0 + SOAK_MS), [], "an older release is no update");
 });

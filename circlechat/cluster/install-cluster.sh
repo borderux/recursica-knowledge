@@ -6,7 +6,7 @@
 #   ./circlechat/cluster/install-cluster.sh <computer name from site.json>
 #
 # The cluster's secrets (Slack tokens, the cluster token, the approvers' authenticator secrets)
-# reach /etc/agent-cluster.env through the Deploy secrets workflow for the border stack.
+# reach /etc/agent-cluster.env through the Deploy secrets workflow for the cluster's own stack.
 set -euo pipefail
 NODE="${1:?usage: install-cluster.sh <computer name>}"
 SITE="${SITE:-$HOME/circlechat/site.json}"
@@ -24,9 +24,9 @@ INFO="$(node -e '
   const me = s.nodes.find((n) => n.name === process.argv[2]);
   if (!me) { console.error(`no computer ${process.argv[2]} in site.json`); process.exit(1); }
   const agents = s.nodes.map((n) => `${n.name}=http://${n.name === me.name ? "127.0.0.1" : n.address}:7500`).join(",");
-  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? ""].join("\t"));
+  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? ""].join("\t"));
 ' "$SITE" "$NODE")"
-IFS=$'\t' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE <<<"$INFO"
+IFS=$'\t' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ <<<"$INFO"
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
 CANARY_PORTS="2222, 2121, 8088"
@@ -45,6 +45,7 @@ AGENTS=$AGENTS
 CANARY_LOG=/var/lib/agent-cluster/opencanary.log
 EVIDENCE_RECIPIENT=$EVIDENCE
 BACKUP_REMOTE=$BACKUP_REMOTE
+CLUSTER_TZ=$CLUSTER_TZ
 DOCKER_CONFIG=$HOME/.docker
 PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CONF
@@ -95,7 +96,7 @@ install_unit opencanary "/opt/opencanary/bin/opencanaryd --dev" / root
 
 ENVS="set -a; . /etc/agent-cluster.conf; . /etc/agent-cluster.env; set +a;"
 install_unit cluster-agent "$ENVS exec $NODE_BIN $HERE/agent.mjs" / root
-# One update job, hourly: Border UX's software right away (with upgrade.auto), everything else
+# One update job, hourly: Recursica's own software right away (with upgrade.auto), everything else
 # after 7 days. Replaces the separate daily, weekly and hourly jobs of earlier versions.
 uninstall_unit cluster-updates >/dev/null
 install_unit cluster-updater "$ENVS exec $NODE_BIN $HERE/updater.mjs" / root hourly
@@ -105,4 +106,4 @@ else
   # Only the control computer runs the Slack app; a computer that becomes a helper drops it.
   uninstall_unit cluster-bot >/dev/null
 fi
-echo "Cluster services installed on $NODE ($ROLE). Deploy the border stack's secrets, so the agent and the Slack app can reach Slack."
+echo "Cluster services installed on $NODE ($ROLE). Deploy the secrets of the cluster's own stack, so the agent and the Slack app can reach Slack."

@@ -14,12 +14,15 @@ import { stackSite } from "./kit/stack-site.mjs";
 // CircleChat's compose.yml, as docker compose config prints the file.
 const COMPOSE_CONFIG = JSON.stringify({ services: { caddy: { image: "caddy:2" }, postgres: { image: "postgres:16-alpine" }, redis: { image: "redis:7-alpine" }, api: { build: { context: "." } } } });
 
+// The docker stand-in reads what setup-host.sh pipes into psql, as the real psql does. A stand-in
+// that exits first leaves the writer with a closed pipe: the writer then dies of SIGPIPE, and the
+// setup exits 141 now and then.
 function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "setup-"));
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");

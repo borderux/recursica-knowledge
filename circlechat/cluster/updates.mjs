@@ -66,6 +66,47 @@ export function parseSoftwareUpdate(text, currentMajor) {
   return out;
 }
 
+// Lima and Colima on Linux and WSL come from each project's GitHub releases (tenant/setup-pc.sh),
+// at a pinned version and checksum, outside apt. A new release waits 7 days like any other update,
+// then posts once in Slack, with the step that moves the pin. The pin moves by pull request,
+// because each version carries a checksum.
+export const VM_TOOLS = [
+  { name: "Colima", repo: "abiosoft/colima", bin: "/usr/local/bin/colima", args: ["version"], pin: "COLIMA_VERSION" },
+  { name: "Lima", repo: "lima-vm/lima", bin: "/usr/local/bin/limactl", args: ["--version"], pin: "LIMA_VERSION" },
+];
+// "colima version 0.10.3", "limactl version 2.2.1", or a release tag such as "v0.11.0"
+export const toolVersion = (text) => (String(text).match(/(?:version\s+|^v?)(\d+\.\d+\.\d+)/m) ?? [])[1] ?? null;
+const newer = (a, b) => { const x = a.split(".").map(Number), y = b.split(".").map(Number); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; };
+
+//   found: [{ name, pin, installed, latest }]; seen: as for decide(). Returns the Slack lines.
+export function vmToolLines(found, seen, now = Date.now()) {
+  const ups = found.filter((f) => f.installed && f.latest && newer(f.latest, f.installed) > 0)
+    .map((f) => ({ key: `${f.name}@${f.latest}`, name: f.name, version: f.latest, installed: f.installed, pin: f.pin, reboot: false }));
+  const d = decide(ups, seen, new Set(), now);
+  const lines = [];
+  for (const u of d.install) {
+    if (seen[`reported:${u.key}`] !== undefined) continue;
+    seen[`reported:${u.key}`] = now;
+    lines.push(`${u.name} ${u.version} is out, and this computer runs ${u.installed}. Move ${u.pin} and its checksum in circlechat/tenant/setup-pc.sh to ${u.version} by pull request, then rerun setup-pc.sh.`);
+  }
+  return lines;
+}
+
+async function vmToolsFound(run, latest) {
+  const out = [];
+  for (const t of VM_TOOLS) {
+    if (!fs.existsSync(t.bin)) continue;
+    out.push({ name: t.name, pin: t.pin, installed: toolVersion(await run(t.bin, t.args)), latest: await latest(t.repo) });
+  }
+  return out;
+}
+const latestRelease = async (repo) => {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers: { accept: "application/vnd.github+json" }, signal: AbortSignal.timeout(30_000) });
+    return r.ok ? toolVersion((await r.json()).tag_name) : null;
+  } catch { return null; }
+};
+
 async function kevList() {
   try {
     const r = await fetch("https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", { signal: AbortSignal.timeout(30_000) });
@@ -90,6 +131,7 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
       lines.push(`Installed ${d.install.length} Linux security update(s): ${d.install.map((u) => `${u.name} ${u.version}${u.exploited.length ? ` (fixes actively exploited ${u.exploited.join(", ")})` : ""}`).join(", ")}.`);
     }
     held.push(...d.hold.map((u) => ({ kind: "apt", name: u.name, version: u.version, exploited: u.exploited })));
+    lines.push(...vmToolLines(await vmToolsFound(sh, latestRelease), seen, now));
   }
 
   if (IS_MAC) {

@@ -12,16 +12,16 @@ function setup(t0 = Date.UTC(2026, 9, 20, 15, 0)) {
   const guard = { state: { status: "normal" }, tick: async () => calls.push("tick"), cutOff: async () => ({ status: "cut-off" }),
     keepWatching: async () => ({ ok: true, message: "more" }), release: async (allow) => ({ ok: true, message: allow ? "allowed" : "released" }) };
   const platform = { reboot: async () => calls.push("reboot"), shutDown: async () => calls.push("shutdown") };
-  const agent = makeAgent({ env: { COMPUTER: "studio", KIT: "/nonexistent" }, platform, guard, post: async () => {}, now: () => t, stateDir });
+  const agent = makeAgent({ env: { COMPUTER: "machine-1", KIT: "/nonexistent", CLUSTER_TZ: "America/Chicago" }, platform, guard, post: async () => {}, now: () => t, stateDir });
   return { agent, calls, stateDir, advance: (ms) => (t += ms) };
 }
 
-test("4 a.m. ET schedules the next 4 a.m. in New York", async () => {
+test("4 a.m. schedules the next 4 a.m. in the cluster's time zone", async () => {
   const { agent, stateDir } = setup();
   const r = await agent.act({ action: "reboot-4am", ref: "u1" });
   assert.equal(r.ok, true);
   const at = JSON.parse(fs.readFileSync(path.join(stateDir, "reboot.json"), "utf8")).at;
-  assert.equal(new Date(at).toISOString(), "2026-10-21T08:00:00.000Z");
+  assert.equal(new Date(at).toISOString(), "2026-10-21T09:00:00.000Z");
 });
 
 test("a due reboot runs once, and skip cancels a scheduled one", async () => {

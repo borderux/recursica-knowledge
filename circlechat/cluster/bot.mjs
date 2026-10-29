@@ -10,24 +10,11 @@
 //   APPROVERS          Slack user IDs and names: "U012=person_a,U034=person_b"
 //   TOTP_SECRET_<NAME> each approver's authenticator secret
 //   CLUSTER_TOKEN      the token each cluster agent requires
-//   AGENTS             computer names and agent URLs: "beast=http://beast:7500,studio=http://127.0.0.1:7500"
+//   AGENTS             computer names and agent URLs: "machine-1=http://127.0.0.1:7500,machine-2=http://machine-2:7500"
 //   STATE_DIR          where the wrong-code count is kept
 import fs from "node:fs";
 import path from "node:path";
-import { ACTIONS, nextAt, formatEt, TZ } from "./actions.mjs";
-
-// "2026-10-21" in Eastern Time, for a date picker.
-const etDate = (d) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
-// A date and an "HH:MM" time in Eastern Time, as a UTC moment.
-export function etToUtc(day, time) {
-  const [y, m, d] = day.split("-").map(Number), [hh, mm] = time.split(":").map(Number);
-  for (const offsetH of [4, 5]) {
-    const at = Date.UTC(y, m - 1, d, hh + offsetH, mm);
-    const shown = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(at));
-    if (shown === time) return at;
-  }
-  return 0;
-}
+import { ACTIONS, clusterTz, formatTime, localDate, localToUtc, nextAt } from "./actions.mjs";
 import { verify, Lockout } from "./totp.mjs";
 
 export function parsePairs(s) {
@@ -37,6 +24,7 @@ export function parsePairs(s) {
 }
 
 export function makeBot({ env = process.env, api, relay, now = () => Date.now() }) {
+  const tz = clusterTz(env);
   const approvers = parsePairs(env.APPROVERS);
   const stateDir = env.STATE_DIR ?? "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true });
@@ -67,13 +55,13 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
   function timeModal(meta) {
     return { type: "modal", callback_id: "pick-time", private_metadata: JSON.stringify(meta),
       title: { type: "plain_text", text: "Reboot time" }, submit: { type: "plain_text", text: "Schedule" },
-      // A date picker and a time picker (Eastern Time), which work in Slack's desktop, web and
+      // A date picker and a time picker, in the cluster's time zone, which work in Slack's desktop, web and
       // mobile apps.
       blocks: [
         { type: "input", block_id: "day", label: { type: "plain_text", text: "Install the updates and reboot on" },
-          element: { type: "datepicker", action_id: "day", initial_date: etDate(nextAt(4, 0, undefined, now())) } },
-        { type: "input", block_id: "time", label: { type: "plain_text", text: "At (Eastern Time)" },
-          element: { type: "timepicker", action_id: "time", initial_time: "04:00", timezone: "America/New_York" } },
+          element: { type: "datepicker", action_id: "day", initial_date: localDate(nextAt(4, 0, tz, now()), tz) } },
+        { type: "input", block_id: "time", label: { type: "plain_text", text: `At (${tz})` },
+          element: { type: "timepicker", action_id: "time", initial_time: "04:00", timezone: tz } },
       ] };
   }
 
@@ -126,9 +114,9 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
       }
       if (p.view.callback_id === "pick-time") {
         const day = p.view.state?.values?.day?.day?.selected_date, time = p.view.state?.values?.time?.time?.selected_time;
-        const at = day && time ? etToUtc(day, time) : 0;
+        const at = day && time ? localToUtc(day, time, tz) : 0;
         if (!at || at <= now()) return { response_action: "errors", errors: { time: "Pick a time in the future." } };
-        start(meta, user, "reboot-at", meta.value, { at, label: formatEt(new Date(at)) });
+        start(meta, user, "reboot-at", meta.value, { at, label: formatTime(new Date(at), tz) });
         return { response_action: "clear" };
       }
     }

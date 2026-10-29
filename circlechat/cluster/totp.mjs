@@ -52,7 +52,7 @@ export function verify(secret, code, timeMs = Date.now()) {
 
 export function newSecret() { return base32Encode(crypto.randomBytes(20)); }
 
-export function otpauthUri(secret, account, issuer = "Border agent cluster") {
+export function otpauthUri(secret, account, issuer = "Agent cluster") {
   const label = encodeURIComponent(`${issuer}:${account}`);
   return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=6&period=30`;
 }

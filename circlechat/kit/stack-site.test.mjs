@@ -89,7 +89,7 @@ test("a demo needs a recorded permission for cloud models, the same as a client 
   s.site.cloud_models = { allowed: true, granted_by: "Person A" };
   const errs = validate(s).join("\n");
   assert.match(errs, /site.cloud_models.granted_on must be the date/);
-  assert.match(errs, /site.cloud_models.payer must be border-ramp or client-byok/);
+  assert.match(errs, /site.cloud_models.payer must be operator or client-byok/);
   s.routes["local-small"].push("anthropic/claude-sonnet-5-5");
   delete s.model_keys; s.site.cloud_models = { allowed: false };
   assert.match(validate(s).join("\n"), /route local-small: "anthropic\/claude-sonnet-5-5" is a cloud model, and this demo stack has no recorded permission/);
@@ -115,14 +115,14 @@ test("without a person at the keyboard, a demo needs --cloud-keys, and the scrip
 });
 
 test("--cloud-keys with providers records the keys and the permission, and no key value", () => {
-  const r = unattended("--cloud-keys", "anthropic:claude-sonnet-5-5,xai:grok-4", "--granted-by", "Person A", "--payer", "border-ramp", "--granted-on", "2026-10-28");
+  const r = unattended("--cloud-keys", "anthropic:claude-sonnet-5-5,xai:grok-4", "--granted-by", "Person A", "--payer", "operator", "--granted-on", "2026-10-28");
   assert.equal(r.status, 0, r.stderr);
   const s = JSON.parse(r.stdout);
-  assert.deepEqual(s.site.cloud_models, { allowed: true, granted_by: "Person A", granted_on: "2026-10-28", payer: "border-ramp" });
+  assert.deepEqual(s.site.cloud_models, { allowed: true, granted_by: "Person A", granted_on: "2026-10-28", payer: "operator" });
   assert.deepEqual(s.model_keys, { default: { provider: "anthropic", model: "claude-sonnet-5-5", agents: [] }, xai: { provider: "xai", model: "grok-4", agents: [] } });
   assert.deepEqual(validate(s, { cluster }), []);
   assert.match(r.stderr, /outside Claude Code: circlechat\/deploy\/set-model-keys\.sh .* MODEL_KEY_DEFAULT, MODEL_KEY_XAI/);
-  assert.equal(unattended("--cloud-keys", "bedrock:x", "--granted-by", "A", "--payer", "border-ramp").status, 1, "Bedrock and Azure go in by hand");
+  assert.equal(unattended("--cloud-keys", "bedrock:x", "--granted-by", "A", "--payer", "operator").status, 1, "Bedrock and Azure go in by hand");
 });
 
 test("at the keyboard, the demo setup asks, and no is the default", { skip: !hasPty && "needs util-linux script for a terminal" }, () => {

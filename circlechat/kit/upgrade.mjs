@@ -58,7 +58,14 @@ function pickUpCircleChat(ccDir, say, state, saveState) {
   say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}, and stays there until the next CircleChat commit.`);
 }
 
-// Border UX's own npm package, @recursica/mcp: same rule as the knowledge repo, applied hourly.
+// The release notes of a tag, on the GitHub repo the kit checkout came from, or nothing for a
+// checkout from somewhere else.
+export function releaseNotes(remote, tag) {
+  const m = String(remote).trim().match(/github\.com[/:]([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+?)(\.git)?$/);
+  return m ? ` Release notes: https://github.com/${m[1]}/releases/tag/${encodeURIComponent(tag)}` : "";
+}
+
+// Recursica's own npm package, @recursica/mcp: same rule as the knowledge repo, applied hourly.
 // A release with the same first number goes in at once; a new major version asks in Slack.
 export function decideMcp(current, latest, state = {}) {
   const cur = String(current).trim().split(".").map(Number), lat = String(latest).trim().split(".").map(Number);
@@ -114,7 +121,7 @@ async function main() {
   const wanted = process.argv[2];
   const d = wanted ? { action: "upgrade", tag: wanted } : decide(current, tags, state);
   if (d.action === "ask") {
-    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: Knowledge repo ${d.tag.split("@").pop()} is a new major version (the stack runs ${current}). Release notes: https://github.com/borderux/recursica-knowledge/releases/tag/${encodeURIComponent(d.tag)}`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
+    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: Knowledge repo ${d.tag.split("@").pop()} is a new major version (the stack runs ${current}).${releaseNotes(git("remote", "get-url", "origin"), d.tag)}`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
     if (post.status === 0) { state.asked = { ...(state.asked ?? {}), [d.tag]: Date.now() }; fs.writeFileSync(stateFile, JSON.stringify(state)); }
     return;
   }
