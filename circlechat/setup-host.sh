@@ -54,6 +54,23 @@ node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 WANT_TENANT="${TENANT:-}"
 . "$KIT_OUT/tenant.env"
 [ "$WANT_TENANT" = "$TENANT" ] || { echo "TENANT=${WANT_TENANT:-<none>} but $SITE has site.tenant ${TENANT:-<none>}. Run with the stack's own TENANT and site.json."; exit 1; }
+# On a Mac, the cluster's own stack runs Colima's VM and Ollama as LaunchDaemons (kit/lib.sh). A
+# client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts the VM.
+# The other modes need no sudo, so only the full setup installs the daemons.
+if [ "$OS" = Darwin ] && [ -z "$TENANT" ] && [ "$SECRETS_ONLY" = false ]; then
+  case "$(docker context show 2>/dev/null)" in
+    colima) VM_PROFILE=default ;;
+    colima-*) VM_PROFILE="$(docker context show)"; VM_PROFILE="${VM_PROFILE#colima-}" ;;
+    *) VM_PROFILE="" ;;
+  esac
+  OLLAMA_PORT="$(node -e '
+    const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    const n = (s.nodes ?? []).find((x) => x.control) ?? {};
+    const sv = (n.servers ?? []).find((x) => x.kind === "ollama") ?? (n.models ?? []).find((m) => m.port === 11434);
+    if (sv) process.stdout.write(String(sv.port));
+  ' "$SITE")"
+  mac_services "$VM_PROFILE" "$OLLAMA_PORT"
+fi
 # A client stack runs in its own Docker VM. Every docker command below, and every job installed
 # below, uses that VM.
 if [ -n "$DOCKER_CONTEXT" ]; then
@@ -62,6 +79,11 @@ if [ -n "$DOCKER_CONTEXT" ]; then
   check_vm_limits "$LIMIT_CPUS" "$LIMIT_MEMORY_GB" || exit 1
 fi
 DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
+# On a Mac whose Docker runs in Colima, tailscale serve gives the other computers the gateway's
+# port (gateway_serve). Linux keeps Docker's direct publish on the Tailscale address.
+GATEWAY_SERVE=false
+if [ "$OS" = Darwin ]; then case "${DOCKER_CONTEXT:-$(docker context show 2>/dev/null)}" in colima*) GATEWAY_SERVE=true ;; esac; fi
+JOBS_LOCAL_PORT=$((GATEWAY_PORT + 1))
 TS_HOST="$(site_get site.public_host)"
 PORT="$(site_get site.port)"; PORT="${PORT:-8080}"
 KNOWLEDGE_REPO="$(site_get repos.knowledge)"
@@ -278,6 +300,44 @@ gateway_db_role() {
   own_for_docker "$GW_STATE/db.url"
 }
 
+# On a Mac with Colima: tailscale serve passes site.gateway_port on the Tailscale address to the
+# router's port for port jobs, on 127.0.0.1. The other modes run without a sudo password, so they
+# try sudo only where sudo asks for nothing.
+gateway_serve() {
+  local args=(serve --bg "--tcp=$GATEWAY_PORT" "tcp://127.0.0.1:$JOBS_LOCAL_PORT")
+  tailscale "${args[@]}" >/dev/null 2>&1 || sudo -n tailscale "${args[@]}" >/dev/null 2>&1 \
+    || { [ "$SECRETS_ONLY" = false ] && sudo tailscale "${args[@]}" >/dev/null; } \
+    || { echo "tailscale serve failed, so port jobs on other computers cannot reach the gateway. Run setup-host.sh in a terminal."; exit 1; }
+  gateway_port_check
+}
+
+# The checks after tailscale serve, on a Mac with Colima:
+#   - tailscale serve passes site.gateway_port to the router's port for port jobs.
+#   - That port refuses a request without a task key, /health included.
+#   - Neither gateway port answers on the Mac's other addresses, such as the office network.
+gateway_port_check() {
+  local code="" i a p
+  tailscale serve status --json 2>/dev/null | node -e '
+    const s = JSON.parse(require("fs").readFileSync(0, "utf8") || "{}");
+    process.exit(s.TCP?.[process.argv[1]]?.TCPForward === process.argv[2] ? 0 : 1);
+  ' "$GATEWAY_PORT" "127.0.0.1:$JOBS_LOCAL_PORT" \
+    || { echo "tailscale serve does not pass port $GATEWAY_PORT to 127.0.0.1:$JOBS_LOCAL_PORT. Run setup-host.sh in a terminal."; exit 1; }
+  for i in $(seq 45); do
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$JOBS_LOCAL_PORT/health" || true)"
+    [ "$code" = 401 ] && break
+    sleep 2
+  done
+  [ "$code" = 401 ] || { echo "The gateway's port for port jobs answered $code without a task key, not 401. Port jobs are stopped until the port refuses such a request."; exit 1; }
+  # Every IPv4 address of the Mac except 127.0.0.0/8 and Tailscale's 100.64.0.0/10.
+  for a in $(ifconfig 2>/dev/null | awk '$1 == "inet" { print $2 }' | grep -vE '^127\.|^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.'); do
+    for p in "$GATEWAY_PORT" "$JOBS_LOCAL_PORT"; do
+      code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "http://$a:$p/health" || true)"
+      [ "${code:-000}" = 000 ] || { echo "The gateway answers on $a:$p, outside Tailscale. Stop cc-gateway$SUFFIX and find what publishes port $p."; exit 1; }
+    done
+  done
+  echo "Gateway for port jobs: Tailscale port $GATEWAY_PORT only, and a task key is required."
+}
+
 start_gateway_and_notifier() {
   # The model gateway, in two containers.
   # LiteLLM (cc-litellm): one address for every cluster model, with fallbacks in route order, and
@@ -298,19 +358,24 @@ start_gateway_and_notifier() {
   # port 4001 over Tailscale: site.gateway_port on the control computer's Tailscale address only,
   # where every request needs a task key. With the filter off, this computer's agents use
   # site.gateway_port on 127.0.0.1.
+  # On Linux, Docker publishes port 4001 on the Tailscale address. On a Mac, Docker runs in Colima's
+  # VM, which does not hold the Mac's Tailscale address. Docker then publishes port 4001 on
+  # 127.0.0.1:<gateway port + 1>, and tailscale serve passes the Tailscale port to that local port.
   gateway_db_role
   docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
   mkdir -p "$CC_DIR/gateway-app" "$CC_DIR/gateway-logs"
   cp "$HERE"/gateway/*.mjs "$HERE/gateway/package.json" "$CC_DIR/gateway-app/"
   local publish=()
   [ "$EGRESS" = on ] || publish+=(-p "127.0.0.1:$GATEWAY_PORT:4000")
-  [ -n "$TAILNET_ADDRESS" ] && publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001")
+  if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then publish+=(-p "127.0.0.1:$JOBS_LOCAL_PORT:4001")
+  elif [ -n "$TAILNET_ADDRESS" ]; then publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001"); fi
   docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
     -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
     -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
     -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
     "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
   docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
+  if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then gateway_serve; fi
 
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
@@ -402,7 +467,7 @@ sudo chmod -R 777 hermes-homes "$WS"
 
 # A port another stack already uses stops the setup here, before anything restarts.
 port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
-for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT"; do
+for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] && echo "$JOBS_LOCAL_PORT"); do
   o="$(port_owner "$p")"
   [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
 done

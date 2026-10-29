@@ -76,6 +76,8 @@ function takenPorts(cluster, tenantsDir) {
   const taken = new Set([8080, 5173, 4000]);
   for (const s of sites) {
     for (const k of ["port", "preview_port", "gateway_port"]) if (s.site?.[k]) taken.add(s.site[k]);
+    // On a Mac, the gateway's port for port jobs is 127.0.0.1:<gateway port + 1> (setup-host.sh).
+    taken.add((s.site?.gateway_port ?? 4000) + 1);
     for (const n of s.nodes ?? []) {
       for (const p of [n.jobs?.port, n.kev?.port, ...(n.servers ?? []).map((sv) => sv.port), ...(n.models ?? []).map((m) => m.port)]) if (p) taken.add(p);
     }
@@ -93,13 +95,13 @@ export function stackSite(cluster, { stack, kind, computers, limits = {}, cloud,
   const picked = computers === "cluster" ? all : all.filter((n) => n.name === computers);
   if (!picked.length) throw new Error(`no computer named ${computers} in the cluster's site.json. Pick one of ${all.map((n) => n.name).join(", ")}, or cluster`);
   const taken = takenPorts(cluster, tenantsDir);
-  const free = (from) => { let p = from; while (taken.has(p)) p++; taken.add(p); return p; };
+  const free = (from, width = 1) => { let p = from; while ([...Array(width).keys()].some((i) => taken.has(p + i))) p++; for (let i = 0; i < width; i++) taken.add(p + i); return p; };
   const site = {
     public_host: cluster.site?.public_host,
     ...(cluster.site?.proxy ? { proxy: cluster.site.proxy } : {}),
     tenant: stack, kind, docker_context: `colima-${stack}`,
     computers: computers === "cluster" ? "cluster" : [computers],
-    port: free(FIRST.port), preview_port: free(FIRST.preview_port), gateway_port: free(FIRST.gateway_port),
+    port: free(FIRST.port), preview_port: free(FIRST.preview_port), gateway_port: free(FIRST.gateway_port, 2),
     ...(cloudPart.cloud_models ? { cloud_models: cloudPart.cloud_models } : {}),
   };
   const jobsPort = free(FIRST.jobs);
