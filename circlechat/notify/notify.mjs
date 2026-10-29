@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import pg from "pg";
 
-const { DATABASE_URL, SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on" } = process.env;
+const { DATABASE_URL, SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on", STACK_NAME = "" } = process.env;
 const STALE_BLOCKED_H = Number(process.env.STALE_BLOCKED_HOURS ?? 24);
 const STALE_ACTIVE_H = Number(process.env.STALE_ACTIVE_HOURS ?? 12);
 const STATE = "/state/last.json";
@@ -36,7 +36,8 @@ async function slack(text) {
   }
   const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST",
     headers: { authorization: `Bearer ${SLACK_BOT_TOKEN}`, "content-type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ channel: SLACK_CHANNEL, text }) });
+    // Each message shows the stack's name as the sender (kit/slack.mjs, senderFields).
+    body: JSON.stringify({ channel: SLACK_CHANNEL, text, ...(STACK_NAME ? { username: STACK_NAME } : {}) }) });
   const j = await r.json();
   if (!j.ok) throw new Error(`slack: ${j.error}`);
 }

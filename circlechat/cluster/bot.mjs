@@ -6,7 +6,7 @@
 // Settings, from the environment:
 //   SLACK_APP_TOKEN    app-level token (xapp-...), with the connections:write scope
 //   SLACK_BOT_TOKEN    bot token (xoxb-...), with chat:write
-//   SLACK_CHANNEL_ID   the channel for alerts, such as #agent-cluster's ID
+//   SLACK_CHANNEL_ID   the ID of the cluster's channel for alerts
 //   APPROVERS          Slack user IDs and names: "U012=person_a,U034=person_b"
 //   TOTP_SECRET_<NAME> each approver's authenticator secret
 //   CLUSTER_TOKEN      the token each cluster agent requires
@@ -14,6 +14,7 @@
 //   STATE_DIR          where the wrong-code count is kept
 import fs from "node:fs";
 import path from "node:path";
+import { senderFields } from "../kit/slack.mjs";
 import { ACTIONS, clusterTz, formatTime, localDate, localToUtc, nextAt } from "./actions.mjs";
 import { verify, Lockout } from "./totp.mjs";
 
@@ -25,6 +26,8 @@ export function parsePairs(s) {
 
 export function makeBot({ env = process.env, api, relay, now = () => Date.now() }) {
   const tz = clusterTz(env);
+  // The bot runs on the control computer, and each message shows that computer as the sender.
+  const sender = senderFields(env.COMPUTER, env.SLACK_ICON);
   const approvers = parsePairs(env.APPROVERS);
   const stateDir = env.STATE_DIR ?? "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true });
@@ -33,7 +36,7 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
   const secretOf = (user) => env[`TOTP_SECRET_${String(approvers[user] ?? "").toUpperCase().replace(/-/g, "_")}`];
 
   async function reply(meta, text) {
-    await api("chat.postMessage", { channel: meta.channel ?? channel, thread_ts: meta.ts, text });
+    await api("chat.postMessage", { channel: meta.channel ?? channel, thread_ts: meta.ts, text, ...sender });
   }
 
   // Slack needs each click acknowledged within 3 seconds, and a relay to another computer can take
@@ -105,7 +108,7 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
         const secret = secretOf(user);
         if (!secret || !verify(secret, code, now())) {
           const nowLocked = lockout.fail(user, now());
-          if (nowLocked) await api("chat.postMessage", { channel, text: `:rotating_light: Three wrong authenticator codes from <@${user}>. The two-factor buttons are locked for an hour.` });
+          if (nowLocked) await api("chat.postMessage", { channel, text: `:rotating_light: Three wrong authenticator codes from <@${user}>. The two-factor buttons are locked for an hour.`, ...sender });
           return { response_action: "errors", errors: { code: nowLocked ? "Locked for an hour after three wrong codes." : "Wrong code." } };
         }
         lockout.succeed(user);

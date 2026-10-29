@@ -24,9 +24,10 @@ INFO="$(node -e '
   const me = s.nodes.find((n) => n.name === process.argv[2]);
   if (!me) { console.error(`no computer ${process.argv[2]} in site.json`); process.exit(1); }
   const agents = s.nodes.map((n) => `${n.name}=http://${n.name === me.name ? "127.0.0.1" : n.address}:7500`).join(",");
-  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? ""].join("\t"));
+  // The fields are split on \x1f, not a tab: read collapses empty fields between tabs.
+  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? "", me.slack_icon ?? ""].join("\x1f"));
 ' "$SITE" "$NODE")"
-IFS=$'\t' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ <<<"$INFO"
+IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON <<<"$INFO"
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
 CANARY_PORTS="2222, 2121, 8088"
@@ -46,6 +47,7 @@ CANARY_LOG=/var/lib/agent-cluster/opencanary.log
 EVIDENCE_RECIPIENT=$EVIDENCE
 BACKUP_REMOTE=$BACKUP_REMOTE
 CLUSTER_TZ=$CLUSTER_TZ
+SLACK_ICON=$SLACK_ICON
 DOCKER_CONFIG=$HOME/.docker
 PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CONF

@@ -7,6 +7,7 @@
 // tool's button clicks into the same actions.
 import { buttonBlocks, clusterTz } from "./actions.mjs";
 import { slackApi } from "./bot.mjs";
+import { senderFields } from "../kit/slack.mjs";
 
 // allowed() lists the channels this computer may post to: the cluster channel and each local
 // stack's own channel. A post to any other channel is refused, so one client's alert can never
@@ -19,7 +20,8 @@ export function makeChannel(env = process.env, allowed = () => [env.SLACK_CHANNE
       post: async (channel, kind, text, ref, blocks) => {
         const to = channel ?? env.SLACK_CHANNEL_ID;
         if (!(await allowed()).includes(to)) { console.error(`refused a post to channel ${to}: not this computer's channel`); return { ok: false }; }
-        return api("chat.postMessage", { channel: to, text,
+        // The message shows this computer's name, and the computer's icon, as the sender.
+        return api("chat.postMessage", { channel: to, text, ...senderFields(env.COMPUTER, env.SLACK_ICON),
         ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref, clusterTz(env)) }) });
       },
     };
