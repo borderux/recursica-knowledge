@@ -105,6 +105,15 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
 (`sync-skills.sh`), so merged changes reach the agents within the hour.
 
+### Colima and Ollama on a Mac
+
+**On a Mac, `setup-host.sh` runs Colima and Ollama as LaunchDaemons that run as the owner.** A LaunchDaemon starts at each start-up, before anyone logs in. Homebrew's services (`brew services`) are LaunchAgents, which start only when the owner logs in. The script stops each Homebrew service for Colima and Ollama and removes the service.
+
+- **Colima:** the daemon runs the VM of the current Docker context, `colima` or `colima-<profile>`. The daemon runs `circlechat/kit/colima-service.sh`. When launchd stops the daemon, the script runs `colima stop`, then ends `colima start -f`. `colima start -f` keeps running after the VM stops. Without that step, the daemon never exits.
+- **Ollama:** the daemon runs `ollama serve` on `127.0.0.1`. The port is the port of the control computer's Ollama server in site.json. With no Ollama server in site.json, no Ollama daemon is installed. Quit the Ollama app and remove the app from the login items. The app otherwise takes the same port.
+
+A client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts that VM. The VM gets no daemon.
+
 ## Porter and the job runners
 
 Porter's adapter ports are too long and too heavy for an agent turn, so each port runs as a
@@ -237,7 +246,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 | A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
 | Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-1. **On Linux or in WSL, prepare the computer once.** Run `./circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. Rerun the script after the kit changes.
+1. **On Linux or in WSL, prepare the computer once.** Run `./circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima.
 2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
 4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
@@ -262,7 +271,7 @@ Deleting the image and the key makes the client's data unreadable for good.
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
-6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.
+6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
@@ -474,6 +483,23 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 - **Border UX's own software** (the knowledge repo, the CircleChat fork and `@recursica/mcp`), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m. ET", "Tonight", "Pick a time" or "Skip".
+
+**Each Colima VM on a Mac stops cleanly before each restart the kit starts.** A VM still running when macOS restarts can lose writes to the VM's disk. Before the restart, the cluster agent takes three steps:
+
+1. Boot out Colima's LaunchDaemon, so launchd never starts the VM again.
+2. Run `colima stop` for each VM, including each unlocked client stack's VM.
+3. Wait until `colima list` shows each VM stopped, for up to 2 minutes.
+
+**After Homebrew upgrades tailscale on a Mac, the update job runs `tailscaled install-system-daemon` again.** The tailscale daemon runs a copy of the `tailscaled` binary in `/usr/local/bin`. The upgrade replaces only Homebrew's binary. The daemon keeps the old version until the copy is made again.
+
+**A new kit reaches the two commands that are root-owned copies of kit files.** Root owns each copy. The account that runs the command cannot change the command.
+
+| Command                             | Copy of                   | Computers                   |
+| ----------------------------------- | ------------------------- | --------------------------- |
+| `/usr/local/bin/agent-stacks-apply` | `deploy/apply-secrets.sh` | Every computer              |
+| `/usr/local/bin/agent-stacks-disk`  | `tenant/disk-helper.sh`   | Linux, and Windows with WSL |
+
+Each hour, the update job compares each copy with the kit. For a copy that differs, the job reruns `install-secrets-helper.sh` for the runner's account, or copies `disk-helper.sh` again.
 
 Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`, and a failed health check moves the stack back to the old versions. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
 
