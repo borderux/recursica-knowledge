@@ -95,6 +95,35 @@ test("refuses to write the cloud keys through a symlink, and writes nothing", ()
   assert.doesNotMatch(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /JOBD_TOKEN/);
 });
 
+test("the Kev data jobs' token goes to a file of its own, only with data.repo in site.json", () => {
+  const { home, conf } = setup();
+  const cc = path.join(home, "circlechat"), file = path.join(cc, "kev-data.env");
+  // No data.repo: the push is off, and the token is not written.
+  let r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\n");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /KEV_DATA_GITHUB_PAT skipped: site.json sets no data.repo/);
+  assert.ok(!fs.existsSync(file));
+  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ ...example, data: { repo: "acme/kev-data" } }));
+  r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\n");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(file, "utf8"), "KEV_DATA_GITHUB_PAT=ghp_k\n");
+  assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+  // Never in .env, which containers read, and never in an agent's home.
+  assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /ghp_k/);
+  assert.ok(!fs.existsSync(path.join(cc, "hermes-homes", ".hermes-alan", ".env")));
+  assert.doesNotMatch(r.stdout, /no agent kev_data/);
+  // A symlink at the file: refused, and nothing written.
+  fs.rmSync(file);
+  const target = path.join(home, "elsewhere.txt");
+  fs.writeFileSync(target, "untouched\n");
+  fs.symlinkSync(target, file);
+  r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\nJOBD_TOKEN=jt\n");
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Refused: .*kev-data\.env is a symlink/);
+  assert.equal(fs.readFileSync(target, "utf8"), "untouched\n");
+  assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /JOBD_TOKEN/);
+});
+
 test("refuses a provider's own credential names, which used to land in .env", () => {
   const { home, conf } = setup();
   const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=x\nAZURE_API_KEY=k\n");

@@ -92,7 +92,7 @@ SITE="$CC_DIR/site.json"
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
 # MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
 # older name of MODEL_KEY_DEFAULT.
-KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GITHUB_PAT|PORTER_GIT_NAME|PORTER_GIT_EMAIL|[A-Z][A-Z0-9]*_GITHUB_PAT)$'
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GITHUB_PAT|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|[A-Z][A-Z0-9]*_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -144,6 +144,10 @@ done
 if [[ " $ROLES " == *" control "* ]] && { [ -L "$CC_DIR/model-keys.env" ] || [ -n "$(find "$CC_DIR/model-keys.env" -links +1 2>/dev/null)" ]; }; then
   echo "Refused: $CC_DIR/model-keys.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
+# The same for the Kev data jobs' token file.
+if [[ " $ROLES " == *" control "* ]] && has KEV_DATA_GITHUB_PAT && { [ -L "$CC_DIR/kev-data.env" ] || [ -n "$(find "$CC_DIR/kev-data.env" -links +1 2>/dev/null)" ]; }; then
+  echo "Refused: $CC_DIR/kev-data.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
+fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
 set_kv() {
@@ -188,11 +192,21 @@ if [[ " $ROLES " == *" control "* ]]; then
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
   # An agent's GitHub token goes in that agent's own .env, named <HANDLE>_GITHUB_PAT.
   for k in $NAMES; do
-    case "$k" in PORTER_GITHUB_PAT|*[!A-Z0-9_]*) continue ;; *_GITHUB_PAT) ;; *) continue ;; esac
+    case "$k" in PORTER_GITHUB_PAT|KEV_DATA_GITHUB_PAT|*[!A-Z0-9_]*) continue ;; *_GITHUB_PAT) ;; *) continue ;; esac
     handle="$(printf '%s' "${k%_GITHUB_PAT}" | tr 'A-Z' 'a-z')"
     home="$CC_DIR/hermes-homes/.hermes-$handle"
     if [ -d "$home" ]; then set_kv "$home/.env" "$k" "$(val "$k")"; else echo "  $k skipped: no agent $handle in this stack"; fi
   done
+  # The Kev data jobs' own token (kit/push-data.sh) goes in a file of its own, which no agent and no
+  # container reads. Only a stack whose site.json names a private repo in data.repo gets the token.
+  if has KEV_DATA_GITHUB_PAT; then
+    KEV_ENV="$CC_DIR/kev-data.env"
+    if [ -z "$("$NODE_BIN" -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.data?.repo ?? "")' "$SITE")" ]; then
+      echo "  KEV_DATA_GITHUB_PAT skipped: site.json sets no data.repo, so the Kev data push is off"
+    else
+      set_kv "$KEV_ENV" KEV_DATA_GITHUB_PAT "$(val KEV_DATA_GITHUB_PAT)"; chmod 600 "$KEV_ENV"; "$CHOWN" -h "$OWNER" "$KEV_ENV"
+    fi
+  fi
 fi
 
 # The cluster's own secrets: the Slack app, the cluster token and the approvers' authenticator
