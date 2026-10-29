@@ -8,7 +8,8 @@
 # stack's .env, before anything leaves the computer. The backup holds the database, CircleChat's
 # file store, the agent homes, the shared workspace and site.json. The backup leaves out .env:
 # every secret lives in the stack's GitHub environment.
-set -euo pipefail
+# -E: a failure inside a function, such as own_for_docker, also runs the ERR trap and reports.
+set -Eeuo pipefail
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
 WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 . "$(dirname "$0")/../kit/lib.sh"

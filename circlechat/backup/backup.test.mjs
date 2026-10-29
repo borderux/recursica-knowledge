@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-function setup({ restic = "ok", system } = {}) {
+function setup({ restic = "ok", system, chown = "ok" } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "backup-"));
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
@@ -28,12 +28,17 @@ case "$1" in
   snapshots) echo '[{"time":"2026-10-20T02:00:00Z"}]' ;;
 esac`);
   stub("curl", `cat >/dev/null; exit 0`);
-  stub("sudo", `exec "$@"`);
-  stub("chown", "");
+  // Like the real sudo, the stand-in looks the command up in PATH, and fails when PATH has no such
+  // command.
+  stub("sudo", `command -v "$1" >/dev/null || { echo "sudo: $1: command not found" >&2; exit 1; }; exec "$@"`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
-  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, OWNER_HOME: tmp, WS: path.join(tmp, "ws"), FORCE: "1" };
+  // The chown stand-in sits outside PATH, the way /usr/sbin/chown sits outside a job's PATH.
+  const sbin = path.join(tmp, "sbin");
+  fs.mkdirSync(sbin);
+  fs.writeFileSync(path.join(sbin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> ${log}\n${chown === "fail" ? "exit 1" : ""}\n`, { mode: 0o755 });
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, OWNER_HOME: tmp, WS: path.join(tmp, "ws"), FORCE: "1", CHOWN: path.join(sbin, "chown") };
   fs.mkdirSync(env.WS);
-  return { env, cc, log };
+  return { env, cc, log, bin };
 }
 const run = (script, env) => spawnSync("bash", [path.join(here, script)], { env, encoding: "utf8" });
 
@@ -88,4 +93,21 @@ test("on a Mac, the stack's owner owns the staging folder before a container wri
     assert.equal(chown >= 0, owned, `${system}: ${calls.join("\n")}`);
     if (owned) assert.ok(chown < calls.findIndex((c) => c.startsWith("docker run")), "the chown comes before the file store step");
   }
+});
+
+test("on a Mac, the backup gives the staging folder to the owner with the job's own PATH, which has no /usr/sbin", () => {
+  const { env, cc, log, bin } = setup({ system: "Darwin" });
+  // The PATH that setup-host.sh gives the backup job, after the folder of stand-ins.
+  env.PATH = `${bin}:${path.dirname(process.execPath)}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin`;
+  const b = run("backup.sh", env);
+  assert.equal(b.status, 0, b.stdout + b.stderr);
+  assert.ok(fs.readFileSync(log, "utf8").split("\n").includes(`chown -h -R ${os.userInfo().username} ${path.join(cc, "backup-staging")}`));
+});
+
+test("a failed chown of the staging folder stops the backup and reports the step", () => {
+  const { env, log } = setup({ system: "Darwin", chown: "fail" });
+  const b = run("backup.sh", env);
+  assert.notEqual(b.status, 0);
+  assert.match(b.stdout, /Backup of stack acme failed .* at step: staging folder\./);
+  assert.doesNotMatch(fs.readFileSync(log, "utf8"), /^docker run/m, "the file store step never runs");
 });
