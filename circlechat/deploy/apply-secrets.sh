@@ -15,6 +15,9 @@
 # "client-<name>" for the client stack with site.tenant <name>. <computer> is a node name in that
 # stack's site.json. Only the key names below are read; every other line is ignored.
 set -euo pipefail
+# macOS keeps chown in /usr/sbin, and the runner's PATH can leave /usr/sbin out. The tests set CHOWN
+# to a stand-in.
+case "$(uname -s)" in Darwin) CHOWN="${CHOWN:-/usr/sbin/chown}" ;; *) CHOWN="${CHOWN:-chown}" ;; esac
 
 CONF="${AGENT_STACKS_CONF:-/etc/agent-stacks.conf}"
 # shellcheck disable=SC1090
@@ -168,7 +171,7 @@ if [[ " $ROLES " == *" control "* ]]; then
     chmod 600 "$KEYS_FILE"
     # On a Mac, the Docker VM reads the Mac's files as the owner, never as root, so the gateway
     # can mount only a file the owner owns. On Linux, root keeps the file.
-    if [ "$(uname -s)" = Darwin ]; then chown -h "$OWNER" "$KEYS_FILE"; fi
+    if [ "$(uname -s)" = Darwin ]; then "$CHOWN" -h "$OWNER" "$KEYS_FILE"; fi
     echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
   done
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
@@ -206,7 +209,7 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* ]]; then
   # file holds no cloud key.
   has PORTER_ANTHROPIC_API_KEY && echo "  PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway. Rename the secret to MODEL_KEY_PORTER, and name porter in that key's agents in site.json."
   drop_kv "$NODE_ENV" ANTHROPIC_API_KEY
-  chown "$OWNER" "$NODE_ENV" 2>/dev/null || true
+  "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
 [ "$RESTART" = true ] || { echo "Secrets written. Nothing restarted."; exit 0; }

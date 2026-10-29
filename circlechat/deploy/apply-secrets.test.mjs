@@ -36,13 +36,15 @@ function apply(conf, args, input, env = {}) {
   });
 }
 
-// Stand-ins for uname, which reports the given system, and chown, which records each call.
+// Stand-ins for uname, which reports the given system, and chown, which records each call. The
+// chown stand-in sits outside PATH, the way /usr/sbin/chown sits outside the runner's PATH, and
+// CHOWN names the stand-in.
 function fakeSystem(home, system) {
-  const bin = path.join(home, "bin"), log = path.join(home, "chown.log");
-  fs.mkdirSync(bin, { recursive: true });
+  const bin = path.join(home, "bin"), sbin = path.join(home, "sbin"), log = path.join(home, "chown.log");
+  fs.mkdirSync(bin, { recursive: true }); fs.mkdirSync(sbin, { recursive: true });
   fs.writeFileSync(path.join(bin, "uname"), `#!/usr/bin/env bash\necho ${system}\n`, { mode: 0o755 });
-  fs.writeFileSync(path.join(bin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> "${log}"\n`, { mode: 0o755 });
-  return { env: { PATH: `${bin}:${process.env.PATH}` }, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
+  fs.writeFileSync(path.join(sbin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> "${log}"\n`, { mode: 0o755 });
+  return { env: { PATH: `${bin}:${process.env.PATH}`, CHOWN: path.join(sbin, "chown") }, bin, sbin, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
 test("writes each known secret to the file that uses it, and keeps other lines", () => {
@@ -220,4 +222,14 @@ test("refuses a kit checkout that fails the kit check, and writes nothing", () =
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Refusing the kit checkout/);
   assert.equal(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), before);
+});
+
+test("on a Mac, the secrets helper never looks chown up in PATH", () => {
+  const { home, conf } = setup();
+  const fake = fakeSystem(home, "Darwin");
+  // A chown on PATH that records each call. On a Mac, the helper calls /usr/sbin/chown instead.
+  fs.copyFileSync(path.join(fake.sbin, "chown"), path.join(fake.bin, "chown"));
+  fs.chmodSync(path.join(fake.bin, "chown"), 0o755);
+  apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n", { PATH: fake.env.PATH, CHOWN: "" });
+  assert.equal(fake.calls(), "");
 });

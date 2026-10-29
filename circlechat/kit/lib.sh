@@ -11,8 +11,10 @@ sudo_sedi() { if sed --version >/dev/null 2>&1; then sudo sed -i "$@"; else sudo
 # VM, such as Colima's, and the VM reads the Mac's files as the owner, never as root. A file that
 # root owns with mode 600 cannot be mounted there. On Linux, Docker runs as root, and root keeps the
 # files. The modes stay the same. -h changes a symlink itself, never the file the symlink names.
-# A script that runs as root, such as backup.sh, sets DOCKER_OWNER to the stack's owner.
-own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo chown -h -R "${DOCKER_OWNER:-$(id -un)}" "$@"; }
+# A script that runs as root, such as backup.sh, sets DOCKER_OWNER to the stack's owner. chown is
+# called by its full path, because macOS keeps chown in /usr/sbin and a job's PATH can leave
+# /usr/sbin out. The tests set CHOWN to a stand-in.
+own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo "${CHOWN:-/usr/sbin/chown}" -h -R "${DOCKER_OWNER:-$(id -un)}" "$@"; }
 
 # Stop unless the kit checkout is one root may run: outside the agents' workspace, and changed by
 # the owner only (kit/check-kit.sh). Every script that runs as root, or installs a command that root

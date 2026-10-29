@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-function setup({ restic = "ok", system } = {}) {
+function setup({ restic = "ok", system, chown = "ok", dump = "ok" } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "backup-"));
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
@@ -17,25 +17,34 @@ function setup({ restic = "ok", system } = {}) {
   fs.writeFileSync(path.join(cc, "kit-out", "tenant.env"), "TENANT=acme\nSUFFIX=-acme\nCOMPOSE_PROJECT_NAME=cc-acme\nDOCKER_CONTEXT=\nBACKUP_REMOTE=gd:backups\n");
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   stub("docker", `case "$1" in
-  compose) echo "CREATE TABLE messages (id int);" ;;
+  compose) ${dump === "fail" ? "exit 1" : 'echo "CREATE TABLE messages (id int);"'} ;;
   run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; esac; done; mkdir -p /tmp/e$$ && tar czf "$out/minio.tgz" -C /tmp/e$$ . ;;
 esac`);
   stub("restic", restic === "fail-backup" ? `[ "$1" = backup ] && exit 1; [ "$1" = cat ] && exit 1; exit 0` : `
 case "$1" in
   cat) exit 1 ;;
-  restore) t="\${@: -1}"; mkdir -p "$t/stage" "$t/hermes-homes"; cp ${cc}/backup-saved/* "$t/stage/" ;;
+  restore) ${restic === "fail-restore" ? "exit 1" : ":"}; t="\${@: -1}"; mkdir -p "$t/stage" "$t/hermes-homes"; cp ${cc}/backup-saved/* "$t/stage/" ;;
   backup) mkdir -p ${cc}/backup-saved; cp ${cc}/backup-staging/* ${cc}/backup-saved/ ;;
-  snapshots) echo '[{"time":"2026-10-20T02:00:00Z"}]' ;;
+  snapshots) ${restic === "fail-snapshots" ? "exit 1" : `echo '[{"time":"2026-10-20T02:00:00Z"}]'`} ;;
 esac`);
   stub("curl", `cat >/dev/null; exit 0`);
-  stub("sudo", `exec "$@"`);
-  stub("chown", "");
+  // The node stand-in records each Slack post in the log, and runs every other script with the real
+  // node.
+  stub("node", `case "$1" in */slack.mjs) exit 0 ;; esac; exec "${process.execPath}" "$@"`);
+  // Like the real sudo, the stand-in looks the command up in PATH, and fails when PATH has no such
+  // command.
+  stub("sudo", `command -v "$1" >/dev/null || { echo "sudo: $1: command not found" >&2; exit 1; }; exec "$@"`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
-  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, OWNER_HOME: tmp, WS: path.join(tmp, "ws"), FORCE: "1" };
+  // The chown stand-in sits outside PATH, the way /usr/sbin/chown sits outside a job's PATH.
+  const sbin = path.join(tmp, "sbin");
+  fs.mkdirSync(sbin);
+  fs.writeFileSync(path.join(sbin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> ${log}\n${chown === "fail" ? "exit 1" : ""}\n`, { mode: 0o755 });
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, OWNER_HOME: tmp, WS: path.join(tmp, "ws"), FORCE: "1", CHOWN: path.join(sbin, "chown") };
   fs.mkdirSync(env.WS);
-  return { env, cc, log };
+  return { env, cc, log, bin };
 }
 const run = (script, env) => spawnSync("bash", [path.join(here, script)], { env, encoding: "utf8" });
+const slackPosts = (log) => fs.readFileSync(log, "utf8").split("\n").filter((l) => /^node \S*\/slack\.mjs /.test(l));
 
 test("backs up the stack, encrypted with the stack's key, then tests a restore", () => {
   const { env, cc, log } = setup();
@@ -88,4 +97,52 @@ test("on a Mac, the stack's owner owns the staging folder before a container wri
     assert.equal(chown >= 0, owned, `${system}: ${calls.join("\n")}`);
     if (owned) assert.ok(chown < calls.findIndex((c) => c.startsWith("docker run")), "the chown comes before the file store step");
   }
+});
+
+test("on a Mac, the backup gives the staging folder to the owner with the job's own PATH, which has no /usr/sbin", () => {
+  const { env, cc, log, bin } = setup({ system: "Darwin" });
+  // The PATH that setup-host.sh gives the backup job, after the folder of stand-ins.
+  env.PATH = `${bin}:${path.dirname(process.execPath)}:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin`;
+  const b = run("backup.sh", env);
+  assert.equal(b.status, 0, b.stdout + b.stderr);
+  assert.ok(fs.readFileSync(log, "utf8").split("\n").includes(`chown -h -R ${os.userInfo().username} ${path.join(cc, "backup-staging")}`));
+});
+
+test("a failed chown of the staging folder stops the backup and reports the step", () => {
+  const { env, log } = setup({ system: "Darwin", chown: "fail" });
+  const b = run("backup.sh", env);
+  assert.notEqual(b.status, 0);
+  assert.match(b.stdout, /Backup of stack acme failed .* at step: staging folder\./);
+  assert.doesNotMatch(fs.readFileSync(log, "utf8"), /^docker run/m, "the file store step never runs");
+});
+
+test("a failed database dump posts one report, though the dump runs in a subshell", () => {
+  const { env, log } = setup({ dump: "fail" });
+  const b = run("backup.sh", env);
+  assert.notEqual(b.status, 0);
+  const posts = slackPosts(log);
+  assert.equal(posts.length, 1, posts.join("\n"));
+  assert.match(posts[0], /Backup of stack acme failed .* at step: database dump\./);
+});
+
+test("an unexpected failure in the restore test posts one report, with the step", () => {
+  const { env, log } = setup({ restic: "fail-snapshots" });
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.writeFileSync(log, "");
+  const r = run("restore-test.sh", env);
+  assert.notEqual(r.status, 0);
+  const posts = slackPosts(log);
+  assert.equal(posts.length, 1, posts.join("\n"));
+  assert.match(posts[0], /:x: Test restore of stack acme failed on .*, at step: newest backup's time\./);
+});
+
+test("an expected failure in the restore test posts its own reason once, and no step report", () => {
+  const { env, log } = setup({ restic: "fail-restore" });
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.writeFileSync(log, "");
+  const r = run("restore-test.sh", env);
+  assert.notEqual(r.status, 0);
+  const posts = slackPosts(log);
+  assert.equal(posts.length, 1, posts.join("\n"));
+  assert.match(posts[0], /Test restore of stack acme failed on .*: restic could not restore the newest backup/);
 });

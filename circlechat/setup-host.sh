@@ -519,7 +519,9 @@ if [ "$UPGRADE_AUTO" = on ]; then
   # cluster-updater checks out each release; nothing pulls main.
   uninstall_unit "agents-sync$SUFFIX" >/dev/null
 else
-  install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+  # macOS keeps chown in /usr/sbin, and the job's PATH can leave /usr/sbin out.
+  sync_chown="chown"; [ "$OS" != Darwin ] || sync_chown="/usr/sbin/chown"
+  install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; $sync_chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
 fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
