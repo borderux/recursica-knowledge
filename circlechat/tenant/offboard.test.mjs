@@ -12,7 +12,7 @@ const check = (home) => spawnSync("bash", [path.join(here, "offboard.sh"), "chec
 test("passes when nothing of the client remains", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "off-"));
   fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
-  fs.writeFileSync(path.join(home, "circlechat/notes.txt"), "border only");
+  fs.writeFileSync(path.join(home, "circlechat/notes.txt"), "cluster only");
   const r = check(home);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /Nothing of client acme remains/);

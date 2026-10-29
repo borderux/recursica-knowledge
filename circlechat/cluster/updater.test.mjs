@@ -5,12 +5,12 @@ import os from "node:os";
 import path from "node:path";
 import { plan, localStacks, refreshRootCopies } from "./updater.mjs";
 
-test("Border UX's software every hour on a stack with upgrade.auto; images once a day per stack", () => {
-  const stacks = [{ name: "border", upgradeAuto: true }, { name: "acme", upgradeAuto: false }];
+test("Recursica's software every hour on a stack with upgrade.auto; images once a day per stack", () => {
+  const stacks = [{ name: "cluster", upgradeAuto: true }, { name: "acme", upgradeAuto: false }];
   const now = 1_800_000_000_000;
-  assert.deepEqual(plan(stacks, {}, now), [{ name: "border", upgrade: true, images: true }, { name: "acme", upgrade: false, images: true }]);
-  const state = { images: { border: now - 3600_000, acme: now - 25 * 3600_000 } };
-  assert.deepEqual(plan(stacks, state, now), [{ name: "border", upgrade: true, images: false }, { name: "acme", upgrade: false, images: true }]);
+  assert.deepEqual(plan(stacks, {}, now), [{ name: "cluster", upgrade: true, images: true }, { name: "acme", upgrade: false, images: true }]);
+  const state = { images: { cluster: now - 3600_000, acme: now - 25 * 3600_000 } };
+  assert.deepEqual(plan(stacks, state, now), [{ name: "cluster", upgrade: true, images: false }, { name: "acme", upgrade: false, images: true }]);
 });
 
 test("only the stacks this computer controls; a helper's copy of a stack is left alone", () => {
@@ -18,9 +18,9 @@ test("only the stacks this computer controls; a helper's copy of a stack is left
   const cc = path.join(home, "circlechat");
   fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true });
   fs.writeFileSync(path.join(cc, "kit-out/tenant.env"), "UPGRADE_AUTO=on\n");
-  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ nodes: [{ name: "studio", control: true }, { name: "beast" }] }));
-  assert.equal(localStacks(home, "beast").length, 0);
-  assert.deepEqual(localStacks(home, "studio").map((s) => s.name), ["border"]);
+  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ nodes: [{ name: "machine-1", control: true }, { name: "machine-2" }] }));
+  assert.equal(localStacks(home, "machine-2").length, 0);
+  assert.deepEqual(localStacks(home, "machine-1").map((s) => s.name), ["cluster"], "the cluster's own stack, with no stack_name");
 });
 
 test("a new kit reaches the root-owned copies: the secrets helper on any computer, the disk helper on Linux and WSL", () => {

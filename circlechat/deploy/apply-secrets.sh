@@ -11,8 +11,9 @@
 # --lock does the reverse. The key passes through on stdin and is never written to disk. On Linux
 # and WSL, this script opens and closes the LUKS image itself, as root, with agent-stacks-disk.
 #
-# <stack> is the GitHub environment: "border" for the stack with no tenant name, or
-# "client-<name>" for the client stack with site.tenant <name>. <computer> is a node name in that
+# <stack> is the GitHub environment: the cluster's own stack's name, site.stack_name in the
+# cluster's site.json ("cluster" when unset), or "client-<name>" for the client stack with
+# site.tenant <name>. <computer> is a node name in that
 # stack's site.json. Only the key names below are read; every other line is ignored.
 set -euo pipefail
 # macOS keeps chown in /usr/sbin, and the runner's PATH can leave /usr/sbin out. The tests set CHOWN
@@ -29,9 +30,16 @@ COMPUTER="${2:?usage: agent-stacks-apply <stack> <computer> <restart>}"
 RESTART="${3:-false}"
 SLUG='^[a-z0-9][a-z0-9-]*$'
 case "$STACK" in
-  border) TENANT="" ;;
   client-*) TENANT="${STACK#client-}" ;;
-  *) echo "Stack \"$STACK\" must be border or client-<name>."; exit 1 ;;
+  *)
+    # The cluster's own stack. The JSON is read in place, so root runs no kit file here
+    # (kit/render.mjs, clusterStackName, holds the same rule).
+    CLUSTER_STACK="$("$NODE_BIN" -e '
+      let s = {}; try { s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); } catch {}
+      process.stdout.write(s.site?.stack_name || "cluster");
+    ' "$OWNER_HOME/circlechat/site.json")"
+    [ "$STACK" = "$CLUSTER_STACK" ] || { echo "Stack \"$STACK\" must be $CLUSTER_STACK (site.stack_name in the cluster's site.json) or client-<name>."; exit 1; }
+    TENANT="" ;;
 esac
 [ -z "$TENANT" ] || [[ "$TENANT" =~ $SLUG ]] || { echo "Client name \"$TENANT\" must be a slug."; exit 1; }
 [[ "$COMPUTER" =~ $SLUG ]] || { echo "Computer \"$COMPUTER\" must be a slug."; exit 1; }
@@ -185,7 +193,7 @@ if [[ " $ROLES " == *" control "* ]]; then
 fi
 
 # The cluster's own secrets: the Slack app, the cluster token and the approvers' authenticator
-# secrets. They belong to Border UX's stack, and go to every computer the border stack deploys to.
+# secrets. They belong to the cluster's own stack, and go to every computer that stack deploys to.
 CLUSTER_ENV="${AGENT_CLUSTER_ENV:-/etc/agent-cluster.env}"
 WROTE_CLUSTER=false
 if [ -z "$TENANT" ]; then

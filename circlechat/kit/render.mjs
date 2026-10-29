@@ -35,6 +35,22 @@ import path from "node:path";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
+// Who pays for a stack's cloud keys: "operator", the company that runs the cluster, with a virtual
+// card made for the client, or "client-byok", the client's own key. "border-ramp", the older name
+// for "operator", still passes, so an existing site.json keeps working.
+export const PAYERS = ["operator", "client-byok"];
+export const payerOk = (p) => PAYERS.includes(p) || p === "border-ramp";
+
+// The cluster's own stack has no site.tenant. site.stack_name names that stack: the stack's GitHub
+// environment, and the stack's name in backups, Slack messages and logs. With no stack_name, the
+// stack is named "cluster".
+export const DEFAULT_STACK_NAME = "cluster";
+export const clusterStackName = (site) => site?.site?.stack_name || DEFAULT_STACK_NAME;
+// A stack's name: site.tenant for a client or demo stack, site.stack_name for the cluster's own.
+export const stackName = (site) => site?.site?.tenant || clusterStackName(site);
+// The stack's GitHub environment, which the "Deploy secrets" workflow names.
+export const githubEnvironment = (site) => (site?.site?.tenant ? `client-${site.site.tenant}` : clusterStackName(site));
+
 // A backend is a cloud model unless it names a model on a computer in this site.json.
 export function isCloud(backend, site) {
   const names = new Set((site.nodes ?? []).map((n) => n.name));
@@ -91,6 +107,34 @@ export function clusterModels(site) {
     }
   }
   return out;
+}
+
+// An Ollama server's own settings, which the kit's Ollama service on a Mac runs with (kit/lib.sh
+// mac_services): "context_length" (OLLAMA_CONTEXT_LENGTH, in tokens), "parallel" (OLLAMA_NUM_PARALLEL,
+// the requests each model answers at once) and "keep_alive" (OLLAMA_KEEP_ALIVE, how long a model
+// stays loaded: "-1" keeps each model loaded, or a time such as "30m" or 300 seconds). A setting
+// left out keeps Ollama's default.
+export const OLLAMA_SETTINGS = { context_length: "OLLAMA_CONTEXT_LENGTH", parallel: "OLLAMA_NUM_PARALLEL", keep_alive: "OLLAMA_KEEP_ALIVE" };
+const KEEP_ALIVE = /^(-1|\d+|\d+(ms|s|m|h)|(\d+h)?(\d+m)?(\d+s)?)$/;
+function ollamaSettingErrors(sv, where) {
+  const set = Object.keys(OLLAMA_SETTINGS).filter((k) => sv[k] !== undefined);
+  if (set.length && sv.kind !== "ollama") return [`${where}: ${set.join(", ")} ${set.length > 1 ? "are Ollama settings" : "is an Ollama setting"}, and this server is ${sv.kind}`];
+  const errs = [];
+  for (const k of ["context_length", "parallel"]) if (sv[k] !== undefined && !(Number.isInteger(sv[k]) && sv[k] > 0)) errs.push(`${where}: ${k} must be a whole number above 0`);
+  if (sv.keep_alive !== undefined && !(["string", "number"].includes(typeof sv.keep_alive) && String(sv.keep_alive) !== "" && KEEP_ALIVE.test(String(sv.keep_alive)))) {
+    errs.push(`${where}: keep_alive must be "-1", to keep each model loaded, or a time such as "30m" or 300 (seconds)`);
+  }
+  return errs;
+}
+
+// The control computer's Ollama server, for the kit's Ollama service on a Mac: the port, and each
+// setting from site.json as NAME=value. An older site.json names the server by port 11434, with no
+// settings. null when the control computer runs no Ollama server.
+export function ollamaService(site) {
+  const n = (site.nodes ?? []).find((x) => x.control) ?? {};
+  const sv = (n.servers ?? []).find((x) => x.kind === "ollama");
+  if (!sv) return (n.models ?? []).some((m) => m.port === 11434) ? { port: 11434, env: [] } : null;
+  return { port: sv.port, env: Object.entries(OLLAMA_SETTINGS).filter(([k]) => sv[k] !== undefined).map(([k, name]) => `${name}=${sv[k]}`) };
 }
 
 // The secret that holds a key's value, in GitHub and in the gateway's secrets file.
@@ -231,6 +275,7 @@ function serverErrors(n, { leaveOut = false } = {}) {
     if (!Number.isInteger(sv.port)) errs.push(`${where}: port must be a number`);
     else if (ports.has(sv.port)) errs.push(`${where}: port ${sv.port} is already used by ${ports.get(sv.port)}`);
     else ports.set(sv.port, `server ${sv.id}`);
+    errs.push(...ollamaSettingErrors(sv, where));
     if (!Array.isArray(sv.models) || !sv.models.length) { errs.push(`${where}: models must list at least one model`); continue; }
     // mlx-lm's server holds one model at a time: run one server for each model.
     if (sv.kind === "mlx-lm" && sv.models.length > 1) errs.push(`${where}: an mlx-lm server serves one model. Run one mlx-lm server, on its own port, for each model`);
@@ -367,6 +412,12 @@ export function validate(site, { cluster } = {}) {
     errs.push(`site.gateway_port + 1 (${jobsLocal}) is the gateway's port for port jobs on a Mac, and must differ from site.port and site.preview_port`);
   }
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
+  // The cluster's time zone for reboot times in Slack (cluster/actions.mjs), an IANA name.
+  if (t.timezone !== undefined) { try { new Intl.DateTimeFormat("en-US", { timeZone: t.timezone }); } catch { errs.push(`site.timezone "${t.timezone}" must be a time zone name, such as Europe/Berlin`); } }
+  if (t.stack_name !== undefined) {
+    if (t.tenant !== undefined) errs.push("site.stack_name names the cluster's own stack. A client or demo stack takes its name from site.tenant");
+    else if (!SLUG.test(t.stack_name) || t.stack_name.startsWith("client-")) errs.push(`site.stack_name "${t.stack_name}" must be lowercase letters, digits and hyphens, and must not start with "client-"`);
+  }
   if (t.slack_channel_id !== undefined && !/^[CG][A-Z0-9]{6,}$/.test(t.slack_channel_id)) errs.push("site.slack_channel_id must be a Slack channel ID, such as C0123ABCD");
   // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the
   // password manager, so no computer can read the evidence it uploads.
@@ -401,7 +452,7 @@ export function validate(site, { cluster } = {}) {
     else if (cm.allowed) {
       if (!cm.granted_by || typeof cm.granted_by !== "string") errs.push("site.cloud_models.granted_by must name the person who granted the permission");
       if (!/^\d{4}-\d{2}-\d{2}$/.test(cm.granted_on ?? "")) errs.push("site.cloud_models.granted_on must be the date of the permission, as YYYY-MM-DD");
-      if (!["border-ramp", "client-byok"].includes(cm.payer)) errs.push("site.cloud_models.payer must be border-ramp or client-byok");
+      if (!payerOk(cm.payer)) errs.push("site.cloud_models.payer must be operator or client-byok");
     }
   }
   if (t.kind === "client" || t.kind === "demo") {
@@ -607,6 +658,7 @@ export function render(site) {
   const tenant = st.tenant ?? "";
   const tenantEnv = [
     `TENANT=${tenant}`,
+    `STACK_NAME=${stackName(site)}`,
     `TENANT_KIND=${st.kind ?? "internal"}`,
     `SUFFIX=${tenant ? `-${tenant}` : ""}`,
     `COMPOSE_PROJECT_NAME=${tenant ? `cc-${tenant}` : "circlechat"}`,
@@ -621,7 +673,7 @@ export function render(site) {
     `REPO_ACCESS=${site.repos?.access ?? "service-account"}`,
     `PROXY=${site.site?.proxy ?? "tailscale"}`,
     `UPGRADE_AUTO=${site.upgrade?.auto === true ? "on" : "off"}`,
-    // Task details in Slack: on for Border UX's stack; off for a client stack unless the client
+    // Task details in Slack: on for the cluster's own stack and a demo; off for a client stack unless the client
     // allows details (notify.details), because Slack is an outside company.
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
     `PUBLIC_KNOWLEDGE=${/borderux\/recursica-knowledge(\.git)?$/.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,

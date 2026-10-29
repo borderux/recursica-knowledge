@@ -1,7 +1,7 @@
 // The one update job: hourly, as root, on each computer. One rule for everything:
 //
-//   - Border UX's own software, on a stack with upgrade.auto (the knowledge repo and the
-//     CircleChat fork): right away; a new major version asks in Slack (kit/upgrade.mjs).
+//   - Recursica's own software, on a stack with upgrade.auto (the knowledge repo and the CircleChat
+//     fork): right away; a new major version asks in Slack (kit/upgrade.mjs).
 //   - Everything else: after 7 days, or right away for a flaw on CISA's Known Exploited
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).
@@ -9,6 +9,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { clusterStackName } from "../kit/render.mjs";
 
 const DAY = 24 * 3600_000;
 
@@ -28,14 +29,15 @@ export function localStacks(home, computer) {
   const add = (name, ccDir) => {
     const f = path.join(ccDir, "kit-out/tenant.env");
     if (!fs.existsSync(f)) return;
+    let site;
     try {
-      const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
+      site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
       if ((site.nodes ?? []).find((n) => n.control)?.name !== computer) return;
     } catch { return; }
     const t = Object.fromEntries(fs.readFileSync(f, "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
-    out.push({ name, ccDir, upgradeAuto: t.UPGRADE_AUTO === "on" });
+    out.push({ name: name ?? clusterStackName(site), ccDir, upgradeAuto: t.UPGRADE_AUTO === "on" });
   };
-  add("border", path.join(home, "circlechat"));
+  add(null, path.join(home, "circlechat"));
   const tenants = path.join(home, "tenants");
   if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"));
   return out;

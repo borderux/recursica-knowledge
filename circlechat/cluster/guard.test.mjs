@@ -19,7 +19,7 @@ function setup(conns = []) {
     lockdownFirewall: async (on) => log.push(["firewall", on]),
     encryptAndUpload: async () => true,
   };
-  const g = new Guard({ platform, computer: "studio", stateDir: fs.mkdtempSync(path.join(os.tmpdir(), "guard-")),
+  const g = new Guard({ platform, computer: "machine-1", stateDir: fs.mkdtempSync(path.join(os.tmpdir(), "guard-")),
     notify: async (kind, text, ref) => notes.push({ kind, text, ref }), now: () => t });
   return { g, log, notes, advance: (ms) => (t += ms) };
 }

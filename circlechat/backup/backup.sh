@@ -18,7 +18,8 @@ WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 require_kit "$(dirname "$0")/../.." "${OWNER:-}" "$OWNER_HOME"
 . "$CC_DIR/kit-out/tenant.env"
 [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
-STACK="${TENANT:-border}"
+# The stack's name: site.tenant, or site.stack_name for the cluster's own stack (kit/render.mjs).
+STACK="${STACK_NAME:-${TENANT:-$(node --input-type=module -e 'const { stackName } = await import(process.argv[2]); process.stdout.write(stackName(JSON.parse((await import("node:fs")).readFileSync(process.argv[1], "utf8"))));' "$CC_DIR/site.json" "$(dirname "$0")/../kit/render.mjs")}}"
 env_value() { sed -n "s/^$1=//p" "$CC_DIR/.env" | tail -1; }
 say() {
   echo "$1"

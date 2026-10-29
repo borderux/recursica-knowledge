@@ -79,3 +79,18 @@ test("after Homebrew upgrades tailscale, the daemon's copy comes from the new Ho
   await afterBrewUpgrade(["git"], { owner: "owner", run });
   assert.deepEqual(calls, []);
 });
+
+test("after Homebrew upgrades ollama, the kit's Ollama service restarts on the new version", async () => {
+  const calls = [];
+  const run = async (cmd, args) => { calls.push([cmd, ...args].join(" ")); return ""; };
+  const daemonDir = fs.mkdtempSync(path.join(os.tmpdir(), "daemons-"));
+  // Without the kit's Ollama service, such as on a computer with no Ollama server, nothing restarts.
+  await afterBrewUpgrade(["ollama"], { owner: "owner", run, daemonDir });
+  assert.deepEqual(calls, []);
+  fs.writeFileSync(path.join(daemonDir, "io.recursica.ollama.plist"), "");
+  await afterBrewUpgrade(["git", "ollama"], { owner: "owner", run, daemonDir });
+  assert.deepEqual(calls, ["launchctl kickstart -k system/io.recursica.ollama"]);
+  calls.length = 0;
+  await afterBrewUpgrade(["git", "colima"], { owner: "owner", run, daemonDir });
+  assert.deepEqual(calls, [], "another upgrade restarts nothing");
+});

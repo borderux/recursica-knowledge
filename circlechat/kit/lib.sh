@@ -70,6 +70,8 @@ check_vm_limits() {
 # works on macOS, where launchd gets the same day and time.
 # On macOS, UNIT_EXIT_TIMEOUT sets the seconds launchd waits for the service to stop, 20 by default.
 # UNIT_KEEP=1 leaves a loaded service running when the service's plist has not changed.
+# On macOS, launchd gives a job no HOME. A root job gets HOME=/var/root, root's home folder, so a
+# program that keeps a cache in the home folder, such as restic in the backup, finds one.
 install_unit() {
   local name="$1" cmd="$2" dir="${3:-$HOME}" user="${4:-$(id -un)}" sched="${5:-}"
   if [ "$OS" = Linux ]; then
@@ -146,6 +148,7 @@ UNIT
       timing="<key>RunAtLoad</key><true/><key>StartInterval</key><integer>3600</integer>"
     fi
     [ -n "${UNIT_EXIT_TIMEOUT:-}" ] && timing="$timing<key>ExitTimeOut</key><integer>$UNIT_EXIT_TIMEOUT</integer>"
+    [ "$user" = root ] && timing="$timing<key>EnvironmentVariables</key><dict><key>HOME</key><string>/var/root</string></dict>"
     local body; body="$(cat <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -173,13 +176,52 @@ PLIST
   echo "installed $name${sched:+ ($sched)}"
 }
 
+# The label of each LaunchDaemon outside the kit whose program runs <command>, such as local.colima
+# for colima. A daemon the kit installs has a label that starts with io.recursica.
+#   foreign_daemons <command>
+foreign_daemons() {
+  local f
+  for f in "${LAUNCH_DAEMONS_DIR:-/Library/LaunchDaemons}"/*.plist; do
+    [ -f "$f" ] || continue
+    case "${f##*/}" in io.recursica.*) continue ;; esac
+    { plutil -extract Program raw -o - "$f" 2>/dev/null; plutil -extract ProgramArguments json -o - "$f" 2>/dev/null; } \
+      | grep -qw -- "$1" && plutil -extract Label raw -o - "$f" 2>/dev/null
+  done
+  return 0
+}
+
+# Before the kit installs its own Colima or Ollama service: a LaunchDaemon outside the kit that
+# already runs Colima or Ollama stops the setup, with the commands that retire the daemon. Two
+# services would fight over one VM, or over one port. Run the check before the setup changes anything.
+#   mac_services_check <Colima profile, or empty for none> <Ollama port, or empty for none>
+mac_services_check() {
+  [ "$OS" = Darwin ] || return 0
+  local found=() cmd label
+  for cmd in ${1:+colima} ${2:+ollama}; do
+    while IFS= read -r label; do [ -n "$label" ] && found+=("$cmd $label"); done < <(foreign_daemons "$cmd")
+  done
+  [ ${#found[@]} -gt 0 ] || return 0
+  echo "A LaunchDaemon outside the kit already runs Colima or Ollama on this Mac. The kit runs both as its own"
+  echo "LaunchDaemons, io.recursica.colima and io.recursica.ollama, and two services would fight over one"
+  echo "VM or one port. setup-host.sh changed nothing. Move each daemon's settings to site.json, such as the"
+  echo "Ollama server's context_length, parallel and keep_alive. Then retire each daemon, and run"
+  echo "setup-host.sh again:"
+  for label in "${found[@]}"; do
+    echo "  ${label%% *}: sudo launchctl bootout system/${label#* } && sudo rm ${LAUNCH_DAEMONS_DIR:-/Library/LaunchDaemons}/${label#* }.plist"
+  done
+  echo "See circlechat/README.md, \"Colima and Ollama on a Mac\"."
+  return 1
+}
+
 # On a Mac, Colima and Ollama run as LaunchDaemons that run as the owner, never as Homebrew's
 # LaunchAgents (brew services). A LaunchAgent starts only when the owner logs in. A LaunchDaemon
 # starts at each start-up, and the kit stops the daemon before each restart (cluster/colima.mjs).
-#   mac_services <Colima profile, or empty for none> <Ollama port, or empty for none>
+# Ollama listens on 127.0.0.1 only, with the settings from site.json (kit/render.mjs ollamaService).
+#   mac_services <Colima profile, or empty for none> <Ollama port, or empty for none> [NAME=value ...]
 mac_services() {
   [ "$OS" = Darwin ] || return 0
   local profile="$1" port="$2" bin kit i
+  shift 2
   kit="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   if [ -n "$profile" ]; then
     bin="$(command -v colima)" || { echo "Colima is not installed. Install Colima with: brew install colima"; return 1; }
@@ -194,7 +236,7 @@ mac_services() {
   if [ -n "$port" ]; then
     bin="$(command -v ollama)" || { echo "site.json gives this computer an Ollama server, and Ollama is not installed. Install Ollama with: brew install ollama"; return 1; }
     if brew services list 2>/dev/null | awk '$1 == "ollama" && $2 != "none" { f = 1 } END { exit !f }'; then brew services stop ollama; fi
-    UNIT_KEEP=1 install_unit ollama "HOME=$HOME OLLAMA_HOST=127.0.0.1:$port exec $bin serve" "$HOME" "$(id -un)"
+    UNIT_KEEP=1 install_unit ollama "HOME=$HOME OLLAMA_HOST=127.0.0.1:$port${*:+ $*} exec $bin serve" "$HOME" "$(id -un)"
   fi
 }
 

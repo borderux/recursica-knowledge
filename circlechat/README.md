@@ -53,6 +53,30 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 - `memory_gb`: the memory the model needs, in GB.
 - `model_memory_gb`: the memory the computer gives its models. On a Mac, that is unified memory, less what macOS and other work need. On a PC, that is the GPU's memory.
 
+**An Ollama server on the control computer can set three of Ollama's own settings.** On a Mac, the kit's Ollama service runs with each setting the server sets. A setting left out keeps Ollama's default.
+
+| Setting in `site.json` | Ollama's setting        | What the setting sets                                                                     |
+| ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------- |
+| `context_length`       | `OLLAMA_CONTEXT_LENGTH` | The context length, in tokens, for each model                                             |
+| `parallel`             | `OLLAMA_NUM_PARALLEL`   | The requests each model answers at once                                                   |
+| `keep_alive`           | `OLLAMA_KEEP_ALIVE`     | How long a model stays loaded: `"-1"` keeps each model loaded, or a time, such as `"30m"` |
+
+```json
+{
+  "id": "ollama",
+  "kind": "ollama",
+  "port": 11434,
+  "context_length": 131072,
+  "parallel": 4,
+  "keep_alive": "-1",
+  "models": [
+    { "id": "large-local", "model": "your-large-model", "memory_gb": 96 }
+  ]
+}
+```
+
+Each request that runs at once holds a context of its own in memory. Count the context in the model's `memory_gb`.
+
 **Every listed model stays loaded,** so agents can use several models at once. The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs.
 
 **Name a model as `<node>/<server id>/<model id>`,** such as `machine-2/mlx/large-mlx`, in a route or in an agent's routes. Pull or download each model on its server first: the kit does not.
@@ -106,6 +130,13 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
 (`sync-skills.sh`), so merged changes reach the agents within the hour.
 
+### The cluster's own stack's name
+
+**`site.stack_name` names the cluster's own stack, the stack with no `site.tenant`.** The name is the stack's GitHub environment, and the stack's name in backups, Slack messages and logs. With no `stack_name`, the stack is named `cluster`. A client or demo stack takes its name from `site.tenant` instead, and the stack's environment is `client-<name>`.
+
+- Set `stack_name` once, before the stack's first backup. A new name starts a new backup history and needs a GitHub environment with that name.
+- The name is lowercase letters, digits and hyphens, and never starts with `client-`.
+
 ### The kit checkout
 
 **Clone this repo to `~/recursica-knowledge`, and run each kit command from that checkout.** Root runs the kit's scripts. Every agent container mounts the agents' workspace, `~/circlechat-workspace`. An agent could change a checkout inside the workspace, and root would then run the change.
@@ -142,7 +173,25 @@ To move an existing install, clone this repo to `~/recursica-knowledge`. Then re
 **On a Mac, `setup-host.sh` runs Colima and Ollama as LaunchDaemons that run as the owner.** A LaunchDaemon starts at each start-up, before anyone logs in. Homebrew's services (`brew services`) are LaunchAgents, which start only when the owner logs in. The script stops each Homebrew service for Colima and Ollama and removes the service.
 
 - **Colima:** the daemon runs the VM of the current Docker context, `colima` or `colima-<profile>`. The daemon runs `circlechat/kit/colima-service.sh`. When launchd stops the daemon, the script runs `colima stop`, then ends `colima start -f`. `colima start -f` keeps running after the VM stops. Without that step, the daemon never exits.
-- **Ollama:** the daemon runs `ollama serve` on `127.0.0.1`. The port is the port of the control computer's Ollama server in site.json. With no Ollama server in site.json, no Ollama daemon is installed. Quit the Ollama app and remove the app from the login items. The app otherwise takes the same port.
+- **Colima, when the VM stops another way:** `colima-service.sh` checks the VM every 15 seconds. A VM that ran and then stopped, such as after `colima stop` by hand, ends the daemon, and launchd starts the VM again. `colima start -f` gets 10 seconds to end after the daemon stops `colima start -f`, then gets SIGKILL. The daemon never hangs on a stopped VM.
+- **Ollama:** the daemon runs `ollama serve` on `127.0.0.1`, as the owner. The port is the port of the control computer's Ollama server in site.json. The daemon runs with the server's `context_length`, `parallel` and `keep_alive` from site.json ("Model servers"). With no Ollama server in site.json, no Ollama daemon is installed. Quit the Ollama app and remove the app from the login items. The app otherwise takes the same port.
+- **Ollama after a Homebrew upgrade:** the hourly update job restarts the Ollama daemon after Homebrew upgrades Ollama. The running server keeps the old version, and a security fix in the new version takes effect only after the restart.
+
+**`setup-host.sh` stops, and changes nothing, while a LaunchDaemon outside the kit runs Colima or Ollama.** The kit's daemons are `io.recursica.colima` and `io.recursica.ollama`. A second daemon for the same VM, or for the same port, would fight with the kit's daemon. The check reads each daemon in `/Library/LaunchDaemons`. A daemon whose label starts with `io.recursica.` belongs to the kit. The message names each other daemon, such as `local.colima` or `local.ollama`, and the commands to retire the daemon.
+
+To hand a Mac's Colima and Ollama to the kit:
+
+1. **Move each daemon's settings to site.json.** An Ollama daemon's `OLLAMA_CONTEXT_LENGTH`, `OLLAMA_NUM_PARALLEL` and `OLLAMA_KEEP_ALIVE` become the Ollama server's `context_length`, `parallel` and `keep_alive`. An older `site.json` lists `models` on the node instead of `servers`: move the models to an Ollama server, and rename each model in `routes` and `agents` from `<node>/<model id>` to `<node>/ollama/<model id>`.
+2. **Retire each daemon,** with the commands from the message:
+
+   ```sh
+   sudo launchctl bootout system/local.colima && sudo rm /Library/LaunchDaemons/local.colima.plist
+   sudo launchctl bootout system/local.ollama && sudo rm /Library/LaunchDaemons/local.ollama.plist
+   ```
+
+   Booting out a Colima daemon stops the VM, and every container of the stack stops with the VM. Booting out an Ollama daemon stops Ollama. Run step 3 right after step 2.
+
+3. **Run `setup-host.sh`.** The script installs the kit's daemons, and Colima's daemon starts the VM. Each container with a restart policy starts with the VM. The script then brings up the rest of the stack.
 
 A client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts that VM. The VM gets no daemon.
 
@@ -210,7 +259,7 @@ node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme client cluster > 
 ```bash
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 --cloud-keys none > site.json
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 \
-  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer border-ramp > site.json
+  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer operator > site.json
 ```
 
 **Add the key values yourself, outside Claude Code,** with `circlechat/deploy/set-model-keys.sh <site.json> <owner/private repo>`. The script asks for each key's value at the keyboard and shows nothing on the screen. The script saves each value as a `MODEL_KEY_<NAME>` secret in the stack's GitHub environment, through `gh`. The script refuses to run without a terminal, or inside a Claude Code session. Then run the "Deploy secrets" workflow for the stack.
@@ -251,7 +300,7 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
    "cloud_models": { "allowed": true, "granted_by": "Person A, acme.com", "granted_on": "2026-10-20", "payer": "client-byok" }
    ```
 
-   `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
+   `payer` says who pays. `operator` means the company that runs the cluster pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key. The older value `border-ramp` means the same as `operator`, and still passes.
 
 5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
 6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ~/recursica-knowledge/circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
@@ -280,7 +329,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 | A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
 | Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima.
+1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima. The update job posts each new Lima or Colima release in Slack, as "Updates" describes.
 2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
 4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
@@ -300,7 +349,7 @@ Deleting the image and the key makes the client's data unreadable for good.
 
 **Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
 
-1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
+1. **Create one GitHub environment per stack** in the private repo. Name each client stack's environment `client-<name>`. Name the cluster's own stack's environment after `site.stack_name` in the cluster's site.json, or `cluster` when site.json sets no name.
 2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
@@ -484,6 +533,8 @@ The test restore also runs the key check over the restored backup. The test fail
 
 Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
+On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as the backup and the test restore, gets `HOME=/var/root`, root's home folder. restic keeps the restic cache there. Rerun `setup-host.sh` to give a job installed by an earlier kit the `HOME` setting.
+
 A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
 
 ## Security services
@@ -539,7 +590,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope, and the bot the `chat:write` scope. Invite the bot to #agent-cluster and to each client's channel.
 2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
-3. Add the cluster's secrets to the border GitHub environment, then deploy them to each computer:
+3. Add the cluster's secrets to the GitHub environment of the cluster's own stack, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
    - `CLUSTER_TOKEN`, a new random value.
    - `APPROVERS`: Slack user IDs and names, such as `U012=person_a,U034=person_b`.
@@ -550,9 +601,11 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
-- **Border UX's own software** (the knowledge repo and the CircleChat fork), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
+- **Recursica's own software** (the knowledge repo and the CircleChat fork), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
-- **An update that needs a reboot** asks for a time in Slack: "4 a.m. ET", "Tonight", "Pick a time" or "Skip".
+- **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
+
+Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's site.json, such as `Europe/Berlin`. Without `site.timezone`, each computer uses the computer's own time zone. Rerun `install-cluster.sh` after a change to `site.timezone`.
 
 **Each Colima VM on a Mac stops cleanly before each restart the kit starts.** A VM still running when macOS restarts can lose writes to the VM's disk. Before the restart, the cluster agent takes three steps:
 
@@ -570,6 +623,8 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 | `/usr/local/bin/agent-stacks-disk`  | `tenant/disk-helper.sh`   | Linux, and Windows with WSL |
 
 Each hour, the update job compares each copy with the kit. For a copy that differs, the job reruns `install-secrets-helper.sh` for the runner's account, or copies `disk-helper.sh` again.
+
+**Lima and Colima on Linux and WSL come from each project's GitHub releases, outside apt.** `setup-pc.sh` installs each one at a pinned version and checksum. The update job reads each installed version each hour. A new release waits 7 days, then posts once in Slack. To take the release, move `LIMA_VERSION` or `COLIMA_VERSION` and the checksum in `circlechat/tenant/setup-pc.sh` by pull request. Then rerun `setup-pc.sh`. On a Mac, Homebrew installs Colima, and the Homebrew updates cover Colima.
 
 Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update.
 

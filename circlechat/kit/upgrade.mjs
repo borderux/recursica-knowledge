@@ -58,6 +58,13 @@ function pickUpCircleChat(ccDir, say, state, saveState) {
   say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}, and stays there until the next CircleChat commit.`);
 }
 
+// The release notes of a tag, on the GitHub repo the kit checkout came from, or nothing for a
+// checkout from somewhere else.
+export function releaseNotes(remote, tag) {
+  const m = String(remote).trim().match(/github\.com[/:]([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+?)(\.git)?$/);
+  return m ? ` Release notes: https://github.com/${m[1]}/releases/tag/${encodeURIComponent(tag)}` : "";
+}
+
 async function main() {
   const ws = process.env.WS, ccDir = process.env.CC_DIR, k = path.join(ws, "recursica-knowledge");
   const here = path.dirname(new URL(import.meta.url).pathname);
@@ -86,7 +93,7 @@ async function main() {
   const wanted = process.argv[2];
   const d = wanted ? { action: "upgrade", tag: wanted } : decide(current, tags, state);
   if (d.action === "ask") {
-    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: Knowledge repo ${d.tag.split("@").pop()} is a new major version (the stack runs ${current}). Release notes: https://github.com/borderux/recursica-knowledge/releases/tag/${encodeURIComponent(d.tag)}`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
+    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: Knowledge repo ${d.tag.split("@").pop()} is a new major version (the stack runs ${current}).${releaseNotes(git("remote", "get-url", "origin"), d.tag)}`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
     if (post.status === 0) { state.asked = { ...(state.asked ?? {}), [d.tag]: Date.now() }; fs.writeFileSync(stateFile, JSON.stringify(state)); }
     return;
   }

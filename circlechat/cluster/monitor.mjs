@@ -5,15 +5,16 @@
 // app, so no stack's own secrets ever reach another computer.
 import fs from "node:fs";
 import path from "node:path";
+import { clusterStackName } from "../kit/render.mjs";
 
 const DOWN_AFTER_MS = 3 * 60_000;
 
-// The stacks on this computer, from each stack's site.json: Border UX's stack, and each client
-// stack whose encrypted disk image is open.
+// The stacks on this computer, from each stack's site.json: the cluster's own stack, named by
+// site.stack_name, and each client stack whose encrypted disk image is open.
 export async function localStacks(home, check = (port) => fetch(`http://127.0.0.1:${port}/`, { signal: AbortSignal.timeout(5000) }).then((r) => r.status < 500).catch(() => false)) {
   const sites = [];
-  const border = path.join(home, "circlechat/site.json");
-  if (fs.existsSync(border)) sites.push(["border", border]);
+  const own = path.join(home, "circlechat/site.json");
+  if (fs.existsSync(own)) sites.push([null, own]);
   const tenants = path.join(home, "tenants");
   if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) {
     const f = path.join(tenants, t, "circlechat/site.json");
@@ -24,7 +25,7 @@ export async function localStacks(home, check = (port) => fetch(`http://127.0.0.
     if (!file) { out.push({ name, state: "locked" }); continue; }
     const s = JSON.parse(fs.readFileSync(file, "utf8"));
     const port = s.site?.port ?? 8080;
-    out.push({ name, channel: s.site?.slack_channel_id, state: (await check(port)) ? "up" : "down" });
+    out.push({ name: name ?? clusterStackName(s), channel: s.site?.slack_channel_id, state: (await check(port)) ? "up" : "down" });
   }
   return out;
 }

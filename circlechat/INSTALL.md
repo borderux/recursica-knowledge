@@ -37,6 +37,8 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `site.public_host`                                    | The address people use for CircleChat                                                                                                            |
 | `site.port`, `site.preview_port`, `site.gateway_port` | CircleChat's and the app preview's ports on the computer, and the gateway's port for port jobs on other computers                                |
 | `site.tenant`, `site.kind`, `site.docker_context`     | One stack per client on a shared computer; see "Clients" in `circlechat/README.md`                                                               |
+| `site.timezone`                                       | The cluster's time zone for reboot times in Slack, such as `Europe/Berlin`; each computer's own time zone when unset                             |
+| `site.stack_name`                                     | The name of the stack with no `site.tenant`, `cluster` when unset: the stack's GitHub environment and backups                                    |
 | `site.computers`, `nodes[].limits`                    | A client or demo stack's computers: one computer or the whole cluster, and optional limits that make a computer act smaller                      |
 | `site.cloud_models`                                   | The client's permission for cloud models: who granted the permission, the date, and who pays                                                     |
 | `site.slack_channel_id`                               | The Slack channel for the stack's alerts                                                                                                         |
@@ -70,7 +72,7 @@ Keep every key, token and password in the client's secret store, never in a repo
 
   ```text
   vault kv get -format=json secret/agent-stack | jq -r '.data.data | to_entries[] | "\(.key)=\(.value)"' \
-    | sudo /usr/local/bin/agent-stacks-apply border <computer> true
+    | sudo /usr/local/bin/agent-stacks-apply cluster <computer> true
   ```
 
 The secret names are in the table under "Secrets in GitHub" in `circlechat/README.md`.

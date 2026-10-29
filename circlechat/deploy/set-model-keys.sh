@@ -19,13 +19,14 @@ fi
 command -v gh >/dev/null || { echo "Install the GitHub CLI (gh) and sign in first."; exit 1; }
 [ -f "$SITE" ] || { echo "No $SITE."; exit 1; }
 
-# The stack's GitHub environment: border for the stack with no tenant name, client-<name> otherwise.
+# The stack's GitHub environment: site.stack_name for the cluster's own stack ("cluster" when unset),
+# client-<name> for a client or demo stack.
 # One line per key: <secret name><TAB><key name><TAB><provider><TAB><model>.
 INFO="$(node --input-type=module -e '
   import fs from "node:fs";
-  const { keySecret } = await import(process.argv[2]);
+  const { keySecret, githubEnvironment } = await import(process.argv[2]);
   const s = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-  console.log(s.site?.tenant ? `client-${s.site.tenant}` : "border");
+  console.log(githubEnvironment(s));
   for (const [name, k] of Object.entries(s.model_keys ?? {})) console.log([keySecret(name), name, k.provider, k.model].join("\t"));
 ' "$SITE" "$HERE/../kit/render.mjs")"
 ENV="$(head -1 <<<"$INFO")"

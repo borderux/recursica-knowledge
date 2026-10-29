@@ -5,7 +5,7 @@
 //   node stack-site.mjs <cluster site.json> <stack> <client|demo> <computer name|cluster> [limits] [cloud keys]
 //     limits: --cpus <n> --memory-gb <n> --model-memory-gb <n>, for each picked computer
 //     cloud keys, for a demo: --cloud-keys none, or --cloud-keys <provider>:<model>,... with
-//       --granted-by "<person>" --payer border-ramp|client-byok [--granted-on YYYY-MM-DD]
+//       --granted-by "<person>" --payer operator|client-byok [--granted-on YYYY-MM-DD]
 //
 // A cloud key comes with billing, so a demo needs a recorded permission, as a client stack does.
 // With a person at the keyboard, the script asks whether the demo gets cloud keys; the answer is no
@@ -25,7 +25,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
-import { PROVIDERS, keySecret } from "./render.mjs";
+import { PROVIDERS, keySecret, payerOk } from "./render.mjs";
 
 // The providers a demo can take here: one key and one model each. Azure and Bedrock need more
 // settings, so add them to site.json by hand.
@@ -51,7 +51,7 @@ export function parseKeys(text) {
 function cloudBlocks(cloud) {
   if (!cloud) return { cloud_models: { allowed: false } };
   if (!cloud.granted_by) throw new Error("a demo with cloud keys needs who granted the permission (--granted-by)");
-  if (!["border-ramp", "client-byok"].includes(cloud.payer)) throw new Error("a demo with cloud keys needs who pays: --payer border-ramp or --payer client-byok");
+  if (!payerOk(cloud.payer)) throw new Error("a demo with cloud keys needs who pays: --payer operator or --payer client-byok");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(cloud.granted_on ?? "")) throw new Error("the permission's date must be YYYY-MM-DD (--granted-on)");
   const model_keys = {};
   cloud.providers.forEach(({ provider, model }, i) => {
@@ -164,7 +164,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     plain.push(args[i]);
   }
   const [file, stack, kind, computers] = plain;
-  if (!computers) { console.error("usage: stack-site.mjs <cluster site.json> <stack> <client|demo> <computer name|cluster> [--cpus n] [--memory-gb n] [--model-memory-gb n] [--cloud-keys none|<provider>:<model>,... --granted-by <person> --payer border-ramp|client-byok]"); process.exit(2); }
+  if (!computers) { console.error("usage: stack-site.mjs <cluster site.json> <stack> <client|demo> <computer name|cluster> [--cpus n] [--memory-gb n] [--model-memory-gb n] [--cloud-keys none|<provider>:<model>,... --granted-by <person> --payer operator|client-byok]"); process.exit(2); }
   // A person at the keyboard: a terminal on both ends, and not a Claude Code session.
   const person = Boolean(process.stdin.isTTY && process.stderr.isTTY && !process.env.CLAUDECODE);
   const today = new Date().toISOString().slice(0, 10);
@@ -190,7 +190,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       else {
         cloud = { providers: parseKeys(keys), granted_by: given.granted_by, granted_on: given.granted_on ?? today, payer: given.payer };
         if (!cloud.granted_by && rl) cloud.granted_by = await ask("Who granted the permission for cloud models?");
-        if (!cloud.payer && rl) cloud.payer = await ask("Who pays: border-ramp (a virtual card) or client-byok (the client's own key)?");
+        if (!cloud.payer && rl) cloud.payer = await ask("Who pays: operator (the company that runs the cluster, with a virtual card) or client-byok (the client's own key)?");
       }
       rl?.close();
     }

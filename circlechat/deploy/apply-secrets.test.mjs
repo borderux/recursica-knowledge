@@ -49,7 +49,7 @@ function fakeSystem(home, system) {
 
 test("writes each known secret to the file that uses it, and keeps other lines", () => {
   const { home, conf } = setup();
-  const r = apply(conf, ["border", control, "false"],
+  const r = apply(conf, ["cluster", control, "false"],
     "MODEL_KEY_ACME_GROK=xai-1\nANTHROPIC_API_KEY=new\nALAN_GITHUB_PAT=ghp_a\nJOBD_TOKEN=jt\nPORTER_ANTHROPIC_API_KEY=pk\nGITHUB_TOKEN=ignored\nPATH=/x\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const env = fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8");
@@ -72,7 +72,7 @@ test("on a Mac, the gateway's secrets file belongs to the owner, and on Linux to
   for (const [system, owned] of [["Darwin", true], ["Linux", false]]) {
     const { home, conf } = setup();
     const fake = fakeSystem(home, system);
-    const r = apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\n", fake.env);
+    const r = apply(conf, ["cluster", control, "false"], "MODEL_KEY_DEFAULT=k\n", fake.env);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const keys = path.join(home, "circlechat", "model-keys.env");
     const call = `chown -h ${os.userInfo().username} ${keys}`;
@@ -87,7 +87,7 @@ test("refuses to write the cloud keys through a symlink, and writes nothing", ()
   fs.writeFileSync(target, "untouched\n");
   const keys = path.join(home, "circlechat", "model-keys.env");
   fs.symlinkSync(target, keys);
-  const r = apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n");
+  const r = apply(conf, ["cluster", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n");
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /Refused: .*model-keys\.env is a symlink/);
   assert.equal(fs.readFileSync(target, "utf8"), "untouched\n");
@@ -97,16 +97,29 @@ test("refuses to write the cloud keys through a symlink, and writes nothing", ()
 
 test("refuses a provider's own credential names, which used to land in .env", () => {
   const { home, conf } = setup();
-  const r = apply(conf, ["border", control, "false"], "SLACK_BOT_TOKEN=x\nAZURE_API_KEY=k\n");
+  const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=x\nAZURE_API_KEY=k\n");
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /Refused: AZURE_API_KEY goes in a MODEL_KEY_<NAME> secret now/);
   assert.doesNotMatch(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /SLACK_BOT_TOKEN/);
 });
 
-test("refuses a stack name outside border and client-<name>", () => {
+test("refuses a stack name outside the cluster's stack name and client-<name>", () => {
   const { conf } = setup();
-  assert.notEqual(apply(conf, ["prod", control, "false"], "").status, 0);
+  const r = apply(conf, ["prod", control, "false"], "");
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Stack "prod" must be cluster \(site\.stack_name in the cluster's site\.json\) or client-<name>\./);
   assert.notEqual(apply(conf, ["client-../x", control, "false"], "").status, 0);
+});
+
+test("the cluster's own stack takes the name in site.stack_name, and only that name", () => {
+  const { home, conf } = setup();
+  fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify({ ...example, site: { ...example.site, stack_name: "ops" } }));
+  const r = apply(conf, ["ops", control, "false"], "JOBD_TOKEN=jt\n");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /^JOBD_TOKEN=jt$/m);
+  const old = apply(conf, ["cluster", control, "false"], "JOBD_TOKEN=x\n");
+  assert.equal(old.status, 1);
+  assert.match(old.stdout, /must be ops \(site\.stack_name/);
 });
 
 test("refuses a client stack whose site.json is not on this computer", () => {
@@ -145,16 +158,16 @@ test("a client stack's secrets file sits inside the client's folder", () => {
   assert.match(fs.readFileSync(path.join(home, "tenants", "acme", "node.env"), "utf8"), /^JOBD_TOKEN=jt$/m);
 });
 
-test("unlock refuses Border's stack, which has no disk image", () => {
+test("unlock refuses the cluster's own stack, which has no disk image", () => {
   const { conf } = setup();
-  const r = apply(conf, ["--unlock", "border", control], "STACK_DISK_KEY=x\n");
+  const r = apply(conf, ["--unlock", "cluster", control], "STACK_DISK_KEY=x\n");
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /Only a client stack has an encrypted disk image/);
 });
 
-test("the cluster's secrets go to the cluster file, for the border stack only", () => {
+test("the cluster's secrets go to the cluster file, for the cluster's own stack only", () => {
   const { home, conf } = setup();
-  const r = apply(conf, ["border", control, "false"], "SLACK_BOT_TOKEN=xoxb-1\nTOTP_SECRET_PERSON_A=ABC\n");
+  const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=xoxb-1\nTOTP_SECRET_PERSON_A=ABC\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const f = fs.readFileSync(path.join(home, "agent-cluster.env"), "utf8");
   assert.match(f, /^SLACK_BOT_TOKEN=xoxb-1$/m);
@@ -218,7 +231,7 @@ test("refuses a kit checkout that fails the kit check, and writes nothing", () =
   const { home, conf } = setup();
   fakeKitCheck(path.join(home, "kit"), "Refusing the kit checkout: the checkout sits inside the agents' workspace.");
   const before = fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8");
-  const r = apply(conf, ["border", control, "false"], "ANTHROPIC_API_KEY=new\n");
+  const r = apply(conf, ["cluster", control, "false"], "ANTHROPIC_API_KEY=new\n");
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Refusing the kit checkout/);
   assert.equal(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), before);
@@ -230,6 +243,6 @@ test("on a Mac, the secrets helper never looks chown up in PATH", () => {
   // A chown on PATH that records each call. On a Mac, the helper calls /usr/sbin/chown instead.
   fs.copyFileSync(path.join(fake.sbin, "chown"), path.join(fake.bin, "chown"));
   fs.chmodSync(path.join(fake.bin, "chown"), 0o755);
-  apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n", { PATH: fake.env.PATH, CHOWN: "" });
+  apply(conf, ["cluster", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n", { PATH: fake.env.PATH, CHOWN: "" });
   assert.equal(fake.calls(), "");
 });

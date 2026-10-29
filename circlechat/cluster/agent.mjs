@@ -12,26 +12,28 @@ import path from "node:path";
 import { spawn, spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { makePlatform } from "./platform.mjs";
-import { buttonBlocks, nextAt, formatEt } from "./actions.mjs";
+import { buttonBlocks, clusterTz, formatTime, nextAt } from "./actions.mjs";
 import { parsePairs } from "./bot.mjs";
 import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 import { AgentControls } from "./agent-controls.mjs";
 import { requireKit } from "./kit-check.mjs";
+import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 
 export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls }) {
+  const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
   const schedule = (at, ref, label) => {
     fs.writeFileSync(rebootFile, JSON.stringify({ at, ref }), { mode: 0o600 });
-    return { ok: true, message: `updates install, then ${env.COMPUTER} reboots, at ${label ?? formatEt(new Date(at))}` };
+    return { ok: true, message: `updates install, then ${env.COMPUTER} reboots, at ${label ?? formatTime(new Date(at), tz)}` };
   };
 
   async function act({ action, ref, extra = {} }) {
     switch (action) {
-      case "reboot-4am": return schedule(nextAt(4, 0, undefined, now()).getTime(), ref);
-      case "reboot-tonight": return schedule(nextAt(23, 0, undefined, now()).getTime(), ref);
+      case "reboot-4am": return schedule(nextAt(4, 0, tz, now()).getTime(), ref);
+      case "reboot-tonight": return schedule(nextAt(23, 0, tz, now()).getTime(), ref);
       case "reboot-at": return schedule(Number(extra.at), ref, extra.label);
       case "reboot-skip": fs.rmSync(rebootFile, { force: true }); return { ok: true, message: "skipped; the updates wait for the next check" };
       case "cut-off-now": { const s = await guard.cutOff("cut off from Slack"); return { ok: s.status === "cut-off", message: s.status === "cut-off" ? "cut off" : "no watch window is open" }; }
@@ -123,7 +125,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const guard = new Guard({ platform, notify: post, stateDir, computer: env.COMPUTER });
   const monitor = new Monitor({ self: env.COMPUTER, peers: parsePairs(env.AGENTS), token: env.CLUSTER_TOKEN, clusterChannel: env.SLACK_CHANNEL_ID,
     stateFile: path.join(stateDir, "monitor.json"), post: (channel, text) => chat.post(channel, "info", text) });
-  // The stacks on this computer with an outgoing filter: Border UX's, and each open client stack.
+  // The cluster's own stack's name (site.stack_name), read at each use, so a changed site.json counts.
+  const clusterName = () => { try { return clusterStackName(JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME, "circlechat/site.json"), "utf8"))); } catch { return DEFAULT_STACK_NAME; } };
+  // The stacks on this computer with an outgoing filter: the cluster's own, and each open client stack.
   const filterStacks = async () => {
     const out = [];
     const add = (name, ccDir, suffix) => {
@@ -134,11 +138,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       out.push({ name, ccDir, logFile: path.join(ccDir, "egress-logs/access.log"), channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID,
         container: `cc-egress${suffix}`, network: `${tenant.COMPOSE_PROJECT_NAME}_agents`, context: tenant.DOCKER_CONTEXT });
     };
-    add("border", path.join(env.OWNER_HOME, "circlechat"), "");
+    add(clusterName(), path.join(env.OWNER_HOME, "circlechat"), "");
     const tenants = path.join(env.OWNER_HOME, "tenants");
     if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"), `-${t}`);
     // The port jobs' filters: alerts only, because a job cannot wait for a consent.
-    const jobLogs = [["border", path.join(env.OWNER_HOME, ".recursica-jobs-egress/logs/access.log")]];
+    const jobLogs = [[clusterName(), path.join(env.OWNER_HOME, ".recursica-jobs-egress/logs/access.log")]];
     if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) jobLogs.push([t, path.join(tenants, t, "jobs-egress/logs/access.log")]);
     for (const [name, logFile] of jobLogs) if (fs.existsSync(logFile)) out.push({ name: `${name}-jobs`, logFile, channel: out.find((x) => x.name === name)?.channel ?? env.SLACK_CHANNEL_ID, alertOnly: true });
     return out;
@@ -161,7 +165,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
       out.push({ name, ccDir, context: tenant.DOCKER_CONTEXT, channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID, hermesHomes: path.join(ccDir, "hermes-homes"), details: tenant.NOTIFY_DETAILS !== "off" });
     };
-    add("border", path.join(env.OWNER_HOME, "circlechat"));
+    add(clusterName(), path.join(env.OWNER_HOME, "circlechat"));
     const tenants = path.join(env.OWNER_HOME, "tenants");
     if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"));
     return out;
