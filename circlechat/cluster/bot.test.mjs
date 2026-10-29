@@ -18,17 +18,17 @@ function setup() {
     relay: async (c, body) => { relays.push([c, body]); return { ok: true, message: "done" }; } });
   return { bot, calls, relays, secret };
 }
-const value = JSON.stringify({ c: "studio", r: "lock-1" });
+const value = JSON.stringify({ c: "machine-1", r: "lock-1" });
 const click = (user, id) => ({ type: "interactive", payload: { type: "block_actions", user: { id: user }, trigger_id: "T",
   channel: { id: "C1" }, message: { ts: "1.1" }, actions: [{ action_id: id, value }] } });
 const submit = (user, view) => ({ type: "interactive", payload: { type: "view_submission", user: { id: user }, view } });
-const codeView = (code) => ({ callback_id: "two-factor", private_metadata: JSON.stringify({ id: "release-lockdown", value: { c: "studio", r: "lock-1" }, channel: "C1", ts: "1.1" }),
+const codeView = (code) => ({ callback_id: "two-factor", private_metadata: JSON.stringify({ id: "release-lockdown", value: { c: "machine-1", r: "lock-1" }, channel: "C1", ts: "1.1" }),
   state: { values: { code: { code: { value: code } } } } });
 
 test("a button with no two-factor runs at once for an approver", async () => {
   const { bot, relays } = setup();
   await bot.handle(click("U1", "cut-off-now"));
-  assert.deepEqual(relays[0], ["studio", { action: "cut-off-now", ref: "lock-1", extra: {}, by: "person_a" }]);
+  assert.deepEqual(relays[0], ["machine-1", { action: "cut-off-now", ref: "lock-1", extra: {}, by: "person_a" }]);
 });
 
 test("anyone who is not an approver is turned away", async () => {
@@ -69,18 +69,18 @@ test("a code from another approver's authenticator is refused", async () => {
 });
 
 test("buttons carry the computer and the reference", () => {
-  const blocks = buttonBlocks("reboot", "Updates need a reboot", "beast", "upd-1");
+  const blocks = buttonBlocks("reboot", "Updates need a reboot", "machine-2", "upd-1");
   const ids = blocks[1].elements.map((e) => e.action_id);
   assert.deepEqual(ids, ["reboot-4am", "reboot-tonight", "reboot-pick", "reboot-skip"]);
-  assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "beast", r: "upd-1" });
+  assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "machine-2", r: "upd-1" });
 });
 
 test("a button with a suffix, such as Stop for one agent, reaches its action", async () => {
   const { bot, relays } = setup();
   await bot.handle({ type: "interactive", payload: { type: "block_actions", user: { id: "U1" }, trigger_id: "T", channel: { id: "C1" }, message: { ts: "1.1" },
-    actions: [{ action_id: "agents-stop:betty", value: JSON.stringify({ c: "studio", r: "border|betty" }) }] } });
+    actions: [{ action_id: "agents-stop:betty", value: JSON.stringify({ c: "machine-1", r: "cluster|betty" }) }] } });
   assert.equal(relays[0][1].action, "agents-stop");
-  assert.equal(relays[0][1].ref, "border|betty");
+  assert.equal(relays[0][1].ref, "cluster|betty");
 });
 
 test("a click is acknowledged without waiting for the target computer", async () => {

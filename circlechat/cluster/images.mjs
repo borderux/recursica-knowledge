@@ -13,6 +13,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
 import { stackSlack } from "../kit/slack.mjs";
+import { stackName } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
@@ -107,7 +108,7 @@ async function main() {
   }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {
-    console.log(`stack ${tenantEnv.TENANT || "border"}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
+    console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
     return;
   }
   // Roll back: tag each service's old image back, and recreate from it. Each new version that
@@ -124,7 +125,7 @@ async function main() {
     fs.writeFileSync(lockFile, JSON.stringify(oldLock, null, 2) + "\n");
     await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } }).catch(() => "");
   }
-  const msg = `:x: Weekly image refresh of stack ${tenantEnv.TENANT || "border"} failed its health check. Every container is back on its previous version.`;
+  const msg = `:x: Weekly image refresh of stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))} failed its health check. Every container is back on its previous version.`;
   console.error(msg);
   await stackSlack(ccDir)(msg);
   process.exit(1);

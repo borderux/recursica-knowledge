@@ -106,6 +106,13 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
 (`sync-skills.sh`), so merged changes reach the agents within the hour.
 
+### The cluster's own stack's name
+
+**`site.stack_name` names the cluster's own stack, the stack with no `site.tenant`.** The name is the stack's GitHub environment, and the stack's name in backups, Slack messages and logs. With no `stack_name`, the stack is named `cluster`. A client or demo stack takes its name from `site.tenant` instead, and the stack's environment is `client-<name>`.
+
+- Set `stack_name` once, before the stack's first backup. A new name starts a new backup history and needs a GitHub environment with that name.
+- The name is lowercase letters, digits and hyphens, and never starts with `client-`.
+
 ### The kit checkout
 
 **Clone this repo to `~/recursica-knowledge`, and run each kit command from that checkout.** Root runs the kit's scripts. Every agent container mounts the agents' workspace, `~/circlechat-workspace`. An agent could change a checkout inside the workspace, and root would then run the change.
@@ -210,7 +217,7 @@ node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme client cluster > 
 ```bash
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 --cloud-keys none > site.json
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 \
-  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer border-ramp > site.json
+  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer operator > site.json
 ```
 
 **Add the key values yourself, outside Claude Code,** with `circlechat/deploy/set-model-keys.sh <site.json> <owner/private repo>`. The script asks for each key's value at the keyboard and shows nothing on the screen. The script saves each value as a `MODEL_KEY_<NAME>` secret in the stack's GitHub environment, through `gh`. The script refuses to run without a terminal, or inside a Claude Code session. Then run the "Deploy secrets" workflow for the stack.
@@ -251,7 +258,7 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
    "cloud_models": { "allowed": true, "granted_by": "Person A, acme.com", "granted_on": "2026-10-20", "payer": "client-byok" }
    ```
 
-   `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
+   `payer` says who pays. `operator` means the company that runs the cluster pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key. The older value `border-ramp` means the same as `operator`, and still passes.
 
 5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
 6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ~/recursica-knowledge/circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
@@ -280,7 +287,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 | A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
 | Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima.
+1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima. The update job posts each new Lima or Colima release in Slack, as "Updates" describes.
 2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
 4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
@@ -300,7 +307,7 @@ Deleting the image and the key makes the client's data unreadable for good.
 
 **Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
 
-1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
+1. **Create one GitHub environment per stack** in the private repo. Name each client stack's environment `client-<name>`. Name the cluster's own stack's environment after `site.stack_name` in the cluster's site.json, or `cluster` when site.json sets no name.
 2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
@@ -539,7 +546,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope, and the bot the `chat:write` scope. Invite the bot to #agent-cluster and to each client's channel.
 2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
-3. Add the cluster's secrets to the border GitHub environment, then deploy them to each computer:
+3. Add the cluster's secrets to the GitHub environment of the cluster's own stack, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
    - `CLUSTER_TOKEN`, a new random value.
    - `APPROVERS`: Slack user IDs and names, such as `U012=person_a,U034=person_b`.
@@ -550,9 +557,11 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
-- **Border UX's own software** (the knowledge repo, the CircleChat fork and `@recursica/mcp`), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
+- **Recursica's own software** (the knowledge repo, the CircleChat fork and `@recursica/mcp`), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
-- **An update that needs a reboot** asks for a time in Slack: "4 a.m. ET", "Tonight", "Pick a time" or "Skip".
+- **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
+
+Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's site.json, such as `Europe/Berlin`. Without `site.timezone`, each computer uses the computer's own time zone. Rerun `install-cluster.sh` after a change to `site.timezone`.
 
 **Each Colima VM on a Mac stops cleanly before each restart the kit starts.** A VM still running when macOS restarts can lose writes to the VM's disk. Before the restart, the cluster agent takes three steps:
 
@@ -570,6 +579,8 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 | `/usr/local/bin/agent-stacks-disk`  | `tenant/disk-helper.sh`   | Linux, and Windows with WSL |
 
 Each hour, the update job compares each copy with the kit. For a copy that differs, the job reruns `install-secrets-helper.sh` for the runner's account, or copies `disk-helper.sh` again.
+
+**Lima and Colima on Linux and WSL come from each project's GitHub releases, outside apt.** `setup-pc.sh` installs each one at a pinned version and checksum. The update job reads each installed version each hour. A new release waits 7 days, then posts once in Slack. To take the release, move `LIMA_VERSION` or `COLIMA_VERSION` and the checksum in `circlechat/tenant/setup-pc.sh` by pull request. Then rerun `setup-pc.sh`. On a Mac, Homebrew installs Colima, and the Homebrew updates cover Colima.
 
 Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
 

@@ -18,7 +18,7 @@ test("nothing newer means nothing to do, and other tags are ignored", () => {
   assert.deepEqual(decide("1.0.0", [...tags, "v9.9.9", "@other/pkg@9.0.0"]), { action: "none" });
 });
 
-test("Border UX's MCP package: a release with the same first number goes in at once, a major version asks once", () => {
+test("Recursica's MCP package: a release with the same first number goes in at once, a major version asks once", () => {
   assert.deepEqual(decideMcp("0.8.1", "0.9.0"), { action: "upgrade", version: "0.9.0" });
   assert.deepEqual(decideMcp("0.8.1", "0.8.1"), { action: "none" });
   assert.deepEqual(decideMcp("0.9.0", "1.0.0"), { action: "ask", tag: "@recursica/mcp@1.0.0" });

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { makeChannel } from "./channel.mjs";
-import { etToUtc } from "./bot.mjs";
+import { buttonBlocks, localToUtc, nextAt, tzName } from "./actions.mjs";
 
 test("a post to a channel outside this computer's stacks is refused before reaching Slack", async () => {
   const calls = [];
@@ -15,7 +15,14 @@ test("a post to a channel outside this computer's stacks is refused before reach
   } finally { globalThis.fetch = realFetch; }
 });
 
-test("a date and time in Eastern Time become the right moment, on both sides of the clock change", () => {
-  assert.equal(new Date(etToUtc("2026-10-21", "04:00")).toISOString(), "2026-10-21T08:00:00.000Z");
-  assert.equal(new Date(etToUtc("2026-11-02", "04:00")).toISOString(), "2026-11-02T09:00:00.000Z");
+test("a date and time in the cluster's time zone become the right moment, on both sides of the clock change", () => {
+  const us = "America/Chicago";
+  assert.equal(new Date(localToUtc("2026-10-21", "04:00", us)).toISOString(), "2026-10-21T09:00:00.000Z");
+  assert.equal(new Date(localToUtc("2026-11-02", "04:00", us)).toISOString(), "2026-11-02T10:00:00.000Z");
+  assert.equal(new Date(localToUtc("2026-10-21", "04:00", "Europe/Berlin")).toISOString(), "2026-10-21T02:00:00.000Z");
+  assert.equal(new Date(localToUtc("2026-10-21", "04:00", "Asia/Kolkata")).toISOString(), "2026-10-20T22:30:00.000Z");
+  assert.equal(localToUtc("2026-03-08", "02:30", us), 0, "a time the clock skips");
+  assert.equal(new Date(nextAt(4, 0, "Asia/Kolkata", Date.UTC(2026, 9, 20, 12))).toISOString(), "2026-10-20T22:30:00.000Z");
+  const label = buttonBlocks("reboot", "x", "machine-1", "u1", "Europe/Berlin")[1].elements[0].text.text;
+  assert.equal(label, `4 a.m. ${tzName("Europe/Berlin")}`);
 });

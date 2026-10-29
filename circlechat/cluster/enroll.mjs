@@ -1,6 +1,6 @@
 // Enroll one approver for the two-factor buttons: prints a new secret and the link an
-// authenticator app reads. Save the secret in the password manager and in the border GitHub
-// environment as TOTP_SECRET_<NAME>, such as TOTP_SECRET_PERSON_A.
+// authenticator app reads. Save the secret in the password manager and in the GitHub environment
+// of the cluster's own stack (site.stack_name) as TOTP_SECRET_<NAME>, such as TOTP_SECRET_PERSON_A.
 //
 //   node circlechat/cluster/enroll.mjs <name>
 import { spawnSync } from "node:child_process";

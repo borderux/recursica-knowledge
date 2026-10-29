@@ -61,7 +61,7 @@ async function windowsConnections(state) {
   catch { return []; }
 }
 
-// Requests to the Windows side of the Beast, which a scheduled task running as SYSTEM applies
+// Requests to the Windows side of a computer with WSL, which a scheduled task running as SYSTEM applies
 // every minute (see windows/guard-windows.ps1).
 function windowsRequest(body) {
   if (!IS_WSL) return;

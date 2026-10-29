@@ -209,8 +209,8 @@ set_env COMPOSE_FILE "$CF"
 set_env APPROVE_RISK_AT high
 # The Recursica MCP server for Betty and Barb, started in the default proto repo (the server reads
 # the adapter installed there). Projects in other repos fall back to reading the adapter's code.
-# The exact version lives in the shared workspace, read at the start of each agent turn: Border
-# UX's own stack moves it hourly (kit/upgrade.mjs), every other stack after 7 days
+# The exact version lives in the shared workspace, read at the start of each agent turn: a stack
+# with upgrade.auto moves it hourly (kit/upgrade.mjs), every other stack after 7 days
 # (cluster/images.mjs).
 mkdir -p "$WS"
 [ -s "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" > "$WS/.recursica-mcp-version"
