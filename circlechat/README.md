@@ -639,6 +639,14 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
 
+**A release upgrade needs no password-free sudo for the account that owns the stacks.** The upgrade, `kit/upgrade.mjs`, runs as the owner's account. The root process that starts the upgrade takes each step that needs root: `cluster-updater` each hour, or the cluster agent for the "Upgrade now" button in Slack (`cluster/root-steps.mjs`):
+
+1. **Before the upgrade, as root:** the gateway's state folder, LiteLLM's master key, and the password and address of the router's database role, as the secrets helper writes them ("Secrets in GitHub").
+2. **The upgrade, as the owner:** `setup-host.sh --upgrade` takes only the Docker steps. The database role's password passes on stdin.
+3. **After an upgrade that ran the setup, as root:** `sync-skills.sh` refreshes each agent's skills and persona, then the key check runs. A failure goes to the stack's Slack channel.
+
+An older stack's `ANTHROPIC_API_KEY` in `.env` moves to the gateway's secrets file at the next full setup or secrets deploy. A run of `upgrade.mjs` by hand, in a terminal, uses sudo as before.
+
 Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's site.json, such as `Europe/Berlin`. Without `site.timezone`, each computer uses the computer's own time zone. Rerun `install-cluster.sh` after a change to `site.timezone`.
 
 **Each Colima VM on a Mac stops cleanly before each restart the kit starts.** A VM still running when macOS restarts can lose writes to the VM's disk. Before the restart, the cluster agent takes three steps:

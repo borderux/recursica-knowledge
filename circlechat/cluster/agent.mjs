@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { spawn, spawnSync, execFile } from "node:child_process";
+import { spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { makePlatform } from "./platform.mjs";
 import { buttonBlocks, clusterTz, formatTime, nextAt } from "./actions.mjs";
@@ -53,8 +53,8 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
         }
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
-        spawn("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`, `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`,
-          process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ref], { detached: true, stdio: "ignore" }).unref();
+        // The upgrade runs as the owner, and the agent takes the steps that need root (root-steps.mjs).
+        import("./root-steps.mjs").then(({ runUpgrade }) => runUpgrade({ env, ccDir, ref })).catch((e) => console.error(`upgrade to ${ref}: ${e.message}`));
         return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
       }
       case "upgrade-skip": {

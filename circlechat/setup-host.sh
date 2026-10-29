@@ -25,12 +25,15 @@ set -euo pipefail
 SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 [ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
-# KIT_SECRETS_HELPER=1: the secrets helper (deploy/apply-secrets.sh) runs --secrets-only as the
-# owner, with no sudo. The helper takes each step that needs root before and after this run, and
-# passes the database role's password on stdin. This run takes only the Docker steps.
+# KIT_ROOT_STEPS=1: a root process runs --secrets-only or --upgrade as the owner, who may have no
+# password-free sudo. The root process takes each step that needs root before and after this run,
+# and passes the database role's password on stdin. This run takes only the Docker steps. The
+# secrets helper (deploy/apply-secrets.sh) runs --secrets-only this way, and the upgrade job
+# (cluster/root-steps.mjs) runs --upgrade this way. KIT_SECRETS_HELPER=1 is the older name, from a
+# secrets helper installed before the upgrade job used the same mode.
 HELPER=false
-if [ -n "${KIT_SECRETS_HELPER:-}" ]; then
-  [ "$SECRETS_ONLY" = true ] && [ "$UPGRADE_ONLY" = false ] || { echo "KIT_SECRETS_HELPER needs --secrets-only."; exit 1; }
+if [ -n "${KIT_ROOT_STEPS:-${KIT_SECRETS_HELPER:-}}" ]; then
+  [ "$SECRETS_ONLY" = true ] || { echo "KIT_ROOT_STEPS needs --secrets-only or --upgrade."; exit 1; }
   HELPER=true; IFS= read -r HELPER_DB_PASSWORD || true; exec </dev/null
 fi
 
@@ -265,7 +268,8 @@ if [ "$HELPER" = false ]; then
   own_for_docker "$MODEL_KEYS" "$GW_STATE"
 fi
 sedi '/^LITELLM_MASTER_KEY=/d' .env
-# The secrets helper removes ANTHROPIC_API_KEY from .env before this run.
+# With KIT_ROOT_STEPS, the move needs root: the secrets helper removes ANTHROPIC_API_KEY from .env
+# before this run, and after an upgrade the next full setup moves the key.
 if [ "$HELPER" = false ] && env_has ANTHROPIC_API_KEY; then
   if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
     sed -n 's/^ANTHROPIC_API_KEY=/MODEL_KEY_DEFAULT=/p' .env | tail -1 | sudo tee -a "$MODEL_KEYS" >/dev/null
@@ -469,8 +473,9 @@ if [ "$SECRETS_ONLY" = true ]; then
   start_gateway_and_notifier
   [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  # With the secrets helper, the helper runs the key check as root after this run. A secrets
-  # deploy changes no agent's gateway key: the full setup and setup-agent.sh give each agent one.
+  # With KIT_ROOT_STEPS, the root process runs the key check after this run. A secrets deploy
+  # changes no agent's gateway key. After an upgrade, the root process runs sync-skills.sh, whose
+  # setup-agent.sh gives each managed agent its gateway access again.
   if [ "$HELPER" = false ]; then
     agents_to_gateway
     key_check

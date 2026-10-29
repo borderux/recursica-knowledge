@@ -92,6 +92,30 @@ async function updateMcp(ws, stateFile, state, say) {
   }
 }
 
+// The setup for one release, as the owner. With KIT_ROOT_STEPS, the root process that started this
+// script (cluster/root-steps.mjs) prepared the gateway's files, passed the database role's password
+// on stdin, and syncs the agents' skills and runs the key check after this script ends. The setup
+// then takes only the Docker steps, and the owner needs no sudo. Without KIT_ROOT_STEPS, such as a
+// run by hand in a terminal, the setup and the skill sync use sudo as before.
+//   record(): called before each run of setup-host.sh, so the root process knows the setup ran
+export function setupRunner({ kit, rootSteps, password = "", record = () => {}, run = spawnSync }) {
+  return () => {
+    record();
+    const env = { ...process.env, NO_PULL: "1" };
+    if (!rootSteps) {
+      const opts = { env, stdio: "inherit" };
+      const a = run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], opts);
+      const b = a.status === 0 ? run("bash", [path.join(kit, "circlechat/sync-skills.sh")], opts) : a;
+      return a.status === 0 && b.status === 0;
+    }
+    const a = run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], { env: { ...env, KIT_ROOT_STEPS: "1" }, input: `${password}\n`, stdio: ["pipe", "inherit", "inherit"] });
+    return a.status === 0;
+  };
+}
+
+// The database role's password, which the root process passes on stdin with KIT_ROOT_STEPS.
+const rootPassword = process.env.KIT_ROOT_STEPS && import.meta.url === `file://${process.argv[1]}` ? (() => { try { return fs.readFileSync(0, "utf8").split("\n")[0].trim(); } catch { return ""; } })() : "";
+
 async function main() {
   const ws = process.env.WS, ccDir = process.env.CC_DIR, k = path.join(ws, "recursica-knowledge");
   const here = path.dirname(new URL(import.meta.url).pathname);
@@ -127,12 +151,7 @@ async function main() {
   }
   if (d.action !== "upgrade") return;
   const before = git("rev-parse", "HEAD"), beforeWs = gitIn(k, "rev-parse", "HEAD");
-  const run = () => {
-    const opts = { env: { ...process.env, NO_PULL: "1" }, stdio: "inherit" };
-    const a = spawnSync("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], opts);
-    const b = a.status === 0 ? spawnSync("bash", [path.join(kit, "circlechat/sync-skills.sh")], opts) : a;
-    return a.status === 0 && b.status === 0;
-  };
+  const run = setupRunner({ kit, rootSteps: Boolean(process.env.KIT_ROOT_STEPS), password: rootPassword, record: () => { state.setupRanAt = Date.now(); saveState(); } });
   git("checkout", "--quiet", d.tag);
   gitIn(k, "checkout", "--quiet", d.tag);
   if (run()) {
