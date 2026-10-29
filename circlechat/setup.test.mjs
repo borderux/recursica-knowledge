@@ -11,12 +11,15 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "site.example.json"), "utf8"));
 import { stackSite } from "./kit/stack-site.mjs";
 
+// CircleChat's compose.yml, as docker compose config prints the file.
+const COMPOSE_CONFIG = JSON.stringify({ services: { caddy: { image: "caddy:2" }, postgres: { image: "postgres:16-alpine" }, redis: { image: "redis:7-alpine" }, api: { build: { context: "." } } } });
+
 function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "setup-"));
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
@@ -97,17 +100,24 @@ test("on a Mac, setup-host gives the gateway's secrets file and state folder to 
   }
 });
 
-test("setup-host runs the file store from pinned Chainguard images, in every stack", () => {
+test("setup-host runs CircleChat's caddy, postgres and redis and the file store from pinned images, in every stack", () => {
   const s = sandbox(example);
+  fs.writeFileSync(path.join(s.cc, "compose.storage.yml"), "services: {}\n");
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.storage\.yml(:|$)/);
-  const storage = fs.readFileSync(path.join(s.cc, "compose.storage.yml"), "utf8");
+  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.images\.yml(:|$)/);
+  assert.ok(!fs.existsSync(path.join(s.cc, "compose.storage.yml")), "the older file store override goes");
+  const storage = fs.readFileSync(path.join(s.cc, "compose.images.yml"), "utf8");
+  assert.match(storage, /caddy:\n    image: caddy:2@sha256:0123abcd\n/);
+  assert.match(storage, /postgres:\n    image: postgres:16-alpine@sha256:0123abcd\n/);
+  assert.match(storage, /redis:\n    image: redis:7-alpine@sha256:0123abcd\n/);
+  assert.doesNotMatch(storage, /api:/, "a service CircleChat builds is not pinned");
   assert.match(storage, /minio:\n    image: cgr\.dev\/chainguard\/minio:latest@sha256:0123abcd\n    user: "0:0"/);
   assert.match(storage, /minio-setup:\n    image: cgr\.dev\/chainguard\/minio-client:latest-dev@sha256:0123abcd/);
   const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
   assert.ok(lock["cgr.dev/chainguard/minio:latest"]);
   assert.ok(lock["cgr.dev/chainguard/minio-client:latest-dev"]);
+  for (const t of ["caddy:2", "postgres:16-alpine", "redis:7-alpine"]) assert.equal(lock[t].ref, `${t}@sha256:0123abcd`);
 });
 
 test("setup-host --upgrade also brings the containers and the filter up", () => {
@@ -276,5 +286,25 @@ test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", (
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const text = fs.readFileSync(path.join(s.units, unit), "utf8");
     assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
+  }
+});
+
+test("the job runner listens on loopback and the computer's Tailscale addresses, never on every interface", () => {
+  for (const [ts, want] of [
+    [`[ "$1 $2" = "ip -4" ] && echo 100.64.0.2; [ "$1 $2" = "ip -6" ] && echo fd7a:115c:a1e0::2; exit 0`, "127.0.0.1,100.64.0.2,fd7a:115c:a1e0::2"],
+    ["exit 1", "127.0.0.1"],
+  ]) {
+    const site = structuredClone(example);
+    Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+    site.site.cloud_models = { allowed: true, granted_by: "Person A", granted_on: "2026-10-20", payer: "client-byok" };
+    delete site.data;
+    const s = sandbox(site, { tenant: "acme", system: "Linux" });
+    s.stub("tailscale", ts); s.stub("tailscale.exe", "exit 1");
+    fs.writeFileSync(path.join(s.home, "tenants/acme/node.env"), "JOBD_TOKEN=t\n");
+    const r = s.run("setup-node.sh", site.nodes.find((n) => n.jobs).name);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const unit = fs.readFileSync(path.join(s.units, "jobd-acme.service"), "utf8");
+    assert.match(unit, new RegExp(` JOBD_HOST=${want.replace(/\./g, "\\.")} JOBD_PORT=`));
+    assert.equal(/listens on 127\.0\.0\.1 only/.test(r.stdout), want === "127.0.0.1");
   }
 });

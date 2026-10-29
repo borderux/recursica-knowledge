@@ -78,15 +78,17 @@ if [ -n "$JOBS" ]; then
   if grep -q '^EGRESS=on' "$OUT/tenant.env"; then
     JNET="jobs-egress$SUFFIX"
     docker network inspect "$JNET" >/dev/null 2>&1 || docker network create --internal "$JNET" >/dev/null
-    docker build -q -t recursica/egress "$HERE/egress" >/dev/null
+    EGRESS_IMAGE="$(egress_image)"
     # The rendered files in $OUT go away when this script ends, so the filter gets a copy.
     [ -n "${TENANT:-}" ] && JBASE="$HOME/tenants/$TENANT/jobs-egress" || JBASE="$HOME/.recursica-jobs-egress"
     mkdir -p "$JBASE/conf" "$JBASE/logs" && chmod 777 "$JBASE/logs"
     cp "$OUT/egress/"* "$JBASE/conf/"
     docker rm -f "cc-jobs-egress$SUFFIX" >/dev/null 2>&1 || true
     docker run -d --name "cc-jobs-egress$SUFFIX" --restart unless-stopped --add-host host.docker.internal:host-gateway \
-      -v "$JBASE/conf":/etc/egress:ro -v "$JBASE/logs":/var/log/egress recursica/egress >/dev/null
+      -v "$JBASE/conf":/etc/egress:ro -v "$JBASE/logs":/var/log/egress "$EGRESS_IMAGE" >/dev/null
     docker network connect --alias egress "$JNET" "cc-jobs-egress$SUFFIX"
+    # The stack's own filter on this computer, from setup-host.sh, moves to the same image.
+    refresh_egress "$EGRESS_IMAGE"
     JOBS_NET_ARGS="JOBD_NETWORK=$JNET JOBD_PROXY=http://egress:3128 "
     # On the control computer, the jobs reach the gateway on the job network.
     if [ "$GATEWAY_URL" = http://cc-gateway:4000 ]; then
@@ -97,6 +99,13 @@ if [ -n "$JOBS" ]; then
   fi
   # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
   if [ -n "${TENANT:-}" ]; then JOBS_DIR="$HOME/tenants/$TENANT/jobs"; else JOBS_DIR="$HOME/.recursica-jobs"; fi
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  # jobd listens on loopback and this computer's Tailscale addresses, never on the office network.
+  JOBD_HOST="127.0.0.1"
+  for v in 4 6; do
+    a="$( { tailscale ip -$v 2>/dev/null || tailscale.exe ip -$v 2>/dev/null || true; } | head -1 | tr -d '\r')"
+    [ -n "$a" ] && JOBD_HOST="$JOBD_HOST,$a"
+  done
+  [ "$JOBD_HOST" != 127.0.0.1 ] || echo "No Tailscale address found: the job runner listens on 127.0.0.1 only, so other computers cannot reach the job runner."
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

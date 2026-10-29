@@ -62,9 +62,12 @@ else
   for f in base lockdown; do
     sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/;" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
-  if ! grep -q 'anchor "agentguard"' /etc/pf.conf; then
-    sudo cp /etc/pf.conf /etc/pf.conf.agentguard-backup
-    printf 'anchor "agentguard"\n' | sudo tee -a /etc/pf.conf >/dev/null
+  # The main rules skip loopback and load the agentguard anchor (firewall/pf-main.sh). A backup of
+  # macOS's own rules stays in /etc/pf.conf.agentguard-backup.
+  PF_MAIN="$(bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf)"
+  if [ "$PF_MAIN" != "$(cat /etc/pf.conf)" ]; then
+    [ -f /etc/pf.conf.agentguard-backup ] || sudo cp /etc/pf.conf /etc/pf.conf.agentguard-backup
+    printf '%s\n' "$PF_MAIN" | sudo tee /etc/pf.conf >/dev/null
   fi
   install_unit agentguard-firewall "pfctl -E -f /etc/pf.conf; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf" / root boot
 fi

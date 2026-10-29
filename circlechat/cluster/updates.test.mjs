@@ -48,7 +48,7 @@ test("skips a new major macOS version, and marks restarts and rapid responses", 
   assert.deepEqual(ups.map((u) => [u.name, u.reboot]), [["macOS Tahoe 26.1", true], ["Safari", false]]);
 });
 
-import { chooseDigests } from "./images.mjs";
+import { chooseDigests, taggedServices } from "./images.mjs";
 test("a new image version waits 7 days before a stack uses it", () => {
   const seen = {}, t = 1_800_000_000_000;
   const tags = [{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }, { tag: "redis:7", current: "sha256:same", pulled: "sha256:same" }];
@@ -62,4 +62,9 @@ test("an image version marked as failed is never used, and a later version still
   assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:bad" }], seen, t)[0].use, "sha256:old");
   assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }], seen, t + SOAK_MS)[0].use, "sha256:old");
   assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }], seen, t + 2 * SOAK_MS)[0].use, "sha256:new");
+});
+
+test("the weekly image job holds a tagged image for 7 days, and leaves a digest-pinned or built service to the pins and the build", () => {
+  const services = { caddy: { image: "caddy:2@sha256:0123abcd" }, presidio: { image: "presidio:latest" }, api: { image: "cc-api", build: { context: "." } }, none: {} };
+  assert.deepEqual(taggedServices(services).map(([svc]) => svc), ["presidio"]);
 });

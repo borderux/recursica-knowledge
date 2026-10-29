@@ -66,3 +66,36 @@ test("the running filter refuses a site that is not on the list, and logs the re
     assert.match(fs.readFileSync(path.join(dir, "log/access.log"), "utf8"), /blocked\.example\.invalid\/ 403 TCP_DENIED/);
   } finally { squid.kill("SIGKILL"); }
 });
+
+// The rules' text: tools that load the pf and Windows rules run only on macOS and Windows.
+const rules = (f) => fs.readFileSync(path.join(here, f), "utf8").split("\n").filter((l) => l && !l.startsWith("#"));
+
+test("pf never filters loopback: no pf rule names lo0, and the main rules skip lo0 before the anchor", () => {
+  for (const f of ["firewall/pf-base.conf", "firewall/pf-lockdown.conf"]) assert.ok(!rules(f).some((l) => /\blo0\b/.test(l)), f);
+  const apple = 'scrub-anchor "com.apple/*"\nanchor "com.apple/*"\nload anchor "com.apple" from "/etc/pf.anchors/com.apple"\n';
+  const main = spawnSync("bash", [path.join(here, "firewall/pf-main.sh")], { input: apple, encoding: "utf8" });
+  assert.equal(main.status, 0, main.stderr);
+  assert.equal(main.stdout, `set skip on lo0\n${apple}anchor "agentguard"\n`);
+  const again = spawnSync("bash", [path.join(here, "firewall/pf-main.sh")], { input: main.stdout, encoding: "utf8" });
+  assert.equal(again.stdout, main.stdout, "a second run changes nothing");
+});
+
+test("pf passes Tailscale's addresses only on Tailscale's utun interfaces", () => {
+  for (const f of ["firewall/pf-base.conf", "firewall/pf-lockdown.conf"]) {
+    const r = rules(f);
+    assert.match(r.find((l) => l.startsWith("tailscale_if")), /^tailscale_if = "\{ (utun\d+ ){32}\}"$/, f);
+    const tailscale = r.filter((l) => /100\.64\.0\.0\/10|fd7a:115c:a1e0::\/48/.test(l));
+    assert.ok(tailscale.length >= 2, f);
+    for (const l of tailscale) assert.match(l, /^pass (in|out) quick on \$tailscale_if inet6? (from|to) /, `${f}: ${l}`);
+  }
+});
+
+test("Windows passes Tailscale's addresses only on the Tailscale adapter, and WSL only to the computer's Tailscale addresses", () => {
+  const ps = fs.readFileSync(path.join(here, "windows/install-windows-guard.ps1"), "utf8");
+  const peers = ps.split("\n").find((l) => l.startsWith('New-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers"'));
+  assert.match(peers, /-InterfaceAlias "Tailscale" -RemoteAddress 100\.64\.0\.0\/10,fd7a:115c:a1e0::\/48 -Action Allow/);
+  assert.match(ps, /Get-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -ErrorAction SilentlyContinue \| Remove-NetFirewallRule\nNew-NetFirewallRule/, "an earlier rule for every adapter goes first");
+  const wsl = ps.split("\n").find((l) => l.startsWith('New-NetFirewallHyperVRule -Name "AgentGuard-Tailscale"'));
+  assert.match(wsl, /-LocalAddresses \$tsAddresses -RemoteAddresses 100\.64\.0\.0\/10,fd7a:115c:a1e0::\/48/);
+  assert.match(ps, /Remove-NetFirewallHyperVRule -Name "AgentGuard-Tailscale"/);
+});
