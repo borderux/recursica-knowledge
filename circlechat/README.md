@@ -74,10 +74,11 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 
 ## Install, in order
 
-1. **Control machine:** clone CircleChat to `~/circlechat` and this repo anywhere. Write
+1. **Control machine:** clone CircleChat to `~/circlechat` and this repo to `~/recursica-knowledge`
+   (see "The kit checkout" below). Write
    `~/circlechat/site.json` from `circlechat/site.example.json`, and add secrets to
    `~/circlechat/.env`.
-2. `./circlechat/setup-host.sh`. It validates `site.json` (and stops before changing anything if
+2. `~/recursica-knowledge/circlechat/setup-host.sh`. It validates `site.json` (and stops before changing anything if
    it is wrong), then: fixes `.env` (including `HERMES_TIMEOUT`), ports, the shared workspace and
    its checkouts, copies Kev, starts CircleChat, the app preview, the model gateway
    and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
@@ -104,6 +105,37 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 
 After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
 (`sync-skills.sh`), so merged changes reach the agents within the hour.
+
+### The kit checkout
+
+**Clone this repo to `~/recursica-knowledge`, and run each kit command from that checkout.** Root runs the kit's scripts. Every agent container mounts the agents' workspace, `~/circlechat-workspace`. An agent could change a checkout inside the workspace, and root would then run the change.
+
+Each script below checks the kit checkout first, with `circlechat/kit/check-kit.sh`:
+
+- `setup-host.sh`, which installs the backups and the hourly sync
+- `backup/backup.sh`, `backup/restore-test.sh` and `sync-skills.sh`
+- `deploy/install-secrets-helper.sh`, and the secrets helper, `agent-stacks-apply`
+- `tenant/setup-pc.sh`, which installs `agent-stacks-disk`
+- `cluster/install-cluster.sh`, and the cluster agent and the update job at each start
+
+The check refuses a checkout in three cases:
+
+- The checkout sits inside an agents' workspace: `~/circlechat-workspace` or `~/tenants/<client>/workspace`.
+- The group or other accounts can change the checkout, or a folder above the checkout. Fix the checkout with `chmod -R go-w ~/recursica-knowledge`.
+- Another account owns a file or folder in the checkout.
+
+A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout. Other accounts cannot rename or delete the owner's folder there.
+
+**The workspace keeps a separate checkout for the agents to read,** `~/circlechat-workspace/recursica-knowledge`. The hourly sync pulls that checkout. With `upgrade.auto`, the upgrade job moves both checkouts to each release. The job runs the setup from `~/recursica-knowledge`.
+
+**The check finds a checkout that agents or other accounts could change.** The check cannot find a file that was changed before the check ran.
+
+To move an existing install, clone this repo to `~/recursica-knowledge`. Then rerun each command below from the new checkout:
+
+- `setup-host.sh`, once for each stack
+- `install-secrets-helper.sh <runner account>`
+- `install-cluster.sh <computer>`
+- `setup-pc.sh`, on Linux or in WSL
 
 ### Colima and Ollama on a Mac
 
@@ -220,7 +252,7 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
    `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
 
 5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
-6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
+6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ~/recursica-knowledge/circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
 7. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
 
 With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/tenants/<client>/node.env`.
@@ -246,7 +278,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 | A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
 | Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-1. **On Linux or in WSL, prepare the computer once.** Run `./circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima.
+1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima.
 2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
 4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
@@ -271,7 +303,7 @@ Deleting the image and the key makes the client's data unreadable for good.
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
-6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
+6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
@@ -452,7 +484,7 @@ A test restore runs on the first day of January, April, July and October. The te
 
 ## Security services
 
-`./circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
+`~/recursica-knowledge/circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
 
 - **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell.
 - **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown.

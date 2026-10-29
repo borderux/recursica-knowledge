@@ -35,6 +35,10 @@ case "$STACK" in
 esac
 [ -z "$TENANT" ] || [[ "$TENANT" =~ $SLUG ]] || { echo "Client name \"$TENANT\" must be a slug."; exit 1; }
 [[ "$COMPUTER" =~ $SLUG ]] || { echo "Computer \"$COMPUTER\" must be a slug."; exit 1; }
+# The helper runs the kit as the owner, never as root, and the kit must sit outside the agents'
+# workspace. The check runs as the owner too, so root never runs a file from an unchecked kit.
+if [ "$(id -un)" = "$OWNER" ]; then bash "$KIT/circlechat/kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1
+else sudo -u "$OWNER" -H bash "$KIT/circlechat/kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1; fi
 
 if [ -z "$TENANT" ]; then
   CC_DIR="$OWNER_HOME/circlechat"; NODE_ENV="$OWNER_HOME/.recursica-node.env"; SUFFIX=""

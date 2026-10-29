@@ -15,7 +15,7 @@ Border UX keeps this guide in step with the kit. A test fails when a `site.json`
 - **Backup storage:** any storage rclone supports, such as S3, Azure Blob Storage, Google Drive or a local disk.
 - **HTTPS in front of CircleChat:** Tailscale, or the client's own reverse proxy on the same computer.
 - **Disk encryption:** LUKS on Linux, FileVault on a Mac, or BitLocker on Windows, set up when the computer is installed.
-- **More than one stack on a computer:** each stack needs a separate Docker VM and encrypted disk image. On Linux or Windows with WSL, run `circlechat/tenant/setup-pc.sh` first. WSL needs nested virtualization; see "Encrypted client stacks" in `circlechat/README.md`.
+- **More than one stack on a computer:** each stack needs a separate Docker VM and encrypted disk image. On Linux or Windows with WSL, run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` first. WSL needs nested virtualization; see "Encrypted client stacks" in `circlechat/README.md`.
 
 ## Repos to fork
 
@@ -66,7 +66,7 @@ Run `node circlechat/kit/render.mjs ~/circlechat/site.json /tmp/check` to check 
 Keep every key, token and password in the client's secret store, never in a repo. Two ways put the secrets on the computer:
 
 - **GitHub environments:** see "Secrets in GitHub" in `circlechat/README.md`, with `circlechat/deploy/deploy-secrets.yml`.
-- **The client's own vault,** such as HashiCorp Vault or Azure Key Vault. Install the helper with `circlechat/deploy/install-secrets-helper.sh`, then pipe `NAME=value` lines from the vault into the helper:
+- **The client's own vault,** such as HashiCorp Vault or Azure Key Vault. Install the helper with `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh`, then pipe `NAME=value` lines from the vault into the helper:
 
   ```text
   vault kv get -format=json secret/agent-stack | jq -r '.data.data | to_entries[] | "\(.key)=\(.value)"' \
@@ -77,9 +77,9 @@ The secret names are in the table under "Secrets in GitHub" in `circlechat/READM
 
 ## Install
 
-1. **Clone the forks:** CircleChat to `~/circlechat`, and the knowledge repo to `~/circlechat-workspace/recursica-knowledge`.
+1. **Clone the forks:** CircleChat to `~/circlechat`, and the knowledge repo to `~/recursica-knowledge`. Root runs the scripts in `~/recursica-knowledge`, so the checkout stays outside the agents' workspace. `setup-host.sh` clones the agents' own checkout into the workspace.
 2. **Put the secrets on the computer,** as "Secrets" describes.
-3. **Run the setup scripts,** from the knowledge repo, in order: `circlechat/setup-host.sh`, `circlechat/setup-node.sh <computer>`, then `circlechat/cluster/install-cluster.sh <computer>`.
+3. **Run the setup scripts** from `~/recursica-knowledge`, in order: `circlechat/setup-host.sh`, `circlechat/setup-node.sh <computer>`, then `circlechat/cluster/install-cluster.sh <computer>`. See "The kit checkout" in `circlechat/README.md`.
 4. **Point HTTPS at CircleChat:** run the `tailscale serve` line the setup prints. With a reverse proxy, point the proxy at CircleChat's port.
 5. **Turn on single sign-on:** CircleChat supports OpenID Connect providers, such as Google Workspace, Okta and Entra ID, in each workspace's enterprise settings. The provider's redirect address is `https://<CircleChat's address>/api/auth/sso/callback`. List the company's email domain as the allowed domain.
 6. **Install the agents** in CircleChat, then run `circlechat/setup-agent.sh <handle>` for each agent, and `circlechat/sync-skills.sh` once.

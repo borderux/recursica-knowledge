@@ -8,6 +8,8 @@
 # so only the main shell reports, and each failure posts once.
 set -Eeuo pipefail
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
+# Runs as root. The kit checkout must sit outside the agents' workspace.
+bash "$(dirname "$0")/../kit/check-kit.sh" "$(dirname "$0")/../.." "${OWNER:-}" "$OWNER_HOME" || exit 1
 case "$(date +%m)" in 01|04|07|10) ;; *) [ "${FORCE:-}" = 1 ] || exit 0 ;; esac
 . "$CC_DIR/kit-out/tenant.env"
 STACK="${TENANT:-border}"

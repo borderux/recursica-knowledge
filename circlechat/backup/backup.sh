@@ -14,6 +14,8 @@ set -Eeuo pipefail
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
 WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 . "$(dirname "$0")/../kit/lib.sh"
+# Runs as root. The kit checkout must sit outside the agents' workspace.
+require_kit "$(dirname "$0")/../.." "${OWNER:-}" "$OWNER_HOME"
 . "$CC_DIR/kit-out/tenant.env"
 [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
 STACK="${TENANT:-border}"
