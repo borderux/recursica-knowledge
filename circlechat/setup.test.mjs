@@ -124,7 +124,10 @@ test("a client stack with cloud models runs the masking services and passes them
   Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
   site.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "client-byok" };
   delete site.data; delete site.porter;
-  const s = sandbox(site, { tenant: "acme" });
+  // The test runs as Linux on every computer. On a Mac, the colima-acme context would take the
+  // tailscale serve path, so a stand-in for tailscale also keeps the computer's own Tailscale out.
+  const s = sandbox(site, { tenant: "acme", system: "Linux" });
+  s.stub("tailscale", "exit 0");
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(s.dotenv().COMPOSE_FILE, /compose\.privacy\.yml/);
@@ -132,6 +135,7 @@ test("a client stack with cloud models runs the masking services and passes them
   assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /presidio-analyzer/);
   assert.match(s.calls(), /docker run -d --name cc-litellm-acme .*PRESIDIO_ANALYZER_API_BASE=http:\/\/presidio-analyzer:3000/);
   assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /name: cc-acme_models\n    external: true/);
+  assert.doesNotMatch(s.calls(), /^tailscale /m, "Linux publishes the gateway's port without tailscale serve");
 });
 
 test("setup-host moves an old ANTHROPIC_API_KEY out of .env, and stops on another cloud key there", () => {
