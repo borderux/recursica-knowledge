@@ -331,8 +331,10 @@ start_egress() {
 gateway_db_role() {
   local pw i
   # The secrets helper passes the password, and writes the role's address itself.
-  if [ "$HELPER" = true ]; then pw="$HELPER_DB_PASSWORD"; else pw="$(sudo cat "$GW_STATE/db-password")"; fi
-  [ -n "$pw" ] || { echo "No password for the router's database role."; return 1; }
+  if [ "$HELPER" = true ]; then
+    pw="$HELPER_DB_PASSWORD"
+    [ -n "$pw" ] || { echo "The secrets helper passed no password for the router's database role."; return 1; }
+  else pw="$(sudo cat "$GW_STATE/db-password")"; fi
   for i in $(seq 90); do
     [ "$(docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select to_regclass('public.agent_runs') is not null" 2>/dev/null)" = t ] && break
     [ "$i" = 90 ] && { echo "CircleChat's tables are not there yet, so the gateway cannot read tasks and treats every request as cluster only. Run this script again once CircleChat is up."; return 0; }
