@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { spawn, spawnSync, execFile } from "node:child_process";
+import { spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { IS_MAC, IS_WSL, makePlatform } from "./platform.mjs";
 import { NetworkWatch, readNetwork } from "./network.mjs";
@@ -49,13 +49,16 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "upgrade-now": {
         const mcp = String(ref ?? "").match(/^@recursica\/mcp@(\d+\.\d+\.\d+)$/);
         if (mcp) {
-          fs.writeFileSync(path.join(env.OWNER_HOME, "circlechat-workspace/.recursica-mcp-version"), `${mcp[1]}\n`);
+          // Root writes in the workspace, which agents can change, so never through a symlink.
+          const ws = path.join(env.OWNER_HOME, "circlechat-workspace");
+          const { writeFile: writeInPlace } = await import("../kit/safe-files.mjs");
+          try { writeInPlace(ws, path.join(ws, ".recursica-mcp-version"), `${mcp[1]}\n`); } catch (e) { return { ok: false, message: e.message }; }
           return { ok: true, message: `@recursica/mcp ${mcp[1]} takes effect at each agent's next turn` };
         }
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
-        spawn("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`, `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`,
-          process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ref], { detached: true, stdio: "ignore" }).unref();
+        // The upgrade runs as the owner, and the agent takes the steps that need root (root-steps.mjs).
+        import("./root-steps.mjs").then(({ runUpgrade }) => runUpgrade({ env, ccDir, ref })).catch((e) => console.error(`upgrade to ${ref}: ${e.message}`));
         return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
       }
       case "upgrade-skip": {

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide, decideMcp } from "./upgrade.mjs";
+import { decide, decideMcp, setupRunner } from "./upgrade.mjs";
 
 const tags = ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.11.1", "@recursica/knowledge@0.12.0", "@recursica/knowledge@1.0.0"];
 
@@ -30,4 +30,22 @@ test("a release that failed once is skipped; a newer one is tried", () => {
   const state = { failed: { "@recursica/knowledge@0.12.0": 1 } };
   assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.12.0"], state), { action: "none" });
   assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.12.0", "@recursica/knowledge@0.12.1"], state), { action: "upgrade", tag: "@recursica/knowledge@0.12.1" });
+});
+
+test("with root's steps, the setup gets the password on stdin, needs no sudo, and leaves the skill sync to root", () => {
+  const calls = [];
+  const run = (cmd, args, opts) => { calls.push({ line: [cmd, ...args].join(" "), opts }); return { status: 0 }; };
+  let recorded = 0;
+  assert.equal(setupRunner({ kit: "/kit", rootSteps: true, password: "pw48", record: () => recorded++, run })(), true);
+  assert.equal(recorded, 1, "the run is recorded before the setup starts");
+  assert.deepEqual(calls.map((c) => c.line), ["bash /kit/circlechat/setup-host.sh --upgrade"]);
+  assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, "1");
+  assert.equal(calls[0].opts.input, "pw48\n");
+  calls.length = 0;
+  // Without root's steps, such as a run by hand, the setup and the skill sync run as before.
+  assert.equal(setupRunner({ kit: "/kit", rootSteps: false, run })(), true);
+  assert.deepEqual(calls.map((c) => c.line), ["bash /kit/circlechat/setup-host.sh --upgrade", "bash /kit/circlechat/sync-skills.sh"]);
+  assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, undefined);
+  // A failed setup fails the release, which the upgrade then rolls back.
+  assert.equal(setupRunner({ kit: "/kit", rootSteps: true, password: "x", run: () => ({ status: 1 }) })(), false);
 });

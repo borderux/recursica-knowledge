@@ -293,13 +293,16 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
   }
 });
 
-test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", () => {
-  for (const [system, unit, chown] of [["Darwin", "io.recursica.agents-sync.plist", "/usr/sbin/chown"], ["Linux", "agents-sync.service", "chown"]]) {
+test("the hourly sync job runs sync-skills.sh as the owner, never as root, with no chown or git setting", () => {
+  const me = os.userInfo().username;
+  for (const [system, unit, user] of [["Darwin", "io.recursica.agents-sync.plist", `<key>UserName</key><string>${me}</string>`], ["Linux", "agents-sync.service", `User=${me}`]]) {
     const s = sandbox(example, { system });
     const r = fullSetup(s);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const text = fs.readFileSync(path.join(s.units, unit), "utf8");
-    assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
+    assert.ok(text.includes(user), `${system}: ${text}`);
+    assert.match(text, /sync-skills\.sh/);
+    assert.doesNotMatch(text, /chown|safe\.directory|User=root|<string>root<\/string>/, system);
   }
 });
 
@@ -376,6 +379,7 @@ test("with the secrets helper, --secrets-only takes only the Docker steps, and t
     // The owner's sudo asks for a password, as on a computer with no password-free sudo.
     s.stub("sudo", `echo "sudo: a password is required" >&2; exit 1`);
     const pw = "0123456789abcdef0123456789abcdef0123456789abcdef";
+    // KIT_SECRETS_HELPER, the older name of KIT_ROOT_STEPS, from a secrets helper installed before.
     const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_SECRETS_HELPER: "1" }, input: `${pw}\n`, encoding: "utf8", cwd: s.home });
     assert.equal(r.status, 0, system + r.stdout + r.stderr);
     assert.match(r.stdout, /Secrets applied: gateway and Slack notifier recreated/);
@@ -390,12 +394,28 @@ test("with the secrets helper, --secrets-only takes only the Docker steps, and t
   }
 });
 
-test("KIT_SECRETS_HELPER runs only with --secrets-only", () => {
+test("with root's steps, --upgrade takes only the Docker steps, and the owner needs no sudo", () => {
+  for (const system of ["Linux", "Darwin"]) {
+    const s = sandbox(example, { system });
+    s.stub("sudo", `echo "sudo: a password is required" >&2; exit 1`);
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--upgrade"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_ROOT_STEPS: "1" }, input: "0123456789abcdef0123456789abcdef0123456789abcdef\n", encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 0, system + r.stdout + r.stderr);
+    assert.match(r.stdout, /Upgrade applied: gateway and Slack notifier recreated/);
+    const calls = s.calls();
+    assert.doesNotMatch(calls, /^sudo /m, `${system}: no sudo`);
+    assert.match(calls, /^docker compose up -d --remove-orphans$/m);
+    assert.match(calls, /^docker compose exec -T postgres psql -q -U postgres -d circlechat$/m);
+    assert.match(calls, /^docker run -d --name cc-egress /m);
+    assert.doesNotMatch(calls, /key-check\.mjs/, "root runs the key check after the upgrade");
+  }
+});
+
+test("root's steps run only with --secrets-only or --upgrade, under either name", () => {
   const s = sandbox(example, { system: "Linux" });
-  for (const mode of [[], ["--upgrade"]]) {
-    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), ...mode], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_SECRETS_HELPER: "1" }, input: "x\n", encoding: "utf8", cwd: s.home });
-    assert.equal(r.status, 1);
-    assert.match(r.stdout, /KIT_SECRETS_HELPER needs --secrets-only/);
+  for (const name of ["KIT_ROOT_STEPS", "KIT_SECRETS_HELPER"]) {
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, [name]: "1" }, input: "x\n", encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 1, name);
+    assert.match(r.stdout, /KIT_ROOT_STEPS needs --secrets-only or --upgrade/);
   }
 });
 

@@ -258,7 +258,7 @@ function restartRun(system, { keyCheckExit = 0 } = {}) {
   fs.mkdirSync(path.join(kit, "gateway"), { recursive: true });
   fs.writeFileSync(path.join(fake.bin, "sudo"), `#!/usr/bin/env bash\necho "sudo $*" >> "${log}"\nwhile [ $# -gt 0 ]; do case "$1" in -u) shift 2 ;; -H|-n) shift ;; *) break ;; esac; done\nexec "$@"\n`, { mode: 0o755 });
   fs.writeFileSync(path.join(fake.bin, "docker"), `#!/usr/bin/env bash\necho "docker $*" >> "${log}"\necho "dump of the database"\n`, { mode: 0o755 });
-  fs.writeFileSync(path.join(kit, "setup-host.sh"), `echo "setup-host $* helper=\${KIT_SECRETS_HELPER:-} pwd=$(pwd)" >> "${log}"\nIFS= read -r pw; echo "setup-host password=$pw" >> "${log}"\n`);
+  fs.writeFileSync(path.join(kit, "setup-host.sh"), `echo "setup-host $* helper=\${KIT_ROOT_STEPS:-} pwd=$(pwd)" >> "${log}"\nIFS= read -r pw; echo "setup-host password=$pw" >> "${log}"\n`);
   fs.writeFileSync(path.join(kit, "gateway", "key-check.mjs"), `import fs from "node:fs";\nfs.appendFileSync(${JSON.stringify(log)}, "key-check " + process.argv.slice(2).join(" | ") + " stdin=" + fs.readFileSync(0, "utf8").trim() + "\\n");\nprocess.exit(${keyCheckExit});\n`);
   const calls = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
   return { home, conf, fake, calls, run: (input = "MODEL_KEY_DEFAULT=k\nRESTIC_PASSWORD=r\n") => apply(conf, ["cluster", control, "true"], input, fake.env) };
@@ -279,7 +279,7 @@ test("a deploy needs no sudo from the owner: root prepares the gateway's files, 
     for (const f of ["db-password", "litellm-master.key", "db.url"]) assert.equal(fs.statSync(path.join(gw, f)).mode & 0o777, 0o600, f);
     const calls = t.calls();
     // The owner's run: the Docker steps only, from /, with the password on stdin and never in ps.
-    assert.match(calls, /^sudo -u \S+ -H env KIT_SECRETS_HELPER=1 .* bash \S+\/setup-host\.sh --secrets-only$/m);
+    assert.match(calls, /^sudo -u \S+ -H env KIT_ROOT_STEPS=1 .* bash \S+\/setup-host\.sh --secrets-only$/m);
     assert.doesNotMatch(calls, new RegExp(`^sudo .*${pw}`, "m"));
     assert.match(calls, /^setup-host --secrets-only helper=1 pwd=\/$/m);
     assert.match(calls, new RegExp(`^setup-host password=${pw}$`, "m"));

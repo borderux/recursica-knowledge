@@ -73,6 +73,7 @@ async function main() {
   const stateFile = "/var/lib/agent-cluster/updater.json";
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
   const { check } = await import("./updates.mjs");
+  const { runUpgrade } = await import("./root-steps.mjs");
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
@@ -81,7 +82,8 @@ async function main() {
     `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, script], { stdio: "inherit" });
   for (const p of plan(stacks, state)) {
     const st = stacks.find((s) => s.name === p.name);
-    if (p.upgrade) asOwner(st.ccDir, path.join(env.KIT, "circlechat/kit/upgrade.mjs"));
+    // The release upgrade runs as the owner, and root takes the steps that need root (root-steps.mjs).
+    if (p.upgrade) await runUpgrade({ env, ccDir: st.ccDir }).catch((e) => console.error(`upgrade of ${p.name}: ${e.message}`));
     if (p.images) { asOwner(st.ccDir, path.join(here, "images.mjs")); state.images = { ...(state.images ?? {}), [p.name]: Date.now() }; }
   }
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });

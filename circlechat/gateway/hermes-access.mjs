@@ -10,10 +10,10 @@
 //
 // The agent then asks the gateway for <route>, and the gateway decides, for each request, whether
 // a cluster model or the agent's cloud key answers. The script prints nothing secret.
-import fs from "node:fs";
 import path from "node:path";
 import { issue, loadKeys, verify } from "./keys.mjs";
 import { KEY_NAMES, keyShape } from "./cloud-keys.mjs";
+import { Refused, readFile, writeFile } from "../kit/safe-files.mjs";
 
 const PROVIDER = "gateway";
 
@@ -70,14 +70,14 @@ export function scrubJson(value) {
 }
 const holds = (v) => (typeof v === "string" ? Boolean(keyShape(v)) : false);
 
-function rewrite(file, change) {
-  if (!fs.existsSync(file)) return false;
-  const before = fs.readFileSync(file, "utf8");
+// The agent can change its own home, so each file is read and written without following a
+// symlink (kit/safe-files.mjs). The new file keeps the old file's mode, owner and group.
+function rewrite(home, file, change) {
+  const before = readFile(home, file);
+  if (before === null) return false;
   const after = change(before);
   if (after === before) return false;
-  const st = fs.statSync(file);
-  fs.writeFileSync(file, after);
-  try { fs.chownSync(file, st.uid, st.gid); } catch { /* not root: the owner wrote the file */ }
+  writeFile(home, file, after);
   return true;
 }
 
@@ -85,20 +85,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [home, handle, state, baseUrl, route, withEnv] = process.argv.slice(2);
   if (!home || !handle || !state || !baseUrl || !route) { console.error("usage: hermes-access.mjs <home> <handle> <state dir> <gateway URL> <route>"); process.exit(2); }
   const cfg = path.join(home, "config.yaml");
-  if (!fs.existsSync(cfg)) { console.error(`No ${cfg}: install ${handle} in the CircleChat UI first.`); process.exit(1); }
-  const old = currentKey(fs.readFileSync(cfg, "utf8"));
+  let text;
+  try { text = readFile(home, cfg); } catch (e) { console.error(e instanceof Refused ? `Refused: ${e.message} Nothing was written.` : e.message); process.exit(1); }
+  if (text === null) { console.error(`No ${cfg}: install ${handle} in the CircleChat UI first.`); process.exit(1); }
+  const old = currentKey(text);
   const who = old ? verify(old, loadKeys(state), "") : null;
   const key = who?.agent === handle && who.task === null ? old : issue(state, handle);
-  rewrite(cfg, (t) => writeConfig(t, { baseUrl, key, route }));
   const cleared = [];
-  if (rewrite(path.join(home, ".env"), scrubEnv)) cleared.push(".env");
+  try {
+  rewrite(home, cfg, (t) => writeConfig(t, { baseUrl, key, route }));
+  if (rewrite(home, path.join(home, ".env"), scrubEnv)) cleared.push(".env");
   if (withEnv === "env") {
     const envFile = path.join(home, ".env");
-    if (!fs.existsSync(envFile)) fs.writeFileSync(envFile, "", { mode: 0o600 });
-    rewrite(envFile, (t) => [...t.split("\n").filter((l) => l && !/^CC_GATEWAY_(URL|KEY)=/.test(l)), `CC_GATEWAY_URL=${baseUrl.replace(/\/v1$/, "")}`, `CC_GATEWAY_KEY=${key}`].join("\n") + "\n");
+    if (readFile(home, envFile) === null) writeFile(home, envFile, "", { mode: 0o600 });
+    rewrite(home, envFile, (t) => [...t.split("\n").filter((l) => l && !/^CC_GATEWAY_(URL|KEY)=/.test(l)), `CC_GATEWAY_URL=${baseUrl.replace(/\/v1$/, "")}`, `CC_GATEWAY_KEY=${key}`].join("\n") + "\n");
   }
   for (const f of ["auth.json", "credentials.json"]) {
-    if (rewrite(path.join(home, f), (t) => { try { return JSON.stringify(scrubJson(JSON.parse(t)), null, 2) + "\n"; } catch { return t; } })) cleared.push(f);
+    if (rewrite(home, path.join(home, f), (t) => { try { return JSON.stringify(scrubJson(JSON.parse(t)), null, 2) + "\n"; } catch { return t; } })) cleared.push(f);
   }
+  } catch (e) { console.error(e instanceof Refused ? `Refused: ${e.message} Nothing was written there.` : e.message); process.exit(1); }
   console.log(`${handle}: model requests go to the gateway (${route})${key === old ? "" : ", with a new gateway key"}${cleared.length ? `; cloud keys removed from ${cleared.join(", ")}` : ""}.`);
 }

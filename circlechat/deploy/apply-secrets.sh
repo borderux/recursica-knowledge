@@ -242,7 +242,7 @@ if [ "$WROTE_CONTROL" = true ]; then
   # The gateway reads the secrets file and the notifier reads .env when they start, so the kit
   # recreates both. Agents read their own .env at the start of each turn and need no restart.
   # The owner needs no sudo for this: the helper takes each step that needs root, and the owner
-  # takes only the Docker steps (setup-host.sh with KIT_SECRETS_HELPER=1).
+  # takes only the Docker steps (setup-host.sh with KIT_ROOT_STEPS=1).
   #   1. Root: the gateway's state folder, LiteLLM's master key, and the database role's password
   #      and address (setup-host.sh does the same in the full setup). On a Mac, the owner owns each
   #      one, so the gateway's containers can mount them. The owner can change the stack's folder:
@@ -270,7 +270,7 @@ if [ "$WROTE_CONTROL" = true ]; then
   if [ ! -f "$KEYS_FILE" ]; then install -m 600 /dev/null "$KEYS_FILE"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$KEYS_FILE"; fi
   #   2. The owner: the gateway and the notifier, in Docker. The database role's password goes on
   #      stdin, never on a command line, which every account can read in ps.
-  printf '%s\n' "$DB_PASSWORD" | sudo -u "$OWNER" -H env KIT_SECRETS_HELPER=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
+  printf '%s\n' "$DB_PASSWORD" | sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
     PATH="$(dirname "$NODE_BIN"):$PATH" bash "$KIT/circlechat/setup-host.sh" --secrets-only
   #   3. Root: the key check (gateway/key-check.mjs), as in every mode of setup-host.sh. The owner
   #      dumps CircleChat's database from Docker, and root reads the secrets file and the agent

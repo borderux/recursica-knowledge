@@ -1,47 +1,100 @@
 #!/usr/bin/env bash
 # Run AFTER installing the agent through the CircleChat UI. Safe to rerun.
 # Usage: setup-agent.sh <handle>
+#        setup-agent.sh --sync <handle>   only the skills and the persona, with no sudo (sync-skills.sh)
 #   alan: GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests + Issues on
 #         the knowledge repo, Issues on the adapter repos and Theme Forge — no merge rights)
 #   barb: KEV_ENGINE_KEY=... if a Kev-engine is running (optional)
+#
+# Run as the account that owns the stacks, never as root. An agent can change its own home and the
+# shared workspace, so every write there goes through kit/safe-files.mjs, which never follows a
+# symlink. Every file the script copies comes from the kit's own checkout, never from the
+# workspace's checkout, which agents can change too. Without --sync, the writes in the agent's home
+# run with sudo, because the agent's container can own files there.
 set -euo pipefail
 
-HANDLE="${1:?usage: setup-agent.sh <handle>}"
+SYNC=false; [ "${1:-}" = --sync ] && { SYNC=true; shift; }
+HANDLE="${1:?usage: setup-agent.sh [--sync] <handle>}"
+[ "$(id -u)" != 0 ] || { echo "Run setup-agent.sh as the account that owns the stacks, never as root."; exit 1; }
 if [ -n "${TENANT:-}" ]; then
   CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
   WS="${WS:-$HOME/tenants/$TENANT/workspace}"
 fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
-K="$WS/recursica-knowledge"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+KIT_ROOT="$(cd "$HERE/.." && pwd)"
 H="$CC_DIR/hermes-homes/.hermes-$HANDLE"
-SOUL="$K/portable/circlechat/agents/$HANDLE/SOUL.md"
+SOUL="$KIT_ROOT/portable/circlechat/agents/$HANDLE/SOUL.md"
 MARK="<!-- recursica-circlechat -->"
-. "$(dirname "$0")/kit/lib.sh"
+. "$HERE/kit/lib.sh"
 # Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
 KIT_OUT="$CC_DIR/kit-out"
 [ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
+
+# Each write in the agent's home or the workspace: kit/safe-files.mjs, as the owner with --sync and
+# with sudo otherwise.
+sf() {
+  if [ "$SYNC" = true ]; then node "$HERE/kit/safe-files.mjs" "$@"
+  else sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" "$@"; fi
+}
+# read_home <file>: the file's text in TEXT, or "" when the file is missing. A symlink stops the script.
+read_home() { TEXT="$(sf read "$H" "$1" && echo x)" || exit 1; TEXT="${TEXT%x}"; }
+# put_home <file>: the file's new text on stdin, written as a new file.
+put_home() { sf write "$H" "$1"; }
+
 # Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses
 # the public knowledge repo never runs Alan, so no client detail reaches a public pull request.
 if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenant.env" && grep -q '^PUBLIC_KNOWLEDGE=yes' "$KIT_OUT/tenant.env" && [ "$HANDLE" = alan ]; then
   echo "This client stack uses the public knowledge repo, so it never runs Alan. Point repos.knowledge at the client's own fork first."; exit 1
 fi
+[ ! -L "$H" ] || { echo "Refused: $H is a symlink. Nothing was written."; exit 1; }
+[ -d "$H" ] || { echo "No $H — install $HANDLE in the CircleChat UI first."; exit 1; }
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
 # What would break that fence is a tool server reaching client data, so refuse if he has any.
-if [ "$HANDLE" = loki ] && sudo grep -qE '^mcp_servers:' "$H/config.yaml" 2>/dev/null; then
-  echo "Loki's config.yaml has mcp_servers. On CircleChat his fence is /workspace/loki and he has no"
-  echo "tool servers; one that reaches client data breaks the fence. Remove it, or set him up by hand."
-  exit 1
+if [ "$SYNC" = false ] && [ "$HANDLE" = loki ]; then
+  read_home "$H/config.yaml"
+  if printf '%s\n' "$TEXT" | grep -qE '^mcp_servers:'; then
+    echo "Loki's config.yaml has mcp_servers. On CircleChat his fence is /workspace/loki and he has no"
+    echo "tool servers; one that reaches client data breaks the fence. Remove it, or set him up by hand."
+    exit 1
+  fi
 fi
-sudo test -d "$H" || { echo "No $H — install $HANDLE in the CircleChat UI first."; exit 1; }
-[ -f "$SOUL" ] || { echo "No built CircleChat persona for $HANDLE at $SOUL."; exit 1; }
+if [ ! -f "$SOUL" ]; then
+  [ "$SYNC" = true ] || { echo "No built CircleChat persona for $HANDLE at $SOUL."; exit 1; }
+fi
 
 # Skills (flattened) + Barb's subagents, which run as skills here
-sudo cp -r "$K"/skills/*/* "$H/skills/"
+sf copy "$H" "$H/skills" "$KIT_ROOT"/skills/*/*
 if [ "$HANDLE" = barb ]; then
-  sudo cp -r "$K/agents/barb/subagents/checker" "$K/agents/barb/subagents/feisty" "$H/skills/"
+  sf copy "$H" "$H/skills" "$KIT_ROOT/agents/barb/subagents/checker" "$KIT_ROOT/agents/barb/subagents/feisty"
 fi
+if [ ! -f "$SOUL" ]; then echo "synced skills for $HANDLE (persona not managed here)"; exit 0; fi
+
+# Persona: replace our marked section with the built CircleChat persona, keep CircleChat's part.
+# The built file already has every platform passage filled in; never paste agents/<handle>/SKILL.md,
+# whose unfilled markers silently drop whole passages.
+# A SOUL.md with no marker was written whole by something else (an older sync); appending to it
+# would leave two personas in one file. Back it up and start clean.
+# Deploy tokens (@APP_REPO@, @APP_REPO_GITHUB@) are this deployment's values, filled in here.
+if grep -q '@APP_REPO' "$SOUL" && [ -z "${APP_REPO:-}" ]; then
+  echo "No app repo configured. Run setup-host.sh with a site.json first (repos.app_dir)."; exit 1
+fi
+PERSONA="$(sed -e "s|@APP_REPO_GITHUB@|${APP_REPO_GITHUB:-}|g" -e "s|@APP_REPO@|${APP_REPO:-}|g" "$SOUL")"
+if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
+  echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
+fi
+# A symlinked SOUL.md is never read: the write below replaces the symlink.
+if [ -L "$H/SOUL.md" ]; then TEXT=""; else read_home "$H/SOUL.md"; fi
+if ! printf '%s\n' "$TEXT" | grep -qx "$MARK" && [ -n "$TEXT" ]; then
+  printf '%s' "$TEXT" | put_home "$H/SOUL.md.premark.bak"
+  BASE=""
+else
+  BASE="$(printf '%s\n' "$TEXT" | sed "/^$MARK\$/,\$d")"
+fi
+{ [ -z "$BASE" ] || printf '%s\n' "$BASE"; echo "$MARK"; printf '%s\n' "$PERSONA"; } | put_home "$H/SOUL.md"
+if [ "$SYNC" = true ]; then echo "synced skills and persona for $HANDLE"; exit 0; fi
 
 # The model gateway. The agent sends every model request to the stack's gateway with the agent's
 # own gateway key, and asks for the agent's first route in site.json (agents.<handle>.routes). The
@@ -55,17 +108,19 @@ case "$HANDLE" in
   *)     EFFORT=medium ;;
 esac
 # Compression summaries go to the agent's route too: gateway_access sets summary_model.
-sudo_sedi -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" "$H/config.yaml"
+read_home "$H/config.yaml"
+printf '%s' "$TEXT" | sed -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" | put_home "$H/config.yaml"
 
 # Barb's delegation limits. Each default made a full review fail; agents/barb/runtime/hermes.md
 # says which and why. Appended only when absent, because merging YAML with sed is how a key ends
 # up under the wrong parent and silently ignored.
 if [ "$HANDLE" = barb ]; then
-  if sudo grep -qE '^(delegation|tool_loop_guardrails):' "$H/config.yaml"; then
+  read_home "$H/config.yaml"
+  if printf '%s\n' "$TEXT" | grep -qE '^(delegation|tool_loop_guardrails):'; then
     echo "Barb's config.yaml already has delegation or tool_loop_guardrails. Check the values"
     echo "against agents/barb/runtime/hermes.md by hand."
   else
-    sudo tee -a "$H/config.yaml" >/dev/null << 'YAML'
+    { printf '%s' "$TEXT"; cat << 'YAML'
 
 delegation:
   oneshot_max_children: 0
@@ -76,6 +131,7 @@ tool_loop_guardrails:
   loop_caps:
     max_subagents: 150
 YAML
+    } | put_home "$H/config.yaml"
   fi
 fi
 
@@ -85,34 +141,41 @@ fi
 # agents/loki/runtime/hermes.md has the detail. Set once; edit by hand after that.
 if [ "$HANDLE" = loki ]; then
   CTX="${LOKI_CONTEXT:-131072}"
-  sudo grep -qE '^  context_length:' "$H/config.yaml" || sudo_sedi "/^model:/a\\  context_length: $CTX" "$H/config.yaml"
-  if ! sudo grep -qE '^auxiliary:' "$H/config.yaml"; then
-    printf '\nauxiliary:\n  compression:\n    context_length: %s\n' "$CTX" | sudo tee -a "$H/config.yaml" >/dev/null
+  read_home "$H/config.yaml"
+  if ! printf '%s\n' "$TEXT" | grep -qE '^  context_length:'; then
+    printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^model:/ { print "  context_length: " c }' | put_home "$H/config.yaml"
+    read_home "$H/config.yaml"
   fi
-  sudo mkdir -p "$WS/loki" && sudo chmod 777 "$WS/loki"
+  if ! printf '%s\n' "$TEXT" | grep -qE '^auxiliary:'; then
+    { printf '%s' "$TEXT"; printf '\nauxiliary:\n  compression:\n    context_length: %s\n' "$CTX"; } | put_home "$H/config.yaml"
+  fi
+  sf mkdir "$WS" "$WS/loki" 777
 fi
 
-# Secrets go in the agent's own .env, never in SOUL.md.
+# Secrets go in the agent's own .env, never in SOUL.md. The value passes on stdin, never as an
+# argument.
 set_secret() { # set_secret NAME VALUE
-  sudo_sedi "/^$1=/d" "$H/.env"
-  echo "$1=$2" | sudo tee -a "$H/.env" >/dev/null
+  read_home "$H/.env"
+  { printf '%s\n' "$TEXT" | grep -v -e "^$1=" -e '^$' || true; printf '%s=%s\n' "$1" "$2"; } | put_home "$H/.env"
 }
 # Alan's GitHub token is stored as ALAN_GITHUB_PAT, not GITHUB_TOKEN: Hermes strips GITHUB_TOKEN
 # and GH_TOKEN from every shell it spawns, with no setting to allow them, so under those names
 # the token is saved but never reaches him. You still pass it in as GITHUB_TOKEN=... here.
 if [ "$HANDLE" = alan ]; then
+  read_home "$H/.env"
   if [ -n "${GITHUB_TOKEN:-}" ]; then
     set_secret ALAN_GITHUB_PAT "$GITHUB_TOKEN"
-  elif sudo grep -q '^GITHUB_TOKEN=' "$H/.env" && ! sudo grep -q '^ALAN_GITHUB_PAT=' "$H/.env"; then
-    old="$(sudo sed -n 's/^GITHUB_TOKEN=//p' "$H/.env" | tail -1)"
+  elif printf '%s\n' "$TEXT" | grep -q '^GITHUB_TOKEN=' && ! printf '%s\n' "$TEXT" | grep -q '^ALAN_GITHUB_PAT='; then
+    old="$(printf '%s\n' "$TEXT" | sed -n 's/^GITHUB_TOKEN=//p' | tail -1)"
     set_secret ALAN_GITHUB_PAT "$old"
-  elif ! sudo grep -q '^ALAN_GITHUB_PAT=' "$H/.env"; then
+  elif ! printf '%s\n' "$TEXT" | grep -q '^ALAN_GITHUB_PAT='; then
     echo "alan needs GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests +"
     echo "Issues on the knowledge repo, Issues on the adapter repos and Theme Forge). Without merge rights on"
     echo "it, he cannot merge — that is the point."
     exit 1
   fi
-  sudo_sedi '/^GITHUB_TOKEN=/d' "$H/.env"
+  read_home "$H/.env"
+  { printf '%s\n' "$TEXT" | grep -v -e '^GITHUB_TOKEN=' -e '^$' || true; } | put_home "$H/.env"
 fi
 if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
   set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
@@ -130,26 +193,6 @@ if [ "$HANDLE" = barb ] && [ -s "$KIT_OUT/kev-engines.txt" ]; then
   set_secret KEV_ENGINE_URLS "$(tr -d '\n' < "$KIT_OUT/kev-engines.txt")"
 fi
 
-# Persona: replace our marked section with the built CircleChat persona, keep CircleChat's part.
-# The built file already has every platform passage filled in; never paste agents/<handle>/SKILL.md,
-# whose unfilled markers silently drop whole passages.
-# A SOUL.md with no marker was written whole by something else (an older sync); appending to it
-# would leave two personas in one file. Back it up and start clean.
-if ! sudo grep -qx "$MARK" "$H/SOUL.md" 2>/dev/null && sudo test -s "$H/SOUL.md"; then
-  sudo cp "$H/SOUL.md" "$H/SOUL.md.premark.bak"
-  sudo sh -c ": > '$H/SOUL.md'"
-fi
-sudo_sedi "/^$MARK\$/,\$d" "$H/SOUL.md"
-# Deploy tokens (@APP_REPO@, @APP_REPO_GITHUB@) are this deployment's values, filled in here.
-if grep -q '@APP_REPO' "$SOUL" && [ -z "${APP_REPO:-}" ]; then
-  echo "No app repo configured. Run setup-host.sh with a site.json first (repos.app_dir)."; exit 1
-fi
-PERSONA="$(sed -e "s|@APP_REPO_GITHUB@|${APP_REPO_GITHUB:-}|g" -e "s|@APP_REPO@|${APP_REPO:-}|g" "$SOUL")"
-if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
-  echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
-fi
-{ echo "$MARK"; printf '%s\n' "$PERSONA"; } | sudo tee -a "$H/SOUL.md" >/dev/null
-
 # The stack's git host and repo access method, for Betty's new-project and commit rules.
 if [ -f "$KIT_OUT/tenant.env" ]; then
   for k in GIT_HOST REPO_ACCESS; do
@@ -158,5 +201,5 @@ if [ -f "$KIT_OUT/tenant.env" ]; then
   done
 fi
 
-sudo chmod -R 777 "$H"
+sf chmod "$H" "$H" 777
 echo "$HANDLE set up. Changes apply on the next message."

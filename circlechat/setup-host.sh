@@ -25,12 +25,15 @@ set -euo pipefail
 SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 [ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
-# KIT_SECRETS_HELPER=1: the secrets helper (deploy/apply-secrets.sh) runs --secrets-only as the
-# owner, with no sudo. The helper takes each step that needs root before and after this run, and
-# passes the database role's password on stdin. This run takes only the Docker steps.
+# KIT_ROOT_STEPS=1: a root process runs --secrets-only or --upgrade as the owner, who may have no
+# password-free sudo. The root process takes each step that needs root before and after this run,
+# and passes the database role's password on stdin. This run takes only the Docker steps. The
+# secrets helper (deploy/apply-secrets.sh) runs --secrets-only this way, and the upgrade job
+# (cluster/root-steps.mjs) runs --upgrade this way. KIT_SECRETS_HELPER=1 is the older name, from a
+# secrets helper installed before the upgrade job used the same mode.
 HELPER=false
-if [ -n "${KIT_SECRETS_HELPER:-}" ]; then
-  [ "$SECRETS_ONLY" = true ] && [ "$UPGRADE_ONLY" = false ] || { echo "KIT_SECRETS_HELPER needs --secrets-only."; exit 1; }
+if [ -n "${KIT_ROOT_STEPS:-${KIT_SECRETS_HELPER:-}}" ]; then
+  [ "$SECRETS_ONLY" = true ] || { echo "KIT_ROOT_STEPS needs --secrets-only or --upgrade."; exit 1; }
   HELPER=true; IFS= read -r HELPER_DB_PASSWORD || true; exec </dev/null
 fi
 
@@ -235,14 +238,15 @@ set_env APPROVE_RISK_AT high
 # The exact version lives in the shared workspace, read at the start of each agent turn: a stack
 # with upgrade.auto moves it hourly (kit/upgrade.mjs), every other stack after 7 days
 # (cluster/images.mjs).
+# Agents can change the workspace, so each file here is written without following a symlink.
 mkdir -p "$WS"
-[ -s "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" > "$WS/.recursica-mcp-version"
-cat > "$WS/.recursica-mcp.sh" <<'SH'
+SAFE="$HERE/kit/safe-files.mjs"
+[ -s "$WS/.recursica-mcp-version" ] && [ ! -L "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" | node "$SAFE" write "$WS" "$WS/.recursica-mcp-version"
+node "$SAFE" write "$WS" "$WS/.recursica-mcp.sh" 755 <<'SH'
 #!/bin/sh
 # Start the Recursica MCP server in the given project, at the version in .recursica-mcp-version.
 cd "$1" && exec npx -y "@recursica/mcp@$(cat /workspace/.recursica-mcp-version)"
 SH
-chmod 755 "$WS/.recursica-mcp.sh"
 RMCP="{\"command\":\"sh\",\"args\":[\"/workspace/.recursica-mcp.sh\",\"/workspace/${APP_REPO:-app}\"],\"enabled\":true,\"timeout\":120}"
 set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
@@ -265,7 +269,8 @@ if [ "$HELPER" = false ]; then
   own_for_docker "$MODEL_KEYS" "$GW_STATE"
 fi
 sedi '/^LITELLM_MASTER_KEY=/d' .env
-# The secrets helper removes ANTHROPIC_API_KEY from .env before this run.
+# With KIT_ROOT_STEPS, the move needs root: the secrets helper removes ANTHROPIC_API_KEY from .env
+# before this run, and after an upgrade the next full setup moves the key.
 if [ "$HELPER" = false ] && env_has ANTHROPIC_API_KEY; then
   if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
     sed -n 's/^ANTHROPIC_API_KEY=/MODEL_KEY_DEFAULT=/p' .env | tail -1 | sudo tee -a "$MODEL_KEYS" >/dev/null
@@ -469,8 +474,10 @@ if [ "$SECRETS_ONLY" = true ]; then
   start_gateway_and_notifier
   [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  # With the secrets helper, the helper runs the key check as root after this run. A secrets
-  # deploy changes no agent's gateway key: the full setup and setup-agent.sh give each agent one.
+  # With KIT_ROOT_STEPS, the root process runs the key check after this run. A secrets deploy
+  # changes no agent's gateway key. After an upgrade, the root process runs sync-skills.sh as the
+  # owner, for the skills and personas. A release that changes an agent's setup asks for
+  # setup-agent.sh by hand (kit/upgrade.mjs).
   if [ "$HELPER" = false ]; then
     agents_to_gateway
     key_check
@@ -499,26 +506,33 @@ grep -q ':/workspace' compose.agents.yml || \
       - ${CC_SHARED_WORKSPACE_DIR}:/workspace|' compose.agents.yml
 
 mkdir -p hermes-homes "$WS" "$WS/reviews" "$WS/loki"
-# The checkout every agent reads. Nobody writes to it; sync-skills.sh pulls it.
-[ -d "$WS/recursica-knowledge" ] || git clone "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
+# The workspace's checkouts. The setup clones each one once, when nothing is at its path, and never
+# runs git in a checkout after that: agents can change each checkout, its git settings and hooks
+# included, and the agents update their own checkouts from inside their containers.
+clone_once() { [ -e "$2" ] || [ -L "$2" ] || git clone "${@:3}" "$1" "$2"; }
+# The checkout every agent reads.
+clone_once "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
 # Alan's own clone, for his proposal branches. Kept apart so an unmerged rule never reaches
-# the checkout Betty builds from and Barb reviews against.
-[ -d "$WS/kb-proposals" ] || git clone "$KNOWLEDGE_REPO" "$WS/kb-proposals"
-git -C "$WS/kb-proposals" config core.hooksPath .husky
+# the checkout Betty builds from and Barb reviews against. The repo's commit hooks are set at the
+# clone, never later.
+clone_once "$KNOWLEDGE_REPO" "$WS/kb-proposals" -c core.hooksPath=.husky
 if [ -n "${LOCAL_REDACTIONS:-}" ] && [ -f "$LOCAL_REDACTIONS" ]; then
-  cp "$LOCAL_REDACTIONS" "$WS/kb-proposals/buzz-agents/local-redactions.json"
+  node "$SAFE" write "$WS" "$WS/kb-proposals/buzz-agents/local-redactions.json" < "$LOCAL_REDACTIONS"
 fi
 # The application Betty builds in and Barb reviews.
-[ -d "$WS/$APP_REPO" ] || git clone "$APP_REPO_URL" "$WS/$APP_REPO"
+clone_once "$APP_REPO_URL" "$WS/$APP_REPO"
 
-# Kev, Barb's quick first pass. Copied out of the knowledge checkout so its cache and
-# node_modules never land in a repository. Its engines are listed in site.json.
-if [ -d "$WS/recursica-knowledge/tools/kev" ]; then
-  mkdir -p "$WS/kev"
-  cp -r "$WS/recursica-knowledge/tools/kev/." "$WS/kev/"
+# Kev, Barb's quick first pass. Copied out of the kit's checkout so its cache and node_modules
+# never land in a repository. Agents can change the workspace, so the copy never follows a symlink
+# there (kit/safe-files.mjs). Its engines are listed in site.json.
+if [ -d "$HERE/../tools/kev" ]; then
+  node "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/kev"
+  node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$HERE/../tools/kev/."
   docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
 fi
-sudo chmod -R 777 hermes-homes "$WS"
+# Every real file and folder, never a file a symlink names (kit/safe-files.mjs).
+sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$CC_DIR/hermes-homes" "$CC_DIR/hermes-homes" 777
+sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 
 # A port another stack already uses stops the setup here, before anything restarts.
 port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
@@ -571,9 +585,8 @@ if [ "$UPGRADE_AUTO" = on ]; then
   # cluster-updater checks out each release; nothing pulls main.
   uninstall_unit "agents-sync$SUFFIX" >/dev/null
 else
-  # macOS keeps chown in /usr/sbin, and the job's PATH can leave /usr/sbin out.
-  sync_chown="chown"; [ "$OS" != Darwin ] || sync_chown="/usr/sbin/chown"
-  install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; $sync_chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+  # As the owner, never as root: agents can change the workspace and their homes (sync-skills.sh).
+  install_unit "agents-sync$SUFFIX" "$ENVS $HERE/sync-skills.sh" "$CC_DIR" "$(id -un)" hourly
 fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook

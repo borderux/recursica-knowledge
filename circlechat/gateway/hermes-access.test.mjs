@@ -75,3 +75,24 @@ test("the script gives the agent a key once, keeps it on a rerun, and clears the
   assert.match(cfg, /^summary_model: machine-2\/mlx\/large-mlx$/m, "summaries move with the route");
   assert.equal(currentKey(cfg), key);
 });
+
+test("the script never reads or writes through a symlink an agent put in its home", () => {
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), "outside-"));
+  const target = path.join(outside, "target.txt");
+  const run = (home) => spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "porter", fs.mkdtempSync(path.join(os.tmpdir(), "gwstate-")), "http://cc-gateway:4000/v1", "local-large", "env"], { encoding: "utf8" });
+  // A symlinked config.yaml: refused, and the file the symlink names keeps its text.
+  fs.writeFileSync(target, `ANTHROPIC_API_KEY=${ANT}\n`);
+  const a = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
+  fs.symlinkSync(target, path.join(a, "config.yaml"));
+  const r = run(a);
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /Refused: .*config\.yaml is a symlink/);
+  assert.equal(fs.readFileSync(target, "utf8"), `ANTHROPIC_API_KEY=${ANT}\n`);
+  // A symlinked .env: refused, before the script writes the file the symlink names.
+  const b = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
+  fs.writeFileSync(path.join(b, "config.yaml"), installed);
+  fs.symlinkSync(target, path.join(b, ".env"));
+  assert.equal(run(b).status, 1);
+  assert.equal(fs.readFileSync(target, "utf8"), `ANTHROPIC_API_KEY=${ANT}\n`);
+  assert.ok(fs.lstatSync(path.join(b, ".env")).isSymbolicLink());
+});
