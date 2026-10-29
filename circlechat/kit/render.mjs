@@ -361,6 +361,11 @@ export function validate(site, { cluster } = {}) {
   }
   const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
   if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
+  // On a Mac, the gateway's port for port jobs is 127.0.0.1:<gateway port + 1> (setup-host.sh).
+  const jobsLocal = (t.gateway_port ?? 4000) + 1;
+  if ((site.nodes ?? []).find((n) => n.control)?.os === "macos" && [t.port ?? 8080, t.preview_port ?? 5173].includes(jobsLocal)) {
+    errs.push(`site.gateway_port + 1 (${jobsLocal}) is the gateway's port for port jobs on a Mac, and must differ from site.port and site.preview_port`);
+  }
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
   if (t.slack_channel_id !== undefined && !/^[CG][A-Z0-9]{6,}$/.test(t.slack_channel_id)) errs.push("site.slack_channel_id must be a Slack channel ID, such as C0123ABCD");
   // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the

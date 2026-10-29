@@ -11,12 +11,12 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "site.example.json"), "utf8"));
 import { stackSite } from "./kit/stack-site.mjs";
 
-function sandbox(site, { tenant, system } = {}) {
+function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "setup-"));
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
@@ -30,7 +30,7 @@ function sandbox(site, { tenant, system } = {}) {
   if (tenant) { fs.mkdirSync(path.join(home, "circlechat"), { recursive: true }); fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(example)); }
   const run = (script, ...args) => spawnSync("bash", [path.join(here, script), ...args], { env, encoding: "utf8", cwd: home });
   const dotenv = () => Object.fromEntries(fs.readFileSync(path.join(cc, ".env"), "utf8").split("\n").filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
-  return { home, cc, run, dotenv, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""), units };
+  return { home, cc, run, dotenv, stub, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""), units };
 }
 
 test("setup-host --secrets-only writes the stack's settings and starts the gateway on the stack's network", () => {
@@ -211,4 +211,56 @@ test("a stack's job runner on its one computer gets its own port and the compute
   const other = s.run("setup-node.sh", "machine-2");
   assert.notEqual(other.status, 0);
   assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
+});
+
+// A Mac whose Docker runs in Colima: an office network address, and Tailscale's address. Each
+// gateway check gets the answer the test names.
+function colimaMac({ serveStatus = { TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }, jobsAnswer = "401", officeAnswers = false } = {}) {
+  const s = sandbox(example, { system: "Darwin", dockerContext: "colima" });
+  s.stub("tailscale", `[ "$1 $2" = "serve status" ] && echo '${JSON.stringify(serveStatus)}'; exit 0`);
+  s.stub("ifconfig", `printf 'lo0: flags\\n\\tinet 127.0.0.1 netmask 0xff000000\\nen0: flags\\n\\tinet 192.168.1.20 netmask 0xffffff00\\nutun4: flags\\n\\tinet 100.64.0.1 --> 100.64.0.1\\n'`);
+  s.stub("curl", `case "$*" in *127.0.0.1:4001*) printf ${jobsAnswer} ;; *192.168.1.20*) ${officeAnswers ? "printf 401" : "printf 000; exit 7"} ;; *) printf 000; exit 7 ;; esac`);
+  s.stub("sleep", "");
+  return s;
+}
+
+test("on a Mac with Colima, the gateway's port for port jobs is on 127.0.0.1, and tailscale serve gives the port to the tailnet", () => {
+  const s = colimaMac();
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls();
+  const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+  assert.match(router, /--network circlechat_default -p 127\.0\.0\.1:4001:4001 -v /);
+  assert.doesNotMatch(router, /100\.64\.0\.1/, "Docker publishes nothing on the Tailscale address");
+  assert.match(calls, /^tailscale serve --bg --tcp=4000 tcp:\/\/127\.0\.0\.1:4001$/m);
+  // A request without a task key is refused, and the office network gets no answer on either port.
+  assert.match(calls, /^curl .*http:\/\/127\.0\.0\.1:4001\/health$/m);
+  assert.match(calls, /^curl .*http:\/\/192\.168\.1\.20:4000\/health$/m);
+  assert.match(calls, /^curl .*http:\/\/192\.168\.1\.20:4001\/health$/m);
+  assert.doesNotMatch(calls, /curl .*(127\.0\.0\.1|100\.64\.0\.1):4000/, "only other addresses are checked for the gateway port");
+  assert.match(r.stdout, /Gateway for port jobs: Tailscale port 4000 only, and a task key is required/);
+});
+
+test("on a Mac with Colima, the setup stops when the gateway answers on the office network, without a task key, or outside tailscale serve", () => {
+  const office = colimaMac({ officeAnswers: true }).run("setup-host.sh", "--secrets-only");
+  assert.equal(office.status, 1);
+  assert.match(office.stdout, /The gateway answers on 192\.168\.1\.20:4000, outside Tailscale/);
+  const open = colimaMac({ jobsAnswer: "200" }).run("setup-host.sh", "--secrets-only");
+  assert.equal(open.status, 1, open.stdout + open.stderr);
+  assert.match(open.stdout, /answered 200 without a task key, not 401/);
+  const unserved = colimaMac({ serveStatus: {} }).run("setup-host.sh", "--secrets-only");
+  assert.equal(unserved.status, 1);
+  assert.match(unserved.stdout, /tailscale serve does not pass port 4000 to 127\.0\.0\.1:4001/);
+});
+
+test("on Linux, and on a Mac with another Docker, Docker publishes the port for port jobs on the Tailscale address", () => {
+  for (const [system, dockerContext] of [["Linux", "default"], ["Darwin", "orbstack"]]) {
+    const s = sandbox(example, { system, dockerContext });
+    s.stub("tailscale", "");
+    const r = s.run("setup-host.sh", "--secrets-only");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const router = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+    assert.match(router, /-p 100\.64\.0\.1:4000:4001 -v /, system);
+    assert.doesNotMatch(s.calls(), /tailscale serve/, system);
+  }
 });
