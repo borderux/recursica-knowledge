@@ -345,3 +345,16 @@ test("the job runner listens on loopback and the computer's Tailscale addresses,
     assert.equal(/listens on 127\.0\.0\.1 only/.test(r.stdout), want === "127.0.0.1");
   }
 });
+
+test("the Slack notifier shows the stack's name as the sender of each message", () => {
+  const site = structuredClone(example);
+  site.notify = { ...(site.notify ?? {}), slack: true };
+  Object.assign(site.site, { stack_name: "ops", slack_channel_id: "CSTACK01" });
+  const s = sandbox(site);
+  fs.appendFileSync(path.join(s.cc, ".env.example"), "SLACK_BOT_TOKEN=xoxb-1\n");
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const notifier = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-slack-notify "));
+  assert.ok(notifier, r.stdout);
+  assert.match(notifier, / -e STACK_NAME=ops /);
+});

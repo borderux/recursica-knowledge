@@ -3,6 +3,22 @@ import assert from "node:assert/strict";
 import { makeChannel } from "./channel.mjs";
 import { buttonBlocks, localToUtc, nextAt, tzName } from "./actions.mjs";
 
+test("each message shows the sending computer's name and, when set, the computer's icon", async () => {
+  const bodies = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => { bodies.push(JSON.parse(opts.body)); return { json: async () => ({ ok: true }) }; };
+  try {
+    const base = { SLACK_BOT_TOKEN: "xoxb", SLACK_CHANNEL_ID: "C1", COMPUTER: "machine-2" };
+    await makeChannel({ ...base, SLACK_ICON: ":desktop_computer:" }).post("C1", "info", "hello");
+    await makeChannel(base).post("C1", "reboot", "Updates need a reboot", "u1");
+    assert.equal(bodies[0].username, "machine-2");
+    assert.equal(bodies[0].icon_emoji, ":desktop_computer:");
+    assert.equal(bodies[1].username, "machine-2");
+    assert.equal("icon_emoji" in bodies[1], false, "no icon without slack_icon");
+    assert.ok(bodies[1].blocks, "a message with buttons too");
+  } finally { globalThis.fetch = realFetch; }
+});
+
 test("a post to a channel outside this computer's stacks is refused before reaching Slack", async () => {
   const calls = [];
   const realFetch = globalThis.fetch;

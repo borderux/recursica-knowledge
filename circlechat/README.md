@@ -588,7 +588,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 ### The Slack app
 
-1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope, and the bot the `chat:write` scope. Invite the bot to #agent-cluster and to each client's channel.
+1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope. Give the bot the `chat:write` and `chat:write.customize` scopes. The second scope lets each message name the computer or stack that sent it. Invite the bot to the cluster's channel, `SLACK_CHANNEL_ID`, and to each client's channel.
 2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
 3. Add the cluster's secrets to the GitHub environment of the cluster's own stack, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
@@ -596,6 +596,17 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
    - `APPROVERS`: Slack user IDs and names, such as `U012=person_a,U034=person_b`.
    - Each approver's `TOTP_SECRET_<NAME>`, from `enroll.mjs`.
 4. Set `site.slack_channel_id` in each stack's site.json, so uptime alerts reach the stack's own channel.
+
+**Each Slack message names the computer or the stack that sent it.** The sender's name replaces the app's name on the message:
+
+| Sender                                                                                | Name on the message                                                               | Icon                        |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------- |
+| The cluster agent, the Slack app's replies, the update job and the uptime checks      | The computer's name in site.json, such as `machine-1`                             | The computer's `slack_icon` |
+| The notifier, the backups, the upgrade job and the image refresh, about a whole stack | The stack's name: `site.tenant`, or `site.stack_name` for the cluster's own stack | The app's icon              |
+
+`slack_icon` is an optional emoji for each computer in site.json's `nodes`, such as `:desktop_computer:`. Rerun `install-cluster.sh` on the computer after a change to `slack_icon`.
+
+Slack shows the name and the icon only when the bot has the `chat:write.customize` scope. Without the scope, Slack ignores both and posts as the app, so nothing breaks. Add the scope in the Slack app's settings, under "OAuth & Permissions", then reinstall the app to the workspace.
 
 ### Updates
 

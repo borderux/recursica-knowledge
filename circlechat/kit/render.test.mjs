@@ -496,3 +496,11 @@ test("site.timezone takes a time zone name", () => {
   s.site.timezone = "Mars/Olympus";
   assert.match(validate(s).join("\n"), /site\.timezone "Mars\/Olympus" must be a time zone name/);
 });
+
+test("a computer's slack_icon is one emoji", () => {
+  const s = clone();
+  s.nodes[0].slack_icon = ":desktop_computer:";
+  assert.deepEqual(validate(s), []);
+  s.nodes[0].slack_icon = "desktop";
+  assert.match(validate(s).join("\n"), /node machine-1: slack_icon must be one emoji, such as :desktop_computer:/);
+});

@@ -416,7 +416,7 @@ start_gateway_and_notifier() {
       -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
       -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
       -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
-      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" \
+      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e STACK_NAME="$STACK_NAME" \
       -e CC_URL="https://$TS_HOST" \
       "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
     echo "Slack notifier running."
