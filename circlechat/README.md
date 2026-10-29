@@ -395,6 +395,23 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 
 With the outgoing filter off, the control computer's own agents use `site.gateway_port` on `127.0.0.1`.
 
+**The control computer's operating system decides how the port for port jobs reaches Tailscale.**
+
+| Control computer           | Docker publishes the port for port jobs on | Tailscale's port `site.gateway_port`                   |
+| -------------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| Linux, or Windows with WSL | The Tailscale address                      | Docker's port                                          |
+| A Mac with Colima          | `127.0.0.1:<site.gateway_port + 1>`        | `tailscale serve --tcp` passes the port to `127.0.0.1` |
+
+On a Mac, Docker runs in Colima's VM, and the VM does not hold the Mac's Tailscale address. Docker therefore publishes the port on `127.0.0.1` only. `setup-host.sh` then runs `tailscale serve --bg --tcp=<site.gateway_port> tcp://127.0.0.1:<site.gateway_port + 1>`. The other computers keep the same address, the control computer's Tailscale address and `site.gateway_port`.
+
+**On a Mac, `setup-host.sh` stops when a check of the gateway's port fails.** Each run checks three facts:
+
+- `tailscale serve status` passes `site.gateway_port` to the port on `127.0.0.1`.
+- The port on `127.0.0.1` answers 401 to a request without a task key.
+- Neither gateway port answers on the Mac's other addresses, such as the office network.
+
+Keep `site.gateway_port + 1` free on a Mac. The config check refuses `site.port` or `site.preview_port` on that port. A new client or demo stack gets a gateway port with the next port free too. Offboarding a client turns off the client's `tailscale serve` port.
+
 **The gateway reads CircleChat's database with a read-only role, `cc_gateway_read`.** The role reads only the columns the gateway needs, from six tables, and writes nothing. `setup-host.sh` makes the role from `circlechat/gateway/gateway-db.sql`. The role's password lives in the gateway's state folder, never in an environment variable. After a CircleChat update, rerun `setup-host.sh`, so the role can read any new table the gateway needs.
 
 ### The spend log
