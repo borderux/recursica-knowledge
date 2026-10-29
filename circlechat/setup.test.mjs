@@ -91,9 +91,9 @@ test("on a Mac, setup-host gives the gateway's secrets file and state folder to 
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const calls = s.calls().split("\n");
     const gw = path.join(s.cc, "gateway-state");
-    assert.equal(calls.includes(`sudo chown -h -R ${me} ${path.join(s.cc, "model-keys.env")} ${gw}`), owned, system);
-    assert.equal(calls.includes(`sudo chown -h -R ${me} ${gw}/db.url`), owned, system);
-    assert.equal(calls.some((l) => l.startsWith("sudo chown")), owned, `${system}: no other chown`);
+    assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${path.join(s.cc, "model-keys.env")} ${gw}`), owned, system);
+    assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${gw}/db.url`), owned, system);
+    assert.equal(calls.some((l) => /^sudo \S*chown/.test(l)), owned, `${system}: no other chown`);
   }
 });
 
@@ -262,5 +262,19 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
     const router = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
     assert.match(router, /-p 100\.64\.0\.1:4000:4001 -v /, system);
     assert.doesNotMatch(s.calls(), /tailscale serve/, system);
+  }
+});
+
+test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", () => {
+  for (const [system, unit, chown] of [["Darwin", "io.recursica.agents-sync.plist", "/usr/sbin/chown"], ["Linux", "agents-sync.service", "chown"]]) {
+    const s = sandbox(example, { system });
+    // Stand-ins for git, so the full run clones nothing, and for the Mac's model, VM and network
+    // services, so the full run never reaches the computer's own Ollama, Colima, Homebrew or Tailscale.
+    s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
+    for (const t of ["ollama", "colima", "brew", "tailscale"]) s.stub(t, "exit 0");
+    const r = s.run("setup-host.sh");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const text = fs.readFileSync(path.join(s.units, unit), "utf8");
+    assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
   }
 });
