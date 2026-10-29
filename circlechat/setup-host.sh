@@ -474,8 +474,9 @@ if [ "$SECRETS_ONLY" = true ]; then
   [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
   # With KIT_ROOT_STEPS, the root process runs the key check after this run. A secrets deploy
-  # changes no agent's gateway key. After an upgrade, the root process runs sync-skills.sh, whose
-  # setup-agent.sh gives each managed agent its gateway access again.
+  # changes no agent's gateway key. After an upgrade, the root process runs sync-skills.sh as the
+  # owner, for the skills and personas. A release that changes an agent's setup asks for
+  # setup-agent.sh by hand (kit/upgrade.mjs).
   if [ "$HELPER" = false ]; then
     agents_to_gateway
     key_check
@@ -516,14 +517,17 @@ fi
 # The application Betty builds in and Barb reviews.
 [ -d "$WS/$APP_REPO" ] || git clone "$APP_REPO_URL" "$WS/$APP_REPO"
 
-# Kev, Barb's quick first pass. Copied out of the knowledge checkout so its cache and
-# node_modules never land in a repository. Its engines are listed in site.json.
-if [ -d "$WS/recursica-knowledge/tools/kev" ]; then
-  mkdir -p "$WS/kev"
-  cp -r "$WS/recursica-knowledge/tools/kev/." "$WS/kev/"
+# Kev, Barb's quick first pass. Copied out of the kit's checkout so its cache and node_modules
+# never land in a repository. Agents can change the workspace, so the copy never follows a symlink
+# there (kit/safe-files.mjs). Its engines are listed in site.json.
+if [ -d "$HERE/../tools/kev" ]; then
+  node "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/kev"
+  node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$HERE/../tools/kev/."
   docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
 fi
-sudo chmod -R 777 hermes-homes "$WS"
+# Every real file and folder, never a file a symlink names (kit/safe-files.mjs).
+sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$CC_DIR/hermes-homes" "$CC_DIR/hermes-homes" 777
+sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 
 # A port another stack already uses stops the setup here, before anything restarts.
 port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
@@ -576,9 +580,8 @@ if [ "$UPGRADE_AUTO" = on ]; then
   # cluster-updater checks out each release; nothing pulls main.
   uninstall_unit "agents-sync$SUFFIX" >/dev/null
 else
-  # macOS keeps chown in /usr/sbin, and the job's PATH can leave /usr/sbin out.
-  sync_chown="chown"; [ "$OS" != Darwin ] || sync_chown="/usr/sbin/chown"
-  install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; $sync_chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+  # As the owner, never as root: agents can change the workspace and their homes (sync-skills.sh).
+  install_unit "agents-sync$SUFFIX" "$ENVS $HERE/sync-skills.sh" "$CC_DIR" "$(id -un)" hourly
 fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook

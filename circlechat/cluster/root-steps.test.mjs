@@ -81,16 +81,17 @@ function fakeRun(answers = {}) {
 }
 const env = (home) => ({ OWNER: "owner", OWNER_HOME: home, KIT: "/kit", PATH: "/usr/bin:/bin", COMPUTER: "machine-1" });
 
-test("after an upgrade, root syncs the skills without a pull, then runs the key check on the owner's database dump", () => {
+test("after an upgrade, the owner syncs the skills without a pull, then root runs the key check on the owner's database dump", () => {
   const { home, ccDir } = stack();
   fs.writeFileSync(path.join(ccDir, "kit-out/tenant.env"), "DOCKER_CONTEXT=colima-acme\n");
   const f = fakeRun({ "pg_dump": { status: 0, stdout: "the dump" } });
   assert.deepEqual(afterUpgrade({ env: env(home), ccDir, run: f.run }), []);
   const [sync, dump, check] = [f.calls.find((c) => c.line.includes("sync-skills.sh")), f.calls.find((c) => c.line.includes("pg_dump")), f.calls.find((c) => c.line.includes("key-check.mjs"))];
-  assert.equal(sync.line, "bash /kit/circlechat/sync-skills.sh");
-  assert.equal(sync.opts.env.NO_PULL, "1");
-  assert.equal(sync.opts.env.CC_DIR, ccDir);
-  assert.equal(sync.opts.env.WS, path.join(home, "circlechat-workspace"));
+  // The sync runs as the owner, never as root: agents can change the workspace and their homes.
+  assert.match(sync.line, /^sudo -u owner -H env /);
+  assert.ok(sync.line.endsWith(" bash /kit/circlechat/sync-skills.sh"), sync.line);
+  for (const v of ["NO_PULL=1", `CC_DIR=${ccDir}`, `WS=${path.join(home, "circlechat-workspace")}`, "OWNER=owner"]) assert.ok(sync.args.includes(v), v);
+  assert.ok(!f.calls.some((c) => /chown/.test(c.line)), "root changes no owner in the workspace");
   assert.match(dump.line, /^sudo -u owner -H env DOCKER_CONTEXT=colima-acme PATH=\/usr\/bin:\/bin bash -c /);
   assert.equal(check.cmd, process.execPath);
   assert.deepEqual(check.args, ["/kit/circlechat/gateway/key-check.mjs", "--secrets", path.join(ccDir, "model-keys.env"), "--stdin", "CircleChat's database", path.join(ccDir, "hermes-homes")]);

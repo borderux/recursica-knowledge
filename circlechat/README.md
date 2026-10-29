@@ -127,8 +127,36 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
 
-After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
-(`sync-skills.sh`), so merged changes reach the agents within the hour.
+After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
+checkout, as "Files in the workspace and the agents' homes" describes. The job also pulls the
+workspace's checkout, for the agents to read. With `upgrade.auto`, the upgrade job does both
+after each release instead.
+
+### Files in the workspace and the agents' homes
+
+**An agent can change any file in the shared workspace and in the agent's own Hermes home,
+symlinks included.** A plain `cp -r`, `tee` or `chmod -R` there would follow a symlink an agent
+put there, and change a file anywhere on the computer. So the kit keeps three rules:
+
+- **`sync-skills.sh` and `setup-agent.sh` never run as root.** Each script stops when root runs it.
+  The hourly sync job and the upgrade job run `sync-skills.sh` as the account that owns the
+  stacks. `setup-agent.sh`, run by hand, writes in the agent's home with sudo, through the helper
+  below.
+- **Every file the kit copies there comes from the kit checkout,** `~/recursica-knowledge`, never
+  from the workspace's checkout, which an agent can change: the skills, Barb's subagents, each
+  persona, and Kev's files.
+- **Every write there goes through `circlechat/kit/safe-files.mjs`.** A symlinked folder on the way
+  to a file is refused, and nothing is written there. Each file is written as a new file, then
+  moved into place, so a symlink at the file's own name is replaced and the file the symlink names
+  never changes. A read never follows a symlink. The chmod of an agent's home leaves each symlink
+  alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules.
+
+**`sync-skills.sh` refreshes only the skills and the persona** (`setup-agent.sh --sync`), with no
+sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
+`setup-agent.sh <handle>` by hand. After a release that changes `setup-agent.sh` or
+`gateway/hermes-access.mjs`, the upgrade job says so in Slack. Files that root wrote in an agent's
+home before this change can stop the owner's sync: run `setup-agent.sh <handle>` once by hand for
+each agent, which sets the home's modes again.
 
 ### The cluster's own stack's name
 
@@ -144,7 +172,7 @@ After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every 
 Each script below checks the kit checkout first, with `circlechat/kit/check-kit.sh`:
 
 - `setup-host.sh`, which installs the backups and the hourly sync
-- `backup/backup.sh`, `backup/restore-test.sh` and `sync-skills.sh`
+- `backup/backup.sh`, `backup/restore-test.sh` and `sync-skills.sh` (which runs as the owner, never as root)
 - `deploy/install-secrets-helper.sh`, and the secrets helper, `agent-stacks-apply`
 - `tenant/setup-pc.sh`, which installs `agent-stacks-disk`
 - `cluster/install-cluster.sh`, and the cluster agent and the update job at each start
@@ -643,7 +671,7 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
 1. **Before the upgrade, as root:** the gateway's state folder, LiteLLM's master key, and the password and address of the router's database role, as the secrets helper writes them ("Secrets in GitHub").
 2. **The upgrade, as the owner:** `setup-host.sh --upgrade` takes only the Docker steps. The database role's password passes on stdin.
-3. **After an upgrade that ran the setup, as root:** `sync-skills.sh` refreshes each agent's skills and persona, then the key check runs. A failure goes to the stack's Slack channel.
+3. **After an upgrade that ran the setup:** `sync-skills.sh` refreshes each agent's skills and persona, as the owner, never as root. Then the key check runs as root. A failure goes to the stack's Slack channel.
 
 An older stack's `ANTHROPIC_API_KEY` in `.env` moves to the gateway's secrets file at the next full setup or secrets deploy. A run of `upgrade.mjs` by hand, in a terminal, uses sudo as before.
 

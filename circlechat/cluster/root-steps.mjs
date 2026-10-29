@@ -8,9 +8,9 @@
 //      owns each one, so the Docker VM can mount the files.
 //   2. The upgrade, as the owner: kit/upgrade.mjs with KIT_ROOT_STEPS=1, and the database role's
 //      password on stdin. setup-host.sh --upgrade then takes only the Docker steps.
-//   3. After an upgrade that ran setup-host.sh, as root: the agents' skills and personas
-//      (sync-skills.sh), then the key check (gateway/key-check.mjs). A failure goes to the stack's
-//      Slack channel.
+//   3. After an upgrade that ran setup-host.sh: the agents' skills and personas, with sync-skills.sh
+//      as the owner, never as root, because agents can change the workspace and their homes. Then
+//      the key check as root (gateway/key-check.mjs). A failure goes to the stack's Slack channel.
 //
 // The secrets helper (deploy/apply-secrets.sh) takes the same steps for a secrets deploy.
 import crypto from "node:crypto";
@@ -68,7 +68,8 @@ export function stackPaths(ownerHome, ccDir) {
   return { tenant, ws: tenant ? path.join(path.dirname(ccDir), "workspace") : path.join(ownerHome, "circlechat-workspace") };
 }
 
-// Step 3: the agents' skills and personas, then the key check. Returns each problem, or [].
+// Step 3: the agents' skills and personas as the owner, then the key check as root. Returns each
+// problem, or [].
 //   run(cmd, args, opts): spawnSync's result
 export function afterUpgrade({ env, ccDir, run = spawnSync }) {
   const { tenant, ws } = stackPaths(env.OWNER_HOME, ccDir);
@@ -76,13 +77,9 @@ export function afterUpgrade({ env, ccDir, run = spawnSync }) {
   const problems = [];
   const vars = { CC_DIR: ccDir, WS: ws, SITE: path.join(ccDir, "site.json"), OWNER: env.OWNER, OWNER_HOME: env.OWNER_HOME, ...(tenant ? { TENANT: tenant } : {}) };
   // The upgrade checked out the release in the workspace, so the sync does not pull.
-  const sync = run("bash", [path.join(kit, "sync-skills.sh")], { env: { ...process.env, ...vars, NO_PULL: "1" }, stdio: "inherit" });
+  const sync = run("sudo", ["-u", env.OWNER, "-H", "env", ...Object.entries({ ...vars, NO_PULL: "1", PATH: env.PATH }).map(([k, v]) => `${k}=${v}`),
+    "bash", path.join(kit, "sync-skills.sh")], { stdio: "inherit" });
   if (sync.status !== 0) problems.push("the agents' skills and personas did not sync");
-  // The sync copies Kev's files into the workspace as root. The owner gets back each file root
-  // made there that has one link, so no link to another file changes owner.
-  const kev = path.join(ws, "kev");
-  const chown = process.platform === "darwin" ? "/usr/sbin/chown" : "chown";
-  if (fs.existsSync(kev)) run("find", [kev, "-user", "root", "-links", "1", "-exec", chown, "-h", env.OWNER, "{}", "+"], { stdio: "inherit" });
   // The key check: the owner dumps CircleChat's database from Docker, and root reads the gateway's
   // secrets file and the agent homes.
   let dctx = "";

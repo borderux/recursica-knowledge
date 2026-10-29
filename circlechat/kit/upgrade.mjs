@@ -93,10 +93,11 @@ async function updateMcp(ws, stateFile, state, say) {
 }
 
 // The setup for one release, as the owner. With KIT_ROOT_STEPS, the root process that started this
-// script (cluster/root-steps.mjs) prepared the gateway's files, passed the database role's password
-// on stdin, and syncs the agents' skills and runs the key check after this script ends. The setup
-// then takes only the Docker steps, and the owner needs no sudo. Without KIT_ROOT_STEPS, such as a
-// run by hand in a terminal, the setup and the skill sync use sudo as before.
+// script (cluster/root-steps.mjs) prepared the gateway's files, and passed the database role's
+// password on stdin. The setup then takes only the Docker steps, and the owner needs no sudo. After
+// this script ends, the root process runs the skill sync as the owner, then the key check. Without
+// KIT_ROOT_STEPS, such as a run by hand in a terminal, the setup uses sudo as before, and the skill
+// sync runs here as the owner.
 //   record(): called before each run of setup-host.sh, so the root process knows the setup ran
 export function setupRunner({ kit, rootSteps, password = "", record = () => {}, run = spawnSync }) {
   return () => {
@@ -158,6 +159,9 @@ async function main() {
     // A release that changes the services or timers needs the full setup, which asks for sudo.
     const changed = git("diff", "--name-only", before, "HEAD", "--", "circlechat/kit/lib.sh", "circlechat/setup-node.sh", "circlechat/cluster/install-cluster.sh");
     if (changed || /install_unit/.test(git("diff", before, "HEAD", "--", "circlechat/setup-host.sh"))) say(`:information_source: Upgraded to ${d.tag.split("@").pop()}. This release changes the computer's services: run setup-host.sh, setup-node.sh and install-cluster.sh once by hand to apply them.`);
+    // The upgrade syncs only the agents' skills and personas. A release that changes the rest of an
+    // agent's setup, such as the agent's gateway access, needs setup-agent.sh by hand.
+    if (git("diff", "--name-only", before, "HEAD", "--", "circlechat/setup-agent.sh", "circlechat/gateway/hermes-access.mjs")) say(`:information_source: Upgraded to ${d.tag.split("@").pop()}. This release changes the agents' setup: run setup-agent.sh once by hand for each agent.`);
     console.log(`upgraded to ${d.tag}`);
     return;
   }

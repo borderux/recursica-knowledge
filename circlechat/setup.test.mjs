@@ -293,13 +293,16 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
   }
 });
 
-test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", () => {
-  for (const [system, unit, chown] of [["Darwin", "io.recursica.agents-sync.plist", "/usr/sbin/chown"], ["Linux", "agents-sync.service", "chown"]]) {
+test("the hourly sync job runs sync-skills.sh as the owner, never as root, with no chown or git setting", () => {
+  const me = os.userInfo().username;
+  for (const [system, unit, user] of [["Darwin", "io.recursica.agents-sync.plist", `<key>UserName</key><string>${me}</string>`], ["Linux", "agents-sync.service", `User=${me}`]]) {
     const s = sandbox(example, { system });
     const r = fullSetup(s);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const text = fs.readFileSync(path.join(s.units, unit), "utf8");
-    assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
+    assert.ok(text.includes(user), `${system}: ${text}`);
+    assert.match(text, /sync-skills\.sh/);
+    assert.doesNotMatch(text, /chown|safe\.directory|User=root|<string>root<\/string>/, system);
   }
 });
 
