@@ -42,7 +42,8 @@ test("the shared model servers and Kev's model stay the cluster's: the stack get
   fs.mkdirSync(path.join(dir, "acme", "circlechat"), { recursive: true });
   fs.writeFileSync(path.join(dir, "acme", "circlechat", "site.json"), JSON.stringify(first));
   const second = stackSite(cluster, { stack: "beta", kind: "client", computers: "machine-1", tenantsDir: dir });
-  assert.deepEqual([second.site.port, second.site.preview_port, second.site.gateway_port, second.nodes[0].jobs.port], [8181, 5274, 4101, 7411]);
+  // 4101 is the first stack's gateway port for port jobs on a Mac, 127.0.0.1:<gateway port + 1>.
+  assert.deepEqual([second.site.port, second.site.preview_port, second.site.gateway_port, second.nodes[0].jobs.port], [8181, 5274, 4102, 7411]);
   assert.throws(() => stackSite(cluster, { stack: "acme", kind: "demo", computers: "nowhere", cloud: null, tenantsDir: dir }), /no computer named nowhere/);
   assert.throws(() => stackSite(cluster, { stack: "acme", kind: "internal", computers: "cluster", tenantsDir: dir }), /kind must be client or demo/);
 });

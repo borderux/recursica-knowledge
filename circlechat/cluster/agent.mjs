@@ -18,6 +18,7 @@ import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 import { AgentControls } from "./agent-controls.mjs";
+import { requireKit } from "./kit-check.mjs";
 
 export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls }) {
   const rebootFile = path.join(stateDir, "reboot.json");
@@ -105,6 +106,7 @@ export function readCanary(file, posFile) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
+  requireKit(env.KIT, env);
   const stateDir = "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 });
   // Channels this computer may post to: the cluster channel, and each local stack's channel.

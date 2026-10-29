@@ -2,6 +2,10 @@
 // Runs hourly on the control computer when site.json sets upgrade.auto, as the account that owns
 // the stack, instead of the hourly pull of main.
 //
+// Two checkouts move to each release: the kit checkout this script runs from, which root runs and
+// which sits outside the agents' workspace, and the workspace's checkout, which the agents read.
+// The setup runs from the kit checkout.
+//
 //   - A release with the same first number installs on its own: check out the release, rerun the
 //     setup, sync the agents, and check the stack. On a failure, the stack goes back to the
 //     version it ran, and Slack gets a message.
@@ -11,7 +15,9 @@
 //   node upgrade.mjs <tag>        upgrade to one release now (the Slack button runs this)
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { kitProblem } from "../cluster/kit-check.mjs";
 import { stackSlack } from "./slack.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
@@ -55,17 +61,27 @@ function pickUpCircleChat(ccDir, say, state, saveState) {
 async function main() {
   const ws = process.env.WS, ccDir = process.env.CC_DIR, k = path.join(ws, "recursica-knowledge");
   const here = path.dirname(new URL(import.meta.url).pathname);
+  const kit = path.resolve(here, "../..");
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
-  const git = (...a) => execFileSync("git", ["-C", k, ...a], { encoding: "utf8" }).trim();
+  const gitIn = (repo, ...a) => execFileSync("git", ["-C", repo, ...a], { encoding: "utf8" }).trim();
+  const git = (...a) => gitIn(kit, ...a);
   const post = stackSlack(ccDir);
   const say = (text) => { post(text).catch(() => {}); };
+  // A kit checkout that the setup would refuse stops the upgrade. Slack hears each new reason once.
+  const problem = kitProblem(kit, { OWNER: os.userInfo().username, OWNER_HOME: os.homedir(), WS: ws });
+  if (problem) {
+    if (state.kitProblem !== problem) { state.kitProblem = problem; fs.writeFileSync(stateFile, JSON.stringify(state)); await post(`:x: The upgrade job stopped. ${problem}`).catch(() => {}); }
+    process.exit(1);
+  }
+  delete state.kitProblem;
   // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
   // failure. The weekly upstream sync brings the original project's changes to that branch.
   const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
   try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
   git("fetch", "--tags", "--quiet");
-  const current = JSON.parse(fs.readFileSync(path.join(k, "package.json"), "utf8")).version;
+  gitIn(k, "fetch", "--tags", "--quiet");
+  const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);
   const wanted = process.argv[2];
   const d = wanted ? { action: "upgrade", tag: wanted } : decide(current, tags, state);
@@ -75,14 +91,15 @@ async function main() {
     return;
   }
   if (d.action !== "upgrade") return;
-  const before = git("rev-parse", "HEAD");
+  const before = git("rev-parse", "HEAD"), beforeWs = gitIn(k, "rev-parse", "HEAD");
   const run = () => {
     const opts = { env: { ...process.env, NO_PULL: "1" }, stdio: "inherit" };
-    const a = spawnSync("bash", [path.join(k, "circlechat/setup-host.sh"), "--upgrade"], opts);
-    const b = a.status === 0 ? spawnSync("bash", [path.join(k, "circlechat/sync-skills.sh")], opts) : a;
+    const a = spawnSync("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], opts);
+    const b = a.status === 0 ? spawnSync("bash", [path.join(kit, "circlechat/sync-skills.sh")], opts) : a;
     return a.status === 0 && b.status === 0;
   };
   git("checkout", "--quiet", d.tag);
+  gitIn(k, "checkout", "--quiet", d.tag);
   if (run()) {
     // A release that changes the services or timers needs the full setup, which asks for sudo.
     const changed = git("diff", "--name-only", before, "HEAD", "--", "circlechat/kit/lib.sh", "circlechat/setup-node.sh", "circlechat/cluster/install-cluster.sh");
@@ -91,6 +108,7 @@ async function main() {
     return;
   }
   git("checkout", "--quiet", before);
+  gitIn(k, "checkout", "--quiet", beforeWs);
   run();
   state.failed = { ...(state.failed ?? {}), [d.tag]: Date.now() }; saveState();
   say(`:x: The upgrade of the knowledge repo to ${d.tag.split("@").pop()} failed on the setup or the checks. The stack is back on ${current}, and skips ${d.tag.split("@").pop()} until a newer release appears.`);

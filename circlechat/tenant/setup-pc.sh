@@ -20,6 +20,9 @@ OWNER="$(id -un)"
 [ "$(uname -s)" = Linux ] || { echo "setup-pc.sh is for Linux and WSL. A Mac needs only Colima: brew install colima."; exit 1; }
 [ "$OWNER" != root ] || { echo "Run this as the account that owns the stacks, not as root."; exit 1; }
 ACCOUNT="${1:-}"
+# Root runs agent-stacks-disk, a copy of this kit's disk-helper.sh. The kit must sit outside the
+# agents' workspace.
+bash "$HERE/../kit/check-kit.sh" "$HERE/../.." "$OWNER" "$HOME" || exit 1
 if [ -n "$ACCOUNT" ]; then
   [ "$ACCOUNT" != "$OWNER" ] && [ "$ACCOUNT" != root ] || { echo "Give the rule to a separate account, not to $ACCOUNT."; exit 1; }
   id "$ACCOUNT" >/dev/null 2>&1 || { echo "No account named $ACCOUNT. Create the account first."; exit 1; }

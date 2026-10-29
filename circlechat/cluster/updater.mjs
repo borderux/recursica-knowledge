@@ -65,6 +65,8 @@ export function refreshRootCopies({ kit, mac, run, fsx = { exists: fs.existsSync
 
 async function main() {
   const env = process.env;
+  const { requireKit } = await import("./kit-check.mjs");
+  requireKit(env.KIT, env);
   const here = path.dirname(new URL(import.meta.url).pathname);
   const stateFile = "/var/lib/agent-cluster/updater.json";
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}

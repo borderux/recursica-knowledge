@@ -20,6 +20,8 @@ if [ "$OWNER" = root ]; then
   [ -f "$CONF" ] || { echo "Run this as the account that owns the stacks, not as root."; exit 1; }
   OWNER="$(. "$CONF"; echo "$OWNER")"; OWNER_HOME="$(. "$CONF"; echo "$OWNER_HOME")"; NODE_BIN="$(. "$CONF"; echo "$NODE_BIN")"
 fi
+# Root runs agent-stacks-apply, which runs this kit. The kit must sit outside the agents' workspace.
+bash "$HERE/../kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1
 [ "$RUNNER" != "$OWNER" ] || { echo "Give the runner its own account, separate from $OWNER."; exit 1; }
 id "$RUNNER" >/dev/null 2>&1 || { echo "No account named $RUNNER. Create the runner's account first."; exit 1; }
 [ -n "${NODE_BIN:-}" ] || NODE_BIN="$(command -v node)" || { echo "Node is not installed."; exit 1; }

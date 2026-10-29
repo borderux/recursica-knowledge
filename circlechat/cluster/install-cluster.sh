@@ -13,6 +13,9 @@ SITE="${SITE:-$HOME/circlechat/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 KIT="$(cd "$HERE/../.." && pwd)"
 . "$KIT/circlechat/kit/lib.sh"
+# Root runs the cluster's services from this checkout. The checkout must sit outside the agents'
+# workspace.
+require_kit "$KIT"
 NODE_BIN="$(command -v node)"
 for t in tcpdump age; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
 

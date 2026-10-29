@@ -422,3 +422,11 @@ test("a stack on picked computers leaves out a model that does not fit, where th
   assert.deepEqual(validate(s, { cluster: example }), []);
   assert.deepEqual(placeStack(s).notes[0], "Left out machine-2/mlx/large-mlx: the model needs 40 GB, and machine-2 has 24 GB left of the 64 GB it gives this stack's models.");
 });
+
+test("on a Mac control computer, site.gateway_port + 1 stays free for the gateway's port for port jobs", () => {
+  const s = clone();
+  s.site.preview_port = 4001;
+  assert.deepEqual(validate(s), [], "Linux publishes the port for port jobs on the Tailscale address");
+  s.nodes[0].os = "macos";
+  assert.match(validate(s).join("\n"), /site\.gateway_port \+ 1 \(4001\) is the gateway's port for port jobs on a Mac/);
+});

@@ -10,13 +10,21 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "..", "site.example.json"), "utf8"));
 const control = example.nodes.find((n) => n.control).name;
 
+// A stand-in for the kit's check (kit/check-kit.sh, tested in kit/check-kit.test.mjs): passes, or
+// refuses the kit with the given message.
+function fakeKitCheck(kit, refuse = "") {
+  fs.mkdirSync(path.join(kit, "circlechat", "kit"), { recursive: true });
+  fs.writeFileSync(path.join(kit, "circlechat", "kit", "check-kit.sh"), refuse ? `echo "${refuse}"; exit 1\n` : "exit 0\n");
+}
+
 function setup() {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "stacks-"));
+  fakeKitCheck(path.join(home, "kit"));
   fs.mkdirSync(path.join(home, "circlechat", "hermes-homes", ".hermes-alan"), { recursive: true });
   fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(example));
   fs.writeFileSync(path.join(home, "circlechat", ".env"), "KEEP=1\nANTHROPIC_API_KEY=old\n");
   const conf = path.join(home, "conf");
-  fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=/nonexistent\nNODE_BIN=${process.execPath}\n`);
+  fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=${path.join(home, "kit")}\nNODE_BIN=${process.execPath}\n`);
   return { home, conf };
 }
 
@@ -28,13 +36,15 @@ function apply(conf, args, input, env = {}) {
   });
 }
 
-// Stand-ins for uname, which reports the given system, and chown, which records each call.
+// Stand-ins for uname, which reports the given system, and chown, which records each call. The
+// chown stand-in sits outside PATH, the way /usr/sbin/chown sits outside the runner's PATH, and
+// CHOWN names the stand-in.
 function fakeSystem(home, system) {
-  const bin = path.join(home, "bin"), log = path.join(home, "chown.log");
-  fs.mkdirSync(bin, { recursive: true });
+  const bin = path.join(home, "bin"), sbin = path.join(home, "sbin"), log = path.join(home, "chown.log");
+  fs.mkdirSync(bin, { recursive: true }); fs.mkdirSync(sbin, { recursive: true });
   fs.writeFileSync(path.join(bin, "uname"), `#!/usr/bin/env bash\necho ${system}\n`, { mode: 0o755 });
-  fs.writeFileSync(path.join(bin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> "${log}"\n`, { mode: 0o755 });
-  return { env: { PATH: `${bin}:${process.env.PATH}` }, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
+  fs.writeFileSync(path.join(sbin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> "${log}"\n`, { mode: 0o755 });
+  return { env: { PATH: `${bin}:${process.env.PATH}`, CHOWN: path.join(sbin, "chown") }, bin, sbin, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
 test("writes each known secret to the file that uses it, and keeps other lines", () => {
@@ -186,6 +196,7 @@ test("on Linux, unlock opens the LUKS image itself, then starts the VM as the ow
   const stub = (file, name) => fs.writeFileSync(file, `#!/usr/bin/env bash\nin="$(cat)"; echo "${name} $* stdin=\${#in}" >> "${log}"\n`, { mode: 0o755 });
   stub(path.join(bin, "helper"), "helper");
   stub(path.join(kit, "circlechat", "tenant", "disk-image.sh"), "disk-image.sh");
+  fakeKitCheck(kit);
   fs.writeFileSync(path.join(bin, "sudo"), '#!/usr/bin/env bash\n[ "$1" = -n ] && shift; exec "$@"\n', { mode: 0o755 });
   const conf = path.join(home, "conf");
   fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=${kit}\nNODE_BIN=${process.execPath}\n`);
@@ -201,4 +212,24 @@ test("on Linux, unlock opens the LUKS image itself, then starts the VM as the ow
     "disk-image.sh stop-vm acme stdin=0",
     "helper close acme stdin=0",
   ]);
+});
+
+test("refuses a kit checkout that fails the kit check, and writes nothing", () => {
+  const { home, conf } = setup();
+  fakeKitCheck(path.join(home, "kit"), "Refusing the kit checkout: the checkout sits inside the agents' workspace.");
+  const before = fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8");
+  const r = apply(conf, ["border", control, "false"], "ANTHROPIC_API_KEY=new\n");
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /Refusing the kit checkout/);
+  assert.equal(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), before);
+});
+
+test("on a Mac, the secrets helper never looks chown up in PATH", () => {
+  const { home, conf } = setup();
+  const fake = fakeSystem(home, "Darwin");
+  // A chown on PATH that records each call. On a Mac, the helper calls /usr/sbin/chown instead.
+  fs.copyFileSync(path.join(fake.sbin, "chown"), path.join(fake.bin, "chown"));
+  fs.chmodSync(path.join(fake.bin, "chown"), 0o755);
+  apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n", { PATH: fake.env.PATH, CHOWN: "" });
+  assert.equal(fake.calls(), "");
 });
