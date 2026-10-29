@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { clusterStackName, githubEnvironment, keySecret, placeStack, render, stackName, validate } from "./render.mjs";
+import { clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
 const clone = () => structuredClone(example);
@@ -368,6 +368,34 @@ test("each model server's kind, port and models are checked", () => {
   assert.match(errs, /node machine-1, server ollama, model b: model is required/);
   assert.match(errs, /node machine-2, server mlx: an mlx-lm server serves one model/);
   assert.match(errs, /node machine-2: list the models under servers, not also under models/);
+});
+
+test("an Ollama server's settings are checked, and the kit's Ollama service gets each one", () => {
+  const s = clone();
+  const sv = s.nodes.find((n) => n.control).servers.find((x) => x.kind === "ollama");
+  assert.deepEqual(ollamaService(s), { port: 11434, env: [] }, "a setting left out keeps Ollama's default");
+  Object.assign(sv, { context_length: 131072, parallel: 4, keep_alive: "-1" });
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(ollamaService(s), { port: 11434, env: ["OLLAMA_CONTEXT_LENGTH=131072", "OLLAMA_NUM_PARALLEL=4", "OLLAMA_KEEP_ALIVE=-1"] });
+  for (const k of ["30m", "1h30m", "300", 300, -1]) { sv.keep_alive = k; assert.deepEqual(validate(s), [], String(k)); }
+  Object.assign(sv, { context_length: 0, parallel: 1.5, keep_alive: "forever" });
+  const errs = validate(s).join("\n");
+  assert.match(errs, /server ollama: context_length must be a whole number above 0/);
+  assert.match(errs, /server ollama: parallel must be a whole number above 0/);
+  assert.match(errs, /server ollama: keep_alive must be "-1", to keep each model loaded, or a time such as "30m"/);
+  // A setting with a space or a quote never reaches the service's command line.
+  Object.assign(sv, { context_length: 131072, parallel: 4, keep_alive: "1h; rm -rf ~" });
+  assert.match(validate(s).join("\n"), /keep_alive must be/);
+  const t = clone();
+  const mlx = t.nodes.flatMap((n) => n.servers ?? []).find((x) => x.kind === "mlx-lm");
+  mlx.parallel = 2;
+  assert.match(validate(t).join("\n"), new RegExp(`server ${mlx.id}: parallel is an Ollama setting, and this server is mlx-lm`));
+  // An older site.json names the Ollama server by port 11434, with no settings.
+  const old = clone();
+  const c = old.nodes.find((n) => n.control);
+  c.models = [{ id: "large-local", port: 11434, model: "x", context_length: 99 }];
+  delete c.servers;
+  assert.deepEqual(ollamaService(old), { port: 11434, env: [] });
 });
 
 test("a site.json with one Ollama server, in the older form, keeps working", () => {

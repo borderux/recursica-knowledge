@@ -183,10 +183,16 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
 // The tailscale daemon runs a copy of the tailscaled binary, which tailscaled install-system-daemon
 // makes in /usr/local/bin. After Homebrew upgrades tailscale, the copy is replaced from Homebrew's
 // new binary. The new binary is named by its Homebrew folder: tailscaled on the PATH is the old copy.
-export async function afterBrewUpgrade(names, { owner, run }) {
-  if (!names.includes("tailscale")) return;
-  const prefix = (await run("sudo", ["-u", owner, "-H", "brew", "--prefix", "tailscale"])).trim();
-  if (prefix) await run(path.join(prefix, "bin/tailscaled"), ["install-system-daemon"]);
+// After Homebrew upgrades ollama, the kit's Ollama service (kit/lib.sh mac_services) restarts, so the
+// new version, with its security fixes, serves the models. The running server is the old version.
+export async function afterBrewUpgrade(names, { owner, run, daemonDir = "/Library/LaunchDaemons" }) {
+  if (names.includes("tailscale")) {
+    const prefix = (await run("sudo", ["-u", owner, "-H", "brew", "--prefix", "tailscale"])).trim();
+    if (prefix) await run(path.join(prefix, "bin/tailscaled"), ["install-system-daemon"]);
+  }
+  if (names.includes("ollama") && fs.existsSync(path.join(daemonDir, "io.recursica.ollama.plist"))) {
+    await run("launchctl", ["kickstart", "-k", "system/io.recursica.ollama"]);
+  }
 }
 
 // Runs before each reboot the kit starts. On a Mac, each Colima VM stops cleanly first (colima.mjs).
