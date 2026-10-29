@@ -14,6 +14,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
+import { stopColimaVms } from "./colima.mjs";
 import { IS_MAC, IS_WSL } from "./platform.mjs";
 
 const exec = promisify(execFile);
@@ -109,6 +110,7 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
       const bd = decide(brews, seen, kev, now);
       if (bd.install.length) {
         await sh("sudo", ["-u", env.OWNER, "-H", "brew", "upgrade", ...bd.install.map((u) => u.name)]);
+        await afterBrewUpgrade(bd.install.map((u) => u.name), { owner: env.OWNER, run: sh });
         lines.push(`Installed ${bd.install.length} Homebrew update(s): ${bd.install.map((u) => `${u.name} ${u.version}`).join(", ")}.`);
       }
     }
@@ -136,7 +138,18 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
   return { lines, held };
 }
 
-export async function installHeld({ stateDir = "/var/lib/agent-cluster" } = {}) {
+// The tailscale daemon runs a copy of the tailscaled binary, which tailscaled install-system-daemon
+// makes in /usr/local/bin. After Homebrew upgrades tailscale, the copy is replaced from Homebrew's
+// new binary. The new binary is named by its Homebrew folder: tailscaled on the PATH is the old copy.
+export async function afterBrewUpgrade(names, { owner, run }) {
+  if (!names.includes("tailscale")) return;
+  const prefix = (await run("sudo", ["-u", owner, "-H", "brew", "--prefix", "tailscale"])).trim();
+  if (prefix) await run(path.join(prefix, "bin/tailscaled"), ["install-system-daemon"]);
+}
+
+// Runs before each reboot the kit starts. On a Mac, each Colima VM stops cleanly first (colima.mjs).
+export async function installHeld({ stateDir = "/var/lib/agent-cluster", env = process.env, mac = IS_MAC, run = sh } = {}) {
+  if (mac) await stopColimaVms({ owner: env.OWNER, ownerHome: env.OWNER_HOME, run, envPath: env.PATH });
   let held = []; try { held = JSON.parse(fs.readFileSync(path.join(stateDir, "updates-held.json"), "utf8")); } catch {}
   const apt = held.filter((h) => h.kind === "apt").map((h) => h.name);
   if (apt.length) await sh("apt-get", ["install", "-y", "--only-upgrade", "-o", "Dpkg::Options::=--force-confold", ...apt], { env: { ...process.env, DEBIAN_FRONTEND: "noninteractive" } });
