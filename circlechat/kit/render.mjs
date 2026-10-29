@@ -93,6 +93,34 @@ export function clusterModels(site) {
   return out;
 }
 
+// An Ollama server's own settings, which the kit's Ollama service on a Mac runs with (kit/lib.sh
+// mac_services): "context_length" (OLLAMA_CONTEXT_LENGTH, in tokens), "parallel" (OLLAMA_NUM_PARALLEL,
+// the requests each model answers at once) and "keep_alive" (OLLAMA_KEEP_ALIVE, how long a model
+// stays loaded: "-1" keeps each model loaded, or a time such as "30m" or 300 seconds). A setting
+// left out keeps Ollama's default.
+export const OLLAMA_SETTINGS = { context_length: "OLLAMA_CONTEXT_LENGTH", parallel: "OLLAMA_NUM_PARALLEL", keep_alive: "OLLAMA_KEEP_ALIVE" };
+const KEEP_ALIVE = /^(-1|\d+|\d+(ms|s|m|h)|(\d+h)?(\d+m)?(\d+s)?)$/;
+function ollamaSettingErrors(sv, where) {
+  const set = Object.keys(OLLAMA_SETTINGS).filter((k) => sv[k] !== undefined);
+  if (set.length && sv.kind !== "ollama") return [`${where}: ${set.join(", ")} ${set.length > 1 ? "are Ollama settings" : "is an Ollama setting"}, and this server is ${sv.kind}`];
+  const errs = [];
+  for (const k of ["context_length", "parallel"]) if (sv[k] !== undefined && !(Number.isInteger(sv[k]) && sv[k] > 0)) errs.push(`${where}: ${k} must be a whole number above 0`);
+  if (sv.keep_alive !== undefined && !(["string", "number"].includes(typeof sv.keep_alive) && String(sv.keep_alive) !== "" && KEEP_ALIVE.test(String(sv.keep_alive)))) {
+    errs.push(`${where}: keep_alive must be "-1", to keep each model loaded, or a time such as "30m" or 300 (seconds)`);
+  }
+  return errs;
+}
+
+// The control computer's Ollama server, for the kit's Ollama service on a Mac: the port, and each
+// setting from site.json as NAME=value. An older site.json names the server by port 11434, with no
+// settings. null when the control computer runs no Ollama server.
+export function ollamaService(site) {
+  const n = (site.nodes ?? []).find((x) => x.control) ?? {};
+  const sv = (n.servers ?? []).find((x) => x.kind === "ollama");
+  if (!sv) return (n.models ?? []).some((m) => m.port === 11434) ? { port: 11434, env: [] } : null;
+  return { port: sv.port, env: Object.entries(OLLAMA_SETTINGS).filter(([k]) => sv[k] !== undefined).map(([k, name]) => `${name}=${sv[k]}`) };
+}
+
 // The secret that holds a key's value, in GitHub and in the gateway's secrets file.
 export const keySecret = (name) => `MODEL_KEY_${name.toUpperCase().replace(/-/g, "_")}`;
 const splitModel = (provider, model) => (String(model).startsWith(`${provider}/`) ? String(model).slice(provider.length + 1) : String(model));
@@ -231,6 +259,7 @@ function serverErrors(n, { leaveOut = false } = {}) {
     if (!Number.isInteger(sv.port)) errs.push(`${where}: port must be a number`);
     else if (ports.has(sv.port)) errs.push(`${where}: port ${sv.port} is already used by ${ports.get(sv.port)}`);
     else ports.set(sv.port, `server ${sv.id}`);
+    errs.push(...ollamaSettingErrors(sv, where));
     if (!Array.isArray(sv.models) || !sv.models.length) { errs.push(`${where}: models must list at least one model`); continue; }
     // mlx-lm's server holds one model at a time: run one server for each model.
     if (sv.kind === "mlx-lm" && sv.models.length > 1) errs.push(`${where}: an mlx-lm server serves one model. Run one mlx-lm server, on its own port, for each model`);

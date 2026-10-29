@@ -225,8 +225,8 @@ test("a stack's job runner on its one computer gets its own port and the compute
 
 // A Mac whose Docker runs in Colima: an office network address, and Tailscale's address. Each
 // gateway check gets the answer the test names.
-function colimaMac({ serveStatus = { TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }, jobsAnswer = "401", officeAnswers = false } = {}) {
-  const s = sandbox(example, { system: "Darwin", dockerContext: "colima" });
+function colimaMac({ site = example, serveStatus = { TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }, jobsAnswer = "401", officeAnswers = false } = {}) {
+  const s = sandbox(site, { system: "Darwin", dockerContext: "colima" });
   s.stub("tailscale", `[ "$1 $2" = "serve status" ] && echo '${JSON.stringify(serveStatus)}'; exit 0`);
   s.stub("ifconfig", `printf 'lo0: flags\\n\\tinet 127.0.0.1 netmask 0xff000000\\nen0: flags\\n\\tinet 192.168.1.20 netmask 0xffffff00\\nutun4: flags\\n\\tinet 100.64.0.1 --> 100.64.0.1\\n'`);
   s.stub("curl", `case "$*" in *127.0.0.1:4001*) printf ${jobsAnswer} ;; *192.168.1.20*) ${officeAnswers ? "printf 401" : "printf 000; exit 7"} ;; *) printf 000; exit 7 ;; esac`);
@@ -287,6 +287,40 @@ test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", (
     const text = fs.readFileSync(path.join(s.units, unit), "utf8");
     assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
   }
+});
+
+test("on a Mac, the full setup runs Colima and Ollama as the kit's services, with the Ollama settings from site.json", () => {
+  const site = structuredClone(example);
+  Object.assign(site.nodes.find((n) => n.control).servers.find((sv) => sv.kind === "ollama"), { context_length: 131072, parallel: 4, keep_alive: "-1" });
+  // colimaMac stands in for tailscale serve and its checks.
+  const s = colimaMac({ site });
+  s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
+  for (const t of ["ollama", "colima", "brew"]) s.stub(t, "exit 0");
+  const daemons = path.join(s.home, "LaunchDaemons");
+  fs.mkdirSync(daemons);
+  const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, LAUNCH_DAEMONS_DIR: daemons }, encoding: "utf8", cwd: s.home });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(fs.existsSync(path.join(s.units, "io.recursica.colima.plist")));
+  assert.match(fs.readFileSync(path.join(s.units, "io.recursica.ollama.plist"), "utf8"),
+    / OLLAMA_HOST=127\.0\.0\.1:11434 OLLAMA_CONTEXT_LENGTH=131072 OLLAMA_NUM_PARALLEL=4 OLLAMA_KEEP_ALIVE=-1 exec \S*\/ollama serve/);
+});
+
+test("on a Mac, the full setup stops and changes nothing while a LaunchDaemon outside the kit runs Colima or Ollama", () => {
+  const s = sandbox(example, { system: "Darwin", dockerContext: "colima" });
+  for (const t of ["ollama", "colima", "brew", "tailscale", "git"]) s.stub(t, "exit 0");
+  // A plain-text stand-in for each daemon's plist, and for plutil, which reads it.
+  const daemons = path.join(s.home, "LaunchDaemons");
+  fs.mkdirSync(daemons);
+  fs.writeFileSync(path.join(daemons, "local.colima.plist"), `Label=local.colima\nProgramArguments=["/bin/bash","-c","colima start -f"]\n`);
+  s.stub("plutil", `f="\${@: -1}"; sed -n "s/^$2=//p" "$f" | grep . || exit 1`);
+  const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, LAUNCH_DAEMONS_DIR: daemons }, encoding: "utf8", cwd: s.home });
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /A LaunchDaemon outside the kit already runs Colima or Ollama/);
+  assert.match(r.stdout, new RegExp(`colima: sudo launchctl bootout system/local\\.colima && sudo rm ${daemons}/local\\.colima\\.plist`));
+  assert.doesNotMatch(s.calls(), /^(sudo|brew|colima|ollama|git) |^docker (run|rm|compose|network|context use)/m, "nothing ran that changes the computer");
+  assert.equal(fs.readdirSync(s.units).length, 0, "no service was installed");
+  assert.ok(!fs.existsSync(path.join(s.cc, "kit-out")), "the setup stopped before the render");
+  assert.ok(!fs.existsSync(path.join(s.cc, ".env")));
 });
 
 test("the job runner listens on loopback and the computer's Tailscale addresses, never on every interface", () => {

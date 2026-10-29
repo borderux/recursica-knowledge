@@ -47,6 +47,32 @@ RECURSICA_MCP_VERSION=0.8.1
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
 command -v node >/dev/null   || { echo "Node 20+ is not installed."; exit 1; }
 
+# The control computer's Ollama server from site.json (kit/render.mjs ollamaService): "port", or
+# "env" for the server's settings, one NAME=value on each line.
+# The mode comes first: render.mjs renders when its own path is the first argument.
+ollama_service() { node --input-type=module -e '
+  import fs from "node:fs";
+  const { ollamaService } = await import(process.argv[2]);
+  const o = ollamaService(JSON.parse(fs.readFileSync(process.argv[3], "utf8")));
+  if (o) process.stdout.write(process.argv[1] === "port" ? String(o.port) : o.env.join("\n"));
+' "$1" "$HERE/kit/render.mjs" "$SITE"; }
+# On a Mac, the cluster's own stack runs Colima's VM and Ollama as LaunchDaemons (kit/lib.sh). A
+# client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts the VM.
+# The other modes need no sudo, so only the full setup installs the daemons. A LaunchDaemon outside
+# the kit that already runs Colima or Ollama stops the setup here, before anything changes.
+MAC_SERVICES=false
+if [ "$OS" = Darwin ] && [ -z "${TENANT:-}" ] && [ "$SECRETS_ONLY" = false ]; then
+  MAC_SERVICES=true
+  case "$(docker context show 2>/dev/null)" in
+    colima) VM_PROFILE=default ;;
+    colima-*) VM_PROFILE="$(docker context show)"; VM_PROFILE="${VM_PROFILE#colima-}" ;;
+    *) VM_PROFILE="" ;;
+  esac
+  # A broken site.json gives no port here, and the render below stops the setup.
+  OLLAMA_PORT="$(ollama_service port 2>/dev/null || true)"
+  mac_services_check "$VM_PROFILE" "$OLLAMA_PORT" || exit 1
+fi
+
 # Validate and render. A broken site.json stops here, before anything changes. A client or demo
 # stack's computers are checked against the cluster's own site.json, and each model that does not
 # fit the stack's computers is left out, with a line that says so.
@@ -57,22 +83,11 @@ node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 WANT_TENANT="${TENANT:-}"
 . "$KIT_OUT/tenant.env"
 [ "$WANT_TENANT" = "$TENANT" ] || { echo "TENANT=${WANT_TENANT:-<none>} but $SITE has site.tenant ${TENANT:-<none>}. Run with the stack's own TENANT and site.json."; exit 1; }
-# On a Mac, the cluster's own stack runs Colima's VM and Ollama as LaunchDaemons (kit/lib.sh). A
-# client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts the VM.
-# The other modes need no sudo, so only the full setup installs the daemons.
-if [ "$OS" = Darwin ] && [ -z "$TENANT" ] && [ "$SECRETS_ONLY" = false ]; then
-  case "$(docker context show 2>/dev/null)" in
-    colima) VM_PROFILE=default ;;
-    colima-*) VM_PROFILE="$(docker context show)"; VM_PROFILE="${VM_PROFILE#colima-}" ;;
-    *) VM_PROFILE="" ;;
-  esac
-  OLLAMA_PORT="$(node -e '
-    const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-    const n = (s.nodes ?? []).find((x) => x.control) ?? {};
-    const sv = (n.servers ?? []).find((x) => x.kind === "ollama") ?? (n.models ?? []).find((m) => m.port === 11434);
-    if (sv) process.stdout.write(String(sv.port));
-  ' "$SITE")"
-  mac_services "$VM_PROFILE" "$OLLAMA_PORT"
+# The Mac's Colima and Ollama services (checked above). Ollama runs with the server's settings from
+# site.json, which the render above has checked.
+if [ "$MAC_SERVICES" = true ]; then
+  # shellcheck disable=SC2046  # one word per setting, each NAME=value with no space
+  mac_services "$VM_PROFILE" "$OLLAMA_PORT" $(ollama_service env)
 fi
 # A client stack runs in its own Docker VM. Every docker command below, and every job installed
 # below, uses that VM.

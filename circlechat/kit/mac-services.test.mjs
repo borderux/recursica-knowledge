@@ -1,6 +1,6 @@
-// The Mac's Colima and Ollama services (kit/lib.sh mac_services, kit/colima-service.sh), and the
-// update job's rerun of the secrets helper as root. Run with stand-ins for colima, brew, docker,
-// sudo and id.
+// The Mac's Colima and Ollama services (kit/lib.sh mac_services, kit/colima-service.sh), the check
+// for a LaunchDaemon outside the kit, the root jobs' HOME, and the update job's rerun of the secrets
+// helper as root. Run with stand-ins for colima, brew, docker, sudo, plutil and id.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -15,7 +15,8 @@ function sandbox() {
   const bin = path.join(dir, "bin"), log = path.join(dir, "calls.log"), units = path.join(dir, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body = "") => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  const env = { ...process.env, HOME: dir, PATH: `${bin}:/usr/bin:/bin` };
+  // The Colima service checks the VM every 0.2 seconds, and gives colima start -f 1 second to end.
+  const env = { ...process.env, HOME: dir, PATH: `${bin}:/usr/bin:/bin`, COLIMA_SERVICE_POLL: "0.2", COLIMA_SERVICE_GRACE: "1" };
   return { dir, bin, log, units, stub, env, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
@@ -31,7 +32,43 @@ test("Colima's service stops the VM on SIGTERM, then ends colima start -f, so th
   const code = await new Promise((r) => child.on("exit", r));
   assert.equal(code, 0);
   assert.ok(Date.now() - started < 5000, "the service exits at once, without waiting for colima start -f");
-  assert.deepEqual(s.calls().trim().split("\n"), ["colima status --profile default", "colima start -f --profile default", "colima stop --profile default"]);
+  const calls = s.calls().trim().split("\n");
+  assert.equal(calls[0], "colima status --profile default");
+  assert.ok(calls.includes("colima start -f --profile default"));
+  assert.equal(calls.at(-1), "colima stop --profile default");
+  assert.equal(calls.filter((c) => c.startsWith("colima stop")).length, 1, "the VM was not running, and stops once, on SIGTERM");
+  assert.throws(() => process.kill(Number(fs.readFileSync(pidFile, "utf8")), 0), /ESRCH/, "colima start -f has ended");
+});
+
+test("Colima's service ends when the VM stops another way, though colima start -f keeps running", async () => {
+  const s = sandbox();
+  // The first check finds no VM, so nothing stops before the start. The VM then runs for two
+  // checks and stops, such as after colima stop by hand.
+  const n = path.join(s.dir, "status.count");
+  s.stub("colima", `case "$1" in status) c=$(( $(cat "${n}" 2>/dev/null || echo 0) + 1 )); echo $c > "${n}"; [ $c -ge 2 ] && [ $c -le 3 ] ;; start) echo $$ > "${path.join(s.dir, "start.pid")}"; exec sleep 60 ;; esac`);
+  const started = Date.now();
+  const child = spawn("bash", [path.join(here, "colima-service.sh"), "default"], { env: s.env, stdio: ["ignore", "pipe", "ignore"] });
+  let out = ""; child.stdout.on("data", (d) => { out += d; });
+  const code = await new Promise((r) => child.on("exit", r));
+  assert.equal(code, 1, "launchd starts the service again");
+  assert.ok(Date.now() - started < 10_000, "the service ends within a few checks");
+  assert.match(out, /Colima's VM default stopped/);
+  assert.doesNotMatch(s.calls(), /colima stop/, "the VM had already stopped");
+  assert.throws(() => process.kill(Number(fs.readFileSync(path.join(s.dir, "start.pid"), "utf8")), 0), /ESRCH/, "colima start -f has ended");
+});
+
+test("Colima's service ends on SIGTERM even when colima start -f ignores SIGTERM", async () => {
+  const s = sandbox();
+  const pidFile = path.join(s.dir, "start.pid");
+  s.stub("colima", `case "$1" in status) exit 1 ;; start) echo $$ > "${pidFile}"; trap '' TERM; while :; do sleep 0.1; done ;; esac; exit 0`);
+  const child = spawn("bash", [path.join(here, "colima-service.sh"), "default"], { env: s.env, stdio: "ignore" });
+  for (let i = 0; i < 50 && !fs.existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 100));
+  const started = Date.now();
+  child.kill("SIGTERM");
+  const code = await new Promise((r) => child.on("exit", r));
+  assert.equal(code, 0);
+  assert.ok(Date.now() - started < 5000, "the service waits COLIMA_SERVICE_GRACE, then ends colima start -f with SIGKILL");
+  assert.match(s.calls(), /colima stop --profile default/);
   assert.throws(() => process.kill(Number(fs.readFileSync(pidFile, "utf8")), 0), /ESRCH/, "colima start -f has ended");
 });
 
@@ -40,7 +77,11 @@ test("Colima's service stops a VM that was started another way, then runs the VM
   s.stub("colima", `case "$1" in status) exit 0 ;; start) exit 0 ;; esac; exit 0`);
   const r = spawnSync("bash", [path.join(here, "colima-service.sh"), "work"], { env: s.env, encoding: "utf8" });
   assert.equal(r.status, 0);
-  assert.deepEqual(s.calls().trim().split("\n"), ["colima status --profile work", "colima stop --profile work", "colima start -f --profile work"]);
+  // The service's own checks of the VM can come before or after the start's line in the log.
+  const calls = s.calls().trim().split("\n");
+  assert.deepEqual(calls.slice(0, 2), ["colima status --profile work", "colima stop --profile work"]);
+  assert.ok(calls.includes("colima start -f --profile work"));
+  assert.equal(calls.filter((c) => c.startsWith("colima stop")).length, 1);
 });
 
 test("on a Mac, Colima and Ollama run as LaunchDaemons as the owner, and Homebrew's LaunchAgents stop", () => {
@@ -49,7 +90,7 @@ test("on a Mac, Colima and Ollama run as LaunchDaemons as the owner, and Homebre
   s.stub("brew", `[ "$1 $2" = "services list" ] && printf 'Name   Status  User  File\\ncolima started owner ~/Library/LaunchAgents/homebrew.mxcl.colima.plist\\nollama started owner ~/Library/LaunchAgents/homebrew.mxcl.ollama.plist\\n'; exit 0`);
   s.stub("colima"); s.stub("ollama"); s.stub("docker");
   s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; [ "$1" = launchctl ] && [ "$2" = print ] && exit 1; exit 0`);
-  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default 11500`], { env: s.env, encoding: "utf8" });
+  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default 11500 OLLAMA_CONTEXT_LENGTH=131072 OLLAMA_NUM_PARALLEL=4 OLLAMA_KEEP_ALIVE=-1`], { env: s.env, encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const calls = s.calls();
   assert.ok(calls.indexOf("colima stop --profile default") < calls.indexOf("brew services stop colima"), "the VM stops cleanly before Homebrew's service ends");
@@ -61,7 +102,8 @@ test("on a Mac, Colima and Ollama run as LaunchDaemons as the owner, and Homebre
   assert.match(colima, /<key>KeepAlive<\/key><true\/><key>ExitTimeOut<\/key><integer>150<\/integer>/);
   const ollama = fs.readFileSync(path.join(s.units, "io.recursica.ollama.plist"), "utf8");
   assert.match(ollama, new RegExp(`<key>UserName</key><string>${me}</string>`));
-  assert.match(ollama, new RegExp(`HOME=${s.dir} OLLAMA_HOST=127\\.0\\.0\\.1:11500 exec ${s.bin}/ollama serve`));
+  assert.match(ollama, new RegExp(`HOME=${s.dir} OLLAMA_HOST=127\\.0\\.0\\.1:11500 OLLAMA_CONTEXT_LENGTH=131072 OLLAMA_NUM_PARALLEL=4 OLLAMA_KEEP_ALIVE=-1 exec ${s.bin}/ollama serve`));
+  assert.doesNotMatch(ollama, /EnvironmentVariables/, "a job that runs as the owner sets HOME itself");
   assert.match(calls, /sudo launchctl bootstrap system \/Library\/LaunchDaemons\/io\.recursica\.colima\.plist/);
   assert.match(calls, /sudo launchctl bootstrap system \/Library\/LaunchDaemons\/io\.recursica\.ollama\.plist/);
 });
@@ -80,12 +122,75 @@ test("on a Mac, an unchanged Colima service keeps running when the setup runs ag
   assert.doesNotMatch(s.calls(), /launchctl bootout|brew services stop|ollama/);
 });
 
+test("on a Mac, the kit's Ollama service runs with Ollama's defaults when site.json sets nothing", () => {
+  const s = sandbox();
+  s.stub("uname", `echo Darwin`);
+  s.stub("brew"); s.stub("ollama");
+  s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; [ "$1" = launchctl ] && [ "$2" = print ] && exit 1; exit 0`);
+  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services "" 11434`], { env: s.env, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(fs.readFileSync(path.join(s.units, "io.recursica.ollama.plist"), "utf8"), new RegExp(`OLLAMA_HOST=127\\.0\\.0\\.1:11434 exec ${s.bin}/ollama serve`));
+});
+
+// LaunchDaemons for the check, each a plain-text stand-in that the plutil stand-in reads.
+function daemons(s, list) {
+  const dir = path.join(s.dir, "LaunchDaemons");
+  fs.mkdirSync(dir, { recursive: true });
+  for (const [label, args] of list) fs.writeFileSync(path.join(dir, `${label}.plist`), `Label=${label}\nProgramArguments=${JSON.stringify(args)}\n`);
+  s.stub("plutil", `f="\${@: -1}"; sed -n "s/^$2=//p" "$f" | grep . || exit 1`);
+  return dir;
+}
+
+test("on a Mac, a LaunchDaemon outside the kit that runs Colima or Ollama stops the setup, and the message names the commands to retire it", () => {
+  const s = sandbox();
+  s.stub("uname", `echo Darwin`);
+  s.stub("sudo"); s.stub("brew"); s.stub("colima"); s.stub("ollama");
+  const dir = daemons(s, [
+    ["local.colima", ["/bin/bash", "-c", "colima start -f & wait"]],
+    ["local.ollama", ["/opt/homebrew/opt/ollama/bin/ollama", "serve"]],
+    ["io.recursica.colima", ["/bin/bash", "-lc", "exec colima-service.sh default"]],
+    ["com.example.other", ["/usr/local/bin/other"]],
+  ]);
+  const check = (args) => spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services_check ${args}`], { env: { ...s.env, LAUNCH_DAEMONS_DIR: dir }, encoding: "utf8" });
+  const r = check("default 11434");
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /setup-host\.sh changed nothing/);
+  assert.match(r.stdout, new RegExp(`colima: sudo launchctl bootout system/local\\.colima && sudo rm ${dir}/local\\.colima\\.plist`));
+  assert.match(r.stdout, new RegExp(`ollama: sudo launchctl bootout system/local\\.ollama && sudo rm ${dir}/local\\.ollama\\.plist`));
+  assert.doesNotMatch(r.stdout, /io\.recursica\.colima &&|com\.example\.other/, "the kit's own daemons and other daemons pass");
+  assert.doesNotMatch(s.calls(), /^(sudo|brew|colima|ollama) /m, "the check changes nothing");
+  // Only the services the kit installs are checked: no Ollama server, or no Colima VM.
+  assert.doesNotMatch(check(`default ""`).stdout, /local\.ollama/);
+  assert.doesNotMatch(check(`"" 11434`).stdout, /local\.colima/);
+  fs.rmSync(path.join(dir, "local.colima.plist")); fs.rmSync(path.join(dir, "local.ollama.plist"));
+  assert.equal(check("default 11434").status, 0, "with only the kit's daemons, the setup goes on");
+});
+
+test("on a Mac, each root job gets HOME, so restic in the backup finds a cache folder", () => {
+  const s = sandbox();
+  s.stub("uname", `echo Darwin`);
+  s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; exit 0`);
+  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"
+    install_unit backup "backup.sh" /cc root "*-*-* 02:00"
+    install_unit restore-test "restore-test.sh" /cc root "*-*-01 04:30"
+    install_unit cluster-updater "updater.mjs" / root hourly
+    install_unit release-watch "release-watch.mjs" /cc owner hourly`], { env: s.env, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  for (const name of ["backup", "restore-test", "cluster-updater"]) {
+    assert.match(fs.readFileSync(path.join(s.units, `io.recursica.${name}.plist`), "utf8"), /<key>EnvironmentVariables<\/key><dict><key>HOME<\/key><string>\/var\/root<\/string><\/dict>/, name);
+  }
+  assert.doesNotMatch(fs.readFileSync(path.join(s.units, "io.recursica.release-watch.plist"), "utf8"), /EnvironmentVariables/);
+});
+
 test("Linux gets no Mac services", () => {
   const s = sandbox();
   s.stub("uname", `echo Linux`); s.stub("sudo");
-  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default 11434`], { env: s.env, encoding: "utf8" });
-  assert.equal(r.status, 0);
-  assert.equal(s.calls(), "uname -s\n");
+  for (const f of ["mac_services default 11434", "mac_services_check default 11434"]) {
+    fs.writeFileSync(s.log, "");
+    const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; ${f}`], { env: s.env, encoding: "utf8" });
+    assert.equal(r.status, 0, f);
+    assert.equal(s.calls(), "uname -s\n", f);
+  }
 });
 
 test("the update job reruns the secrets helper as root, for the owner and the runner the first run recorded", () => {
