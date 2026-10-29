@@ -29,6 +29,11 @@ export function chooseDigests(tags, seen, now = Date.now()) {
   });
 }
 
+// The compose services whose tag this job pulls and holds for 7 days. A service CircleChat builds
+// is rebuilt instead. An image pinned by digest, such as caddy, postgres or redis (setup-host.sh),
+// moves with the pins in images.lock: docker refuses a tag with a digest.
+export const taggedServices = (services) => Object.entries(services).filter(([, s]) => s.image && !s.build && !s.image.includes("@sha256:"));
+
 async function main() {
   const ccDir = process.env.CC_DIR;
   const tenantEnv = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
@@ -46,8 +51,7 @@ async function main() {
   }
   const tags = JSON.parse(await dc(["config", "--format", "json"])).services;
   const pulledTags = [];
-  for (const [svc, s] of Object.entries(tags)) {
-    if (!s.image || s.build) continue;
+  for (const [svc, s] of taggedServices(tags)) {
     const current = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
     await run("docker", ["pull", "-q", s.image], { env }).catch(() => "");
     const pulled = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");

@@ -1,7 +1,8 @@
-# Run once on the Beast, in an Administrator PowerShell:
-#   powershell -ExecutionPolicy Bypass -File \\wsl$\Ubuntu\home\<you>\circlechat-workspace\recursica-knowledge\circlechat\cluster\windows\install-windows-guard.ps1
+# Run once on the Windows computer, in an Administrator PowerShell, after Tailscale is up. Run the
+# script again when the computer's Tailscale address changes.
+#   powershell -ExecutionPolicy Bypass -File \\wsl$\Ubuntu\home\<you>\recursica-knowledge\circlechat\cluster\windows\install-windows-guard.ps1
 #
-# 1. BitLocker on drive C: with TPM unlock, so the Beast still restarts on its own. Shows the
+# 1. BitLocker on drive C: with TPM unlock, so the computer still restarts on its own. Shows the
 #    recovery password once: save it in the password manager.
 # 2. Windows Firewall: refuse every incoming connection except Tailscale (remote access with
 #    RustDesk runs over Tailscale), the decoys, and WSL services reached over Tailscale.
@@ -35,12 +36,24 @@ $disabled = Get-NetFirewallRule -Direction Inbound -Action Allow -Enabled True |
 }
 $disabled | Select-Object -ExpandProperty Name | Out-File -Append "$base\disabled-rules.txt"
 $disabled | Disable-NetFirewallRule
-New-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -Direction Inbound -RemoteAddress 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow -ErrorAction SilentlyContinue | Out-Null
+# Tailscale's addresses pass only on Tailscale's network adapter. An address from the office network
+# that claims a Tailscale address arrives on another adapter.
+$ts = Get-NetAdapter -Name "Tailscale" -ErrorAction SilentlyContinue
+if (-not $ts) { throw "No network adapter named Tailscale. Start Tailscale, then run this script again." }
+$tsAddresses = @(Get-NetIPAddress -InterfaceAlias "Tailscale" -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -match '^100\.|^fd7a:115c:a1e0:' } | Select-Object -ExpandProperty IPAddress)
+if (-not $tsAddresses) { throw "The Tailscale adapter has no Tailscale address yet. Sign in to Tailscale, then run this script again." }
+# An earlier run made the rule for every adapter. The rule is made again each run.
+Get-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+New-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -Direction Inbound -InterfaceAlias "Tailscale" -RemoteAddress 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow | Out-Null
 New-NetFirewallRule -DisplayName "AgentGuard: decoys" -Direction Inbound -Protocol TCP -LocalPort 2222,2121,8088 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 # WSL in mirrored networking mode sits behind the Hyper-V firewall.
 $wsl = '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}'
 Set-NetFirewallHyperVVMSetting -Name $wsl -DefaultInboundAction Block -DefaultOutboundAction Allow
-New-NetFirewallHyperVRule -Name "AgentGuard-Tailscale" -DisplayName "AgentGuard: Tailscale peers to WSL" -Direction Inbound -VMCreatorId $wsl -RemoteAddresses 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow -ErrorAction SilentlyContinue | Out-Null
+# A Hyper-V firewall rule takes no network adapter. The rule takes the computer's own Tailscale
+# addresses as local addresses instead: WSL in mirrored mode shares those addresses, and Windows
+# accepts a packet for a Tailscale address only on the Tailscale adapter.
+Remove-NetFirewallHyperVRule -Name "AgentGuard-Tailscale" -ErrorAction SilentlyContinue
+New-NetFirewallHyperVRule -Name "AgentGuard-Tailscale" -DisplayName "AgentGuard: Tailscale peers to WSL" -Direction Inbound -VMCreatorId $wsl -LocalAddresses $tsAddresses -RemoteAddresses 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow | Out-Null
 New-NetFirewallHyperVRule -Name "AgentGuard-Decoys" -DisplayName "AgentGuard: decoys in WSL" -Direction Inbound -VMCreatorId $wsl -Protocol TCP -LocalPorts 2222,2121,8088 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 
 # 3. Windows Update

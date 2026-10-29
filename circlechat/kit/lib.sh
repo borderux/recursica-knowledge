@@ -198,6 +198,62 @@ mac_services() {
   fi
 }
 
+# The outgoing filter's image, built once for each version of circlechat/egress. The tag carries a
+# hash of the folder's files, so setup-host.sh and setup-node.sh use the same image, and a second
+# build never moves the tag away from a running filter. Prints the tag.
+egress_image() {
+  local dir tag
+  dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../egress" && pwd)"
+  tag="recursica/egress:$(node -e '
+    const fs = require("fs"), path = require("path"), h = require("crypto").createHash("sha256");
+    for (const f of fs.readdirSync(process.argv[1]).sort()) h.update(f + "\0").update(fs.readFileSync(path.join(process.argv[1], f))).update("\0");
+    process.stdout.write(h.digest("hex").slice(0, 12));
+  ' "$dir")"
+  docker image inspect "$tag" >/dev/null 2>&1 || docker build -q -t "$tag" "$dir" >/dev/null || return 1
+  printf '%s' "$tag"
+}
+
+# Recreate each of the kit's filter containers (cc-egress*, cc-jobs-egress*) that runs an image other
+# than <tag>, with the container's restart policy, hosts, mounts, networks and network aliases.
+# setup-host.sh starts cc-egress and setup-node.sh starts cc-jobs-egress, and either script may
+# build a new image: the other script's container then moves to the new image too.
+#   refresh_egress <tag>
+refresh_egress() {
+  local tag="$1" id c kind a b line net
+  local args connects aliases
+  id="$(docker image inspect -f '{{.Id}}' "$tag")" || return 1
+  for c in $(docker ps -a --format '{{.Names}}' | grep -E '^cc-(jobs-)?egress(-[a-z0-9-]+)?$' || true); do
+    [ "$(docker inspect -f '{{.Image}}' "$c")" = "$id" ] && continue
+    args=(); connects=()
+    while IFS=$'\t' read -r kind a b; do
+      case "$kind" in run) args+=("$a") ;; connect) connects+=("$a"$'\t'"$b") ;; esac
+    done < <(docker inspect "$c" | node -e '
+      const [c] = JSON.parse(require("fs").readFileSync(0, "utf8"));
+      const name = c.Name.replace(/^\//, ""), h = c.HostConfig, out = [];
+      const run = (...a) => a.forEach((x) => out.push(`run\t${x}`));
+      run("--name", name, "--restart", h.RestartPolicy?.Name || "no");
+      for (const x of h.ExtraHosts ?? []) run("--add-host", x);
+      for (const x of h.Binds ?? []) run("-v", x);
+      const nets = Object.entries(c.NetworkSettings?.Networks ?? {});
+      const aliases = (n) => (n.Aliases ?? []).filter((a) => a !== name && !c.Id.startsWith(a));
+      nets.forEach(([net, n], i) => {
+        if (i === 0) { run("--network", net); for (const a of aliases(n)) run("--network-alias", a); }
+        else out.push(`connect\t${net}\t${aliases(n).join(",")}`);
+      });
+      console.log(out.join("\n"));
+    ')
+    docker rm -f "$c" >/dev/null
+    docker run -d "${args[@]}" "$tag" >/dev/null
+    for line in ${connects[@]+"${connects[@]}"}; do
+      net="${line%%$'\t'*}"; aliases=()
+      IFS=, read -ra b <<<"${line#*$'\t'}"
+      for a in ${b[@]+"${b[@]}"}; do aliases+=(--alias "$a"); done
+      docker network connect ${aliases[@]+"${aliases[@]}"} "$net" "$c"
+    done
+    echo "Recreated $c with the new filter image $tag."
+  done
+}
+
 # Remove a service or scheduled job that install_unit installed. Safe when the unit does not exist.
 uninstall_unit() {
   local name="$1"

@@ -27,7 +27,9 @@ import path from "node:path";
 const env = process.env;
 const C = {
   port: Number(env.JOBD_PORT ?? 7400),
-  host: env.JOBD_HOST ?? "0.0.0.0",
+  // The addresses jobd listens on, comma-separated: loopback and the computer's Tailscale address
+  // (setup-node.sh), never every interface.
+  hosts: (env.JOBD_HOST ?? "127.0.0.1").split(",").map((s) => s.trim()).filter(Boolean),
   token: env.JOBD_TOKEN ?? "",
   slots: Number(env.JOBD_SLOTS ?? 1),
   memoryGb: Number(env.JOBD_MEMORY_GB ?? 12),
@@ -156,7 +158,7 @@ const send = (res, code, body, type = "application/json") => {
   res.end(type === "application/json" ? JSON.stringify(body) : body);
 };
 
-export const server = http.createServer(async (req, res) => {
+export const handle = async (req, res) => {
   try {
     const u = new URL(req.url, "http://x");
     if (u.pathname === "/health") return send(res, 200, { node: C.node, slots: C.slots, running: running().length });
@@ -181,9 +183,16 @@ export const server = http.createServer(async (req, res) => {
     const text = live ? live.out + live.err : (fs.existsSync(path.join(jobDir(meta.id), "job.log")) ? fs.readFileSync(path.join(jobDir(meta.id), "job.log"), "utf8") : "");
     return send(res, 200, text.split("\n").slice(-tail).join("\n"), "text/plain");
   } catch (e) { send(res, 500, { error: "internal", detail: e.message }); }
-});
+};
+export const server = http.createServer(handle);
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  server.listen(C.port, C.host, () => console.log(`jobd ${C.node} on ${C.host}:${C.port}, ${C.slots} slot(s), ${C.memoryGb} GB each`));
+  // One server for each address. A missing address, such as Tailscale's before Tailscale starts,
+  // stops jobd, and the service starts jobd again.
+  for (const [i, host] of C.hosts.entries()) {
+    const srv = i === 0 ? server : http.createServer(handle);
+    srv.on("error", (e) => { console.error(`jobd cannot listen on ${host}:${C.port}: ${e.message}`); process.exit(1); });
+    srv.listen(C.port, host, () => console.log(`jobd ${C.node} on ${host}:${C.port}, ${C.slots} slot(s), ${C.memoryGb} GB each`));
+  }
   setInterval(() => reap().catch((e) => console.error(e.message)), C.pollMs);
 }
