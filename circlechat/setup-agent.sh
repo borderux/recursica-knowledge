@@ -107,7 +107,8 @@ case "$HANDLE" in
   betty) EFFORT=low ;;
   *)     EFFORT=medium ;;
 esac
-# Compression summaries go to the agent's route too: gateway_access sets summary_model.
+# Every other model setting goes to the gateway too (compression, the side tasks, subagents and
+# fallbacks), and speech stays on the computer. gateway_access stops when one still points elsewhere.
 read_home "$H/config.yaml"
 printf '%s' "$TEXT" | sed -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" | put_home "$H/config.yaml"
 
@@ -146,8 +147,9 @@ if [ "$HANDLE" = loki ]; then
     printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^model:/ { print "  context_length: " c }' | put_home "$H/config.yaml"
     read_home "$H/config.yaml"
   fi
-  if ! printf '%s\n' "$TEXT" | grep -qE '^auxiliary:'; then
-    { printf '%s' "$TEXT"; printf '\nauxiliary:\n  compression:\n    context_length: %s\n' "$CTX"; } | put_home "$H/config.yaml"
+  # gateway_access wrote auxiliary.compression, so the size goes inside it.
+  if ! printf '%s\n' "$TEXT" | grep -qE '^    context_length:'; then
+    printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^[^ ]/ { aux = ($0 == "auxiliary:") } aux && $0 == "  compression:" { print "    context_length: " c }' | put_home "$H/config.yaml"
   fi
   sf mkdir "$WS" "$WS/loki" 777
 fi

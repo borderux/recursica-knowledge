@@ -425,12 +425,16 @@ start_gateway_and_notifier() {
   [ "$EGRESS" = on ] || publish+=(-p "127.0.0.1:$GATEWAY_PORT:4000")
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then publish+=(-p "127.0.0.1:$JOBS_LOCAL_PORT:4001")
   elif [ -n "$TAILNET_ADDRESS" ]; then publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001"); fi
-  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
+  # The router reads its networks when it starts, and allows a key from each one. So every network
+  # joins before the start: the models' network, and with the filter on, the agents' network.
+  docker create --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
     -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
     -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
     -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
     "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
   docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
+  [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
+  docker start "cc-gateway$SUFFIX" >/dev/null
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then gateway_serve; fi
 
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
