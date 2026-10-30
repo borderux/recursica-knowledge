@@ -193,12 +193,19 @@ image's choice holds. Each agent's home belongs to that account:
   `sudo ls -la <CC_DIR>/hermes-homes/.hermes-<handle>`, or run `setup-agent.sh <handle>` to change
   the setup. The image refresh lists each `.hermes-<handle>` folder, and the test turn checks for
   the home's `config.yaml` as the agent's account.
-- **On a Mac with Colima, the Mac's owner owns every file in a home, whatever the container
-  sets.** Colima shares the Mac's files with its VM over virtiofs. On the Mac, every file stays the
-  owner's, and the chown changes nothing there. Inside the VM and the containers, a file shows
-  owner 0, the Mac owner's number or 10000, depending on which process made it. The modes are the
-  same on both sides: the home is mode 700, and `.env` and `auth.json` are mode 600. On a Mac, the
-  VM is the line between an agent and the Mac.
+- **On a Mac with Colima, the Mac's owner owns every file a container makes in a home, whatever
+  the container sets.** Colima shares the Mac's files with its VM over virtiofs, which acts as the
+  Mac's owner, so the chown changes nothing on the Mac. Inside a container, each file shows the
+  container's own account as its owner. The modes are the same on both sides: the home is mode
+  700, and `.env` and `auth.json` are mode 600. On a Mac, the VM is the line between an agent and
+  the Mac.
+- **On a Mac, root keeps the files an older kit wrote with sudo, and the container cannot change
+  them.** Before the kit wrote as the agent's account, `setup-agent.sh` copied `SOUL.md`, the skills
+  and `knowledge-mcp` into the home with sudo, so root owns them on the Mac. virtiofs refuses a
+  chmod of those files with `EPERM`. `give_home` replaces each one with a copy it makes itself, with
+  the same text, which the Mac's owner owns, and then sets the copy's mode. A folder's entries move
+  into a new folder that takes the old folder's place. No step needs sudo. An entry that still
+  cannot be changed is left as it was, every other entry is still set, and the error names each one.
 
 The kit's other writes in an agent's home still run as root, through `kit/safe-files.mjs`: the
 GitHub token service writes each agent's token to the agent's `.env`, and a secrets deploy removes

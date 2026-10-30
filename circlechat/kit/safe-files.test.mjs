@@ -132,6 +132,66 @@ test("a home given to the agent's account: the home 700, .env and auth.json 600,
   assert.deepEqual(snapshot(outside), before);
 });
 
+// On a Mac, Colima's shared folders refuse to change an entry root owns on the Mac, with EPERM.
+// <locked> holds the inodes the set step refuses, the way the Mac refuses root's old entries. Each
+// is refused once, at the old entry: Linux can give a replaced entry's freed inode to a later copy.
+function macLikeSet(locked, refuseNames = []) {
+  const left = new Set(locked);
+  return (fd, st, uid, gid, mode, p) => {
+    if (left.delete(st.ino) || refuseNames.some((n) => path.basename(p) === n)) throw Object.assign(new Error("EPERM: operation not permitted, fchmod"), { code: "EPERM" });
+    fs.fchownSync(fd, uid, gid);
+    if (mode !== (st.mode & 0o7777)) fs.fchmodSync(fd, mode);
+  };
+}
+
+test("a home with entries root owns on a Mac: each is replaced by a copy the walk makes, with the same text, and set", () => {
+  const { place, outside } = setup();
+  const before = snapshot(outside);
+  const mode = (f) => fs.lstatSync(path.join(place, f)).mode & 0o7777;
+  fs.mkdirSync(path.join(place, "skills/a/scripts"), { recursive: true });
+  const files = { "SOUL.md": "soul\n", "auth.json": "{}", "skills/a/SKILL.md": "skill\n", "skills/a/scripts/run.sh": "#!/bin/sh\n", "notes.md": "mine\n" };
+  for (const [f, text] of Object.entries(files)) { fs.writeFileSync(path.join(place, f), text); fs.chmodSync(path.join(place, f), 0o777); }
+  for (const d of ["skills", "skills/a", "skills/a/scripts"]) fs.chmodSync(path.join(place, d), 0o777);
+  fs.symlinkSync(path.join(outside, "file.txt"), path.join(place, "skills/a/link"));
+  const locked = new Set(["SOUL.md", "auth.json", "skills", "skills/a", "skills/a/SKILL.md", "skills/a/scripts/run.sh"].map((f) => fs.lstatSync(path.join(place, f)).ino));
+  const notesIno = fs.lstatSync(path.join(place, "notes.md")).ino;
+  const soulIno = fs.lstatSync(path.join(place, "SOUL.md")).ino;
+  ownHome(place, place, process.getuid(), process.getgid(), { set: macLikeSet(locked) });
+  for (const [f, text] of Object.entries(files)) assert.equal(fs.readFileSync(path.join(place, f), "utf8"), text, `${f} keeps its text`);
+  assert.equal(mode("SOUL.md"), 0o755);
+  assert.equal(mode("auth.json"), 0o600);
+  assert.equal(mode("skills"), 0o755);
+  assert.equal(mode("skills/a"), 0o755);
+  assert.equal(mode("skills/a/SKILL.md"), 0o755);
+  assert.equal(mode("skills/a/scripts"), 0o755);
+  assert.equal(mode("skills/a/scripts/run.sh"), 0o755);
+  assert.equal(mode("notes.md"), 0o755);
+  assert.notEqual(fs.lstatSync(path.join(place, "SOUL.md")).ino, soulIno, "the locked file was replaced");
+  assert.equal(fs.lstatSync(path.join(place, "notes.md")).ino, notesIno, "an entry the walk can change stays the same file");
+  assert.ok(fs.lstatSync(path.join(place, "skills/a/link")).isSymbolicLink(), "a symlink moves with its folder, unfollowed");
+  assert.deepEqual(fs.readdirSync(place).filter((n) => n.includes(".own-")), [], "no copy is left behind");
+  assert.deepEqual(snapshot(outside), before);
+});
+
+test("an entry the walk cannot change even by a copy is named at the end, and every other entry is still set", () => {
+  const { place } = setup();
+  const mode = (f) => fs.lstatSync(path.join(place, f)).mode & 0o7777;
+  fs.mkdirSync(path.join(place, "stuck"));
+  fs.writeFileSync(path.join(place, "stuck/inside.md"), "x");
+  for (const f of ["a.md", "z.md", "stuck.md"]) fs.writeFileSync(path.join(place, f), f);
+  for (const f of ["stuck", "stuck/inside.md", "a.md", "z.md", "stuck.md"]) fs.chmodSync(path.join(place, f), 0o777);
+  // Refused by name, so the copy of each, which the set step sees under the same name, is refused too.
+  const set = macLikeSet(new Set(), ["stuck", "stuck.md"]);
+  assert.throws(() => ownHome(place, place, process.getuid(), process.getgid(), { set }), (e) =>
+    /2 of the entries/.test(e.message) && e.message.includes(path.join(place, "stuck")) && e.message.includes(path.join(place, "stuck.md")) && /EPERM/.test(e.message));
+  assert.equal(mode("a.md"), 0o755);
+  assert.equal(mode("z.md"), 0o755);
+  assert.equal(mode("stuck.md"), 0o777, "the refused file is unchanged");
+  assert.equal(mode("stuck"), 0o777, "the refused folder is unchanged");
+  assert.equal(fs.readFileSync(path.join(place, "stuck/inside.md"), "utf8"), "x", "its entries are back in place");
+  assert.deepEqual(fs.readdirSync(place).filter((n) => n.includes(".own-")), [], "no copy is left behind");
+});
+
 test("one file given an owner and a mode, never through a symlink", () => {
   const { place, outside } = setup();
   fs.chmodSync(path.join(outside, "file.txt"), 0o666);
