@@ -3,7 +3,7 @@
 # Usage: setup-agent.sh <handle>
 #        setup-agent.sh --sync <handle>   only the skills and the persona (sync-skills.sh)
 #   alan, betty, porter: GitHub access comes from the agent's GitHub App in site.json's github_apps
-#   barb: KEV_ENGINE_KEY=... if a Kev-engine is running (optional)
+#   barb: KEV_ENGINE_KEY comes from $CC_DIR/.env, where the secrets deploy writes it, unless given
 #
 # Run as the account that owns the stacks, never as root. An agent can change its own home and the
 # shared workspace, so every write there goes through kit/safe-files.mjs, which never follows a
@@ -143,28 +143,17 @@ case " $KNOWLEDGE_MCP_AGENTS " in *" $HANDLE "*)
   ;;
 esac
 
-# Barb's delegation limits. Each default made a full review fail; agents/barb/runtime/hermes.md
-# says which and why. Appended only when absent, because merging YAML with sed is how a key ends
-# up under the wrong parent and silently ignored.
+# Barb's limits. Each default made a full review fail; agents/barb/runtime/hermes.md says which
+# and why, and holds the values (kit/barb-limits.mjs). Set on each run, inside the blocks Hermes's
+# own default config already has, and every other key stays. The new text is complete before the
+# write starts, so a failure writes nothing. The api drops a reply that arrives after
+# HERMES_TIMEOUT + 60 s, so the check reads $CC_DIR/.env and prints only whether the value is
+# enough, never anything else from that file.
 if [ "$HANDLE" = barb ]; then
   read_home "$H/config.yaml"
-  if printf '%s\n' "$TEXT" | grep -qE '^(delegation|tool_loop_guardrails):'; then
-    echo "Barb's config.yaml already has delegation or tool_loop_guardrails. Check the values"
-    echo "against agents/barb/runtime/hermes.md by hand."
-  else
-    { printf '%s' "$TEXT"; cat << 'YAML'
-
-delegation:
-  oneshot_max_children: 0
-  max_concurrent_children: 3
-  max_iterations: 50
-
-tool_loop_guardrails:
-  loop_caps:
-    max_subagents: 150
-YAML
-    } | put_home "$H/config.yaml"
-  fi
+  NEW="$(printf '%s' "$TEXT" | node "$HERE/kit/barb-limits.mjs" config)" || exit 1
+  printf '%s\n' "$NEW" | put_home "$H/config.yaml"
+  node "$HERE/kit/barb-limits.mjs" timeout "$CC_DIR/.env"
 fi
 
 # Loki's context sizes. Hermes guesses a local model's window from its own model list and
@@ -206,8 +195,12 @@ case "$HANDLE" in alan|betty|porter|otto)
     echo "$HANDLE has no GitHub App in site.json's github_apps, so $HANDLE has no push access (circlechat/README.md, \"GitHub access for agents\")."
   fi ;;
 esac
-if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
-  set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
+# Barb's Kev-engine key: the one given, or the one the secrets deploy wrote to $CC_DIR/.env. The
+# value never reaches an argument or the output.
+if [ "$HANDLE" = barb ]; then
+  KEV_ENGINE_KEY="${KEV_ENGINE_KEY:-$( { sed -n 's/^KEV_ENGINE_KEY=//p' "$CC_DIR/.env" 2>/dev/null || true; } | tail -1)}"
+  if [ -n "$KEV_ENGINE_KEY" ]; then set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
+  else echo "No KEV_ENGINE_KEY in $CC_DIR/.env: Barb's Kev pass fails, and she runs a full review each time. Run the Deploy secrets workflow, then rerun setup-agent.sh barb."; fi
 fi
 # Porter: where the job runners are, the shared job-runner token, and whom to mention with a result.
 if [ "$HANDLE" = porter ]; then
