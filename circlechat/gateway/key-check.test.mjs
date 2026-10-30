@@ -98,3 +98,91 @@ test("finds a private key, such as a GitHub App's, in an agent home, a database 
   assert.match(r.stdout, /CircleChat's database: a GitHub App's private key/);
   assert.ok(!r.stdout.includes(body));
 });
+
+// A private key needs a body (key-check.mjs, hasPrivateKey). Fake key bodies: base64 characters in
+// a fixed pattern, never a real key.
+const fakeBody = (n) => "MIIEvQIBADANBgkqhkiG9w0BAQEFAASC".repeat(Math.ceil(n / 32)).slice(0, n);
+const pemLines = (s, sep = "\n") => s.match(/.{1,64}/g).join(sep);
+// npm's help text for its `key` setting, as Node's compile cache holds it after npm has run.
+const NPM_KEY_HELP = 'key="-----BEGIN PRIVATE KEY-----\\nXXXX\\nXXXX\\n-----END PRIVATE KEY-----"';
+
+test("the marker without a key body passes: documentation, code and prose that name the BEGIN line", () => {
+  const d = dir();
+  const texts = {
+    "npm-help.txt": `A client key to pass when accessing the registry. For example:\n${NPM_KEY_HELP}\n`,
+    "npm-source.js": 'key="-----BEGIN PRIVATE KEY-----\\\\nXXXX\\\\nXXXX\\\\n-----END PRIVATE KEY-----"\n',
+    "build-pem.js": 'const pem = "-----BEGIN PRIVATE KEY-----\\n" + body + "\\n-----END PRIVATE KEY-----";\n',
+    "template.js": "const pem = `-----BEGIN RSA PRIVATE KEY-----\\n${b64}\\n-----END RSA PRIVATE KEY-----`;\n",
+    "notes.md": "-----BEGIN PRIVATE KEY----- is the header line that every PEM private key starts with, and the body follows it.\n",
+    "howto.md": "-----BEGIN OPENSSH PRIVATE KEY-----\nThen paste the body here and keep it out of every repository and every chat message.\n",
+  };
+  for (const [name, text] of Object.entries(texts)) fs.writeFileSync(path.join(d, name), text);
+  const r = check([d], "");
+  assert.equal(r.status, 0, r.stdout);
+  assert.match(r.stdout, /Key check passed/);
+});
+
+test("a real key shape is caught however it is written: lines, escaped line breaks, a dump, cut off, encrypted, short, OpenSSH, indented", () => {
+  const body = fakeBody(256);
+  const shapes = {
+    "multi-line.pem": `-----BEGIN PRIVATE KEY-----\n${pemLines(body)}\n-----END PRIVATE KEY-----\n`,
+    "one-line.env": `GITHUB_APP_KEY="-----BEGIN RSA PRIVATE KEY-----\\n${pemLines(body, "\\n")}\\n-----END RSA PRIVATE KEY-----"\n`,
+    "dump.sql": `COPY settings (value) FROM stdin;\n{"key": "-----BEGIN PRIVATE KEY-----\\\\n${pemLines(body, "\\\\n")}\\\\n-----END PRIVATE KEY-----"}\n`,
+    "cut-off.log": `error loading key: -----BEGIN RSA PRIVATE KEY-----\n${body.slice(0, 120)}`,
+    "encrypted.pem": `-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123456789ABCDEF0123456789ABCDEF\n\n${pemLines(body)}\n-----END RSA PRIVATE KEY-----\n`,
+    "ed25519.pem": `-----BEGIN PRIVATE KEY-----\n${fakeBody(64)}\n-----END PRIVATE KEY-----\n`,
+    "id_ed25519": `-----BEGIN OPENSSH PRIVATE KEY-----\r\n${pemLines(fakeBody(200), "\r\n")}\r\n-----END OPENSSH PRIVATE KEY-----\r\n`,
+    "config.yaml": `tls:\n  key: |\n    -----BEGIN EC PRIVATE KEY-----\n    ${pemLines(fakeBody(160), "\n    ")}\n    -----END EC PRIVATE KEY-----\n`,
+  };
+  for (const [name, text] of Object.entries(shapes)) {
+    const d = dir();
+    fs.writeFileSync(path.join(d, name), text);
+    const r = check([d], "");
+    assert.equal(r.status, 1, `${name}: ${r.stdout}`);
+    assert.match(r.stdout, new RegExp(`${name.replace(".", "\\.")}: a private key`), name);
+    assert.ok(!r.stdout.includes(body.slice(0, 40)), `${name}: the key is never printed`);
+  }
+});
+
+test("a key split across the scanner's chunks is still caught", () => {
+  // The scan reads 64 KiB at a time and keeps the last 512 characters: put the BEGIN line just
+  // before a chunk ends, so the body starts in the next chunk.
+  const d = dir();
+  const pem = `-----BEGIN PRIVATE KEY-----\n${pemLines(fakeBody(256))}\n-----END PRIVATE KEY-----\n`;
+  fs.writeFileSync(path.join(d, "big.txt"), "x".repeat(65536 - 30) + pem);
+  const r = check([d], "");
+  assert.equal(r.status, 1, r.stdout);
+  assert.match(r.stdout, /big\.txt: a private key/);
+});
+
+test("Node's compile cache stays in the scan: npm's help text passes, and a cache built around a real key is caught", () => {
+  const home = dir();
+  const cache = path.join(home, ".hermes-alice", "cache", "scratch", "node-compile-cache", "v26.0.0-arm64-00000000-10000");
+  fs.mkdirSync(cache, { recursive: true });
+  // A compile-cache entry: a binary header, then strings from the compiled source.
+  const entry = (strings) => Buffer.concat([Buffer.from([0xb2, 0xdb, 0xdf, 0x8a, 0, 1, 2, 3]), Buffer.from(`\0install-strategy\0hoisted\0${strings}\0json\0`, "latin1")]);
+  fs.writeFileSync(path.join(cache, "5abea46b"), entry(NPM_KEY_HELP));
+  let r = check([home], "");
+  assert.equal(r.status, 0, r.stdout);
+  fs.writeFileSync(path.join(cache, "0badc0de"), entry(`-----BEGIN PRIVATE KEY-----\\n${pemLines(fakeBody(256), "\\n")}\\n-----END PRIVATE KEY-----`));
+  r = check([home], "");
+  assert.equal(r.status, 1, r.stdout);
+  assert.match(r.stdout, /node-compile-cache\/v26\.0\.0-arm64-00000000-10000\/0badc0de: a private key/);
+  assert.doesNotMatch(r.stdout, /5abea46b/, "the entry with only npm's help text still passes");
+});
+
+test("the exact-value check still finds a GitHub App's key with no PEM lines at all, in a compile cache too", () => {
+  const pem = `-----BEGIN RSA PRIVATE KEY-----\n${pemLines(fakeBody(256))}\n-----END RSA PRIVATE KEY-----\n`;
+  const keys = path.join(dir(), "github-apps");
+  fs.mkdirSync(keys);
+  fs.writeFileSync(path.join(keys, "alan.pem"), pem);
+  const home = dir();
+  const cache = path.join(home, "node-compile-cache", "v26");
+  fs.mkdirSync(cache, { recursive: true });
+  // Only the key's first body line, with no BEGIN line: the shape rule cannot see it, the exact value can.
+  fs.writeFileSync(path.join(cache, "entry"), Buffer.from(`\0\0${pem.split("\n")[1]}\0\0`, "latin1"));
+  const r = check(["--private-keys", keys, home], "");
+  assert.equal(r.status, 1, r.stdout);
+  assert.match(r.stdout, /node-compile-cache\/v26\/entry: a GitHub App's private key/);
+  assert.doesNotMatch(r.stdout, /: a private key$/m);
+});

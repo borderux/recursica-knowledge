@@ -635,6 +635,8 @@ The log holds no prompt and no answer.
 
 **`setup-host.sh` and the test restore run the key check, `circlechat/gateway/key-check.mjs`.** The check fails when a cloud key is in CircleChat's database, in an agent's Hermes home or in a backup. The check finds a key by the exact values in `model-keys.env` and by the shapes of the providers' keys. The report names each place and the kind of key, never the key. Remove each key the check finds, and rotate the key in the provider's console.
 
+**A private key counts only with its body.** The check finds a private key in PEM form, such as a GitHub App's, by a `-----BEGIN … PRIVATE KEY-----` line followed by at least 40 base64 characters of key body. The body's lines may be split by real line breaks or by `\n`, as in an `.env` file, JSON or a database dump. A key with no END line, such as one cut off in a log, still counts. The BEGIN line alone does not: code and help text name it too. npm's help for its `key` setting shows `-----BEGIN PRIVATE KEY-----\nXXXX\nXXXX\n-----END PRIVATE KEY-----`, and Node's compile cache in an agent's home holds that text after npm runs. The compile cache stays in the scan, so a cache built from code that holds a real key is still caught. A GitHub App's key is also found by the exact first line of its body, with or without the PEM lines.
+
 ## Backups
 
 **Back up each stack every night, encrypted on the computer before the backup leaves the computer.** restic encrypts each backup with the stack's own `RESTIC_PASSWORD`, and rclone uploads the backup to Google Drive. Both tools are open source.
