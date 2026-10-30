@@ -9,7 +9,7 @@
 FROM mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends git gh ca-certificates jq \
+ && apt-get install -y --no-install-recommends git gh ca-certificates curl jq \
  && rm -rf /var/lib/apt/lists/* \
  && npm install -g @anthropic-ai/claude-code
 

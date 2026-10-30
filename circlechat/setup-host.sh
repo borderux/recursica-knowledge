@@ -459,10 +459,12 @@ agents_to_gateway() {
   done
 }
 
-# The key check: no cloud key in CircleChat's database or in an agent's Hermes home.
+# The key check: no cloud key and no private key in CircleChat's database or in an agent's Hermes
+# home. The GitHub Apps' private keys sit in a root-owned folder for each stack's GitHub environment.
 key_check() {
+  local env_name; if [ -n "$TENANT" ]; then env_name="client-$TENANT"; else env_name="$STACK_NAME"; fi
   (docker compose exec -T postgres pg_dump -U postgres circlechat 2>/dev/null || true) |
-    sudo "$(command -v node)" "$HERE/gateway/key-check.mjs" --secrets "$MODEL_KEYS" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
+    sudo "$(command -v node)" "$HERE/gateway/key-check.mjs" --secrets "$MODEL_KEYS" --private-keys "/var/lib/agent-stacks/github-apps/$env_name" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
 }
 
 # The agent image, pinned like every other image. CircleChat's api and bridge read CC_HERMES_IMAGE
@@ -604,6 +606,21 @@ if [ -n "$(site_get data.repo)" ]; then
 else
   uninstall_unit "kev-data-push$SUFFIX" >/dev/null
   uninstall_unit "kev-notes-pull$SUFFIX" >/dev/null
+fi
+
+# Each agent's GitHub App, with github_apps in site.json. The token service runs as root on this
+# control computer, reads each app's private key from a root-owned file, and writes each agent's
+# token to the agent's own .env (circlechat/github/token-service.mjs). The service listens on
+# loopback and this computer's Tailscale address, for port jobs on other computers. Without
+# github_apps, no agent has push access.
+if [ "$GITHUB_APPS" = on ]; then
+  if [ -n "$TENANT" ]; then GH_ENV="client-$TENANT"; else GH_ENV="$STACK_NAME"; fi
+  TOKEN_HOSTS="127.0.0.1"
+  a="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
+  [ -n "$a" ] && TOKEN_HOSTS="$TOKEN_HOSTS,$a"
+  install_unit "github-tokens$SUFFIX" "KIT=$(cd "$HERE/.." && pwd) OWNER=$(id -un) OWNER_HOME=$HOME WS=$WS CC_DIR=$CC_DIR STACK=$GH_ENV TOKEN_HOSTS=$TOKEN_HOSTS TOKEN_PORT=$GITHUB_TOKEN_PORT $(command -v node) $HERE/github/token-service.mjs" "$CC_DIR" root
+else
+  uninstall_unit "github-tokens$SUFFIX" >/dev/null
 fi
 
 if grep -qi microsoft /proc/version 2>/dev/null; then

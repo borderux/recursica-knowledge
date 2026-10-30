@@ -92,7 +92,7 @@ SITE="$CC_DIR/site.json"
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
 # MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
 # older name of MODEL_KEY_DEFAULT.
-KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GITHUB_PAT|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|[A-Z][A-Z0-9]*_GITHUB_PAT)$'
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|GITHUB_APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -123,11 +123,16 @@ CLOUD="$("$NODE_BIN" -e '
   const local = ["client", "demo"].includes(s.site?.kind) && s.site?.cloud_models?.allowed !== true;
   console.log(local ? "local-only" : "allowed");
 ' "$SITE")"
-# Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses
-# the public knowledge repo never holds Alan's token, so no client detail reaches a public PR.
-if [ -n "$TENANT" ] && has ALAN_GITHUB_PAT && grep -q 'borderux/recursica-knowledge' "$SITE"; then
-  echo "Refused: stack $STACK uses the public knowledge repo, so it never holds ALAN_GITHUB_PAT. Point repos.knowledge at the client's own fork first. Nothing was written."; exit 1
-fi
+# Each agent that pushes to GitHub has a GitHub App now (circlechat/github/apps.mjs). The agents'
+# personal access tokens are retired: the helper writes none, and removes each one it finds.
+RETIRED="ALAN_GITHUB_PAT BETTY_GITHUB_PAT PORTER_GITHUB_PAT"
+for k in $RETIRED; do has "$k" && echo "  $k is retired: each agent gets a token from the agent's GitHub App. Delete the secret from the GitHub environment."; done
+# The agents with a GitHub App in site.json. Alan's app on a client stack that uses the public
+# knowledge repo is refused by the config check, so no client detail reaches a public PR.
+APP_AGENTS="$("$NODE_BIN" -e '
+  const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  process.stdout.write(Object.keys(s.github_apps ?? {}).filter((a) => /^[a-z0-9][a-z0-9._-]{0,39}$/.test(a)).join(" "));
+' "$SITE")"
 if [ "$CLOUD" = local-only ]; then
   for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|PORTER_ANTHROPIC_API_KEY|AWS_ACCESS_KEY_ID|VERTEXAI_PROJECT|AZURE_API_KEY|MODEL_KEY_*)
     echo "Refused: $k is a cloud model key, and stack $STACK has no recorded permission for cloud models. Nothing was written."; exit 1 ;;
@@ -170,6 +175,7 @@ drop_kv() {
 }
 
 WROTE_CONTROL=false
+WROTE_APPS=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
@@ -190,12 +196,28 @@ if [[ " $ROLES " == *" control "* ]]; then
     echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
   done
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
-  # An agent's GitHub token goes in that agent's own .env, named <HANDLE>_GITHUB_PAT.
+  # A retired token leaves each agent's .env.
+  for home in "$CC_DIR"/hermes-homes/.hermes-*; do
+    [ -d "$home" ] && [ ! -L "$home" ] && [ ! -L "$home/.env" ] || continue
+    for k in $RETIRED; do drop_kv "$home/.env" "$k"; done
+  done
+  # Each GitHub App's private key goes to a root-owned file, outside the stack's folder: no agent,
+  # container, .env file or backup holds the key. Only the token service reads the file
+  # (circlechat/github/token-service.mjs). GitHub keeps the key's line breaks in the secret, and the
+  # workflow passes each one as the two characters \n.
+  APP_KEYS="${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK"
   for k in $NAMES; do
-    case "$k" in PORTER_GITHUB_PAT|KEV_DATA_GITHUB_PAT|*[!A-Z0-9_]*) continue ;; *_GITHUB_PAT) ;; *) continue ;; esac
-    handle="$(printf '%s' "${k%_GITHUB_PAT}" | tr 'A-Z' 'a-z')"
-    home="$CC_DIR/hermes-homes/.hermes-$handle"
-    if [ -d "$home" ]; then set_kv "$home/.env" "$k" "$(val "$k")"; else echo "  $k skipped: no agent $handle in this stack"; fi
+    case "$k" in GITHUB_APP_KEY_*) ;; *) continue ;; esac
+    # The secret's name for each agent: GITHUB_APP_KEY_<AGENT>, as github/apps.mjs keySecretName.
+    match=""; for a in $APP_AGENTS; do [ "GITHUB_APP_KEY_$(printf '%s' "$a" | tr 'a-z.-' 'A-Z__')" = "$k" ] && match="$a"; done
+    [ -n "$match" ] || { echo "  $k skipped: site.json's github_apps has no agent for the key"; continue; }
+    pem="$(val "$k")"; pem="${pem//\\n/$'\n'}"
+    while [ "${pem%$'\n'}" != "$pem" ]; do pem="${pem%$'\n'}"; done
+    case "$pem" in "-----BEGIN "*"PRIVATE KEY-----"*"-----END "*"PRIVATE KEY-----") ;; *) echo "  $k skipped: the value is not a private key in PEM form"; continue ;; esac
+    mkdir -p "$APP_KEYS"; chmod 700 "${APP_KEYS%/*}" "$APP_KEYS"
+    [ ! -L "$APP_KEYS/$match.pem" ] || rm -f "$APP_KEYS/$match.pem"
+    tmp="$(mktemp "$APP_KEYS/.new.XXXXXX")"; printf '%s\n' "$pem" > "$tmp"; chmod 600 "$tmp"; mv -f "$tmp" "$APP_KEYS/$match.pem"
+    echo "  $k -> $APP_KEYS/$match.pem"; WROTE_APPS=true
   done
   # The Kev data jobs' own token (kit/push-data.sh) goes in a file of its own, which no agent and no
   # container reads. Only a stack whose site.json names a private repo in data.repo gets the token.
@@ -227,13 +249,15 @@ fi
 WROTE_NODE=false
 if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* ]]; then
   echo "Services of stack $STACK on $COMPUTER:"
-  for k in KEV_API_KEY JOBD_TOKEN PORTER_GITHUB_PAT PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
+  for k in KEV_API_KEY JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }
   done
   # Port jobs reach cloud models through the gateway, with a key for each task. The node secrets
   # file holds no cloud key.
   has PORTER_ANTHROPIC_API_KEY && echo "  PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway. Rename the secret to MODEL_KEY_PORTER, and name porter in that key's agents in site.json."
   drop_kv "$NODE_ENV" ANTHROPIC_API_KEY
+  # A port job gets Porter's token from the token service, with the job's task key.
+  drop_kv "$NODE_ENV" PORTER_GITHUB_PAT
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
@@ -248,6 +272,8 @@ if [ "$WROTE_NODE" = true ]; then
   [[ " $ROLES " == *" jobs "* ]] && restart_unit "jobd$SUFFIX"
   for r in $ROLES; do case "$r" in service:*) restart_unit "${r#service:}" ;; esac; done
 fi
+# The token service reads each app's private key when the service starts.
+if [ "$WROTE_APPS" = true ]; then restart_unit "github-tokens$SUFFIX" 2>/dev/null || echo "  github-tokens$SUFFIX is not installed yet: run setup-host.sh once"; fi
 # The cluster agent and the Slack app read the cluster's secrets when they start.
 if [ "$WROTE_CLUSTER" = true ]; then
   for u in cluster-agent cluster-bot; do restart_unit "$u" 2>/dev/null || true; done
@@ -292,6 +318,6 @@ if [ "$WROTE_CONTROL" = true ]; then
   DCTX="$(sed -n 's/^DOCKER_CONTEXT=//p' "$CC_DIR/kit-out/tenant.env" 2>/dev/null || true)"
   (sudo -u "$OWNER" -H env ${DCTX:+DOCKER_CONTEXT="$DCTX"} PATH="$(dirname "$NODE_BIN"):$PATH" \
     bash -c 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat' _ "$CC_DIR" 2>/dev/null || true) |
-    "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
+    "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --private-keys "${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
 fi
 echo "Secrets written and applied for stack $STACK on $COMPUTER."

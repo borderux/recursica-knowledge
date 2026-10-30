@@ -62,7 +62,7 @@ function cloudBlocks(cloud) {
   return { cloud_models: { allowed: true, granted_by: cloud.granted_by, granted_on: cloud.granted_on, payer: cloud.payer }, model_keys };
 }
 
-const FIRST = { port: 8180, preview_port: 5273, gateway_port: 4100, jobs: 7410 };
+const FIRST = { port: 8180, preview_port: 5273, gateway_port: 4100, github_token_port: 4110, jobs: 7410 };
 
 // Every port the cluster's stack and the other stacks in ~/tenants already use.
 function takenPorts(cluster, tenantsDir) {
@@ -73,9 +73,10 @@ function takenPorts(cluster, tenantsDir) {
       try { sites.push(JSON.parse(fs.readFileSync(f, "utf8"))); } catch { /* a locked stack, or no site.json */ }
     }
   }
-  const taken = new Set([8080, 5173, 4000]);
+  // 4010: the GitHub token service's port by default (github/apps.mjs).
+  const taken = new Set([8080, 5173, 4000, 4010]);
   for (const s of sites) {
-    for (const k of ["port", "preview_port", "gateway_port"]) if (s.site?.[k]) taken.add(s.site[k]);
+    for (const k of ["port", "preview_port", "gateway_port", "github_token_port"]) if (s.site?.[k]) taken.add(s.site[k]);
     // On a Mac, the gateway's port for port jobs is 127.0.0.1:<gateway port + 1> (setup-host.sh).
     taken.add((s.site?.gateway_port ?? 4000) + 1);
     for (const n of s.nodes ?? []) {
@@ -101,7 +102,7 @@ export function stackSite(cluster, { stack, kind, computers, limits = {}, cloud,
     ...(cluster.site?.proxy ? { proxy: cluster.site.proxy } : {}),
     tenant: stack, kind, docker_context: `colima-${stack}`,
     computers: computers === "cluster" ? "cluster" : [computers],
-    port: free(FIRST.port), preview_port: free(FIRST.preview_port), gateway_port: free(FIRST.gateway_port, 2),
+    port: free(FIRST.port), preview_port: free(FIRST.preview_port), gateway_port: free(FIRST.gateway_port, 2), github_token_port: free(FIRST.github_token_port),
     ...(cloudPart.cloud_models ? { cloud_models: cloudPart.cloud_models } : {}),
   };
   const jobsPort = free(FIRST.jobs);

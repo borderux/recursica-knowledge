@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// The key check: fails when a cloud model key is in a place that must hold none, such as
-// CircleChat's database, an agent's Hermes home or a backup. The check finds a key two ways: the
-// exact values in the gateway's secrets file, when the check can read that file, and the shapes of
-// the providers' keys (cloud-keys.mjs). The check prints where a key is and which kind, never the key.
+// The key check: fails when a cloud model key or a private key is in a place that must hold none,
+// such as CircleChat's database, an agent's Hermes home or a backup. The check finds a key two ways:
+// the exact values in the gateway's secrets file and in the GitHub Apps' key files, when the check
+// can read them, and the shapes of the keys: the providers' keys (cloud-keys.mjs), and a private
+// key in PEM form, such as a GitHub App's. The check prints where a key is and which kind, never the
+// key.
 //
-//   node key-check.mjs [--secrets <file>] [--stdin <label>] [<file or folder>...]
+//   node key-check.mjs [--secrets <file>] [--private-keys <folder>] [--stdin <label>] [<file or folder>...]
 //
 // --stdin reads one stream, such as a database dump, and names the stream <label> in the report.
 // A .gz file is read unpacked. Exit 0: no key found. Exit 1: a key was found.
@@ -26,6 +28,24 @@ function openNoFollow(file, skipped) {
   }
 }
 
+// A private key in PEM form. A GitHub App's private key is one (github/apps.mjs).
+export const PRIVATE_KEY = /-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED |DSA )?PRIVATE KEY-----/g;
+const SHAPES = [...KEY_SHAPES, ["a private key", PRIVATE_KEY]];
+
+// The first line of each private key's body in a folder of .pem files: a key without its PEM
+// header still matches.
+export function privateKeyValues(dir, skipped = []) {
+  if (!dir) return [];
+  let names = []; try { names = fs.readdirSync(dir).filter((n) => n.endsWith(".pem")); } catch { return []; }
+  const out = [];
+  for (const n of names) {
+    const fd = openNoFollow(path.join(dir, n), skipped);
+    if (fd === null) continue;
+    try { const line = fs.readFileSync(fd, "utf8").split("\n").find((l) => l && !l.startsWith("-----")); if (line && line.length >= 40) out.push(line.trim()); } catch {} finally { fs.closeSync(fd); }
+  }
+  return out;
+}
+
 export function exactValues(file, skipped = []) {
   if (!file) return [];
   const fd = openNoFollow(file, skipped);
@@ -45,8 +65,9 @@ export async function scanStream(stream, values) {
   let tail = "";
   for await (const chunk of stream) {
     const text = tail + chunk.toString("latin1");
-    for (const [kind, re] of KEY_SHAPES) { re.lastIndex = 0; if (re.test(text)) kinds.add(kind); }
-    for (const v of values) if (text.includes(v)) kinds.add("a key from the gateway's secrets file");
+    for (const [kind, re] of SHAPES) { re.lastIndex = 0; if (re.test(text)) kinds.add(kind); }
+    // Each value is a string from the gateway's secrets file, or { value, kind }.
+    for (const v of values) if (text.includes(v.value ?? v)) kinds.add(v.kind ?? "a key from the gateway's secrets file");
     tail = text.slice(-512);
   }
   return [...kinds];
@@ -62,8 +83,8 @@ function* files(p, skipped) {
 }
 
 //   skipped: gets the path of each symlink the check did not follow
-export async function check({ paths = [], stdin = null, label = "stdin", secrets = null, skipped = [] }) {
-  const values = exactValues(secrets, skipped);
+export async function check({ paths = [], stdin = null, label = "stdin", secrets = null, privateKeys = null, skipped = [] }) {
+  const values = [...exactValues(secrets, skipped), ...privateKeyValues(privateKeys, skipped).map((value) => ({ value, kind: "a GitHub App's private key" }))];
   const found = [];
   if (stdin) for (const k of await scanStream(stdin, values)) found.push(`${label}: ${k}`);
   for (const p of paths) for (const f of files(p, skipped)) {
@@ -82,6 +103,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = { paths: [] };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--secrets") opt.secrets = args[++i];
+    else if (args[i] === "--private-keys") opt.privateKeys = args[++i];
     else if (args[i] === "--stdin") { opt.stdin = process.stdin; opt.label = args[++i] ?? "stdin"; }
     else opt.paths.push(args[i]);
   }
@@ -92,10 +114,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const f of skipped) console.log(`  - ${f}`);
   }
   if (found.length) {
-    console.log(`Key check failed: a cloud key is in ${found.length} place(s) that must hold none.`);
+    console.log(`Key check failed: a cloud key or a private key is in ${found.length} place(s) that must hold none.`);
     for (const f of found) console.log(`  - ${f}`);
-    console.log("Remove each key, rotate it in the provider's console, and keep the key only in the stack's GitHub environment.");
+    console.log("Remove each key, rotate it in the provider's console or the GitHub App's settings, and keep the key only in the stack's GitHub environment.");
     process.exit(1);
   }
-  console.log(`Key check passed: no cloud key in ${[opt.stdin ? opt.label : null, ...opt.paths].filter(Boolean).join(", ") || "nothing"}.`);
+  console.log(`Key check passed: no cloud key and no private key in ${[opt.stdin ? opt.label : null, ...opt.paths].filter(Boolean).join(", ") || "nothing"}.`);
 }

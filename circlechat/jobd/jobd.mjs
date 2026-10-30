@@ -10,6 +10,9 @@
 // A job holds no cloud key. The job sends its model requests to the stack's gateway
 // (JOBD_GATEWAY_URL) with the gateway key for the job's task, which the request brings. The job
 // gets the key from a file in the job's folder (`--env-file`), and the file goes when the job ends.
+// With JOBD_GITHUB_TOKEN_URL, the job gets Porter's GitHub token for the job's repo from the
+// stack's token service (github/token-service.mjs), with the same task key. The job holds no
+// private key and no long-lived token.
 //
 //   GET    /health                 { node, slots, running }
 //   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
@@ -38,9 +41,10 @@ const C = {
   docker: env.JOBD_DOCKER ?? "docker",
   node: env.JOBD_NODE_NAME ?? os.hostname(),
   repos: new Set((env.JOBD_ALLOWED_REPOS ?? "").split(",").map((s) => s.trim()).filter(Boolean)),
-  passEnv: (env.JOBD_PASS_ENV ?? "PORTER_GITHUB_PAT,PORTER_GIT_NAME,PORTER_GIT_EMAIL,PORTER_MODEL")
+  passEnv: (env.JOBD_PASS_ENV ?? "PORTER_MODEL")
     .split(",").map((s) => s.trim()).filter(Boolean),
   gateway: env.JOBD_GATEWAY_URL ?? "",
+  githubTokenUrl: env.JOBD_GITHUB_TOKEN_URL ?? "",
   hookUrl: env.PORTER_HOOK_URL ?? "",
   hookSecret: env.PORTER_HOOK_SECRET ?? "",
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
@@ -113,7 +117,7 @@ async function start(body) {
   fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
   fs.chmodSync(dir, 0o777);  // the container's user writes here
   fs.writeFileSync(path.join(dir, "package.md"), body.package);
-  fs.writeFileSync(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n`, { mode: 0o600 });
+  fs.writeFileSync(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`, { mode: 0o600 });
   const label = String(body.label ?? "").slice(0, 120);
   const r = await run(containerArgs(id, body.repo, type.image));
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }

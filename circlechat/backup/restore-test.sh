@@ -49,7 +49,7 @@ STEP="key check"
 # The places go to this job's log on the computer, and only their count goes to Slack.
 if ! keys="$(node "$(dirname "$0")/../gateway/key-check.mjs" --secrets "$CC_DIR/model-keys.env" "$SCRATCH")"; then
   printf '%s\n' "$keys"
-  fail "the key check found a cloud key in the backup, in $(printf '%s\n' "$keys" | grep -c '^  - ') place(s). The restore test's log on the computer lists the places"
+  fail "the key check found a cloud key or a private key in the backup, in $(printf '%s\n' "$keys" | grep -c '^  - ') place(s). The restore test's log on the computer lists the places"
 fi
 STEP="newest backup's time"
 when="$(restic snapshots latest --tag "$STACK" --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s)[0]?.time?.slice(0,16)??"unknown"))')"

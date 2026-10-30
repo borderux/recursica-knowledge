@@ -2,8 +2,7 @@
 # Run AFTER installing the agent through the CircleChat UI. Safe to rerun.
 # Usage: setup-agent.sh <handle>
 #        setup-agent.sh --sync <handle>   only the skills and the persona, with no sudo (sync-skills.sh)
-#   alan: GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests + Issues on
-#         the knowledge repo, Issues on the adapter repos and Theme Forge — no merge rights)
+#   alan, betty, porter: GitHub access comes from the agent's GitHub App in site.json's github_apps
 #   barb: KEV_ENGINE_KEY=... if a Kev-engine is running (optional)
 #
 # Run as the account that owns the stacks, never as root. An agent can change its own home and the
@@ -172,25 +171,20 @@ set_secret() { # set_secret NAME VALUE
   read_home "$H/.env"
   { printf '%s\n' "$TEXT" | grep -v -e "^$1=" -e '^$' || true; printf '%s=%s\n' "$1" "$2"; } | put_home "$H/.env"
 }
-# Alan's GitHub token is stored as ALAN_GITHUB_PAT, not GITHUB_TOKEN: Hermes strips GITHUB_TOKEN
-# and GH_TOKEN from every shell it spawns, with no setting to allow them, so under those names
-# the token is saved but never reaches him. You still pass it in as GITHUB_TOKEN=... here.
-if [ "$HANDLE" = alan ]; then
-  read_home "$H/.env"
-  if [ -n "${GITHUB_TOKEN:-}" ]; then
-    set_secret ALAN_GITHUB_PAT "$GITHUB_TOKEN"
-  elif printf '%s\n' "$TEXT" | grep -q '^GITHUB_TOKEN=' && ! printf '%s\n' "$TEXT" | grep -q '^ALAN_GITHUB_PAT='; then
-    old="$(printf '%s\n' "$TEXT" | sed -n 's/^GITHUB_TOKEN=//p' | tail -1)"
-    set_secret ALAN_GITHUB_PAT "$old"
-  elif ! printf '%s\n' "$TEXT" | grep -q '^ALAN_GITHUB_PAT='; then
-    echo "alan needs GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests +"
-    echo "Issues on the knowledge repo, Issues on the adapter repos and Theme Forge). Without merge rights on"
-    echo "it, he cannot merge — that is the point."
-    exit 1
-  fi
-  read_home "$H/.env"
-  { printf '%s\n' "$TEXT" | grep -v -e '^GITHUB_TOKEN=' -e '^$' || true; } | put_home "$H/.env"
+# GitHub: each agent that pushes has a GitHub App of the agent's own (site.json's github_apps). The
+# token service writes the app's installation token to the agent's .env as <AGENT>_GITHUB_TOKEN,
+# and renews the token before the token ends (circlechat/github/token-service.mjs). A retired
+# personal access token leaves the .env, and so does a GITHUB_TOKEN line: Hermes removes
+# GITHUB_TOKEN and GH_TOKEN from every shell Hermes starts.
+read_home "$H/.env"
+if printf '%s\n' "$TEXT" | grep -qE '^(GITHUB_TOKEN|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)='; then
+  { printf '%s\n' "$TEXT" | grep -vE -e '^(GITHUB_TOKEN|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)=' -e '^$' || true; } | put_home "$H/.env"
 fi
+case "$HANDLE" in alan|betty|porter|otto)
+  if ! node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).github_apps?.[process.argv[2]] ? 0 : 1)' "${SITE:-$CC_DIR/site.json}" "$HANDLE" 2>/dev/null; then
+    echo "$HANDLE has no GitHub App in site.json's github_apps, so $HANDLE has no push access (circlechat/README.md, \"GitHub access for agents\")."
+  fi ;;
+esac
 if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
   set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
 fi

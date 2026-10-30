@@ -54,6 +54,8 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `routes`                                              | Each model route: an ordered list of the cluster's models, such as `local-large` to `machine-2/ollama/large-local`                               |
 | `model_keys`                                          | Each cloud key's name, provider, cloud model and agents. The key's value lives only in the secret store                                          |
 | `agents`                                              | Each agent's routes, or one server and model, and cloud switch                                                                                   |
+| `github_apps`                                         | Each pushing agent's GitHub App: the app ID, installation ID, slug, repos and permissions (README, "GitHub access for agents")                   |
+| `site.github_token_port`                              | The GitHub token service's port, 4010 when unset, where port jobs on other computers get a push token                                            |
 | `porter`                                              | Porter's golden adapter and target adapters, only when the client ports adapters                                                                 |
 | `notify`                                              | Slack alerts for task changes                                                                                                                    |
 | `data`                                                | `repo`: a private repo for Kev's review data (README, "Kev's review data"); leave out for a client                                               |
