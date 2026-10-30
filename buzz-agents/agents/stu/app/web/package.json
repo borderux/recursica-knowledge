@@ -11,20 +11,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^8.3.18",
-    "@mantine/hooks": "^8.3.18",
-    "@recursica/mantine-adapter": "^0.42.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router": "^8.3.0"
+    "@mantine/core": "^9.7.3",
+    "@mantine/hooks": "^9.7.3",
+    "@recursica/mantine-adapter": "^0.55.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.0"
   },
   "devDependencies": {
-    "@recursica/official-release": "2.7.0",
+    "@recursica/official-release": "2.8.0",
     "@recursica/recursica-postcss-vars": "1.5.0",
-    "@vitejs/plugin-react": "^6.0.2",
-    "postcss": "8.5.16",
+    "@vitejs/plugin-react": "^6.1.2",
+    "postcss": "8.5.31",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
-    "vite": "^8.1.0"
+    "vite": "^8.3.5"
   }
 }
