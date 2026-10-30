@@ -206,6 +206,54 @@ test("setup-agent.sh ends with one test turn in the agent's home, and stops with
   assert.doesNotMatch(refused.stdout, /loki set up\./);
 });
 
+const KNOWLEDGE_ENTRY = /^mcp_servers:\n(?: {2}\S.*\n(?: {4,}.*\n)*)* {2}recursica-knowledge:\n {4}command: node\n {4}args:\n {6}- "\/opt\/data\/knowledge-mcp\/tools\/knowledge-mcp\/server\.mjs"\n {4}enabled: true\n {4}timeout: 30$/m;
+
+test("setup-agent.sh writes the knowledge server's entry for Betty and Barb, keeps CircleChat's own server, and lists the server where the cli list is an allowlist", () => {
+  const s = sandbox(["betty", "barb", "loki"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  fs.writeFileSync(s.h("betty", "config.yaml"), config);
+  // Barb as CircleChat's Re-equip leaves her with CC_MCP_TOOLS on: CircleChat's own server, listed
+  // in the cli toolsets.
+  fs.writeFileSync(s.h("barb", "config.yaml"), `${config}platform_toolsets:\n  cli:\n    - hermes-cli\n    - mcp-circlechat\nmcp_servers:\n  circlechat:\n    command: node\n    args:\n      - /opt/data/circlechat-mcp.mjs\n    enabled: true\n`);
+  fs.writeFileSync(s.h("loki", "config.yaml"), config);
+  for (const a of ["betty", "barb", "loki"]) {
+    const r = s.run("setup-agent.sh", a);
+    assert.equal(r.status, 0, `${a}: ${r.stdout}${r.stderr}`);
+  }
+  const betty = fs.readFileSync(s.h("betty", "config.yaml"), "utf8");
+  assert.match(betty, KNOWLEDGE_ENTRY);
+  const barb = fs.readFileSync(s.h("barb", "config.yaml"), "utf8");
+  assert.match(barb, KNOWLEDGE_ENTRY);
+  assert.match(barb, /^mcp_servers:\n {2}circlechat:\n {4}command: node\n {4}args:\n {6}- \/opt\/data\/circlechat-mcp\.mjs\n {4}enabled: true\n/m, "CircleChat's own server stays");
+  assert.match(barb, /^ {2}cli:\n {4}- hermes-cli\n {4}- mcp-circlechat\n {4}- mcp-recursica-knowledge\n/m);
+  assert.doesNotMatch(fs.readFileSync(s.h("loki", "config.yaml"), "utf8"), /mcp_servers|recursica-knowledge/, "Loki has no tool servers");
+  // A second run writes the entry, and the cli listing, once.
+  for (const a of ["betty", "barb"]) assert.equal(s.run("setup-agent.sh", a).status, 0);
+  for (const a of ["betty", "barb"]) {
+    const again = fs.readFileSync(s.h(a, "config.yaml"), "utf8");
+    assert.match(again, KNOWLEDGE_ENTRY, a);
+    assert.equal(again.match(/^ {2}recursica-knowledge:$/gm).length, 1, a);
+  }
+  assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8").match(/mcp-recursica-knowledge/g).length, 1);
+});
+
+test("setup-agent.sh refuses Betty's or Barb's symlinked config.yaml, and writes no server entry through the symlink", () => {
+  for (const a of ["betty", "barb"]) {
+    const s = sandbox([a]);
+    fullSetup(s);
+    s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+    link(path.join(s.outside, "target.txt"), s.h(a, "config.yaml"));
+    const before = snapshot(s.outside);
+    const r = s.run("setup-agent.sh", a);
+    assert.notEqual(r.status, 0, `${a}: ${r.stdout}${r.stderr}`);
+    assert.match(r.stdout + r.stderr, /Refused: .* is a symlink/, a);
+    assert.deepEqual(snapshot(s.outside), before, `${a}: no file outside changed`);
+    assert.equal(fs.readFileSync(path.join(s.outside, "target.txt"), "utf8"), "outside\n");
+    assert.ok(isLink(s.h(a, "config.yaml")), `${a}: the symlink is left as it was`);
+  }
+});
+
 test("sync-skills.sh never runs git, and the agents' checkouts in the workspace stay as the agents left them", () => {
   const s = sandbox(["alan"]);
   const log = path.join(s.root, "git.log");

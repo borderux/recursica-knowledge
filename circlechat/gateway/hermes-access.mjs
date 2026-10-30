@@ -93,6 +93,46 @@ function setBlock(lines, name, replacement) {
   else if (replacement.length) lines.push(...replacement);
 }
 
+// One MCP server's entry in config.yaml's mcp_servers, such as the knowledge server's for an agent in
+// KNOWLEDGE_MCP_AGENTS (kit/lib.sh). An entry of the same name is replaced, so the entry matches the
+// kit. Every other server stays, such as CircleChat's own `circlechat` server, which CircleChat
+// registers with CC_MCP_TOOLS on.
+//
+// Hermes reads MCP server names in a platform's toolset list as an allowlist: with no name listed,
+// the platform starts every enabled server; with one listed, only the listed servers. CircleChat adds
+// `mcp-circlechat` to platform_toolsets.cli when it registers its server, and `hermes chat` would
+// then never start this server. So when the cli list names a server, this server is listed too.
+//   setMcpServer(config, name, { command, args, timeout }) -> the new config text
+export function setMcpServer(config, name, { command, args, timeout }) {
+  const lines = config.replace(/\n+$/, "").split("\n");
+  const entry = [`  ${name}:`, `    command: ${command}`, "    args:", ...args.map((a) => `      - ${JSON.stringify(a)}`), "    enabled: true", `    timeout: ${timeout}`];
+  const b = block(lines, "mcp_servers");
+  const head = b ? lines[b[0]].slice("mcp_servers:".length).trim() : "";
+  if (head && head !== "{}") throw new Refused("config.yaml writes mcp_servers on one line. Rewrite mcp_servers as a block, one server per key, then run setup-agent.sh again.");
+  if (!b) lines.push("mcp_servers:", ...entry);
+  else if (head === "{}") lines.splice(b[0], b[1] - b[0], "mcp_servers:", ...entry);
+  else {
+    const c = children(lines, b, 2).find((x) => x.name === name);
+    if (c) lines.splice(c.start, c.end - c.start, ...entry);
+    else lines.splice(b[1], 0, ...entry);
+  }
+  const servers = new Set(children(lines, block(lines, "mcp_servers"), 2).map((x) => x.name));
+  const pt = block(lines, "platform_toolsets");
+  const cli = pt && children(lines, pt, 2).find((x) => x.name === "cli");
+  if (cli) {
+    const flow = cli.inline.match(/^\[(.*)\]$/);
+    const items = (flow ? flow[1].split(",") : lines.slice(cli.start + 1, cli.end).filter((l) => l.trimStart().startsWith("- ")).map((l) => l.trimStart().slice(2)))
+      .map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+    const allowlist = items.some((i) => i.startsWith("mcp-") || servers.has(i));
+    if (allowlist && !items.includes(`mcp-${name}`) && !items.includes(name)) {
+      const item = lines.slice(cli.start + 1, cli.end).find((l) => l.trimStart().startsWith("- "));
+      const pad = item ? " ".repeat(indent(item)) : "    ";
+      lines.splice(cli.start, cli.end - cli.start, "  cli:", ...[...items, `mcp-${name}`].map((i) => `${pad}- ${i}`));
+    }
+  }
+  return lines.join("\n") + "\n";
+}
+
 // Sets `<key>: <value>` directly inside top-level block <name>, adding the block when missing.
 function setChild(lines, name, key, value) {
   const b = block(lines, name);

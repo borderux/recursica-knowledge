@@ -168,8 +168,14 @@ the server, the skills it serves and the two scripts it imports from the kit che
 Every agent can change the workspace, so a program run from the workspace's checkout could hold
 code that another agent wrote. No kit step runs the server on the computer itself, as the stack's
 owner or as root. `setup-host.sh` sets `CC_HERMES_RUNTIME=docker`, so Hermes and every MCP server
-it starts stay in the agent's container. CircleChat adds the server to an agent's settings when the
-agent is installed or equipped, from `CC_AGENT_MCP_SERVERS` in `.env`.
+it starts stay in the agent's container. `setup-agent.sh` writes the server's entry in `mcp_servers`
+in the agent's `config.yaml`, through the kit's symlink check, and keeps every other server, such as
+CircleChat's own. CircleChat writes the same entry, from `CC_AGENT_MCP_SERVERS` in `.env`, only when
+the agent is installed or on **Skills → Re-equip**, and without that check, so no step needs
+Re-equip. Hermes reads MCP server names in a platform's toolset list as an allowlist. When the `cli`
+list names a server, such as `mcp-circlechat` after Re-equip with `CC_MCP_TOOLS=on`, `setup-agent.sh`
+lists `mcp-recursica-knowledge` too. Without the listing, `hermes chat` never starts the knowledge
+server.
 
 **`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
 (`setup-agent.sh --sync`), with no sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs

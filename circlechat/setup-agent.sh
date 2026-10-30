@@ -123,6 +123,19 @@ esac
 read_home "$H/config.yaml"
 printf '%s' "$TEXT" | sed -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" | put_home "$H/config.yaml"
 
+# The knowledge MCP server's entry in mcp_servers, for the agents in KNOWLEDGE_MCP_AGENTS: the copy
+# above, in the agent's own home, run inside the agent's container. CircleChat writes the same entry
+# from CC_AGENT_MCP_SERVERS only when it installs the agent, or on Skills → Re-equip, and writes the
+# file without the kit's symlink check. Every other server stays, such as CircleChat's own, and a
+# cli toolset list that names a server gets this server too (gateway/hermes-access.mjs
+# setMcpServer). The new text is complete before the write starts, so a failure writes nothing.
+case " $KNOWLEDGE_MCP_AGENTS " in *" $HANDLE "*)
+  read_home "$H/config.yaml"
+  NEW="$(printf '%s' "$TEXT" | node "$HERE/kit/mcp-entry.mjs" "$KNOWLEDGE_MCP_NAME" "$KNOWLEDGE_MCP_TIMEOUT" node "$KNOWLEDGE_MCP_SERVER")" || exit 1
+  printf '%s\n' "$NEW" | put_home "$H/config.yaml"
+  ;;
+esac
+
 # Barb's delegation limits. Each default made a full review fail; agents/barb/runtime/hermes.md
 # says which and why. Appended only when absent, because merging YAML with sed is how a key ends
 # up under the wrong parent and silently ignored.

@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { currentKey, offGateway, scrubEnv, scrubJson, writeConfig } from "./hermes-access.mjs";
+import { currentKey, offGateway, scrubEnv, scrubJson, setMcpServer, writeConfig } from "./hermes-access.mjs";
 import { loadKeys, verify } from "./keys.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -219,4 +219,73 @@ test("the script never reads or writes through a symlink an agent put in its hom
   assert.equal(run(b).status, 1);
   assert.equal(fs.readFileSync(target, "utf8"), `ANTHROPIC_API_KEY=${ANT}\n`);
   assert.ok(fs.lstatSync(path.join(b, ".env")).isSymbolicLink());
+});
+
+// The knowledge server's entry, as setup-agent.sh writes it (kit/mcp-entry.mjs).
+const KNOWLEDGE = { command: "node", args: ["/opt/data/knowledge-mcp/tools/knowledge-mcp/server.mjs"], timeout: 30 };
+const KNOWLEDGE_ENTRY = `  recursica-knowledge:
+    command: node
+    args:
+      - "/opt/data/knowledge-mcp/tools/knowledge-mcp/server.mjs"
+    enabled: true
+    timeout: 30
+`;
+
+test("setMcpServer adds the knowledge server's entry, and a second run changes nothing", () => {
+  const once = setMcpServer("model:\n  default: local-large\n", "recursica-knowledge", KNOWLEDGE);
+  assert.equal(once, `model:\n  default: local-large\nmcp_servers:\n${KNOWLEDGE_ENTRY}`);
+  assert.equal(setMcpServer(once, "recursica-knowledge", KNOWLEDGE), once);
+  assert.equal(setMcpServer("mcp_servers: {}\nstt:\n  provider: local\n", "recursica-knowledge", KNOWLEDGE), `mcp_servers:\n${KNOWLEDGE_ENTRY}stt:\n  provider: local\n`);
+});
+
+test("setMcpServer keeps CircleChat's own server and every other block, and replaces a stale entry of the same name", () => {
+  const config = `mcp_servers:
+  circlechat:
+    command: node
+    args:
+      - /opt/data/circlechat-mcp.mjs
+    enabled: true
+    tools:
+      include:
+        - list_channels
+  recursica-knowledge:
+    command: npx
+    timeout: 5
+stt:
+  provider: local
+`;
+  const out = setMcpServer(config, "recursica-knowledge", KNOWLEDGE);
+  assert.equal(out, `mcp_servers:
+  circlechat:
+    command: node
+    args:
+      - /opt/data/circlechat-mcp.mjs
+    enabled: true
+    tools:
+      include:
+        - list_channels
+${KNOWLEDGE_ENTRY}stt:
+  provider: local
+`);
+  assert.doesNotMatch(out, /npx|timeout: 5/);
+});
+
+test("setMcpServer lists the server in the cli toolsets only when the list names an MCP server, which makes the list an allowlist", () => {
+  // CircleChat's Re-equip, with CC_MCP_TOOLS on, lists its own server: Hermes then starts only the
+  // listed servers for hermes chat.
+  const listed = "platform_toolsets:\n  cli:\n    - hermes-cli\n    - mcp-circlechat\n  slack:\n    - hermes-slack\nmcp_servers:\n  circlechat:\n    command: node\n";
+  assert.match(setMcpServer(listed, "recursica-knowledge", KNOWLEDGE), /^ {2}cli:\n {4}- hermes-cli\n {4}- mcp-circlechat\n {4}- mcp-recursica-knowledge\n {2}slack:\n {4}- hermes-slack\n/m);
+  // A one-line list, and a bare server name, are allowlists too.
+  assert.match(setMcpServer("platform_toolsets:\n  cli: [hermes-cli, circlechat]\nmcp_servers:\n  circlechat:\n    command: node\n", "recursica-knowledge", KNOWLEDGE),
+    /^ {2}cli:\n {4}- hermes-cli\n {4}- circlechat\n {4}- mcp-recursica-knowledge\n/m);
+  // With no server named, the cli platform already starts every enabled server: the list stays.
+  const plain = "platform_toolsets:\n  cli:\n    - hermes-cli\n";
+  assert.match(setMcpServer(plain, "recursica-knowledge", KNOWLEDGE), /^platform_toolsets:\n {2}cli:\n {4}- hermes-cli\nmcp_servers:\n/);
+  // Listed once, never twice.
+  const twice = setMcpServer(setMcpServer(listed, "recursica-knowledge", KNOWLEDGE), "recursica-knowledge", KNOWLEDGE);
+  assert.equal(twice.match(/mcp-recursica-knowledge/g).length, 1);
+});
+
+test("setMcpServer refuses mcp_servers written on one line, rather than lose a server", () => {
+  assert.throws(() => setMcpServer("mcp_servers: {circlechat: {command: node}}\n", "recursica-knowledge", KNOWLEDGE), /writes mcp_servers on one line/);
 });
