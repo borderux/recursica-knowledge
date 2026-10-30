@@ -57,6 +57,7 @@ const PUBLIC_ADDRESSES = new Set([
   "hi@borderux.com",
   "noreply@anthropic.com",
   "noreply@github.com",
+  "support@github.com",
   "git@github.com",
   "git@gitlab.com",
 ]);
