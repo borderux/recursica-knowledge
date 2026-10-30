@@ -92,7 +92,7 @@ SITE="$CC_DIR/site.json"
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
 # MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
 # older name of MODEL_KEY_DEFAULT.
-KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|GITHUB_APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -207,9 +207,9 @@ if [[ " $ROLES " == *" control "* ]]; then
   # workflow passes each one as the two characters \n.
   APP_KEYS="${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK"
   for k in $NAMES; do
-    case "$k" in GITHUB_APP_KEY_*) ;; *) continue ;; esac
-    # The secret's name for each agent: GITHUB_APP_KEY_<AGENT>, as github/apps.mjs keySecretName.
-    match=""; for a in $APP_AGENTS; do [ "GITHUB_APP_KEY_$(printf '%s' "$a" | tr 'a-z.-' 'A-Z__')" = "$k" ] && match="$a"; done
+    case "$k" in APP_KEY_*) ;; *) continue ;; esac
+    # The secret's name for each agent: APP_KEY_<AGENT>, as github/apps.mjs keySecretName.
+    match=""; for a in $APP_AGENTS; do [ "APP_KEY_$(printf '%s' "$a" | tr 'a-z.-' 'A-Z__')" = "$k" ] && match="$a"; done
     [ -n "$match" ] || { echo "  $k skipped: site.json's github_apps has no agent for the key"; continue; }
     pem="$(val "$k")"; pem="${pem//\\n/$'\n'}"
     while [ "${pem%$'\n'}" != "$pem" ]; do pem="${pem%$'\n'}"; done

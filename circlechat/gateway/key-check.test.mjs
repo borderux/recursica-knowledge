@@ -126,7 +126,7 @@ test("a real key shape is caught however it is written: lines, escaped line brea
   const body = fakeBody(256);
   const shapes = {
     "multi-line.pem": `-----BEGIN PRIVATE KEY-----\n${pemLines(body)}\n-----END PRIVATE KEY-----\n`,
-    "one-line.env": `GITHUB_APP_KEY="-----BEGIN RSA PRIVATE KEY-----\\n${pemLines(body, "\\n")}\\n-----END RSA PRIVATE KEY-----"\n`,
+    "one-line.env": `APP_KEY_ALAN="-----BEGIN RSA PRIVATE KEY-----\\n${pemLines(body, "\\n")}\\n-----END RSA PRIVATE KEY-----"\n`,
     "dump.sql": `COPY settings (value) FROM stdin;\n{"key": "-----BEGIN PRIVATE KEY-----\\\\n${pemLines(body, "\\\\n")}\\\\n-----END PRIVATE KEY-----"}\n`,
     "cut-off.log": `error loading key: -----BEGIN RSA PRIVATE KEY-----\n${body.slice(0, 120)}`,
     "encrypted.pem": `-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-128-CBC,0123456789ABCDEF0123456789ABCDEF\n\n${pemLines(body)}\n-----END RSA PRIVATE KEY-----\n`,
