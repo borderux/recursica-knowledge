@@ -9,7 +9,7 @@
 //               "permissions": { "contents": "write", "pull_requests": "write", "issues": "write" } }
 //   }
 //
-// Each app's private key is the GitHub environment secret GITHUB_APP_KEY_<AGENT>. The secrets helper
+// Each app's private key is the GitHub environment secret APP_KEY_<AGENT>. The secrets helper
 // writes the key to a root-owned file (keyFile), and only the token service (token-service.mjs)
 // reads the file. A stack with no github_apps block has no push access.
 import crypto from "node:crypto";
@@ -24,7 +24,7 @@ export const RETIRED = ["ALAN_GITHUB_PAT", "BETTY_GITHUB_PAT", "PORTER_GITHUB_PA
 // The root-owned folder for the apps' private keys, one folder per stack (the GitHub environment).
 export const KEYS_ROOT = "/var/lib/agent-stacks/github-apps";
 export const keyFile = (stack, agent, root = KEYS_ROOT) => path.join(root, stack, `${agent}.pem`);
-export const keySecretName = (agent) => `GITHUB_APP_KEY_${agent.toUpperCase().replace(/[-.]/g, "_")}`;
+export const keySecretName = (agent) => `APP_KEY_${agent.toUpperCase().replace(/[-.]/g, "_")}`;
 // The variable that holds an agent's token in the agent's .env. Hermes removes GITHUB_TOKEN and
 // GH_TOKEN from every shell Hermes starts, so each token has a name of the agent's own.
 export const tokenName = (agent) => `${agent.toUpperCase().replace(/[-.]/g, "_")}_GITHUB_TOKEN`;

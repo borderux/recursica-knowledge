@@ -58,7 +58,7 @@ test("commits use the app's bot identity, with the bot's noreply email address",
   });
   assert.equal(setLines("KEEP=1\nALAN_GITHUB_TOKEN=old\n", { ALAN_GITHUB_TOKEN: "new" }), "KEEP=1\nALAN_GITHUB_TOKEN=new\n");
   assert.equal(tokenName("otto"), "OTTO_GITHUB_TOKEN");
-  assert.equal(keySecretName("betty"), "GITHUB_APP_KEY_BETTY");
+  assert.equal(keySecretName("betty"), "APP_KEY_BETTY");
 });
 
 test("each manifest names the app and the permissions, with no webhook; Alan's adds Issues", () => {
@@ -71,5 +71,5 @@ test("each manifest names the app and the permissions, with no webhook; Alan's a
   const text = steps("alan", m);
   assert.match(text, /Under Webhook, clear Active/);
   assert.match(text, /Contents: Read and write, Pull requests: Read and write, Issues: Read and write/);
-  assert.match(text, /GITHUB_APP_KEY_ALAN/);
+  assert.match(text, /APP_KEY_ALAN/);
 });

@@ -443,18 +443,18 @@ The helper starts in `/`, so no command the owner runs prints `getcwd` errors fr
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
-| Secret in GitHub                                        | File the helper writes                                                                               | Read by                                                                    |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT`         | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
-| `SLACK_BOT_TOKEN`                                       | `.env` on the control computer, for each stack                                                       | The task notifier and the stack's scripts, through the cluster's Slack app |
-| `KEV_ENGINE_KEY`                                        | `.env` on the control computer                                                                       | Barb's first pass with Kev                                                 |
-| `JOBD_TOKEN`                                            | `.env` on the control computer, and the node secrets file                                            | Porter and each job runner                                                 |
-| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                 | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |
-| `GITHUB_APP_KEY_<AGENT>`, such as `GITHUB_APP_KEY_ALAN` | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
-| `KEV_API_KEY`                                           | The node secrets file                                                                                | Kev's model                                                                |
-| `KEV_DATA_GITHUB_PAT`                                   | `kev-data.env` on the control computer                                                               | The Kev data jobs, and nothing else. See "Kev's review data"               |
+| Secret in GitHub                                | File the helper writes                                                                               | Read by                                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
+| `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The task notifier and the stack's scripts, through the cluster's Slack app |
+| `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | Barb's first pass with Kev                                                 |
+| `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Porter and each job runner                                                 |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |
+| `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
+| `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                |
+| `KEV_DATA_GITHUB_PAT`                           | `kev-data.env` on the control computer                                                               | The Kev data jobs, and nothing else. See "Kev's review data"               |
 
-The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `GITHUB_APP_KEY_<AGENT>` secret in the environment too.
+The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too.
 
 **Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
 
@@ -464,7 +464,7 @@ The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no 
 
 **The app's private key never leaves root's file on the control computer.** The token service holds the key and gives each agent only a token:
 
-1. **The secrets helper** writes `GITHUB_APP_KEY_<AGENT>` to `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem`. Root owns the file, with mode 600. The file sits outside the stack's folder, so no agent, container, `.env` file or backup holds the key.
+1. **The secrets helper** writes `APP_KEY_<AGENT>` to `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem`. Root owns the file, with mode 600. The file sits outside the stack's folder, so no agent, container, `.env` file or backup holds the key.
 2. **The token service,** `github-tokens` on the control computer, runs as root (`circlechat/github/token-service.mjs`). The service makes an installation token for each agent. Each token covers the agent's repos and permissions in site.json.
 3. **The agent's token** goes to the `.env` in the agent's Hermes home, as `<AGENT>_GITHUB_TOKEN`, such as `ALAN_GITHUB_TOKEN`. The service makes a new token when the token has 15 minutes left. The agent reads the token at the start of each turn.
 4. **A port job on another computer** asks the token service for a token over Tailscale. The service's port is `site.github_token_port`, 4010 when unset. The job shows the job's task key from the gateway. The token covers only the job's repo, which must be one of Porter's repos. The job asks for a new token after 45 minutes.
@@ -478,7 +478,7 @@ The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no 
 1. **Print the manifests:** `node circlechat/github/manifest.mjs`. Each agent's manifest names the app, the permissions and no webhook. Alan's app adds Issues.
 2. **Create each app** from the organization's settings, under Developer settings, GitHub Apps. Follow the steps the script prints.
 3. **Install each app** on only the agent's repos.
-4. **Generate a private key** for each app. Save the key's text as `GITHUB_APP_KEY_<AGENT>` in the stack's GitHub environment.
+4. **Generate a private key** for each app. Save the key's text as `APP_KEY_<AGENT>` in the stack's GitHub environment. GitHub refuses a secret name that starts with `GITHUB_`, so the name starts with `APP_KEY_`.
 5. **Add the `github_apps` block** to site.json. Each agent's entry holds the app ID, the installation ID, the slug, the repos and the permissions:
 
    ```json

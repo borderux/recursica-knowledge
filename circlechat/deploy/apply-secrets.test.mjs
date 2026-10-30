@@ -217,13 +217,13 @@ test("each GitHub App's private key goes to a root-owned file outside the stack'
   site.github_apps = { alan: { app_id: 1, installation_id: 2, slug: "acme-alan", repos: ["acme/knowledge"], permissions: { contents: "write", pull_requests: "write", issues: "write" } } };
   fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(site));
   const keys = path.join(home, "app-keys");
-  const r = apply(conf, ["cluster", control, "false"], `GITHUB_APP_KEY_ALAN=${PEM}\nGITHUB_APP_KEY_BETTY=${PEM}\n`, { AGENT_STACKS_APP_KEYS: keys });
+  const r = apply(conf, ["cluster", control, "false"], `APP_KEY_ALAN=${PEM}\nAPP_KEY_BETTY=${PEM}\n`, { AGENT_STACKS_APP_KEYS: keys });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const f = path.join(keys, "cluster", "alan.pem");
   assert.equal(fs.readFileSync(f, "utf8"), "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAtest+key/body=\n-----END RSA PRIVATE KEY-----\n");
   assert.equal(fs.statSync(f).mode & 0o777, 0o600);
   assert.equal(fs.statSync(path.join(keys, "cluster")).mode & 0o777, 0o700);
-  assert.match(r.stdout, /GITHUB_APP_KEY_BETTY skipped: site.json's github_apps has no agent for the key/);
+  assert.match(r.stdout, /APP_KEY_BETTY skipped: site.json's github_apps has no agent for the key/);
   assert.ok(!fs.existsSync(path.join(keys, "cluster", "betty.pem")));
   // No key reaches the stack's folder: no .env, no agent home and nothing a backup takes.
   for (const p of [".env", "hermes-homes/.hermes-alan"]) {
@@ -232,8 +232,8 @@ test("each GitHub App's private key goes to a root-owned file outside the stack'
     assert.doesNotMatch(text, /PRIVATE KEY|MIIEow/);
   }
   // A value that is not a private key is skipped.
-  const bad = apply(conf, ["cluster", control, "false"], "GITHUB_APP_KEY_ALAN=ghp_notakey\n", { AGENT_STACKS_APP_KEYS: keys });
-  assert.match(bad.stdout, /GITHUB_APP_KEY_ALAN skipped: the value is not a private key in PEM form/);
+  const bad = apply(conf, ["cluster", control, "false"], "APP_KEY_ALAN=ghp_notakey\n", { AGENT_STACKS_APP_KEYS: keys });
+  assert.match(bad.stdout, /APP_KEY_ALAN skipped: the value is not a private key in PEM form/);
 });
 
 test("on Linux, unlock opens the LUKS image itself, then starts the VM as the owner with no key", { skip: process.platform !== "linux" }, () => {
