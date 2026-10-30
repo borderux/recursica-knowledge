@@ -33,6 +33,7 @@ test("placeholder and role addresses are allowed", () => {
     at("hi", "borderux.com"),
     at("noreply", "anthropic.com"),
     at("noreply", "github.com"),
+    at("support", "github.com"),
     at("123+name", "users.noreply.github.com"),
     at("svc", "acme-research-123456.iam.gserviceaccount.com"),
     `${at("git", "github.com")}:borderux/recursica-knowledge.git`,
