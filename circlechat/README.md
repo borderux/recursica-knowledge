@@ -155,8 +155,19 @@ put there, and change a file anywhere on the computer. So the kit keeps four rul
   homes, and the test restore runs the check over each restored backup. The check skips each symlink, never reads the file the
   symlink names, and names each skipped symlink in the report.
 
-**`sync-skills.sh` refreshes only the skills and the persona** (`setup-agent.sh --sync`), with no
-sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
+**Code the kit hands an agent runs inside that agent's own container, from that agent's own home.**
+The Recursica knowledge MCP server is one such program, for Betty and Barb. `setup-agent.sh` copies
+the server, the skills it serves and the two scripts it imports from the kit checkout into
+`knowledge-mcp/` in the agent's Hermes home. Hermes starts the server from
+`/opt/data/knowledge-mcp/` inside the agent's container. Only that agent can change its own home.
+Every agent can change the workspace, so a program run from the workspace's checkout could hold
+code that another agent wrote. No kit step runs the server on the computer itself, as the stack's
+owner or as root. `setup-host.sh` sets `CC_HERMES_RUNTIME=docker`, so Hermes and every MCP server
+it starts stay in the agent's container. CircleChat adds the server to an agent's settings when the
+agent is installed or equipped, from `CC_AGENT_MCP_SERVERS` in `.env`.
+
+**`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
+(`setup-agent.sh --sync`), with no sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
 `setup-agent.sh <handle>` by hand. After a release that changes `setup-agent.sh` or
 `gateway/hermes-access.mjs`, the upgrade job says so in Slack. Files that root wrote in an agent's
 home before this change can stop the owner's sync: run `setup-agent.sh <handle>` once by hand for

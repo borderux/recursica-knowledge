@@ -230,15 +230,22 @@ set_env COMPOSE_FILE "$CF"
 # CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
 # action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
 set_env APPROVE_RISK_AT high
-# The Recursica knowledge MCP server for Betty and Barb. It runs from the knowledge checkout in the
-# shared workspace, so it serves the same skills the agents read and needs no version of its own.
-# Its component_api tool reads the adapter installed in whichever project the agent names.
+# The Recursica knowledge MCP server for the agents in KNOWLEDGE_MCP_AGENTS (kit/lib.sh). Hermes
+# starts it inside each agent's own container, from the copy setup-agent.sh puts in the agent's own
+# home, never from the workspace's checkout, which every agent can change. Its component_api tool
+# reads the adapter installed in whichever project the agent names. The timeout stays under the
+# minute CircleChat waits for Hermes to start, so a server that never starts fails on its own.
 # The two files below started the old @recursica/mcp package, which this replaces.
 mkdir -p "$WS"
 SAFE="$HERE/kit/safe-files.mjs"
 rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
-KMCP="{\"command\":\"node\",\"args\":[\"/workspace/recursica-knowledge/nest/mcp/knowledge/server.mjs\"],\"enabled\":true,\"timeout\":120}"
-set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-knowledge\":$KMCP},\"barb\":{\"recursica-knowledge\":$KMCP}}"
+KMCP="{\"command\":\"node\",\"args\":[\"$KNOWLEDGE_MCP_SERVER\"],\"enabled\":true,\"timeout\":30}"
+MCP_MAP=""
+for a in $KNOWLEDGE_MCP_AGENTS; do MCP_MAP="$MCP_MAP${MCP_MAP:+,}\"$a\":{\"recursica-knowledge\":$KMCP}"; done
+set_env CC_AGENT_MCP_SERVERS "{$MCP_MAP}"
+# Hermes, and every MCP server it starts, runs in each agent's own container. CircleChat's host
+# mode would run them inside CircleChat's api container instead, with the api's access.
+set_env CC_HERMES_RUNTIME docker
 set_env ENFORCE_AGENT_SCOPES true
 # Cloud model keys live in one secrets file that only the gateway reads, owned by root. The
 # secrets helper writes the file from the stack's GitHub environment (MODEL_KEY_<NAME>). An older

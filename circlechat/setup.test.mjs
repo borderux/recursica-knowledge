@@ -49,9 +49,14 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.match(e.COMPOSE_FILE, /compose\.egress\.yml/);
   assert.equal(e.APPROVE_RISK_AT, "high");
   const mcp = JSON.parse(e.CC_AGENT_MCP_SERVERS);
-  for (const agent of ["betty", "barb"])
-    assert.deepEqual(mcp[agent]["recursica-knowledge"].args, ["/workspace/recursica-knowledge/nest/mcp/knowledge/server.mjs"]);
-  assert.doesNotMatch(e.CC_AGENT_MCP_SERVERS, /\$|recursica-mcp/);
+  // The knowledge server runs inside each agent's own container, from the copy in the agent's own
+  // home (/opt/data), never from the workspace, which every agent can change.
+  assert.deepEqual(Object.keys(mcp).sort(), ["barb", "betty"]);
+  for (const agent of ["betty", "barb"]) {
+    assert.deepEqual(mcp[agent]["recursica-knowledge"], { command: "node", args: ["/opt/data/knowledge-mcp/tools/knowledge-mcp/server.mjs"], enabled: true, timeout: 30 });
+  }
+  assert.doesNotMatch(e.CC_AGENT_MCP_SERVERS, /\$|recursica-mcp|\/workspace/);
+  assert.equal(e.CC_HERMES_RUNTIME, "docker", "Hermes and its MCP servers run in each agent's container");
   assert.equal(fs.existsSync(path.join(s.home, "circlechat-workspace/.recursica-mcp-version")), false);
   assert.equal(e.CC_AGENT_NETWORK, "circlechat_agents");
   assert.equal(e.CC_AGENT_API_BASE, "http://api:3000/api");

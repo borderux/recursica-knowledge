@@ -70,6 +70,18 @@ sf copy "$H" "$H/skills" "$KIT_ROOT"/skills/*/*
 if [ "$HANDLE" = barb ]; then
   sf copy "$H" "$H/skills" "$KIT_ROOT/agents/barb/subagents/checker" "$KIT_ROOT/agents/barb/subagents/feisty"
 fi
+# The knowledge MCP server's copy in the agent's own home (KNOWLEDGE_MCP_AGENTS in kit/lib.sh): the
+# server, the skills it serves, and the two scripts it imports, from the kit's checkout. Hermes runs
+# it inside the agent's container at /opt/data/knowledge-mcp. Never point it at the workspace's
+# checkout, which every agent can change.
+case " $KNOWLEDGE_MCP_AGENTS " in *" $HANDLE "*)
+  KM="$H/$KNOWLEDGE_MCP_DIR"
+  sf copy "$H" "$KM/tools/knowledge-mcp" "$KIT_ROOT/tools/knowledge-mcp/server.mjs"
+  sf copy "$H" "$KM" "$KIT_ROOT/skills"
+  sf copy "$H" "$KM/scripts" "$KIT_ROOT/scripts/screen-skill-manifest.mjs"
+  sf copy "$H" "$KM/scripts/lib" "$KIT_ROOT/scripts/lib/skill-sections.mjs"
+  ;;
+esac
 if [ ! -f "$SOUL" ]; then echo "synced skills for $HANDLE (persona not managed here)"; exit 0; fi
 
 # Persona: replace our marked section with the built CircleChat persona, keep CircleChat's part.
