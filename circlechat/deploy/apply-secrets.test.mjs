@@ -49,6 +49,8 @@ function fakeSystem(home, system) {
 
 test("writes each known secret to the file that uses it, and keeps other lines", () => {
   const { home, conf } = setup();
+  fs.writeFileSync(path.join(home, "circlechat", "hermes-homes", ".hermes-alan", ".env"), "KEEP=1\nALAN_GITHUB_PAT=ghp_old\n");
+  fs.writeFileSync(path.join(home, ".recursica-node.env"), "PORTER_GITHUB_PAT=ghp_old\n", { mode: 0o600 });
   const r = apply(conf, ["cluster", control, "false"],
     "MODEL_KEY_ACME_GROK=xai-1\nANTHROPIC_API_KEY=new\nALAN_GITHUB_PAT=ghp_a\nJOBD_TOKEN=jt\nPORTER_ANTHROPIC_API_KEY=pk\nGITHUB_TOKEN=ignored\nPATH=/x\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
@@ -60,10 +62,13 @@ test("writes each known secret to the file that uses it, and keeps other lines",
   assert.equal(fs.readFileSync(keys, "utf8"), "MODEL_KEY_ACME_GROK=xai-1\nMODEL_KEY_DEFAULT=new\n");
   assert.equal(fs.statSync(keys).mode & 0o777, 0o600);
   const alan = fs.readFileSync(path.join(home, "circlechat", "hermes-homes", ".hermes-alan", ".env"), "utf8");
-  assert.match(alan, /^ALAN_GITHUB_PAT=ghp_a$/m);
+  // The agents' personal access tokens are retired: none is written, and an old one leaves the .env.
+  assert.match(alan, /^KEEP=1$/m);
+  assert.doesNotMatch(alan, /GITHUB_PAT/);
+  assert.match(r.stdout, /ALAN_GITHUB_PAT is retired/);
   // The port jobs' computers get no cloud key.
   const nodeEnv = fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8");
-  assert.doesNotMatch(nodeEnv, /ANTHROPIC_API_KEY|pk/);
+  assert.doesNotMatch(nodeEnv, /ANTHROPIC_API_KEY|pk|PORTER_GITHUB_PAT/);
   assert.match(r.stdout, /PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway/);
   assert.equal(fs.statSync(path.join(home, ".recursica-node.env")).mode & 0o777, 0o600);
 });
@@ -203,28 +208,32 @@ test("the cluster's secrets go to the cluster file, for the cluster's own stack 
   assert.match(f, /^TOTP_SECRET_PERSON_A=ABC$/m);
 });
 
-test("a client stack never gets Alan's token for the public repo", () => {
-  const { home, conf } = setup();
-  const dir = path.join(home, "tenants", "acme", "circlechat");
-  fs.mkdirSync(dir, { recursive: true });
-  const site = structuredClone(example);
-  Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
-  fs.writeFileSync(path.join(dir, "site.json"), JSON.stringify(site));
-  const r = apply(conf, ["client-acme", control, "false"], "ALAN_GITHUB_PAT=ghp_x\n");
-  assert.notEqual(r.status, 0);
-  assert.match(r.stdout, /Refused: stack client-acme uses the public knowledge repo/);
-});
+// A private key in PEM form, as the workflow passes the key: each line break as the two characters \n.
+const PEM = "-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEAtest+key/body=\\n-----END RSA PRIVATE KEY-----\\n";
 
-test("a client stack with its own knowledge fork may hold Alan's token", () => {
+test("each GitHub App's private key goes to a root-owned file outside the stack's folder, and only for an agent in github_apps", () => {
   const { home, conf } = setup();
-  const dir = path.join(home, "tenants", "acme", "circlechat");
-  fs.mkdirSync(path.join(dir, "hermes-homes", ".hermes-alan"), { recursive: true });
   const site = structuredClone(example);
-  Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
-  site.repos.knowledge = "https://git.acme.example/design/recursica-knowledge";
-  fs.writeFileSync(path.join(dir, "site.json"), JSON.stringify(site));
-  const r = apply(conf, ["client-acme", control, "false"], "ALAN_GITHUB_PAT=ghp_x\n");
+  site.github_apps = { alan: { app_id: 1, installation_id: 2, slug: "acme-alan", repos: ["acme/knowledge"], permissions: { contents: "write", pull_requests: "write", issues: "write" } } };
+  fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(site));
+  const keys = path.join(home, "app-keys");
+  const r = apply(conf, ["cluster", control, "false"], `GITHUB_APP_KEY_ALAN=${PEM}\nGITHUB_APP_KEY_BETTY=${PEM}\n`, { AGENT_STACKS_APP_KEYS: keys });
   assert.equal(r.status, 0, r.stdout + r.stderr);
+  const f = path.join(keys, "cluster", "alan.pem");
+  assert.equal(fs.readFileSync(f, "utf8"), "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAtest+key/body=\n-----END RSA PRIVATE KEY-----\n");
+  assert.equal(fs.statSync(f).mode & 0o777, 0o600);
+  assert.equal(fs.statSync(path.join(keys, "cluster")).mode & 0o777, 0o700);
+  assert.match(r.stdout, /GITHUB_APP_KEY_BETTY skipped: site.json's github_apps has no agent for the key/);
+  assert.ok(!fs.existsSync(path.join(keys, "cluster", "betty.pem")));
+  // No key reaches the stack's folder: no .env, no agent home and nothing a backup takes.
+  for (const p of [".env", "hermes-homes/.hermes-alan"]) {
+    const t = path.join(home, "circlechat", p);
+    const text = fs.statSync(t).isDirectory() ? fs.readdirSync(t).map((x) => fs.readFileSync(path.join(t, x), "utf8")).join("") : fs.readFileSync(t, "utf8");
+    assert.doesNotMatch(text, /PRIVATE KEY|MIIEow/);
+  }
+  // A value that is not a private key is skipped.
+  const bad = apply(conf, ["cluster", control, "false"], "GITHUB_APP_KEY_ALAN=ghp_notakey\n", { AGENT_STACKS_APP_KEYS: keys });
+  assert.match(bad.stdout, /GITHUB_APP_KEY_ALAN skipped: the value is not a private key in PEM form/);
 });
 
 test("on Linux, unlock opens the LUKS image itself, then starts the VM as the owner with no key", { skip: process.platform !== "linux" }, () => {

@@ -19,7 +19,8 @@ const jobd = spawn(process.execPath, [path.join(here, "jobd.mjs")], { env: { ...
   JOBD_PORT: String(PORT), JOBD_HOST: "127.0.0.1", JOBD_TOKEN: TOKEN, JOBD_SLOTS: "1", JOBD_DIR: path.join(tmp, "jobs"),
   JOBD_DOCKER: path.join(here, "fake-docker.sh"), FAKE_DOCKER_STATE: state, JOBD_ALLOWED_REPOS: REPO, JOBD_POLL_MS: "150",
   JOBD_NODE_NAME: "node-a", PORTER_HOOK_URL: `http://127.0.0.1:${hook.address().port}/hook`, PORTER_HOOK_SECRET: SECRET,
-  JOBD_GATEWAY_URL: "http://cc-gateway:4000", ANTHROPIC_API_KEY: "never-reaches-a-job", PORTER_GITHUB_PAT: "should-pass-by-name" }, stdio: "ignore" });
+  JOBD_GATEWAY_URL: "http://cc-gateway:4000", ANTHROPIC_API_KEY: "never-reaches-a-job", PORTER_GITHUB_PAT: "retired-never-reaches-a-job",
+  JOBD_GITHUB_TOKEN_URL: "http://100.64.0.5:4010", PORTER_MODEL: "sonnet" }, stdio: "ignore" });
 await new Promise((r) => setTimeout(r, 400));
 const call = (method, p, body, auth = TOKEN) => fetch(`http://127.0.0.1:${PORT}${p}`, { method,
   headers: { authorization: `Bearer ${auth}`, "content-type": "application/json" }, body: body && JSON.stringify(body) });
@@ -44,11 +45,13 @@ test("starts a job, refuses a second when full, reports and wakes the agent when
   assert.equal(fs.readFileSync(path.join(tmp, "jobs", id, "package.md"), "utf8"), pkg.package);
   // The job gets the gateway's address and the task's gateway key from a file, never a cloud key.
   const gw = path.join(tmp, "jobs", id, "gateway.env");
-  assert.equal(fs.readFileSync(gw, "utf8"), `ANTHROPIC_BASE_URL=http://cc-gateway:4000\nANTHROPIC_AUTH_TOKEN=${pkg.gateway_key}\n`);
+  // The job also gets the token service's address, where the job asks for Porter's GitHub token.
+  assert.equal(fs.readFileSync(gw, "utf8"), `ANTHROPIC_BASE_URL=http://cc-gateway:4000\nANTHROPIC_AUTH_TOKEN=${pkg.gateway_key}\nGITHUB_TOKEN_URL=http://100.64.0.5:4010\n`);
   assert.equal(fs.statSync(gw).mode & 0o777, 0o600);
   const args = fs.readFileSync(path.join(state, `${id}.args`), "utf8").split("\n");
   assert.equal(args[args.indexOf("--env-file") + 1], gw);
-  assert.ok(args.includes("PORTER_GITHUB_PAT"));
+  assert.ok(args.includes("PORTER_MODEL"));
+  assert.ok(!args.includes("PORTER_GITHUB_PAT"), "a retired token never reaches a job");
   assert.ok(!args.some((a) => a.includes("ANTHROPIC_API_KEY") || a.includes(pkg.gateway_key)), "no cloud key and no key on the command line");
   assert.equal((await call("POST", "/jobs", pkg)).status, 429);
   assert.equal((await (await call("GET", `/jobs/${id}`)).json()).status, "running");

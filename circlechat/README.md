@@ -117,7 +117,7 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    ```bash
    ./circlechat/setup-agent.sh betty
    KEV_ENGINE_KEY=... ./circlechat/setup-agent.sh barb
-   GITHUB_TOKEN=github_pat_... ./circlechat/setup-agent.sh alan   # stored as ALAN_GITHUB_PAT
+   ./circlechat/setup-agent.sh alan
    ```
    `setup-agent.sh` gives the agent the agent's own gateway key, in place of the placeholder. The
    script fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from `site.json`,
@@ -257,17 +257,17 @@ Porter's adapter ports are too long and too heavy for an agent turn, so each por
 `jobs.memory_gb`, at most `jobs.slots` at once. Porter sends each port to the first job runner
 with room, best first by `jobs.priority`. `agents/porter/runtime/hermes.md` explains the design.
 
-1. **Give Porter a GitHub token** with Contents and Pull requests on the target adapters only
-   (`porter.targets`), and no merge rights. Protect `main` on each target with a ruleset whose
-   bypass list is empty. A bot account keeps the pull requests reviewable by the whole team.
+1. **Give Porter a GitHub App** with Contents and Pull requests on the target adapters only
+   (`porter.targets`), and no merge rights, as "GitHub access for agents" describes. Protect
+   `main` on each target with a ruleset whose bypass list is empty. The app's bot identity keeps
+   the pull requests reviewable by the whole team.
 2. **Create the wake-up webhook.** In CircleChat, create a workflow with a webhook trigger and
    one agent step for Porter. Copy the webhook URL and signing secret into the control machine's
    `.env` as `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. The release watcher (hourly, installed by
    `setup-host.sh` when `porter.watch` is set) and every job runner use the same webhook.
 3. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
-   `JOBD_TOKEN` (copied from the control machine's `.env`), `PORTER_GITHUB_PAT`,
-   `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`. The file holds
-   no cloud key. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
+   `JOBD_TOKEN` (copied from the control machine's `.env`), `PORTER_HOOK_URL` and
+   `PORTER_HOOK_SECRET`. The file holds no cloud key and no GitHub token. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
    it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`. On the
    control computer, run `setup-host.sh` first, so the gateway exists.
 4. Install Porter in the CircleChat UI, then `./circlechat/setup-agent.sh porter`.
@@ -437,21 +437,56 @@ The helper starts in `/`, so no command the owner runs prints `getcwd` errors fr
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
-| Secret in GitHub                                           | File the helper writes                                    | Read by                                                                    |
-| ---------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT`            | `model-keys.env` on the control computer                  | The model gateway, and nothing else                                        |
-| `SLACK_BOT_TOKEN`                                          | `.env` on the control computer, for each stack            | The task notifier and the stack's scripts, through the cluster's Slack app |
-| `KEV_ENGINE_KEY`                                           | `.env` on the control computer                            | Barb's first pass with Kev                                                 |
-| `JOBD_TOKEN`                                               | `.env` on the control computer, and the node secrets file | Porter and each job runner                                                 |
-| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                    | `.env` on the control computer, and the node secrets file | The release watcher and each job runner                                    |
-| `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn                                       |
-| `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                                                                |
-| `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                                                              |
-| `KEV_DATA_GITHUB_PAT`                                      | `kev-data.env` on the control computer                    | The Kev data jobs, and nothing else. See "Kev's review data"               |
+| Secret in GitHub                                        | File the helper writes                                                                               | Read by                                                                    |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT`         | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
+| `SLACK_BOT_TOKEN`                                       | `.env` on the control computer, for each stack                                                       | The task notifier and the stack's scripts, through the cluster's Slack app |
+| `KEV_ENGINE_KEY`                                        | `.env` on the control computer                                                                       | Barb's first pass with Kev                                                 |
+| `JOBD_TOKEN`                                            | `.env` on the control computer, and the node secrets file                                            | Porter and each job runner                                                 |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                 | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |
+| `GITHUB_APP_KEY_<AGENT>`, such as `GITHUB_APP_KEY_ALAN` | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
+| `KEV_API_KEY`                                           | The node secrets file                                                                                | Kev's model                                                                |
+| `KEV_DATA_GITHUB_PAT`                                   | `kev-data.env` on the control computer                                                               | The Kev data jobs, and nothing else. See "Kev's review data"               |
 
-The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
+The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `GITHUB_APP_KEY_<AGENT>` secret in the environment too.
 
 **Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
+
+## GitHub access for agents
+
+**Each agent that pushes to GitHub has a GitHub App of the agent's own.** The agents are Alan, Betty and Porter, and later Otto. An app replaces a personal access token. An app's token lasts at most one hour, covers only the agent's repos, and never depends on one person's account.
+
+**The app's private key never leaves root's file on the control computer.** The token service holds the key and gives each agent only a token:
+
+1. **The secrets helper** writes `GITHUB_APP_KEY_<AGENT>` to `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem`. Root owns the file, with mode 600. The file sits outside the stack's folder, so no agent, container, `.env` file or backup holds the key.
+2. **The token service,** `github-tokens` on the control computer, runs as root (`circlechat/github/token-service.mjs`). The service makes an installation token for each agent. Each token covers the agent's repos and permissions in site.json.
+3. **The agent's token** goes to the `.env` in the agent's Hermes home, as `<AGENT>_GITHUB_TOKEN`, such as `ALAN_GITHUB_TOKEN`. The service makes a new token when the token has 15 minutes left. The agent reads the token at the start of each turn.
+4. **A port job on another computer** asks the token service for a token over Tailscale. The service's port is `site.github_token_port`, 4010 when unset. The job shows the job's task key from the gateway. The token covers only the job's repo, which must be one of Porter's repos. The job asks for a new token after 45 minutes.
+
+**Commits use the app's bot identity.** The bot's name is `<app-slug>[bot]`, with the bot's noreply email address. The token service sets git's author and committer in the agent's `.env`. A port job sets the same identity in git's settings. Betty still sets each commit's author to the person, so the bot is the committer.
+
+**A stack with no `github_apps` block keeps working, with no push access.** The setup installs no token service, and no agent gets a token.
+
+### Set up each app
+
+1. **Print the manifests:** `node circlechat/github/manifest.mjs`. Each agent's manifest names the app, the permissions and no webhook. Alan's app adds Issues.
+2. **Create each app** from the organization's settings, under Developer settings, GitHub Apps. Follow the steps the script prints.
+3. **Install each app** on only the agent's repos.
+4. **Generate a private key** for each app. Save the key's text as `GITHUB_APP_KEY_<AGENT>` in the stack's GitHub environment.
+5. **Add the `github_apps` block** to site.json. Each agent's entry holds the app ID, the installation ID, the slug, the repos and the permissions:
+
+   ```json
+   "github_apps": {
+     "alan": { "app_id": 1, "installation_id": 2, "slug": "acme-alan", "repos": ["acme/knowledge"],
+               "permissions": { "contents": "write", "pull_requests": "write", "issues": "write" } }
+   }
+   ```
+
+6. **Deploy the secrets,** then run `setup-host.sh`. Rerun `setup-agent.sh` for each agent.
+
+**The personal access tokens are retired.** The helper writes no `ALAN_GITHUB_PAT`, `BETTY_GITHUB_PAT` or `PORTER_GITHUB_PAT`, and removes each one from the agents' `.env` files and the node secrets files. Delete the three secrets from each GitHub environment, and revoke each token on GitHub.
+
+**The key check also finds private keys.** The check fails when a private key is in CircleChat's database, an agent's home or a backup.
 
 ## Outgoing filter
 
@@ -486,7 +521,7 @@ A refused site in a port job gets a Slack alert with no buttons, because a job c
 Two more rules hold on every stack:
 
 - **CircleChat's approval gate is on.** `setup-host.sh` sets `APPROVE_RISK_AT=high`, so each high-risk action waits for a person's approval in CircleChat. The high-risk action, `share_files`, has CircleChat itself fetch a web address, outside the agents' filter.
-- **A client stack never runs Alan.** Alan's pull requests go to the public knowledge repo. `setup-agent.sh` refuses Alan on a client stack, and the secrets helper refuses `ALAN_GITHUB_PAT` for a client stack.
+- **A client stack never runs Alan.** Alan's pull requests go to the public knowledge repo. `setup-agent.sh` refuses Alan on a client stack. The config check refuses `github_apps.alan` on a client stack that uses the public knowledge repo.
 
 ## Cloud models and the model gateway
 

@@ -34,6 +34,7 @@ import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
+import { DEFAULT_TOKEN_PORT, validateApps } from "../github/apps.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -198,6 +199,9 @@ export function gatewayConfig(site) {
 }
 
 const AGENT = /^[a-z0-9][a-z0-9._-]{0,39}$/;
+// The public knowledge repo. A client stack that still uses the public repo never gets Alan's push
+// access, so no client detail reaches a public pull request.
+const PUBLIC_KNOWLEDGE = /borderux\/recursica-knowledge(\.git)?$/;
 
 // The ports agents and port jobs may use through the outgoing filter: web (80, 443), the job runner
 // (7400), Kev's model (8009) and the gateway. A model server's own port is never on the list:
@@ -209,9 +213,11 @@ export function modelServerPorts(site = {}) {
   for (const n of site.nodes ?? []) for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) if (Number.isInteger(m.port)) out.add(m.port);
   return out;
 }
+// The GitHub token service's port (github/token-service.mjs), for a stack with a github_apps block.
+export const tokenPort = (site = {}) => (site.github_apps ? site.site?.github_token_port ?? DEFAULT_TOKEN_PORT : null);
 export function filterPorts(site = {}) {
   const model = modelServerPorts(site);
-  return [...new Set([...FILTER_PORTS, site.site?.gateway_port ?? 4000])].filter((p) => !model.has(p));
+  return [...new Set([...FILTER_PORTS, site.site?.gateway_port ?? 4000, tokenPort(site)])].filter((p) => p && !model.has(p));
 }
 
 export function squidConf(site = {}) {
@@ -351,6 +357,8 @@ function computersErrors(site, cluster) {
   const cs = cluster.site ?? {};
   const theirPorts = { port: cs.port ?? 8080, preview_port: cs.preview_port ?? 5173, gateway_port: cs.gateway_port ?? 4000 };
   for (const [k, v] of Object.entries(theirPorts)) if ((t[k] ?? theirPorts[k]) === v) errs.push(`site.${k} ${v} is the cluster's own stack's port. Give the stack another port`);
+  // Two token services on one computer need two ports.
+  if (site.github_apps && cluster.github_apps && tokenPort(site) === tokenPort(cluster)) errs.push(`site.github_token_port ${tokenPort(site)} is the cluster's own stack's port. Give the stack another port`);
   return errs;
 }
 
@@ -403,11 +411,17 @@ export function validate(site, { cluster } = {}) {
   if (t.tenant !== undefined && (!SLUG.test(t.tenant) || t.tenant === "default")) errs.push(`site.tenant "${t.tenant}" must be lowercase letters, digits and hyphens, and not "default"`);
   if (t.kind !== undefined && !["internal", "client", "demo"].includes(t.kind)) errs.push("site.kind must be internal, client or demo");
   errs.push(...computersErrors(site, cluster));
-  for (const k of ["port", "preview_port", "gateway_port"]) {
+  for (const k of ["port", "preview_port", "gateway_port", "github_token_port"]) {
     if (t[k] !== undefined && !(Number.isInteger(t[k]) && t[k] >= 1024 && t[k] <= 65535)) errs.push(`site.${k} must be a port number from 1024 to 65535`);
   }
-  const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
-  if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
+  const ports = ["port", "preview_port", "gateway_port", "github_token_port"].map((k) => t[k]).filter((v) => v !== undefined);
+  if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port, site.gateway_port and site.github_token_port must all differ");
+  // Each agent's GitHub App (github/apps.mjs).
+  errs.push(...validateApps(site));
+  if (site.github_apps && [t.port ?? 8080, t.preview_port ?? 5173, t.gateway_port ?? 4000, (t.gateway_port ?? 4000) + 1].includes(tokenPort(site))) errs.push(`site.github_token_port (${tokenPort(site)}) must differ from the stack's other ports and from site.gateway_port + 1`);
+  // Alan opens pull requests only on the stack's own knowledge repo. A client stack that still uses
+  // the public knowledge repo gives Alan no app, so no client detail reaches a public pull request.
+  if (t.tenant && PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") && site.github_apps?.alan) errs.push("github_apps.alan: this client stack uses the public knowledge repo. Point repos.knowledge at the client's own fork first");
   // On a Mac, the gateway's port for port jobs is 127.0.0.1:<gateway port + 1> (setup-host.sh).
   const jobsLocal = (t.gateway_port ?? 4000) + 1;
   if ((site.nodes ?? []).find((n) => n.control)?.os === "macos" && [t.port ?? 8080, t.preview_port ?? 5173].includes(jobsLocal)) {
@@ -653,7 +667,9 @@ export function render(site) {
   // A computer's limits cap each job: no more memory than limits.memory_gb, no more jobs at once
   // than fit in it, and no more cores than limits.cpus.
   const jobs = (n) => {
-    const j = { ...n.jobs, gateway_url: gatewayUrl(n) };
+    const j = { ...n.jobs, gateway_url: gatewayUrl(n),
+      // A port job gets the push token for the job's repo from the token service over Tailscale.
+      ...(site.github_apps?.porter && control?.tailnet_address ? { github_token_url: `http://${control.tailnet_address}:${tokenPort(site)}` } : {}) };
     const l = n.limits ?? {};
     if (l.memory_gb) {
       j.memory_gb = Math.min(j.memory_gb, l.memory_gb);
@@ -688,7 +704,10 @@ export function render(site) {
     // Task details in Slack: on for the cluster's own stack and a demo; off for a client stack unless the client
     // allows details (notify.details), because Slack is an outside company.
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
-    `PUBLIC_KNOWLEDGE=${/borderux\/recursica-knowledge(\.git)?$/.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
+    `PUBLIC_KNOWLEDGE=${PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
+    // The GitHub token service: on with a github_apps block, and its port.
+    `GITHUB_APPS=${site.github_apps ? "on" : "off"}`,
+    `GITHUB_TOKEN_PORT=${tokenPort(site) ?? ""}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
     // Port jobs on other computers reach the gateway at this address, over Tailscale.
     `TAILNET_ADDRESS=${control?.tailnet_address ?? ""}`,

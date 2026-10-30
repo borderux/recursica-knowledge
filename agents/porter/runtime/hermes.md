@@ -46,9 +46,9 @@ the job:
 
 | Variable | Holds |
 | --- | --- |
-| `PORTER_GITHUB_PAT` | Fine-grained token: Contents and Pull requests on the three target adapters only, no access to the Mantine adapter, **no merge rights**. Protect `main` on each target with a ruleset whose bypass list is empty |
-| `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The git identity the commits use. A bot account keeps the pull requests reviewable by the whole team |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET` | The CircleChat workflow webhook that wakes Porter |
+
+The job gets no GitHub token from the job runner. Porter's GitHub App covers the three target adapters only, with Contents and Pull requests, and **no merge rights**. Protect `main` on each target with a ruleset whose bypass list is empty. The job asks the stack's token service for a token for the job's repo, with the job's task key. The token lasts at most one hour, and the job asks for a new token after 45 minutes. Commits use the app's bot identity, `<app-slug>[bot]`, which keeps the pull requests reviewable by the whole team.
 
 ## The trigger
 

@@ -57,7 +57,7 @@ node -e '
   install_unit "$name" "$cmd" "$dir" "$(id -un)"
 done
 # A job runner, when the node has a `jobs` block: builds the porter job image and runs jobd, which
-# starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN, PORTER_GITHUB_PAT,
+# starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN,
 # PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET) come from $SECRETS.
 # JOBD_TOKEN must match the one in the control machine's .env. A job holds no cloud key: the job
 # sends its model requests to the control computer's gateway, with the gateway key for its task.
@@ -106,6 +106,6 @@ if [ -n "$JOBS" ]; then
     [ -n "$a" ] && JOBD_HOST="$JOBD_HOST,$a"
   done
   [ "$JOBD_HOST" != 127.0.0.1 ] || echo "No Tailscale address found: the job runner listens on 127.0.0.1 only, so other computers cannot reach the job runner."
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_GITHUB_TOKEN_URL=$(jget github_token_url) JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

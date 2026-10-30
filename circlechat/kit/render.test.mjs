@@ -523,3 +523,30 @@ test("a computer's router is an IP address", () => {
   s.nodes[0].router = "the office router";
   assert.match(validate(s).join("\n"), /node machine-1: router must be an IP address, such as 192\.0\.2\.1/);
 });
+
+test("github_apps: each app is checked, the token service gets a port, and port jobs get the service's address", () => {
+  const s = clone();
+  assert.equal(render(s).tenantEnv.match(/^GITHUB_APPS=(.*)$/m)[1], "off", "no github_apps block: no push access");
+  s.github_apps = { porter: { app_id: 1, installation_id: 2, slug: "acme-porter", repos: ["acme/adapter"], permissions: { contents: "write", pull_requests: "write" } } };
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.match(r.tenantEnv, /^GITHUB_APPS=on$/m);
+  assert.match(r.tenantEnv, /^GITHUB_TOKEN_PORT=4010$/m);
+  assert.match(r.egress.conf, /acl Safe_ports port .*\b4010\b/, "port jobs reach the token service through the outgoing filter");
+  const control = s.nodes.find((n) => n.control);
+  const withJobs = Object.values(r.services).find((v) => v.jobs);
+  if (withJobs && control.tailnet_address) assert.equal(withJobs.jobs.github_token_url, `http://${control.tailnet_address}:4010`);
+  s.site.github_token_port = s.site.gateway_port ?? 4000;
+  assert.ok(validate(s).some((e) => /github_token_port/.test(e)));
+  delete s.site.github_token_port;
+  s.github_apps.porter.permissions.contents = "read";
+  assert.ok(validate(s).some((e) => /permissions.contents must be "write"/.test(e)));
+});
+
+test("github_apps: a client stack that uses the public knowledge repo gets no app for Alan", () => {
+  const s = clone();
+  Object.assign(s.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+  s.repos.knowledge = "https://github.com/borderux/recursica-knowledge";
+  s.github_apps = { alan: { app_id: 1, installation_id: 2, slug: "acme-alan", repos: ["acme/knowledge"], permissions: { contents: "write", pull_requests: "write", issues: "write" } } };
+  assert.ok(validate(s).some((e) => /github_apps.alan: this client stack uses the public knowledge repo/.test(e)));
+});

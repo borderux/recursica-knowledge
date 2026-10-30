@@ -4,7 +4,7 @@
 //
 //   node starters.mjs [owner]        (owner defaults to borderux; GITHUB_TOKEN is optional)
 const owner = process.argv[2] ?? "borderux";
-const token = process.env.GITHUB_TOKEN ?? process.env.BETTY_GITHUB_PAT ?? "";
+const token = process.env.GITHUB_TOKEN ?? process.env.BETTY_GITHUB_TOKEN ?? "";
 const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(`topic:recursica-starter org:${owner}`)}&sort=updated&per_page=50`;
 const r = await fetch(url, { headers: { accept: "application/vnd.github+json", ...(token ? { authorization: `Bearer ${token}` } : {}) } });
 if (!r.ok) { console.error(`GitHub answered ${r.status}`); process.exit(1); }

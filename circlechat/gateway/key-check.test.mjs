@@ -76,3 +76,25 @@ test("a symlinked secrets file is skipped and named, and its target never read",
   assert.equal(r.status, 0, r.stdout);
   assert.match(r.stdout, new RegExp(`Skipped 1 symlink\\(s\\), never followed or read:\\n  - ${secrets.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}\\n`));
 });
+
+test("finds a private key, such as a GitHub App's, in an agent home, a database dump and a backup, and never prints the key", () => {
+  const d = dir();
+  const body = "MIIEowIBAAKCAQEA" + "q".repeat(48);
+  const pem = `-----BEGIN RSA PRIVATE KEY-----\n${body}\n-----END RSA PRIVATE KEY-----\n`;
+  fs.mkdirSync(path.join(d, ".hermes-alan"));
+  fs.writeFileSync(path.join(d, ".hermes-alan", "notes.md"), pem);
+  fs.writeFileSync(path.join(d, "backup.tgz"), zlib.gzipSync(`-----BEGIN PRIVATE KEY-----\n${body}\n`));
+  let r = check([d], "");
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /notes\.md: a private key/);
+  assert.match(r.stdout, /backup\.tgz: a private key/);
+  assert.ok(!r.stdout.includes(body));
+  // A key with its PEM header removed matches the app's key file by the key's first line.
+  const keys = path.join(dir(), "github-apps");
+  fs.mkdirSync(keys);
+  fs.writeFileSync(path.join(keys, "alan.pem"), pem);
+  r = check(["--private-keys", keys, "--stdin", "CircleChat's database"], `INSERT INTO messages VALUES ('${body}');`);
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /CircleChat's database: a GitHub App's private key/);
+  assert.ok(!r.stdout.includes(body));
+});

@@ -18,13 +18,13 @@ Work only in the proposals checkout, `/workspace/kb-proposals`, a clone of `{{KN
 
 **Never write to `/workspace/{{KNOWLEDGE_REPO_NAME}}`.** Betty builds from that checkout, and Barb reviews against that checkout. A rule still being proposed must not reach the checkout Betty and Barb use.
 
-**Pass the credential `$ALAN_GITHUB_PAT` in on each command that needs the credential.** Hermes (the agent runtime Alan runs on in CircleChat) removes `GITHUB_TOKEN` and `GH_TOKEN` from every shell Hermes starts. In those shells, `GITHUB_TOKEN` and `GH_TOKEN` are always empty. Pass the credential on the command in these forms:
+**Pass the credential `$ALAN_GITHUB_TOKEN` in on each command that needs the credential.** The credential is the token of Alan's GitHub App. The kit renews the token before the token ends, so read `$ALAN_GITHUB_TOKEN` again on each command. Hermes (the agent runtime Alan runs on in CircleChat) removes `GITHUB_TOKEN` and `GH_TOKEN` from every shell Hermes starts. In those shells, `GITHUB_TOKEN` and `GH_TOKEN` are always empty. Pass the credential on the command in these forms:
 
-- for `gh`: `GH_TOKEN="$ALAN_GITHUB_PAT" gh …`
-- for the GitHub API: `curl -H "Authorization: Bearer $ALAN_GITHUB_PAT" https://api.github.com/…`
-- to push: `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$ALAN_GITHUB_PAT" | base64 -w0)" push origin <branch>`
+- for `gh`: `GH_TOKEN="$ALAN_GITHUB_TOKEN" gh …`
+- for the GitHub API: `curl -H "Authorization: Bearer $ALAN_GITHUB_TOKEN" https://api.github.com/…`
+- to push: `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$ALAN_GITHUB_TOKEN" | base64 -w0)" push origin <branch>`
 
-Never echo the credential. Never write the credential to a file.
+Never echo the credential. Never write the credential to a file. Commits use the app's bot identity, which the kit sets in git's environment. Never set `user.name` or `user.email`.
 
 ## delivery
 
