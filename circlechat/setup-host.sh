@@ -465,6 +465,12 @@ key_check() {
     sudo "$(command -v node)" "$HERE/gateway/key-check.mjs" --secrets "$MODEL_KEYS" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
 }
 
+# The agent image, pinned like every other image. CircleChat's api and bridge read CC_HERMES_IMAGE
+# from .env, and run every agent turn in that image. Every mode writes the pin: the weekly image
+# refresh (cluster/images.mjs) moves the pin in images.lock and runs --upgrade, whose compose up
+# below recreates the api and the bridge on the new image.
+set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
+
 if [ "$SECRETS_ONLY" = true ]; then
   if [ "$UPGRADE_ONLY" = true ]; then
     docker compose up -d --remove-orphans
@@ -539,8 +545,6 @@ for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] &
   [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
 done
 
-# The agent image, pinned like every other image. CircleChat reads CC_HERMES_IMAGE from .env.
-set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
 docker compose up -d --force-recreate
 
 # Always-on dev server for the application (hot-reloads as Betty edits)

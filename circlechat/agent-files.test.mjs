@@ -133,9 +133,24 @@ function fullSetup(s) {
   const r = spawnSync(process.execPath, [path.join(s.kit, "circlechat/kit/render.mjs"), path.join(s.kit, "circlechat/site.example.json"), path.join(s.cc, "kit-out")], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   fs.mkdirSync(path.join(s.cc, "gateway-state"), { recursive: true });
-  fs.writeFileSync(path.join(s.cc, ".env"), "JOBD_TOKEN=t\n");
+  fs.writeFileSync(path.join(s.cc, ".env"), "JOBD_TOKEN=t\nCC_HERMES_IMAGE=nousresearch/hermes-agent@sha256:0123abcd\n");
   fs.mkdirSync(path.join(s.ws, "loki"), { recursive: true });
+  // docker answers the test turn at the end of setup-agent.sh (kit/hermes-turn.sh) as Hermes does,
+  // or, with FAKE_TURN=refuse, refuses the session with the refusal detail hook's line.
+  fs.writeFileSync(path.join(s.bin, "docker"), `#!/usr/bin/env bash
+echo "docker $*" >> "${path.join(s.root, "docker.log")}"
+case "$*" in
+  *"--entrypoint sh"*) echo /opt/hermes/.venv/lib/python3.14/site-packages ;;
+  *" chat -q "*) if [ "\${FAKE_TURN:-}" = refuse ]; then
+      echo "hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}" >&2
+      echo "Hermes couldn't start the model connection: invalid_params."; exit 1
+    fi
+    echo ready; echo "session_id: local-1" >&2 ;;
+esac
+exit 0
+`, { mode: 0o755 });
 }
+const turns = (s) => (fs.existsSync(path.join(s.root, "docker.log")) ? fs.readFileSync(path.join(s.root, "docker.log"), "utf8") : "").split("\n").filter((l) => l.includes(" chat -q "));
 const config = "model:\n  default: x\nagent:\n  reasoning_effort: high\ncustom_providers: []\n";
 
 test("setup-agent.sh refuses a symlinked config.yaml, .env or workspace folder, and changes nothing outside", () => {
@@ -173,6 +188,22 @@ test("setup-agent.sh replaces a symlinked backup, and its chmod leaves the file 
   assert.match(cfg, /^ {2}context_length: 131072$/m);
   assert.match(cfg, /^auxiliary:\n {2}compression:\n {4}context_length: 131072$/m);
   assert.equal(fs.statSync(s.h("loki", "config.yaml")).mode & 0o777, 0o777);
+});
+
+test("setup-agent.sh ends with one test turn in the agent's home, and stops with Hermes's refusal detail when Hermes refuses the turn", () => {
+  const s = sandbox(["loki"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("loki", "config.yaml"), config);
+  const r = s.run("setup-agent.sh", "loki");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /loki: test turn answered\.\nloki set up\./);
+  assert.equal(turns(s).length, 1);
+  assert.ok(turns(s)[0].endsWith(` -v ${s.h("loki").replace(/\/$/, "")}:/opt/data nousresearch/hermes-agent@sha256:0123abcd chat -q Reply with the single word: ready -Q --yolo --source tool`), turns(s)[0]);
+  s.env.FAKE_TURN = "refuse";
+  const refused = s.run("setup-agent.sh", "loki");
+  assert.equal(refused.status, 1);
+  assert.match(refused.stdout, /hermes refusal: invalid_params \{'reason': 'invalid_params', 'fields': \['source'\]\}/);
+  assert.doesNotMatch(refused.stdout, /loki set up\./);
 });
 
 test("sync-skills.sh never runs git, and the agents' checkouts in the workspace stay as the agents left them", () => {

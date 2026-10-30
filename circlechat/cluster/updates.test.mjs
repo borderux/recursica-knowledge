@@ -64,6 +64,31 @@ test("an image version marked as failed is never used, and a later version still
   assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }], seen, t + 2 * SOAK_MS)[0].use, "sha256:new");
 });
 
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { hermesTurnFailures, agentHomes, HERMES_TAG } from "./images.mjs";
+test("the Hermes pin moves only when each agent that answers on the current Hermes image also answers on the newer one", async () => {
+  assert.equal(HERMES_TAG, "nousresearch/hermes-agent:latest", "the tag setup-host.sh pins");
+  const calls = [];
+  // betty answers on both, barb only on the current image, and loki on neither.
+  const answers = { betty: ["old", "new"], barb: ["old"], loki: [] };
+  const turn = async (home, image) => { calls.push(`${home} ${image}`); return answers[home].includes(image); };
+  assert.deepEqual(await hermesTurnFailures(["betty", "barb", "loki"], "old", "new", turn), ["barb"]);
+  assert.deepEqual(calls, ["betty old", "betty new", "barb old", "barb new", "loki old"], "an agent that fails on the current image is not tried on the newer one");
+  assert.deepEqual(await hermesTurnFailures(["betty"], "old", "new", turn), [], "the pin moves");
+  assert.deepEqual(await hermesTurnFailures([], "old", "new", turn), [], "with no agent installed, the pin moves as any other pin does");
+});
+
+test("the agents' homes for the Hermes test turn are the .hermes-<handle> folders with a config.yaml", () => {
+  const cc = fs.mkdtempSync(path.join(os.tmpdir(), "images-"));
+  assert.deepEqual(agentHomes(cc), [], "no hermes-homes folder yet");
+  for (const d of [".hermes-betty", ".hermes-barb", ".hermes-new", "other"]) fs.mkdirSync(path.join(cc, "hermes-homes", d), { recursive: true });
+  for (const d of [".hermes-betty", ".hermes-barb", "other"]) fs.writeFileSync(path.join(cc, "hermes-homes", d, "config.yaml"), "model: {}\n");
+  fs.writeFileSync(path.join(cc, "hermes-homes/bridge-config.json"), "{}\n");
+  assert.deepEqual(agentHomes(cc), [".hermes-barb", ".hermes-betty"].map((d) => path.join(cc, "hermes-homes", d)));
+});
+
 test("the weekly image job holds a tagged image for 7 days, and leaves a digest-pinned or built service to the pins and the build", () => {
   const services = { caddy: { image: "caddy:2@sha256:0123abcd" }, presidio: { image: "presidio:latest" }, api: { image: "cc-api", build: { context: "." } }, none: {} };
   assert.deepEqual(taggedServices(services).map(([svc]) => svc), ["presidio"]);

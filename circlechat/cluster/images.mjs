@@ -35,6 +35,28 @@ export function chooseDigests(tags, seen, now = Date.now()) {
 // moves with the pins in images.lock: docker refuses a tag with a digest.
 export const taggedServices = (services) => Object.entries(services).filter(([, s]) => s.image && !s.build && !s.image.includes("@sha256:"));
 
+// The Hermes image runs every agent turn, and the health check below cannot see a turn: a Hermes
+// version that refuses every turn leaves every container running and CircleChat answering. So the
+// Hermes pin moves only after a test turn (kit/hermes-turn.sh) answers on the newer version, for
+// each agent home whose turn answers on the current version. A home that already fails on the
+// current version says nothing about the newer one, and is skipped. Returns the homes that answer
+// on the current version and fail on the newer one.
+export const HERMES_TAG = "nousresearch/hermes-agent:latest";
+export async function hermesTurnFailures(homes, current, next, turn) {
+  const failed = [];
+  for (const home of homes) {
+    if (!(await turn(home, current))) continue;
+    if (!(await turn(home, next))) failed.push(home);
+  }
+  return failed;
+}
+// Each installed agent's Hermes home: a .hermes-<handle> folder with a config.yaml.
+export function agentHomes(ccDir) {
+  const dir = path.join(ccDir, "hermes-homes");
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((n) => n.startsWith(".hermes-") && fs.existsSync(path.join(dir, n, "config.yaml"))).sort().map((n) => path.join(dir, n));
+}
+
 async function main() {
   const ccDir = process.env.CC_DIR;
   const tenantEnv = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
@@ -86,7 +108,22 @@ async function main() {
       const pulled = await run("docker", ["image", "inspect", "-f", "{{index .RepoDigests 0}}", tag], { env }).catch(() => "");
       pinned.push({ tag, current: lock[tag].ref, pulled });
     }
-    const moves = chooseDigests(pinned, seen).filter((c) => c.changed);
+    let moves = chooseDigests(pinned, seen).filter((c) => c.changed);
+    const hermes = moves.find((m) => m.tag === HERMES_TAG);
+    if (hermes) {
+      const turn = (home, image) => run("bash", [path.join(here, "../kit/hermes-turn.sh"), home, image], { env: { ...env, CC_DIR: ccDir } }).then(() => true, () => false);
+      const failed = await hermesTurnFailures(agentHomes(ccDir), lock[HERMES_TAG].ref, hermes.use, turn);
+      if (failed.length) {
+        // Like a version that fails the health check: the job never moves to this version again,
+        // and a later version gets its own 7 days.
+        seen[`${HERMES_TAG}@${hermes.use}`] = Number.MAX_SAFE_INTEGER;
+        moves = moves.filter((m) => m !== hermes);
+        const agents = failed.map((h) => path.basename(h).replace(/^\.hermes-/, "")).join(", ");
+        const msg = `:warning: Weekly image refresh of stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: the newer Hermes image failed a test turn for ${agents}, so every agent stays on the current Hermes image. Hermes's reason: circlechat/kit/hermes-turn.sh <agent home> ${hermes.use}`;
+        console.error(msg);
+        await stackSlack(ccDir)(msg);
+      }
+    }
     fs.writeFileSync(stateFile, JSON.stringify(seen));
     if (moves.length) {
       oldLock = lock;

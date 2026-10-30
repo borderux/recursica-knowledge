@@ -216,4 +216,8 @@ if [ -f "$KIT_OUT/tenant.env" ]; then
 fi
 
 sf chmod "$H" "$H" 777
+# One test turn, the way CircleChat runs an agent turn (kit/hermes-turn.sh). A turn that Hermes
+# refuses stops the setup here with Hermes's reason, instead of showing up as the agent's first
+# reply. The hourly --sync runs no turn: each turn is a model request.
+if [ "$SYNC" = false ]; then CC_DIR="$CC_DIR" "$HERE/kit/hermes-turn.sh" "$H" || exit 1; fi
 echo "$HANDLE set up. Changes apply on the next message."
