@@ -45,12 +45,15 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const SERVER = "recursica-knowledge";
 export const SERVER_FILE = path.join(
   ROOT,
-  "nest",
-  "mcp",
-  "knowledge",
+  "tools",
+  "knowledge-mcp",
   "server.mjs",
 );
-const SERVER_TAIL = "nest/mcp/knowledge/server.mjs";
+/**
+ * The server's path inside a checkout. It moved out of nest/, which is Buzz's folder, so a
+ * registration at the old path is the knowledge server too: stale, and replaced like any other.
+ */
+const SERVER_TAILS = ["tools/knowledge-mcp/server.mjs", "nest/mcp/knowledge/server.mjs"];
 /** Forward slashes, so a path written on Windows or by hand compares with one built here. */
 const slash = (p) => p.replace(/\\/g, "/");
 
@@ -94,7 +97,9 @@ export function registrations({ claudeJson, mcpJson, dir, name = SERVER }) {
 export function verdict(entry, file = SERVER_FILE) {
   const args = entry?.args ?? [];
   const server = args.find(
-    (a) => typeof a === "string" && slash(a).endsWith(SERVER_TAIL),
+    (a) =>
+      typeof a === "string" &&
+      SERVER_TAILS.some((tail) => slash(a).endsWith(tail)),
   );
   if (!server)
     return {

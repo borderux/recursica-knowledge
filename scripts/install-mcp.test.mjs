@@ -23,7 +23,12 @@ const SELF = "scripts/install-mcp.test.mjs";
 const here = { type: "stdio", command: "node", args: [SERVER_FILE] };
 const elsewhere = {
   command: "node",
-  args: ["/w/old-copy/recursica-knowledge/nest/mcp/knowledge/server.mjs"],
+  args: ["/w/old-copy/recursica-knowledge/tools/knowledge-mcp/server.mjs"],
+};
+// The server's path before it moved out of nest/, Buzz's folder.
+const oldPath = {
+  command: "node",
+  args: [path.join(ROOT, "nest", "mcp", "knowledge", "server.mjs")],
 };
 const other = { command: "npx", args: ["-y", "some-other-server"] };
 const old = { command: "npx", args: ["-y", "@recursica/mcp@0.8.1"] };
@@ -59,6 +64,8 @@ test("registrations come back in Claude Code's order: local, project, user", () 
 test("verdict tells this checkout, another checkout and another server apart", () => {
   assert.equal(verdict(here).state, "current");
   assert.equal(verdict(elsewhere).state, "stale");
+  // A registration from before the server moved out of nest/ is replaced, not left as foreign.
+  assert.equal(verdict(oldPath).state, "stale");
   assert.equal(verdict(other).state, "foreign");
 });
 

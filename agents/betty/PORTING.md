@@ -32,7 +32,7 @@ artifact, and `--check` reports whether the two have diverged.
 
 **Register the knowledge MCP server.** The skills name every option the way the design system
 does. Betty looks up the adapter's name for each option with the `component_api` tool of the
-knowledge MCP server, `nest/mcp/knowledge/server.mjs` in this repository. Register the server as
+knowledge MCP server, `tools/knowledge-mcp/server.mjs` in this repository. Register the server as
 `recursica-knowledge`. The tool takes the project's folder, so the server needs no working
 directory. On Claude Code, `npm run mcp:install` registers the server, and
 `npm run agents:install` runs that step too. Without the server, Betty reads the adapter's API

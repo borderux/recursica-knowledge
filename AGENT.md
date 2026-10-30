@@ -382,7 +382,7 @@ npm run agents:install:check   # report what is out of date; change nothing
 npm run mcp:install            # the knowledge MCP server alone, for anyone not installing the agents
 ```
 
-`agents:install` also registers the knowledge MCP server, `nest/mcp/knowledge/server.mjs`, because
+`agents:install` also registers the knowledge MCP server, `tools/knowledge-mcp/server.mjs`, because
 Betty and Barb look up adapter names with its `component_api` tool and nothing registered it on
 Claude Code. A clean machine ran both agents without it and no step said so. The server runs from
 this checkout, so like a linked agent it is current whenever the checkout is.
@@ -553,7 +553,7 @@ Every skill in `skills/components/` follows one structure, and a new one must ma
 
 `## When to use <a component>` · `## When not to use <a component>` (a table naming the alternative) · `## Variants` (the variant and state inventory from the token file) · `## Rules` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Styling set by tokens` (properties the component sets from its tokens) · `## Related skills` (skill names, what the component needs; alternatives and neighbors under `### Only if used on the same screen`, which loaders follow only when the screen imports that component) · `## Open questions` · `## Pre-flight checklist`
 
-`scripts/lib/skill-sections.mjs` holds the shape of each heading, and every script reads sections through it; `tools/kev` and `nest/mcp/knowledge/server.mjs` run on their own and repeat the same shapes.
+`scripts/lib/skill-sections.mjs` holds the shape of each heading, and every script reads sections through it; `tools/kev` and `tools/knowledge-mcp/server.mjs` run on their own and repeat the same shapes.
 
 Anatomy diagrams, spec imagery, external documentation links, and generic best practices belong to the website, not the skill.
 
