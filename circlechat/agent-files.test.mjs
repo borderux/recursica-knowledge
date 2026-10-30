@@ -24,10 +24,14 @@ function sandbox(agents) {
   for (const a of ["alan", "betty", "loki"]) put(path.join(kit, `portable/circlechat/agents/${a}/SOUL.md`), `Persona of ${a} from the kit.\n`);
   for (const s of ["checker", "feisty"]) put(path.join(kit, `agents/barb/subagents/${s}/SKILL.md`), `${s} from the kit\n`);
   put(path.join(kit, "tools/kev/index.mjs"), "kev from the kit\n");
+  put(path.join(kit, "tools/knowledge-mcp/server.mjs"), "knowledge server from the kit\n");
+  put(path.join(kit, "scripts/screen-skill-manifest.mjs"), "manifest from the kit\n");
+  put(path.join(kit, "scripts/lib/skill-sections.mjs"), "sections from the kit\n");
   const ws = path.join(home, "circlechat-workspace"), cc = path.join(home, "circlechat");
   // The workspace's own checkout, which an agent changed: never a source.
   put(path.join(ws, "recursica-knowledge/skills/components/recursica-skill-button/SKILL.md"), "changed by an agent\n");
   put(path.join(ws, "recursica-knowledge/portable/circlechat/agents/alan/SOUL.md"), "persona changed by an agent\n");
+  put(path.join(ws, "recursica-knowledge/tools/knowledge-mcp/server.mjs"), "server changed by an agent\n");
   fs.mkdirSync(path.join(ws, "kev"), { recursive: true });
   for (const a of agents) fs.mkdirSync(path.join(cc, `hermes-homes/.hermes-${a}`), { recursive: true });
   put(path.join(outside, "target.txt"), "outside\n");
@@ -75,6 +79,28 @@ test("sync-skills.sh copies from the kit's checkout, replaces a symlinked file, 
   assert.equal(fs.readFileSync(s.h("loki", "skills/recursica-skill-button/SKILL.md"), "utf8"), "button skill from the kit\n");
   assert.ok(!isLink(path.join(s.ws, "kev/index.mjs")));
   assert.equal(fs.readFileSync(path.join(s.ws, "kev/index.mjs"), "utf8"), "kev from the kit\n");
+});
+
+test("Betty and Barb get the knowledge server's copy in their own home, from the kit's checkout only", () => {
+  const s = sandbox(["betty", "barb", "alan"]);
+  const r = s.run("sync-skills.sh");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  for (const a of ["betty", "barb"]) {
+    const km = (f) => s.h(a, `knowledge-mcp/${f}`);
+    assert.equal(fs.readFileSync(km("tools/knowledge-mcp/server.mjs"), "utf8"), "knowledge server from the kit\n", a);
+    assert.equal(fs.readFileSync(km("skills/components/recursica-skill-button/SKILL.md"), "utf8"), "button skill from the kit\n", a);
+    assert.equal(fs.readFileSync(km("scripts/screen-skill-manifest.mjs"), "utf8"), "manifest from the kit\n", a);
+    assert.equal(fs.readFileSync(km("scripts/lib/skill-sections.mjs"), "utf8"), "sections from the kit\n", a);
+  }
+  assert.ok(!fs.existsSync(s.h("alan", "knowledge-mcp")), "an agent the server is not for gets no copy");
+  // A symlinked folder in an agent's copy is refused, and the folder it names stays as it was.
+  fs.rmSync(s.h("betty", "knowledge-mcp/tools"), { recursive: true });
+  link(path.join(s.outside, "dir"), s.h("betty", "knowledge-mcp/tools"));
+  const before = snapshot(s.outside);
+  const again = s.run("sync-skills.sh");
+  assert.equal(again.status, 1, again.stdout + again.stderr);
+  assert.match(again.stderr, /Refused: .*\.hermes-betty\/knowledge-mcp\/tools is a symlink/);
+  assert.deepEqual(snapshot(s.outside), before);
 });
 
 test("sync-skills.sh refuses a symlinked Kev folder in the workspace", () => {

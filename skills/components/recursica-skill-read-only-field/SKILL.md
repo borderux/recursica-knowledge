@@ -36,7 +36,7 @@ In each situation below, use the listed component instead of changing a read-onl
 
 ## Variants
 
-**Use only the read-only field variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the read-only field variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the label above the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -159,7 +159,7 @@ Never set or override the connection between the label and the value. The read-o
 - [ ] The read-only field is not a tab stop and has no `tabindex`. The read-only field does not interrupt the tab order around the read-only field.
 - [ ] No part of the read-only field depends on hover or focus.
 - [ ] Any edit control stays visible, is a separate tab stop and keeps the focus ring. The edit control's accessible name says what the control edits.
-- [ ] Every variant and option is one the Recursica MCP server lists for the theme. No variant or option is invented.
+- [ ] Every variant and option is one the knowledge MCP server lists for the theme. No variant or option is invented.
 - [ ] No styling is set or overridden on the read-only field. No container or spacer is added to change the read-only field's look.
 - [ ] Read-only fields and editable fields keep different looks.
 - [ ] Open questions were asked about, not decided: the edit control that appears on hover, required and optional markers, empty and null values, long values, help text, and use in a compound control.

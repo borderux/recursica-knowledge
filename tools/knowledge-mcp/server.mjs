@@ -42,7 +42,7 @@ const SERVER_VERSION = '0.1.0'
 const DEFAULT_PROTOCOL = '2024-11-05'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const ROOT = path.resolve(process.env.KNOWLEDGE_ROOT || path.join(HERE, '..', '..', '..'))
+const ROOT = path.resolve(process.env.KNOWLEDGE_ROOT || path.join(HERE, '..', '..'))
 const SKILLS = path.join(ROOT, 'skills')
 const CATEGORIES = ['meta', 'design-rules', 'psychology', 'components']
 const ROUTER_SLUG = 'recursica-skill-design-router'

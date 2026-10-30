@@ -43,9 +43,9 @@ For each case below, use the component in the right column instead of adapting a
 
 ## Variants
 
-**Use only the textarea variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the textarea variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-**Use the names the code uses.** Get the list of variants and options with the server's `recursica_get_component_doc` tool. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
+**Use the names the code uses.** Get the list of variants and options with the server's `component_api` tool. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
 
 Each option below is described by role, such as "the label beside the field". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 

@@ -34,7 +34,7 @@ A tree shows items inside other items, such as folders inside folders. A parent 
 
 ## Variants
 
-**Use only the tree variants and options that the Recursica MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the tree variants and options that the knowledge MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each variant and option by role, such as "the selected option". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -146,5 +146,5 @@ The tree has the most specific keyboard rules of any component, and the keyboard
 - [ ] No part of the tree appears only on hover. Sub-levels open on click.
 - [ ] No styling is set or overridden on the tree. No container or spacer is added to change the tree's look.
 - [ ] Indentation comes from the theme, and no expanded state or icon was invented.
-- [ ] Every variant, option, and state is one the Recursica MCP server lists for the theme. No variant or option is invented.
+- [ ] Every variant, option, and state is one the knowledge MCP server lists for the theme. No variant or option is invented.
 - [ ] Open questions were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.

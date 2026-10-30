@@ -55,7 +55,7 @@ if [[ -z "$KNOWLEDGE_REPO" ]]; then
 fi
 KNOWLEDGE_REPO="$(cd "$KNOWLEDGE_REPO" && pwd)"
 
-SERVER="$KNOWLEDGE_REPO/nest/mcp/knowledge/server.mjs"
+SERVER="$KNOWLEDGE_REPO/tools/knowledge-mcp/server.mjs"
 [[ -f "$SERVER" ]] || die "no knowledge server at $SERVER — pass --knowledge-repo"
 [[ -d "$KNOWLEDGE_REPO/skills" ]] || die "no skills/ under $KNOWLEDGE_REPO — that is not the knowledge checkout"
 

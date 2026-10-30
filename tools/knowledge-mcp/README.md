@@ -27,15 +27,15 @@ looking like it helped. **There is deliberately no search tool here.**
 
 ## Tools
 
-| Tool | What it answers |
-| --- | --- |
-| `router` | The decision order, the precedence when rules collide, and when to stop and ask. Call it first. |
-| `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. |
-| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, open questions and, for a component, its inventory and "When not to use …" table, at about a quarter of the size — for when the full family will not fit (see below). |
-| `skill_section` | One section of one skill, for the reasoning behind a contract item. |
-| `skill_image` | One image a skill ships, such as a layout template. A served skill lists its images under `images`. |
-| `list_skills` | Slugs, categories and one-line descriptions, for when there are no files to compute from. |
-| `component_api` | Real prop types from the adapter version a given project installs. |
+| Tool                | What it answers                                                                                                                                                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `router`            | The decision order, the precedence when rules collide, and when to stop and ask. Call it first.                                                                                                                                                                            |
+| `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged.                                                                                                                                                                                  |
+| `skill_family`      | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, open questions and, for a component, its inventory and "When not to use …" table, at about a quarter of the size — for when the full family will not fit (see below). |
+| `skill_section`     | One section of one skill, for the reasoning behind a contract item.                                                                                                                                                                                                        |
+| `skill_image`       | One image a skill ships, such as a layout template. A served skill lists its images under `images`.                                                                                                                                                                        |
+| `list_skills`       | Slugs, categories and one-line descriptions, for when there are no files to compute from.                                                                                                                                                                                  |
+| `component_api`     | Real prop types from the adapter version a given project installs.                                                                                                                                                                                                         |
 
 `skills_for_screen` **imports** `scripts/screen-skill-manifest.mjs` rather than reimplementing
 it. That is a correctness requirement: Barb computes applicability with the same module, and a
@@ -60,14 +60,18 @@ every skill in a family cost 6% of the response. `list_skills` still returns it.
 
 ## Registering it
 
-The server needs no arguments when it runs from the checkout. Use an absolute path.
+On Claude Code, run `npm run mcp:install` in the checkout. It registers the server for every
+project, and `npm run agents:install` runs the same step. By hand, the server needs no arguments
+when it runs from the checkout. Use an absolute path.
 
 ```json
 {
   "mcpServers": {
     "recursica-knowledge": {
       "command": "node",
-      "args": ["/absolute/path/to/recursica-knowledge/nest/mcp/knowledge/server.mjs"]
+      "args": [
+        "/absolute/path/to/recursica-knowledge/tools/knowledge-mcp/server.mjs"
+      ]
     }
   }
 }

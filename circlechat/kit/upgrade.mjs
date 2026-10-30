@@ -20,7 +20,6 @@ import os from "node:os";
 import path from "node:path";
 import { kitProblem } from "../cluster/kit-check.mjs";
 import { stackSlack } from "./slack.mjs";
-import { readFile as readInPlace, writeFile as writeInPlace } from "./safe-files.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
 export const parse = (t) => { const m = String(t).match(TAG); return m ? m.slice(1).map(Number) : null; };
@@ -65,34 +64,6 @@ function pickUpCircleChat(ccDir, say, state, saveState) {
 export function releaseNotes(remote, tag) {
   const m = String(remote).trim().match(/github\.com[/:]([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+?)(\.git)?$/);
   return m ? ` Release notes: https://github.com/${m[1]}/releases/tag/${encodeURIComponent(tag)}` : "";
-}
-
-// Recursica's own npm package, @recursica/mcp: same rule as the knowledge repo, applied hourly.
-// A release with the same first number goes in at once; a new major version asks in Slack.
-export function decideMcp(current, latest, state = {}) {
-  const cur = String(current).trim().split(".").map(Number), lat = String(latest).trim().split(".").map(Number);
-  if (lat.length !== 3 || lat.some(Number.isNaN) || cmp(lat, cur) <= 0) return { action: "none" };
-  if (lat[0] === cur[0]) return { action: "upgrade", version: latest };
-  const tag = `@recursica/mcp@${latest}`;
-  if (state.asked?.[tag] || state.skipped?.[tag]) return { action: "none" };
-  return { action: "ask", tag };
-}
-
-async function updateMcp(ws, stateFile, state, say) {
-  // Agents can change the workspace: the file is read and written without following a symlink.
-  const file = path.join(ws, ".recursica-mcp-version");
-  const current = readInPlace(ws, file)?.trim();
-  if (!current) return;
-  const r = await fetch("https://registry.npmjs.org/@recursica/mcp/latest", { signal: AbortSignal.timeout(20_000) }).catch(() => null);
-  if (!r?.ok) return;
-  const latest = (await r.json()).version;
-  const d = decideMcp(current, latest, state);
-  if (d.action === "upgrade") { writeInPlace(ws, file, `${d.version}\n`); console.log(`@recursica/mcp ${current} -> ${d.version}`); }
-  if (d.action === "ask") {
-    const here = path.dirname(new URL(import.meta.url).pathname);
-    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: @recursica/mcp ${latest} is a new major version (the agents run ${current}).`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
-    if (post.status === 0) { state.asked = { ...(state.asked ?? {}), [d.tag]: Date.now() }; fs.writeFileSync(stateFile, JSON.stringify(state)); }
-  }
 }
 
 // The setup for one release, as the owner. With KIT_ROOT_STEPS, the root process that started this
@@ -141,7 +112,6 @@ async function main() {
   // failure. The weekly upstream sync brings the original project's changes to that branch.
   const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
   try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
-  await updateMcp(ws, stateFile, state, say).catch((e) => console.error(`@recursica/mcp check: ${e.message}`));
   git("fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);

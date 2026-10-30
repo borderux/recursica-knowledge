@@ -1,7 +1,7 @@
 // The one update job: hourly, as root, on each computer. One rule for everything:
 //
-//   - Recursica's own software, on a stack with upgrade.auto (the knowledge repo, the CircleChat
-//     fork, @recursica/mcp): right away; a new major version asks in Slack (kit/upgrade.mjs).
+//   - Recursica's own software, on a stack with upgrade.auto (the knowledge repo and the CircleChat
+//     fork): right away; a new major version asks in Slack (kit/upgrade.mjs).
 //   - Everything else: after 7 days, or right away for a flaw on CISA's Known Exploited
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).

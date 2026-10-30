@@ -30,11 +30,16 @@ Both prompt files are generated from `agents/betty/SKILL.md` by
 `node scripts/build-agents.mjs`. Edit the source, not the artifact. The build overwrites the
 artifact, and `--check` reports whether the two have diverged.
 
-**Register the Recursica MCP server.** The skills name every option the way the design system
-does. Betty looks up the adapter's name for each option with `recursica_get_component_doc` from
-`@recursica/mcp`. Register the server as `recursica-mcp`, with `cwd` set to the project she is
-building, so the server can find the installed adapter. Without the server, Betty reads the adapter's API from the
-installed package instead.
+**Register the knowledge MCP server.** The skills name every option the way the design system
+does. Betty looks up the adapter's name for each option with the `component_api` tool of the
+knowledge MCP server, `tools/knowledge-mcp/server.mjs` in this repository. Register the server as
+`recursica-knowledge`. The tool takes the project's folder, so the server needs no working
+directory. On Claude Code, `npm run mcp:install` registers the server, and
+`npm run agents:install` runs that step too. Without the server, Betty reads the adapter's API
+from the installed package instead.
+
+The old `@recursica/mcp` package is retired. That package kept a separate copy of the knowledge,
+which drifted from the skills. The package also recognized only the Mantine and MUI adapters.
 
 **Barb is required.** Betty's review tiers assume she exists. Installing Betty
 without `barb`, `checker` and `feisty` leaves her with a prompt that describes a review she
@@ -56,7 +61,7 @@ Betty ships in the Grok marketplace plugin as `recursica:betty`, and dispatches 
 The plugin is installed from a marketplace, so no install step fills in `{{WORKSPACE_ROOT}}`.
 `platform/grok.md` points her at the plugin's install folder for the knowledge checkout, and at
 the session's working directory for the target repository. The plugin starts the
-`recursica-knowledge` and `recursica-mcp` MCP servers for her.
+`recursica-knowledge` MCP server for her.
 
 **Grok allows one level of subagents by default.** Betty dispatches Barb, and Barb dispatches her
 checkers, so the chain needs two levels. Set `[subagents] max_depth = 2` in `~/.grok/config.toml`.

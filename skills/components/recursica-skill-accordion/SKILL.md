@@ -41,7 +41,7 @@ An accordion is a list of sections that open and close, such as the questions on
 
 ## Variants
 
-**Use only the accordion variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the accordion variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each part and option by role, such as "the open look". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -170,6 +170,6 @@ Apps get the two jobs wrong more often than any other accordion rule.
 - [ ] The tab order runs from a header, to the open item's content, to the next header. The tab order matches the visual order.
 - [ ] A closed item's content is removed from the accessibility tree and the tab order, not only hidden.
 - [ ] Focus never moves when an item opens or closes, nothing opens on hover, and the focus ring is intact.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the theme. No header has an invented disabled look.
+- [ ] Every variant, size, and state is one the knowledge MCP server lists for the theme. No header has an invented disabled look.
 - [ ] No styling is set or overridden on the accordion. No container or spacer is added to change the accordion's look.
 - [ ] Open questions were asked about, not decided: whether opening one item closes the other items, whether the divider can be hidden, an item the persona cannot open, animation for opening and closing an item, linking directly to an item, and an accordion inside a table row.

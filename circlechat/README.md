@@ -149,14 +149,25 @@ put there, and change a file anywhere on the computer. So the kit keeps four rul
   moved into place, so a symlink at the file's own name is replaced and the file the symlink names
   never changes. A read never follows a symlink. The chmod of an agent's home leaves each symlink
   alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules,
-  and so do the version file of `@recursica/mcp` in the workspace and the Kev data push, which
-  reads Barb's notes from the workspace before the notes go to a public branch.
+  and so does the Kev data push, which reads Barb's notes from the workspace before the notes go to
+  a public branch.
 - **The key check never follows a symlink.** Root runs `gateway/key-check.mjs` over the agents'
   homes, and the test restore runs the check over each restored backup. The check skips each symlink, never reads the file the
   symlink names, and names each skipped symlink in the report.
 
-**`sync-skills.sh` refreshes only the skills and the persona** (`setup-agent.sh --sync`), with no
-sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
+**Code the kit hands an agent runs inside that agent's own container, from that agent's own home.**
+The Recursica knowledge MCP server is one such program, for Betty and Barb. `setup-agent.sh` copies
+the server, the skills it serves and the two scripts it imports from the kit checkout into
+`knowledge-mcp/` in the agent's Hermes home. Hermes starts the server from
+`/opt/data/knowledge-mcp/` inside the agent's container. Only that agent can change its own home.
+Every agent can change the workspace, so a program run from the workspace's checkout could hold
+code that another agent wrote. No kit step runs the server on the computer itself, as the stack's
+owner or as root. `setup-host.sh` sets `CC_HERMES_RUNTIME=docker`, so Hermes and every MCP server
+it starts stay in the agent's container. CircleChat adds the server to an agent's settings when the
+agent is installed or equipped, from `CC_AGENT_MCP_SERVERS` in `.env`.
+
+**`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
+(`setup-agent.sh --sync`), with no sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
 `setup-agent.sh <handle>` by hand. After a release that changes `setup-agent.sh` or
 `gateway/hermes-access.mjs`, the upgrade job says so in Slack. Files that root wrote in an agent's
 home before this change can stop the owner's sync: run `setup-agent.sh <handle>` once by hand for
@@ -674,7 +685,7 @@ Slack shows the name and the icon only when the bot has the `chat:write.customiz
 
 One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
-- **Recursica's own software** (the knowledge repo, the CircleChat fork and `@recursica/mcp`), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
+- **Recursica's own software** (the knowledge repo and the CircleChat fork), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
 
@@ -707,7 +718,7 @@ Each hour, the update job compares each copy with the kit. For a copy that diffe
 
 **Lima and Colima on Linux and WSL come from each project's GitHub releases, outside apt.** `setup-pc.sh` installs each one at a pinned version and checksum. The update job reads each installed version each hour. A new release waits 7 days, then posts once in Slack. To take the release, move `LIMA_VERSION` or `COLIMA_VERSION` and the checksum in `circlechat/tenant/setup-pc.sh` by pull request. Then rerun `setup-pc.sh`. On a Mac, Homebrew installs Colima, and the Homebrew updates cover Colima.
 
-Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
+Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update.
 
 ### Uptime
 

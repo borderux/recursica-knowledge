@@ -46,6 +46,8 @@
     "agents:build:check": "node scripts/build-agents.mjs --check",
     "agents:install": "node scripts/install-agents.mjs",
     "agents:install:check": "node scripts/install-agents.mjs --check",
+    "mcp:install": "node scripts/install-mcp.mjs",
+    "mcp:install:check": "node scripts/install-mcp.mjs --check",
     "snippy:read": "node scripts/read-snippy-report.mjs",
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
@@ -59,7 +61,7 @@
     "skills:review": "node scripts/review-skill-diff.mjs",
     "writing:flags": "node scripts/flag-vague-words.mjs",
     "skills:routing": "node scripts/routing-eval.mjs",
-    "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'",
+    "test": "node --test 'nest/bin/*.test.mjs' 'tools/knowledge-mcp/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'",
     "skills:versions": "node scripts/skill-versions.mjs propose",
     "skills:versions:check": "node scripts/skill-versions.mjs check"
   },

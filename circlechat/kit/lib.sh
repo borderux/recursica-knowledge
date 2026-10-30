@@ -3,6 +3,18 @@
 
 OS="$(uname -s)"   # Linux | Darwin
 
+# The agents that get the Recursica knowledge MCP server, and where the server's copy sits inside an
+# agent's container. setup-agent.sh copies the server, the skills and the two scripts the server
+# imports from the kit's checkout into the agent's own Hermes home, which the container mounts at
+# /opt/data. Hermes starts the server there, inside the agent's own container. Only that agent can
+# change its home, so the server never runs code another agent changed. A copy in the shared
+# workspace would: every agent can change the workspace.
+# shellcheck disable=SC2034 # used by setup-host.sh and setup-agent.sh, which source this file
+KNOWLEDGE_MCP_AGENTS="betty barb"
+KNOWLEDGE_MCP_DIR=knowledge-mcp
+# shellcheck disable=SC2034
+KNOWLEDGE_MCP_SERVER="/opt/data/$KNOWLEDGE_MCP_DIR/tools/knowledge-mcp/server.mjs"
+
 # In-place sed that works with both GNU sed and BSD sed (macOS).
 sedi() { if sed --version >/dev/null 2>&1; then sed -i "$@"; else sed -i '' "$@"; fi; }
 sudo_sedi() { if sed --version >/dev/null 2>&1; then sudo sed -i "$@"; else sudo sed -i '' "$@"; fi; }

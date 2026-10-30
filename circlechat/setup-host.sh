@@ -50,9 +50,6 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 # Every mode runs the key check as root, and the full setup installs jobs that root runs from this
 # checkout. The checkout must sit outside the agents' workspace.
 require_kit "$HERE/.."
-# Exact versions of the npm packages the agents run. Move a version up by pull request, 7 days
-# or more after the version's release.
-RECURSICA_MCP_VERSION=0.8.1
 
 [ -f "$SITE" ] || { echo "No $SITE. Copy circlechat/site.example.json there and fill it in."; exit 1; }
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
@@ -233,22 +230,22 @@ set_env COMPOSE_FILE "$CF"
 # CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
 # action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
 set_env APPROVE_RISK_AT high
-# The Recursica MCP server for Betty and Barb, started in the default proto repo (the server reads
-# the adapter installed there). Projects in other repos fall back to reading the adapter's code.
-# The exact version lives in the shared workspace, read at the start of each agent turn: a stack
-# with upgrade.auto moves it hourly (kit/upgrade.mjs), every other stack after 7 days
-# (cluster/images.mjs).
-# Agents can change the workspace, so each file here is written without following a symlink.
+# The Recursica knowledge MCP server for the agents in KNOWLEDGE_MCP_AGENTS (kit/lib.sh). Hermes
+# starts it inside each agent's own container, from the copy setup-agent.sh puts in the agent's own
+# home, never from the workspace's checkout, which every agent can change. Its component_api tool
+# reads the adapter installed in whichever project the agent names. The timeout stays under the
+# minute CircleChat waits for Hermes to start, so a server that never starts fails on its own.
+# The two files below started the old @recursica/mcp package, which this replaces.
 mkdir -p "$WS"
 SAFE="$HERE/kit/safe-files.mjs"
-[ -s "$WS/.recursica-mcp-version" ] && [ ! -L "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" | node "$SAFE" write "$WS" "$WS/.recursica-mcp-version"
-node "$SAFE" write "$WS" "$WS/.recursica-mcp.sh" 755 <<'SH'
-#!/bin/sh
-# Start the Recursica MCP server in the given project, at the version in .recursica-mcp-version.
-cd "$1" && exec npx -y "@recursica/mcp@$(cat /workspace/.recursica-mcp-version)"
-SH
-RMCP="{\"command\":\"sh\",\"args\":[\"/workspace/.recursica-mcp.sh\",\"/workspace/${APP_REPO:-app}\"],\"enabled\":true,\"timeout\":120}"
-set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
+rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
+KMCP="{\"command\":\"node\",\"args\":[\"$KNOWLEDGE_MCP_SERVER\"],\"enabled\":true,\"timeout\":30}"
+MCP_MAP=""
+for a in $KNOWLEDGE_MCP_AGENTS; do MCP_MAP="$MCP_MAP${MCP_MAP:+,}\"$a\":{\"recursica-knowledge\":$KMCP}"; done
+set_env CC_AGENT_MCP_SERVERS "{$MCP_MAP}"
+# Hermes, and every MCP server it starts, runs in each agent's own container. CircleChat's host
+# mode would run them inside CircleChat's api container instead, with the api's access.
+set_env CC_HERMES_RUNTIME docker
 set_env ENFORCE_AGENT_SCOPES true
 # Cloud model keys live in one secrets file that only the gateway reads, owned by root. The
 # secrets helper writes the file from the stack's GitHub environment (MODEL_KEY_<NAME>). An older
