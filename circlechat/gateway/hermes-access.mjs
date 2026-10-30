@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 // Point one agent's Hermes home at the stack's gateway, with the agent's own gateway key, and
-// remove every cloud key from the home. setup-agent.sh and setup-host.sh run this as root, because
-// the agent's container owns the home's files.
+// remove every cloud key from the home.
 //
 //   node hermes-access.mjs <hermes home> <handle> <gateway state dir> <gateway URL> <route> [env]
+//   node hermes-access.mjs --key <handle> <gateway state dir>     config.yaml's text on stdin
+//   node hermes-access.mjs <hermes home> <handle> - <gateway URL> <route> [env]    the key on stdin
+//
+// The kit (gateway_access in kit/lib.sh) runs it in two steps, so no step needs both the gateway's
+// state and the agent's home. With --key, root reads the gateway's state and prints the key the
+// agent should use: the key in config.yaml when the key is still the agent's, or a new one. Then
+// the agent's own account rewrites the home, in a small container that mounts only the home, with
+// the key on stdin in place of the state folder ("-").
 //
 // With "env", the script also writes CC_GATEWAY_URL and CC_GATEWAY_KEY to the home's .env, for an
 // agent whose shell calls the gateway, such as Porter asking for a port job's task key.
@@ -13,6 +20,7 @@
 // (compression, the side tasks, subagents, fallbacks and speech) goes to the gateway too, or stays
 // on the computer, and the script stops when one still points elsewhere. The script prints nothing
 // secret.
+import fs from "node:fs";
 import path from "node:path";
 import { issue, loadKeys, verify } from "./keys.mjs";
 import { KEY_NAMES, keyShape } from "./cloud-keys.mjs";
@@ -272,6 +280,14 @@ function rewrite(home, file, change) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  if (process.argv[2] === "--key") {
+    const [handle, state] = process.argv.slice(3);
+    if (!handle || !state) { console.error("usage: hermes-access.mjs --key <handle> <state dir>"); process.exit(2); }
+    const old = currentKey(fs.readFileSync(0, "utf8"));
+    const who = old ? verify(old, loadKeys(state), "") : null;
+    process.stdout.write(who?.agent === handle && who.task === null ? old : issue(state, handle));
+    process.exit(0);
+  }
   const [home, handle, state, baseUrl, route, withEnv] = process.argv.slice(2);
   if (!home || !handle || !state || !baseUrl || !route) { console.error("usage: hermes-access.mjs <home> <handle> <state dir> <gateway URL> <route>"); process.exit(2); }
   const cfg = path.join(home, "config.yaml");
@@ -279,8 +295,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try { text = readFile(home, cfg); } catch (e) { console.error(e instanceof Refused ? `Refused: ${e.message} Nothing was written.` : e.message); process.exit(1); }
   if (text === null) { console.error(`No ${cfg}: install ${handle} in the CircleChat UI first.`); process.exit(1); }
   const old = currentKey(text);
-  const who = old ? verify(old, loadKeys(state), "") : null;
-  const key = who?.agent === handle && who.task === null ? old : issue(state, handle);
+  let key;
+  if (state === "-") key = fs.readFileSync(0, "utf8").trim();
+  else {
+    const who = old ? verify(old, loadKeys(state), "") : null;
+    key = who?.agent === handle && who.task === null ? old : issue(state, handle);
+  }
+  if (!key.startsWith("ccg_")) { console.error(`${handle}: no gateway key on stdin. Nothing was written.`); process.exit(1); }
   const cleared = [];
   try {
   rewrite(home, cfg, (t) => writeConfig(t, { baseUrl, key, route }));

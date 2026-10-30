@@ -11,10 +11,12 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const PINNED = "nousresearch/hermes-agent@sha256:0123abcd";
 const SITE = "/opt/hermes/.venv/lib/python3.14/site-packages";
 
-// A stack folder with a .env and one agent home. The docker stand-in prints the image's
-// site-packages for the hook lookup, and FAKE_TURN's output for the turn: "answer" is a turn
-// Hermes answers, "refuse" a session Hermes refuses, with the hook's detail line, and "provider" a
-// model request that failed after the session opened.
+// A stack folder with a .env, one agent home and CircleChat's bridge-config.json. The docker
+// stand-in runs a script given to node in a small container (kit/lib.sh as_agent) with this
+// computer's node, prints the image's site-packages for the hook lookup, and FAKE_TURN's output for
+// the turn: "answer" is a turn Hermes answers, "refuse" a session Hermes refuses, with the hook's
+// detail line when the hook is mounted, and "provider" a model request that failed after the
+// session opened.
 function sandbox(env = "") {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-turn-"));
   const bin = path.join(dir, "bin"), log = path.join(dir, "calls.log"), cc = path.join(dir, "circlechat");
@@ -22,35 +24,69 @@ function sandbox(env = "") {
   fs.mkdirSync(bin); fs.mkdirSync(home, { recursive: true });
   fs.writeFileSync(path.join(home, "config.yaml"), "model:\n  default: local-large\n");
   fs.writeFileSync(path.join(cc, ".env"), env);
+  fs.writeFileSync(path.join(cc, "hermes-homes/bridge-config.json"), JSON.stringify([{ handle: "betty", token: "bot-token-1", hermesHome: home }]));
   fs.writeFileSync(path.join(bin, "docker"), `#!/usr/bin/env bash
-echo "docker $*" >> "${log}"
+echo "docker $* token=\${CC_BOT_TOKEN:-}" >> "${log}"
+for ((i = 1; i < $#; i++)); do
+  j=$((i + 1))
+  if [ "\${!i}" = --entrypoint ] && [ "\${!j}" = node ]; then shift $((i + 2)); exec node "$@"; fi
+done
 case "$*" in
+  "image inspect"*) echo "node@sha256:feed" ;;
   *"--entrypoint sh"*) echo ${SITE} ;;
   *" chat -q "*) case "\${FAKE_TURN:-answer}" in
       answer) echo "s6-rc: info: service main-hermes successfully started"; echo ready; echo "session_id: local-1" >&2 ;;
-      refuse) echo "hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}" >&2
+      refuse) case "$*" in *sitecustomize*) echo "hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}" >&2 ;; esac
               echo "Hermes couldn't start the model connection: invalid_params. Your message was not"; exit 1 ;;
       provider) echo "session_id: local-1" >&2; echo "custom didn't answer after 3 attempts"; echo "Provider said: HTTP 404: no such route" ;;
     esac ;;
 esac
 exit 0
 `, { mode: 0o755 });
-  const turn = (fake, ...args) => spawnSync("bash", [path.join(here, "hermes-turn.sh"), home, ...args], { env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, FAKE_TURN: fake }, encoding: "utf8" });
+  const turn = (fake, ...args) => spawnSync("bash", [path.join(here, "hermes-turn.sh"), home, ...args], { env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, FAKE_TURN: fake, CC_BOT_TOKEN: "" }, encoding: "utf8" });
   return { dir, cc, home, turn, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
-test("the test turn runs the way the bridge runs a turn: the pinned image, the agents' network and filter, the home at /opt/data, and --source tool", () => {
-  const s = sandbox(`CC_HERMES_IMAGE=${PINNED}\nCC_AGENT_NETWORK=circlechat_agents\nCC_AGENT_PROXY=http://egress:3128\nCC_AGENT_NO_PROXY=api,cc-gateway\n`);
+test("the test turn runs exactly the way the bridge runs a turn: the pinned image, the agents' network and filter, the stop grace, the home and the workspace, the bot token, and --source tool", () => {
+  const s = sandbox(`CC_HERMES_IMAGE=${PINNED}\nCC_AGENT_NETWORK=circlechat_agents\nCC_AGENT_PROXY=http://egress:3128\nCC_AGENT_NO_PROXY=api,cc-gateway\nCC_SHARED_WORKSPACE_DIR=/srv/ws\nCC_AGENT_API_BASE=http://api:3000/api\nPUBLIC_BASE_URL=https://chat.acme.test\n`);
   const r = s.turn("answer");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /^betty: test turn answered\.$/m);
-  const turn = s.calls().split("\n").find((l) => l.includes(" chat -q "));
+  const turns = s.calls().split("\n").filter((l) => l.includes(" chat -q "));
+  assert.equal(turns.length, 1, "one turn, and no second turn for a turn that answers");
+  const [turn] = turns;
   assert.ok(turn.startsWith("docker run --rm -i --name cc-turn-check-betty-"), turn);
   assert.match(turn, / --network circlechat_agents --dns 127\.0\.0\.1 /);
   for (const k of ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"]) assert.ok(turn.includes(` -e ${k}=http://egress:3128 `), k);
   for (const k of ["NO_PROXY", "no_proxy"]) assert.ok(turn.includes(` -e ${k}=api,cc-gateway `), k);
-  assert.ok(turn.includes(` -v ${here}/hermes-refusal-detail.py:${SITE}/sitecustomize.py:ro `), "the refusal detail hook is mounted read-only");
-  assert.ok(turn.endsWith(` -v ${s.home}:/opt/data ${PINNED} chat -q Reply with the single word: ready -Q --yolo --source tool`), turn);
+  assert.ok(turn.includes(" --stop-timeout 45 -e S6_SERVICES_GRACETIME=45000 -e S6_KILL_GRACETIME=45000 -e S6_KILL_FINISH_MAXTIME=45000 "), turn);
+  assert.doesNotMatch(turn, /sitecustomize|--user/, "the turn that decides runs the image as the bridge does: no hook, and the image's own start-up picks the account");
+  assert.ok(turn.endsWith(` -v ${s.home}:/opt/data -v /srv/ws:/workspace -e CC_API_BASE=http://api:3000/api -e CC_BOT_TOKEN ${PINNED} chat -q Reply with the single word: ready -Q --yolo --source tool token=bot-token-1`), turn);
+  assert.doesNotMatch(turn.replace(/ token=bot-token-1$/, ""), /bot-token-1/, "the bot token never passes as an argument");
+});
+
+test("with no CC_AGENT_API_BASE, the turn gets the public address's api, as the bridge does", () => {
+  const s = sandbox(`CC_HERMES_IMAGE=${PINNED}\nPUBLIC_BASE_URL=https://chat.acme.test\nCC_AGENT_STOP_GRACE_SEC=2\n`);
+  assert.equal(s.turn("answer").status, 0);
+  const turn = s.calls().split("\n").find((l) => l.includes(" chat -q "));
+  assert.ok(turn.includes(" -e CC_API_BASE=https://chat.acme.test/api "), turn);
+  assert.ok(turn.includes(" --stop-timeout 5 "), "the bridge's grace is at least 5 seconds");
+  assert.doesNotMatch(turn, /:\/workspace/);
+});
+
+test("a home CircleChat never installed runs no turn", () => {
+  const s = sandbox(`CC_HERMES_IMAGE=${PINNED}\n`);
+  fs.rmSync(path.join(s.home, "config.yaml"));
+  const r = s.turn("answer");
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /betty: no config\.yaml in /);
+  assert.doesNotMatch(s.calls(), / chat -q /);
+  const t = sandbox(`CC_HERMES_IMAGE=${PINNED}\n`);
+  fs.writeFileSync(path.join(t.cc, "hermes-homes/bridge-config.json"), "[]");
+  const u = t.turn("answer");
+  assert.equal(u.status, 1);
+  assert.match(u.stdout, /betty: .* is not in CircleChat's bridge-config\.json/);
+  assert.doesNotMatch(t.calls(), / chat -q /);
 });
 
 test("without an agents' network, the test turn uses the computer's network, as the bridge does", () => {
@@ -61,10 +97,14 @@ test("without an agents' network, the test turn uses the computer's network, as 
   assert.doesNotMatch(turn, /_PROXY=/);
 });
 
-test("a refused session stops with Hermes's refusal detail", () => {
+test("a refused session stops with Hermes's refusal detail, from a second turn with the hook mounted", () => {
   const s = sandbox(`CC_HERMES_IMAGE=${PINNED}\nCC_AGENT_NETWORK=circlechat_agents\n`);
   const r = s.turn("refuse");
   assert.equal(r.status, 1);
+  const turns = s.calls().split("\n").filter((l) => l.includes(" chat -q "));
+  assert.equal(turns.length, 2);
+  assert.doesNotMatch(turns[0], /sitecustomize/);
+  assert.ok(turns[1].includes(` -v ${here}/hermes-refusal-detail.py:${SITE}/sitecustomize.py:ro ${PINNED} chat -q `), "the refusal detail hook is mounted read-only");
   assert.match(r.stdout, /betty: the test turn failed \(docker run exit 1\)/);
   assert.match(r.stdout, /^ {2}hermes refusal: invalid_params \{'reason': 'invalid_params', 'fields': \['source'\]\}$/m);
   assert.match(r.stdout, /Hermes couldn't start the model connection: invalid_params/);

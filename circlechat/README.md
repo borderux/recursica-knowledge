@@ -121,10 +121,12 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    ```
    `setup-agent.sh` gives the agent the agent's own gateway key, in place of the placeholder. The
    script fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from `site.json`,
-   and gives Barb the Kev-engine list. The script ends with one test turn, run the way CircleChat
-   runs an agent turn (`kit/hermes-turn.sh`): the pinned Hermes image, the agent's home, the
-   agents' network, and `hermes chat -q ... -Q --yolo --source tool`. A turn that Hermes refuses
-   stops the script with Hermes's reason, such as
+   and gives Barb the Kev-engine list. The script ends with one test turn, run exactly the way
+   CircleChat's bridge runs an agent turn (`kit/hermes-turn.sh`): the pinned Hermes image with
+   its own start-up, the agents' network, the bridge's stop grace, the agent's home and the shared
+   workspace, the agent's bot token, and `hermes chat -q ... -Q --yolo --source tool`. Only the
+   prompt and the container's name differ. A turn that fails stops the script. The script then
+   runs the turn once more with a hook for Hermes's reason, such as
    `hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}`, which
    `hermes chat` itself leaves out. Alan's token is fine-grained: Contents, Pull
    requests and Issues on this repository, Issues on the adapter repositories and Theme Forge,
@@ -144,21 +146,63 @@ put there, and change a file anywhere on the computer. So the kit keeps four rul
 
 - **`sync-skills.sh` and `setup-agent.sh` never run as root.** Each script stops when root runs it.
   The hourly sync job and the upgrade job run `sync-skills.sh` as the account that owns the
-  stacks. `setup-agent.sh`, run by hand, writes in the agent's home with sudo, through the helper
-  below.
+  stacks. Neither script uses sudo in an agent's home: each read and write there runs as the
+  agent's own account, in a small container (below).
 - **Every file the kit copies there comes from the kit checkout,** `~/recursica-knowledge`, never
   from the workspace's checkout, which an agent can change: the skills, Barb's subagents, each
   persona, and Kev's files.
 - **Every write there goes through `circlechat/kit/safe-files.mjs`.** A symlinked folder on the way
   to a file is refused, and nothing is written there. Each file is written as a new file, then
   moved into place, so a symlink at the file's own name is replaced and the file the symlink names
-  never changes. A read never follows a symlink. The chmod of an agent's home leaves each symlink
-  alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules,
+  never changes. A read never follows a symlink. Handing an agent's home to the agent's
+  account leaves each symlink alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules,
   and so does the Kev data push, which reads Barb's notes from the workspace before the notes go to
   a public branch.
 - **The key check never follows a symlink.** Root runs `gateway/key-check.mjs` over the agents'
   homes, and the test restore runs the check over each restored backup. The check skips each symlink, never reads the file the
   symlink names, and names each skipped symlink in the report.
+
+**Each agent runs as the agent's own account, never as the owner's.** On Linux, a process that
+breaks out of a container running as the owner's user number is the owner. Every agent container
+runs as the Hermes image's own `hermes` user, 10000 (`AGENT_IDS` in `kit/lib.sh`): the image starts
+as root inside the container, sets up, then switches to that user. CircleChat passes no user, so the
+image's choice holds. Each agent's home belongs to that account:
+
+- **The home is mode 700, and nothing inside is open to other accounts.** `.env` and `auth.json`
+  are mode 600, and every other file and folder has no write for the group or others. Hermes
+  refuses a home that another account can write to, and the agent then stops answering.
+  `setup-host.sh`, `setup-agent.sh` and the hourly `--sync` each set this again
+  (`give_home`), because CircleChat's install makes each new home mode 777 and Re-equip writes
+  files as root. This one step runs as root, in a small container with no network and only the
+  capabilities a chown and a chmod need, through `kit/safe-files.mjs own`. The step changes owners
+  and modes, never a file's text.
+- **Root keeps `hermes-homes/bridge-config.json`, mode 600.** The file holds every agent's
+  CircleChat bot token. CircleChat's api writes it, and the bridge reads it, both as root in their
+  containers. No agent mounts it, and no other account reads it. The api rewrites the file in
+  place, which keeps the owner and the mode. `setup-host.sh`, `setup-agent.sh` and the hourly
+  `--sync` set both again through the same root step (`lock_bridge_config`), so a file CircleChat
+  writes anew for a new agent is closed within the hour. The test turn reads the agent's token
+  from the file through that step too.
+- **The kit's reads and writes in a home run as the agent's account** (`as_agent`), in a small
+  container (the pinned `node:22-alpine`) with no network, no capabilities and a read-only root.
+  The container mounts only the agent's home, read-write, and the kit checkout, read-only, each at
+  its own path. Each write still goes through `kit/safe-files.mjs`. So no write in a home needs
+  sudo. The gateway key is the one value from outside: root reads the gateway's state for the key
+  (`hermes-access.mjs --key`), and the agent's account writes the key into the home from stdin.
+- **On Linux, the owner cannot read inside an agent's home.** Use
+  `sudo ls -la <CC_DIR>/hermes-homes/.hermes-<handle>`, or run `setup-agent.sh <handle>` to change
+  the setup. The image refresh lists each `.hermes-<handle>` folder, and the test turn checks for
+  the home's `config.yaml` as the agent's account.
+- **On a Mac with Colima, the Mac's owner owns every file in a home, whatever the container
+  sets.** Colima shares the Mac's files with its VM over virtiofs. On the Mac, every file stays the
+  owner's, and the chown changes nothing there. Inside the VM and the containers, a file shows
+  owner 0, the Mac owner's number or 10000, depending on which process made it. The modes are the
+  same on both sides: the home is mode 700, and `.env` and `auth.json` are mode 600. On a Mac, the
+  VM is the line between an agent and the Mac.
+
+The kit's other writes in an agent's home still run as root, through `kit/safe-files.mjs`: the
+GitHub token service writes each agent's token to the agent's `.env`, and a secrets deploy removes
+a retired token from it. Each keeps the file's owner and mode.
 
 **Code the kit hands an agent runs inside that agent's own container, from that agent's own home.**
 The Recursica knowledge MCP server is one such program, for Betty and Barb. `setup-agent.sh` copies
@@ -178,11 +222,10 @@ lists `mcp-recursica-knowledge` too. Without the listing, `hermes chat` never st
 server.
 
 **`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
-(`setup-agent.sh --sync`), with no sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
+(`setup-agent.sh --sync`), with no sudo. Each hour it also gives each home back to the agent's
+account. A change to the rest of an agent's setup, such as the agent's gateway access, needs
 `setup-agent.sh <handle>` by hand. After a release that changes `setup-agent.sh` or
-`gateway/hermes-access.mjs`, the upgrade job says so in Slack. Files that root wrote in an agent's
-home before this change can stop the owner's sync: run `setup-agent.sh <handle>` once by hand for
-each agent, which sets the home's modes again.
+`gateway/hermes-access.mjs`, the upgrade job says so in Slack.
 
 ### The cluster's own stack's name
 
@@ -916,6 +959,6 @@ Barb's Hermes settings (delegation limits, timeout, Kev access) are explained in
 - **Edit files in WSL (`~/…`), not the Windows copy (`C:\Users\…`).** Docker reads the WSL one.
 - **Docker Desktop can't mount symlinks.** Use real directories.
 - **One turn per agent at a time.** Messages sent while an agent is busy are dropped (`agent_busy`), not queued. Big tasks get split into subtasks.
-- **Files under `hermes-homes` are owned by the container.** Use `sudo` to read or edit them.
+- **Each home under `hermes-homes` belongs to the agent's account, mode 700.** On Linux, use `sudo` to read a file there. Change a home with `setup-agent.sh`, never with a plain `cp`, `sed -i` or `chmod`.
 - `HERMES_HOME=undefined` in bridge logs means the agent's `hermesHome` is missing — i.e. it wasn't installed through the UI.
 - A 502 right after `up` means the api is still starting. Wait 30 seconds.

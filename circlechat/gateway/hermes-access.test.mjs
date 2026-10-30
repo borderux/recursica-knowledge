@@ -190,6 +190,35 @@ test("the script gives the agent a key once, keeps it on a rerun, and clears the
   assert.equal(currentKey(cfg), key);
 });
 
+test("in two steps, root reads the gateway's state for the key, and the agent's account writes the home with the key on stdin", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
+  const state = fs.mkdtempSync(path.join(os.tmpdir(), "gwstate-"));
+  fs.writeFileSync(path.join(home, "config.yaml"), installed);
+  fs.writeFileSync(path.join(home, ".env"), `ANTHROPIC_API_KEY=${ANT}\nKEEP=1\n`, { mode: 0o600 });
+  const key = (text) => spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), "--key", "porter", state], { input: text, encoding: "utf8" });
+  const write = (k, ...extra) => spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "porter", "-", "http://cc-gateway:4000/v1", "local-large", ...extra], { input: `${k}\n`, encoding: "utf8" });
+  const first = key(fs.readFileSync(path.join(home, "config.yaml"), "utf8"));
+  assert.equal(first.status, 0, first.stderr);
+  assert.deepEqual(verify(first.stdout, loadKeys(state), ""), { agent: "porter", task: null });
+  const w = write(first.stdout, "env");
+  assert.equal(w.status, 0, w.stderr);
+  assert.match(w.stdout, /porter: model requests go to the gateway \(local-large\), with a new gateway key; cloud keys removed from \.env\./);
+  assert.doesNotMatch(w.stdout, new RegExp(first.stdout), "the script never prints the key");
+  assert.equal(currentKey(fs.readFileSync(path.join(home, "config.yaml"), "utf8")), first.stdout);
+  assert.match(fs.readFileSync(path.join(home, ".env"), "utf8"), new RegExp(`^CC_GATEWAY_KEY=${first.stdout}$`, "m"));
+  assert.equal(fs.statSync(path.join(home, ".env")).mode & 0o777, 0o600, "the .env keeps its mode");
+  // A rerun keeps the agent's key.
+  const again = key(fs.readFileSync(path.join(home, "config.yaml"), "utf8"));
+  assert.equal(again.stdout, first.stdout);
+  assert.match(write(again.stdout).stdout, /\(local-large\)\.$/m);
+  // No key on stdin: nothing is written.
+  const before = fs.readFileSync(path.join(home, "config.yaml"), "utf8");
+  const none = write("");
+  assert.equal(none.status, 1);
+  assert.match(none.stderr, /porter: no gateway key on stdin\. Nothing was written\./);
+  assert.equal(fs.readFileSync(path.join(home, "config.yaml"), "utf8"), before);
+});
+
 test("the script stops when a model setting still points past the gateway", () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
   // Delegation written inline cannot be rewritten line by line, so it cannot be checked either.

@@ -12,6 +12,22 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const me = os.userInfo().username;
 const MARK = "<!-- recursica-circlechat -->";
 
+// A docker stand-in. A script the kit runs with node in a small container as the agent's account
+// (kit/lib.sh as_agent and give_home) runs with this computer's node: the container mounts each path
+// at its own path, so the paths are the same. <more> handles every other docker command.
+const dockerStub = (log, more = "") => `#!/usr/bin/env bash
+echo "docker $*" >> "${log}"
+for ((i = 1; i < $#; i++)); do
+  j=$((i + 1))
+  if [ "\${!i}" = --entrypoint ] && [ "\${!j}" = node ]; then shift $((i + 2)); exec node "$@"; fi
+done
+case "$*" in
+  "image inspect"*) echo "node@sha256:feed" ;;
+${more}
+esac
+exit 0
+`;
+
 // A kit checkout outside the workspace, with the real scripts and a small skills tree; a home with
 // the workspace and the agents' homes; and a folder outside both, which every symlink names.
 function sandbox(agents) {
@@ -40,7 +56,10 @@ function sandbox(agents) {
   fs.chmodSync(path.join(outside, "target.txt"), 0o600);
   const bin = path.join(root, "bin");
   fs.mkdirSync(bin);
-  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, PATH: `${bin}:${process.env.PATH}` };
+  fs.writeFileSync(path.join(bin, "docker"), dockerStub(path.join(root, "docker.log")), { mode: 0o755 });
+  // The agent's account and bridge-config.json's owner: the tests' own, which is the only account a
+  // test can give a file to.
+  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, PATH: `${bin}:${process.env.PATH}`, AGENT_IDS: `${process.getuid()}:${process.getgid()}`, BRIDGE_CONFIG_IDS: `${process.getuid()}:${process.getgid()}` };
   for (const k of ["CC_DIR", "WS", "TENANT", "SITE"]) delete env[k];
   const run = (script, ...args) => spawnSync("bash", [path.join(kit, "circlechat", script), ...args], { env, encoding: "utf8", cwd: home });
   const h = (a, f = "") => path.join(cc, `hermes-homes/.hermes-${a}`, f);
@@ -126,29 +145,25 @@ test("sync-skills.sh and setup-agent.sh never run as root", () => {
   assert.ok(isLink(s.h("alan", "SOUL.md")), "nothing was written");
 });
 
-// setup-agent.sh without --sync: a stand-in for sudo runs each command as this account, and the
-// stack's kit-out comes from the example site.json.
+// setup-agent.sh without --sync: a stand-in for sudo runs each command as this account, the stack's
+// kit-out comes from the example site.json, and CircleChat's bridge-config.json lists each home.
 function fullSetup(s) {
   fs.writeFileSync(path.join(s.bin, "sudo"), `#!/usr/bin/env bash\nexec "$@"\n`, { mode: 0o755 });
   const r = spawnSync(process.execPath, [path.join(s.kit, "circlechat/kit/render.mjs"), path.join(s.kit, "circlechat/site.example.json"), path.join(s.cc, "kit-out")], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   fs.mkdirSync(path.join(s.cc, "gateway-state"), { recursive: true });
   fs.writeFileSync(path.join(s.cc, ".env"), "JOBD_TOKEN=t\nCC_HERMES_IMAGE=nousresearch/hermes-agent@sha256:0123abcd\n");
+  const homes = fs.readdirSync(path.join(s.cc, "hermes-homes")).filter((n) => n.startsWith(".hermes-"));
+  fs.writeFileSync(path.join(s.cc, "hermes-homes/bridge-config.json"), JSON.stringify(homes.map((n) => ({ handle: n.slice(8), token: `bot-${n.slice(8)}`, hermesHome: path.join(s.cc, "hermes-homes", n) }))));
   fs.mkdirSync(path.join(s.ws, "loki"), { recursive: true });
   // docker answers the test turn at the end of setup-agent.sh (kit/hermes-turn.sh) as Hermes does,
   // or, with FAKE_TURN=refuse, refuses the session with the refusal detail hook's line.
-  fs.writeFileSync(path.join(s.bin, "docker"), `#!/usr/bin/env bash
-echo "docker $*" >> "${path.join(s.root, "docker.log")}"
-case "$*" in
-  *"--entrypoint sh"*) echo /opt/hermes/.venv/lib/python3.14/site-packages ;;
+  fs.writeFileSync(path.join(s.bin, "docker"), dockerStub(path.join(s.root, "docker.log"), `  *"--entrypoint sh"*) echo /opt/hermes/.venv/lib/python3.14/site-packages ;;
   *" chat -q "*) if [ "\${FAKE_TURN:-}" = refuse ]; then
       echo "hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}" >&2
       echo "Hermes couldn't start the model connection: invalid_params."; exit 1
     fi
-    echo ready; echo "session_id: local-1" >&2 ;;
-esac
-exit 0
-`, { mode: 0o755 });
+    echo ready; echo "session_id: local-1" >&2 ;;`), { mode: 0o755 });
 }
 const turns = (s) => (fs.existsSync(path.join(s.root, "docker.log")) ? fs.readFileSync(path.join(s.root, "docker.log"), "utf8") : "").split("\n").filter((l) => l.includes(" chat -q "));
 const config = "model:\n  default: x\nagent:\n  reasoning_effort: high\ncustom_providers: []\n";
@@ -170,7 +185,7 @@ test("setup-agent.sh refuses a symlinked config.yaml, .env or workspace folder, 
   }
 });
 
-test("setup-agent.sh replaces a symlinked backup, and its chmod leaves the file a symlink names alone", () => {
+test("setup-agent.sh replaces a symlinked backup, gives the home to the agent's account with mode 700, and leaves the file a symlink names alone", () => {
   const s = sandbox(["loki"]);
   fullSetup(s);
   fs.writeFileSync(s.h("loki", "config.yaml"), config);
@@ -187,7 +202,31 @@ test("setup-agent.sh replaces a symlinked backup, and its chmod leaves the file 
   assert.match(cfg, /reasoning_effort: medium/);
   assert.match(cfg, /^ {2}context_length: 131072$/m);
   assert.match(cfg, /^auxiliary:\n {2}compression:\n {4}context_length: 131072$/m);
-  assert.equal(fs.statSync(s.h("loki", "config.yaml")).mode & 0o777, 0o777);
+  const mode = (f) => fs.lstatSync(s.h("loki", f)).mode & 0o777;
+  assert.equal(fs.statSync(path.join(s.cc, "hermes-homes/bridge-config.json")).mode & 0o777, 0o600, "every bot token: root's, mode 600");
+  assert.equal(mode(""), 0o700);
+  assert.equal(mode(".env"), 0o600);
+  for (const f of ["config.yaml", "SOUL.md", "skills", "skills/recursica-skill-button/SKILL.md"]) assert.equal(mode(f) & 0o022, 0, `${f}: no write for the group or others`);
+  // Every read and write in the home ran as the agent's account, with no sudo: sudo only reads the
+  // gateway's state and writes the shared workspace.
+  const log = fs.readFileSync(path.join(s.root, "docker.log"), "utf8");
+  assert.match(log, new RegExp(`--user ${process.getuid()}:${process.getgid()} -v ${s.h("loki")}:${s.h("loki")} -v ${s.kit}:${s.kit}:ro --entrypoint node `));
+  assert.match(log, /--cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE --cap-add DAC_READ_SEARCH --security-opt no-new-privileges --user 0:0 .* own /);
+});
+
+test("a symlinked bridge-config.json stops setup-agent.sh and sync-skills.sh, and the file it names keeps its mode", () => {
+  const s = sandbox(["loki"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("loki", "config.yaml"), config);
+  fs.rmSync(path.join(s.cc, "hermes-homes/bridge-config.json"));
+  link(path.join(s.outside, "target.txt"), path.join(s.cc, "hermes-homes/bridge-config.json"));
+  const before = snapshot(s.outside);
+  for (const args of [["setup-agent.sh", "loki"], ["sync-skills.sh"]]) {
+    const r = s.run(...args);
+    assert.notEqual(r.status, 0, args.join(" "));
+    assert.match(r.stderr, /Refused: .*bridge-config\.json is a symlink/);
+  }
+  assert.deepEqual(snapshot(s.outside), before);
 });
 
 test("setup-agent.sh ends with one test turn in the agent's home, and stops with Hermes's refusal detail when Hermes refuses the turn", () => {
@@ -198,7 +237,7 @@ test("setup-agent.sh ends with one test turn in the agent's home, and stops with
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(r.stdout, /loki: test turn answered\.\nloki set up\./);
   assert.equal(turns(s).length, 1);
-  assert.ok(turns(s)[0].endsWith(` -v ${s.h("loki").replace(/\/$/, "")}:/opt/data nousresearch/hermes-agent@sha256:0123abcd chat -q Reply with the single word: ready -Q --yolo --source tool`), turns(s)[0]);
+  assert.ok(turns(s)[0].endsWith(` -v ${s.h("loki").replace(/\/$/, "")}:/opt/data -e CC_API_BASE=http://localhost:8080/api -e CC_BOT_TOKEN nousresearch/hermes-agent@sha256:0123abcd chat -q Reply with the single word: ready -Q --yolo --source tool`), turns(s)[0]);
   s.env.FAKE_TURN = "refuse";
   const refused = s.run("setup-agent.sh", "loki");
   assert.equal(refused.status, 1);

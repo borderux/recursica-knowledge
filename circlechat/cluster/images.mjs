@@ -50,11 +50,14 @@ export async function hermesTurnFailures(homes, current, next, turn) {
   }
   return failed;
 }
-// Each installed agent's Hermes home: a .hermes-<handle> folder with a config.yaml.
+// Each agent's Hermes home: a real .hermes-<handle> folder. The owner, who runs this, cannot see
+// inside a home, which belongs to the agent's account with mode 700, so the test turn itself looks
+// for the home's config.yaml (kit/hermes-turn.sh). A home with none fails on the current version,
+// and is skipped.
 export function agentHomes(ccDir) {
   const dir = path.join(ccDir, "hermes-homes");
   if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((n) => n.startsWith(".hermes-") && fs.existsSync(path.join(dir, n, "config.yaml"))).sort().map((n) => path.join(dir, n));
+  return fs.readdirSync(dir).filter((n) => n.startsWith(".hermes-") && fs.lstatSync(path.join(dir, n)).isDirectory()).sort().map((n) => path.join(dir, n));
 }
 
 async function main() {

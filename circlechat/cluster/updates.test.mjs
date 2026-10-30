@@ -80,13 +80,15 @@ test("the Hermes pin moves only when each agent that answers on the current Herm
   assert.deepEqual(await hermesTurnFailures([], "old", "new", turn), [], "with no agent installed, the pin moves as any other pin does");
 });
 
-test("the agents' homes for the Hermes test turn are the .hermes-<handle> folders with a config.yaml", () => {
+test("the agents' homes for the Hermes test turn are the real .hermes-<handle> folders", () => {
   const cc = fs.mkdtempSync(path.join(os.tmpdir(), "images-"));
   assert.deepEqual(agentHomes(cc), [], "no hermes-homes folder yet");
   for (const d of [".hermes-betty", ".hermes-barb", ".hermes-new", "other"]) fs.mkdirSync(path.join(cc, "hermes-homes", d), { recursive: true });
   for (const d of [".hermes-betty", ".hermes-barb", "other"]) fs.writeFileSync(path.join(cc, "hermes-homes", d, "config.yaml"), "model: {}\n");
   fs.writeFileSync(path.join(cc, "hermes-homes/bridge-config.json"), "{}\n");
-  assert.deepEqual(agentHomes(cc), [".hermes-barb", ".hermes-betty"].map((d) => path.join(cc, "hermes-homes", d)));
+  fs.symlinkSync(path.join(cc, "hermes-homes", ".hermes-betty"), path.join(cc, "hermes-homes", ".hermes-link"));
+  // The owner cannot see inside a home, so a home with no config.yaml is listed too: its test turn fails.
+  assert.deepEqual(agentHomes(cc), [".hermes-barb", ".hermes-betty", ".hermes-new"].map((d) => path.join(cc, "hermes-homes", d)));
 });
 
 test("the weekly image job holds a tagged image for 7 days, and leaves a digest-pinned or built service to the pins and the build", () => {

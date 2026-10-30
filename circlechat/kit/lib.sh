@@ -393,11 +393,76 @@ gateway_access() {
   [ -n "$route" ] || { echo "$handle: site.json has no route, so $handle has no model to ask for. Add a route."; return 1; }
   if grep -q '^EGRESS=on' "$KIT_OUT/tenant.env"; then url=http://cc-gateway:4000/v1
   else url="http://localhost:$(sed -n 's/^GATEWAY_PORT=//p' "$KIT_OUT/tenant.env")/v1"; fi
-  sudo "$(command -v node)" "$kit/gateway/hermes-access.mjs" "$home" "$handle" "$CC_DIR/gateway-state" "$url" "$route" ${3:+"$3"}
-  # The router reads the new key's record in the state folder, and the agent reads its .env.
+  # The key comes from the gateway's state folder, with sudo, and never enters the agent's home
+  # that way: the agent's account writes the home (as_agent), and gets the key on stdin.
+  local cfg key
+  cfg="$(as_agent "$home" circlechat/kit/safe-files.mjs read "$home" "$home/config.yaml" < /dev/null && echo x)" || return 1
+  cfg="${cfg%x}"
+  [ -n "$cfg" ] || { echo "No $home/config.yaml: install $handle in the CircleChat UI first."; return 1; }
+  key="$(printf '%s' "$cfg" | sudo "$(command -v node)" "$kit/gateway/hermes-access.mjs" --key "$handle" "$CC_DIR/gateway-state")" || return 1
+  # The router reads the new key's record in the state folder.
   own_for_docker "$CC_DIR/gateway-state"
-  if [ -n "${3:-}" ]; then own_for_docker "$home/.env"; fi
+  printf '%s\n' "$key" | as_agent "$home" circlechat/gateway/hermes-access.mjs "$home" "$handle" - "$url" "$route" ${3:+"$3"}
 }
+
+# The account every agent's container runs as: the Hermes image's own hermes user, which the
+# image's start-up switches to. Never the owner's account: on Linux, a process that breaks out of a
+# container running as the owner's user number is the owner. Each agent's home belongs to this
+# account, and the kit's writes there run as this account too.
+AGENT_IDS="${AGENT_IDS:-10000:10000}"
+# The small image the kit's writes in an agent's home run in, pinned in images.lock.
+AGENT_FILES_IMAGE=node:22-alpine
+
+# as_agent <home> <script> <args>...: one script from the kit checkout (a path from the checkout's
+# root), run by node as the agent's account in a small container. The container has no network,
+# no capabilities and a read-only root, and mounts only the agent's home, read-write, and the kit
+# checkout, read-only, each at its own path, so every path and message reads the same as outside.
+# stdin passes through. A link an agent planted in the home leads nowhere outside the container,
+# and the kit's scripts never follow one anyway (kit/safe-files.mjs). Needs no sudo.
+as_agent() {
+  local home="$1" script="$2" kit image; shift 2
+  kit="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  [ ! -L "$home" ] || { echo "Refused: $home is a symlink. Nothing was written." >&2; return 1; }
+  image="$(pin_image "$AGENT_FILES_IMAGE")" || return 1
+  docker run --rm -i --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+    --user "$AGENT_IDS" -v "$home:$home" -v "$kit:$kit:ro" --entrypoint node "$image" "$kit/$script" "$@"
+}
+
+# as_root <place> <safe-files.mjs arguments>...: kit/safe-files.mjs as root, in the same small
+# container, with no network and only the capabilities a chown, a chmod and a read of another
+# account's file need. The container mounts only <place>, read-write, and the kit checkout,
+# read-only, each at its own path. It never follows a symlink. Only root can give a file to another
+# account, so the kit's few root steps run here, never with sudo.
+as_root() {
+  local place="$1" kit image; shift
+  kit="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  [ ! -L "$place" ] || { echo "Refused: $place is a symlink. Nothing was changed." >&2; return 1; }
+  image="$(pin_image "$AGENT_FILES_IMAGE")" || return 1
+  docker run --rm --network none --read-only --cap-drop ALL --cap-add CHOWN --cap-add FOWNER \
+    --cap-add DAC_OVERRIDE --cap-add DAC_READ_SEARCH --security-opt no-new-privileges --user 0:0 \
+    -v "$place:$place" -v "$kit:$kit:ro" --entrypoint node "$image" "$kit/circlechat/kit/safe-files.mjs" "$@"
+}
+
+# give_home <home>: the home and everything in it to the agent's account, the home at mode 700,
+# no write for the group or others inside it, and .env and auth.json at 600 (safe-files.mjs own),
+# as root (as_root). It changes owners and modes, never a file's text. On a Mac, Docker's VM sees
+# every file as the Mac's owner, and the chown changes nothing there; the modes still apply.
+give_home() { as_root "$1" own "$1" "$1" "$AGENT_IDS" < /dev/null; }
+
+# CircleChat's bridge-config.json holds every agent's bot token. CircleChat's api writes it, and
+# the bridge reads it, both as root in their containers, so root keeps it, mode 600: no agent and
+# no other account reads another agent's token. The api rewrites the file in place, which keeps
+# the owner and the mode; a new file gets them at the next setup or hourly sync. The tests set
+# BRIDGE_CONFIG_IDS to their own account, the only one a test can give a file to.
+BRIDGE_CONFIG_IDS="${BRIDGE_CONFIG_IDS:-0:0}"
+# lock_bridge_config <hermes-homes folder>
+lock_bridge_config() {
+  [ -e "$1/bridge-config.json" ] || [ -L "$1/bridge-config.json" ] || return 0
+  as_root "$1" own-file "$1" "$1/bridge-config.json" "$BRIDGE_CONFIG_IDS" 600 < /dev/null
+}
+# read_bridge_config <hermes-homes folder>: the file's text, read as root (as_root). Print it to
+# nothing but a program that takes one value from it.
+read_bridge_config() { as_root "$1" read "$1" "$1/bridge-config.json" < /dev/null; }
 
 # Pin an image tag to the exact version (digest) in the stack's images.lock. The first use records
 # the version pulled then. The weekly image refresh (cluster/images.mjs) moves a pin to a newer
