@@ -22,7 +22,7 @@ function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
@@ -249,6 +249,13 @@ function fullSetup(s, status) {
   return s.run("setup-host.sh");
 }
 
+// launchd's pid for the kit's Colima service, with the service's own colima start among the pid's
+// child processes, so the setup's wait for the VM ends at once (kit/lib.sh colima_service_started).
+function colimaServiceRuns(s) {
+  s.stub("launchctl", `printf 'system/io.recursica.colima = {\\n\\tpid = 4242\\n}\\n'`);
+  s.stub("ps", `echo "4242 /opt/homebrew/bin/colima start -f --profile default"`);
+}
+
 // A Mac whose Docker runs in Colima: an office network address, and Tailscale's address. Each
 // gateway check gets the answer the test names.
 function colimaMac({ site = example, serveStatus = siteServe({ TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }), jobsAnswer = "401", officeAnswers = false } = {}) {
@@ -321,6 +328,7 @@ test("on a Mac, the full setup runs Colima and Ollama as the kit's services, wit
   const s = colimaMac({ site });
   s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
   for (const t of ["ollama", "colima", "brew"]) s.stub(t, "exit 0");
+  colimaServiceRuns(s);
   const daemons = path.join(s.home, "LaunchDaemons");
   fs.mkdirSync(daemons);
   const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, LAUNCH_DAEMONS_DIR: daemons }, encoding: "utf8", cwd: s.home });
@@ -328,6 +336,25 @@ test("on a Mac, the full setup runs Colima and Ollama as the kit's services, wit
   assert.ok(fs.existsSync(path.join(s.units, "io.recursica.colima.plist")));
   assert.match(fs.readFileSync(path.join(s.units, "io.recursica.ollama.plist"), "utf8"),
     / OLLAMA_HOST=127\.0\.0\.1:11434 OLLAMA_CONTEXT_LENGTH=131072 OLLAMA_NUM_PARALLEL=4 OLLAMA_KEEP_ALIVE=-1 exec \S*\/ollama serve/);
+});
+
+test("on a Mac whose Colima VM is stopped, with only the default Docker context, the full setup installs the kit's Colima service for the VM in ~/.colima", () => {
+  const s = sandbox(example, { system: "Darwin" });
+  s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
+  for (const t of ["ollama", "colima", "brew"]) s.stub(t, "exit 0");
+  tailscaleStub(s);
+  s.stub("sleep", "");
+  colimaServiceRuns(s);
+  fs.mkdirSync(path.join(s.home, ".colima/default"), { recursive: true });
+  fs.writeFileSync(path.join(s.home, ".colima/default/colima.yaml"), "cpu: 4\n");
+  const daemons = path.join(s.home, "LaunchDaemons");
+  fs.mkdirSync(daemons);
+  // The default context points at no Docker, so docker info gets no answer.
+  const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, LAUNCH_DAEMONS_DIR: daemons, COLIMA_HOME: "", FAKE_DOCKER_DOWN: "1" }, encoding: "utf8", cwd: s.home });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(fs.readFileSync(path.join(s.units, "io.recursica.colima.plist"), "utf8"), /exec \S*\/colima-service\.sh default</);
+  const calls = s.calls();
+  assert.match(calls, /^sudo launchctl bootstrap system \/Library\/LaunchDaemons\/io\.recursica\.colima\.plist\n(.*\n)*docker --context colima info$/m, "the setup waits for the VM's own Docker context");
 });
 
 test("on a Mac, the full setup stops and changes nothing while a LaunchDaemon outside the kit runs Colima or Ollama", () => {

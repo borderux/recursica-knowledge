@@ -20,6 +20,16 @@ function sandbox() {
   return { dir, bin, log, units, stub, env, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
+// launchd's pid for the kit's Colima service, and ps, which lists the pid's child processes. For the
+// first `stopping` calls of ps, the service's child is colima stop, as when the service stops a VM
+// started by hand. After those calls, the child is the service's own colima start. A colima start
+// of another process is listed on every call.
+function colimaService(s, { stopping = 0 } = {}) {
+  const n = path.join(s.dir, "ps.count");
+  s.stub("launchctl", `[ "$1 $2" = "print system/io.recursica.colima" ] || exit 1; printf 'system/io.recursica.colima = {\\n\\tactive count = 1\\n\\tpid = 4242\\n}\\n'`);
+  s.stub("ps", `c=$(( $(cat "${n}" 2>/dev/null || echo 0) + 1 )); echo $c > "${n}"; echo "999 /opt/homebrew/bin/colima start -f --profile default"; if [ $c -le ${stopping} ]; then echo "4242 /opt/homebrew/bin/colima stop --profile default"; else echo "4242 /opt/homebrew/bin/colima start -f --profile default"; fi`);
+}
+
 test("Colima's service stops the VM on SIGTERM, then ends colima start -f, so the service exits", async () => {
   const s = sandbox();
   // colima start -f keeps running after the VM stops, as the real command does.
@@ -89,6 +99,7 @@ test("on a Mac, Colima and Ollama run as LaunchDaemons as the owner, and Homebre
   s.stub("uname", `echo Darwin`);
   s.stub("brew", `[ "$1 $2" = "services list" ] && printf 'Name   Status  User  File\\ncolima started owner ~/Library/LaunchAgents/homebrew.mxcl.colima.plist\\nollama started owner ~/Library/LaunchAgents/homebrew.mxcl.ollama.plist\\n'; exit 0`);
   s.stub("colima"); s.stub("ollama"); s.stub("docker");
+  colimaService(s);
   s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; [ "$1" = launchctl ] && [ "$2" = print ] && exit 1; exit 0`);
   const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default 11500 OLLAMA_CONTEXT_LENGTH=131072 OLLAMA_NUM_PARALLEL=4 OLLAMA_KEEP_ALIVE=-1`], { env: s.env, encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout + r.stderr);
@@ -112,6 +123,7 @@ test("on a Mac, an unchanged Colima service keeps running when the setup runs ag
   const s = sandbox();
   s.stub("uname", `echo Darwin`);
   s.stub("brew"); s.stub("colima"); s.stub("docker");
+  colimaService(s);
   s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; if [ "$1" = cat ]; then cat "${s.units}/$(basename "$2")" 2>/dev/null; exit; fi; exit 0`);
   const run = () => spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default ""`], { env: s.env, encoding: "utf8" });
   assert.equal(run().status, 0);
@@ -120,6 +132,66 @@ test("on a Mac, an unchanged Colima service keeps running when the setup runs ag
   assert.equal(again.status, 0);
   assert.match(again.stdout, /colima is running and unchanged/);
   assert.doesNotMatch(s.calls(), /launchctl bootout|brew services stop|ollama/);
+});
+
+test("on a Mac, the Colima profile comes from the Docker context, or from ~/.colima while the VM is stopped", () => {
+  const s = sandbox();
+  const daemonsDir = path.join(s.dir, "LaunchDaemons");
+  const profile = (context, { answers = false } = {}) => {
+    s.stub("docker", `[ "$1 $2" = "context show" ] && { echo ${context}; exit 0; }; [ "$1" = info ] && exit ${answers ? 0 : 1}; exit 0`);
+    return spawnSync("bash", ["-c", `. "${here}/lib.sh"; colima_profile`], { env: { ...s.env, COLIMA_HOME: "", LAUNCH_DAEMONS_DIR: daemonsDir }, encoding: "utf8" });
+  };
+  assert.equal(profile("colima").stdout, "default\n");
+  assert.equal(profile("colima-work").stdout, "work\n");
+  assert.equal(profile("default").stdout, "", "no Colima VM, and no Docker");
+  // A stopped VM has no Docker context, and Docker answers on no other context. Colima's own
+  // folders, such as _lima and _store, start with an underscore.
+  for (const d of ["default", "_store", "_templates"]) fs.mkdirSync(path.join(s.dir, ".colima", d), { recursive: true });
+  for (const d of ["default", "_store"]) fs.writeFileSync(path.join(s.dir, ".colima", d, "colima.yaml"), "cpu: 4\n");
+  const stopped = profile("default");
+  assert.equal(stopped.status, 0, stopped.stderr);
+  assert.equal(stopped.stdout, "default\n");
+  assert.equal(profile("orbstack", { answers: true }).stdout, "", "Docker that answers on another context, such as OrbStack, is not Colima");
+  // Two stopped profiles: the profile the kit's Colima service runs, or none and a message.
+  fs.mkdirSync(path.join(s.dir, ".colima/work"));
+  fs.writeFileSync(path.join(s.dir, ".colima/work/colima.yaml"), "cpu: 2\n");
+  const two = profile("default");
+  assert.equal(two.status, 1);
+  assert.equal(two.stdout, "");
+  assert.match(two.stderr, /Colima has the profiles default work in .*every VM is stopped.*colima start --profile <profile>/);
+  fs.mkdirSync(daemonsDir);
+  fs.writeFileSync(path.join(daemonsDir, "io.recursica.colima.plist"), `<string>HOME=${s.dir} PATH=/usr/bin:/bin exec /kit/colima-service.sh work</string>\n`);
+  assert.equal(profile("default").stdout, "work\n");
+});
+
+test("on a Mac, the setup waits for the VM of the kit's Colima service, not for a VM the service is about to stop", () => {
+  const s = sandbox();
+  s.stub("uname", `echo Darwin`);
+  s.stub("brew"); s.stub("colima"); s.stub("sleep");
+  // A VM started by hand answers the whole time. The service stops that VM during the first two
+  // checks, then runs its own colima start.
+  s.stub("docker");
+  colimaService(s, { stopping: 2 });
+  s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; [ "$1" = launchctl ] && [ "$2" = print ] && exit 1; exit 0`);
+  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services work ""`], { env: s.env, encoding: "utf8" });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls().trim().split("\n");
+  assert.ok(calls.findIndex((c) => c.startsWith("sudo launchctl bootstrap system ")) < calls.findIndex((c) => c.startsWith("docker ")), "the wait starts after the service is installed");
+  assert.equal(calls.filter((c) => c.startsWith("ps ")).length, 3);
+  assert.equal(calls.filter((c) => c.startsWith("sleep ")).length, 2);
+  assert.deepEqual(calls.filter((c) => c.startsWith("docker ")), ["docker --context colima-work info"], "Docker is asked only once the service's own colima start runs, on the VM's own context");
+});
+
+test("on a Mac, the setup stops when the kit's Colima service never runs its own VM", () => {
+  const s = sandbox();
+  s.stub("uname", `echo Darwin`);
+  s.stub("brew"); s.stub("colima"); s.stub("sleep"); s.stub("docker");
+  colimaService(s, { stopping: 1000 });
+  s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; [ "$1" = launchctl ] && [ "$2" = print ] && exit 1; exit 0`);
+  const r = spawnSync("bash", ["-c", `. "${here}/lib.sh"; mac_services default ""`], { env: s.env, encoding: "utf8" });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /Colima's VM default did not start\. Read \/tmp\/colima\.log\./);
+  assert.doesNotMatch(s.calls(), /^docker /m, "a VM outside the service never counts as started");
 });
 
 test("on a Mac, the kit's Ollama service runs with Ollama's defaults when site.json sets nothing", () => {

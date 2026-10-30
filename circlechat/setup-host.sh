@@ -71,11 +71,8 @@ ollama_service() { node --input-type=module -e '
 MAC_SERVICES=false
 if [ "$OS" = Darwin ] && [ -z "${TENANT:-}" ] && [ "$SECRETS_ONLY" = false ]; then
   MAC_SERVICES=true
-  case "$(docker context show 2>/dev/null)" in
-    colima) VM_PROFILE=default ;;
-    colima-*) VM_PROFILE="$(docker context show)"; VM_PROFILE="${VM_PROFILE#colima-}" ;;
-    *) VM_PROFILE="" ;;
-  esac
+  # From the Docker context, or from ~/.colima while the VM is stopped (kit/lib.sh colima_profile).
+  VM_PROFILE="$(colima_profile)" || exit 1
   # A broken site.json gives no port here, and the render below stops the setup.
   OLLAMA_PORT="$(ollama_service port 2>/dev/null || true)"
   mac_services_check "$VM_PROFILE" "$OLLAMA_PORT" || exit 1

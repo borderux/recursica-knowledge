@@ -202,6 +202,47 @@ foreign_daemons() {
   return 0
 }
 
+# The Colima profile of the VM that runs this Mac's Docker. Prints nothing when Docker runs
+# elsewhere, such as in OrbStack, or when the Mac has no Colima VM.
+#   - The Docker context is colima, for the profile default, or colima-<profile>.
+#   - A stopped VM has no Docker context, and Docker answers on no other context. The profile is
+#     the folder ~/.colima/<profile> that holds colima.yaml. With two or more such folders, the
+#     profile is the one the kit's Colima service already runs. Otherwise the profile is unknown,
+#     and the function says so on stderr and returns 1.
+#   colima_profile
+colima_profile() {
+  local ctx dir="${COLIMA_HOME:-$HOME/.colima}" d found=() kept
+  ctx="$(docker context show 2>/dev/null || true)"
+  case "$ctx" in
+    colima) echo default; return 0 ;;
+    colima-*) echo "${ctx#colima-}"; return 0 ;;
+  esac
+  docker info >/dev/null 2>&1 && return 0
+  for d in "$dir"/*/colima.yaml; do
+    [ -f "$d" ] || continue
+    d="${d%/colima.yaml}"; d="${d##*/}"
+    case "$d" in _*) continue ;; esac
+    found+=("$d")
+  done
+  [ ${#found[@]} -gt 0 ] || return 0
+  [ ${#found[@]} -eq 1 ] && { echo "${found[0]}"; return 0; }
+  kept="$(sed -n 's/.*colima-service\.sh \([^<[:space:]]*\).*/\1/p' "${LAUNCH_DAEMONS_DIR:-/Library/LaunchDaemons}/io.recursica.colima.plist" 2>/dev/null | head -1)"
+  for d in "${found[@]}"; do [ "$d" = "$kept" ] && { echo "$d"; return 0; }; done
+  echo "Colima has the profiles ${found[*]} in $dir, every VM is stopped, and no Docker context names a profile. Start the stack's VM with colima start --profile <profile>, then run setup-host.sh again." >&2
+  return 1
+}
+
+# True once the kit's Colima service runs its own colima start. The service first stops a VM that
+# runs outside the service, such as a VM started by hand, and that VM answers until it stops
+# (kit/colima-service.sh). The service's process is launchd's pid for io.recursica.colima.
+#   colima_service_started
+colima_service_started() {
+  local pid
+  pid="$(launchctl print system/io.recursica.colima 2>/dev/null | awk '$1 == "pid" && $2 == "=" { print $3; exit }')"
+  [ -n "$pid" ] || return 1
+  ps -A -o ppid=,command= | awk -v p="$pid" '$1 == p && $2 ~ /(^|\/)colima$/ && $3 == "start" { f = 1 } END { exit !f }'
+}
+
 # Before the kit installs its own Colima or Ollama service: a LaunchDaemon outside the kit that
 # already runs Colima or Ollama stops the setup, with the commands that retire the daemon. Two
 # services would fight over one VM, or over one port. Run the check before the setup changes anything.
@@ -232,7 +273,7 @@ mac_services_check() {
 #   mac_services <Colima profile, or empty for none> <Ollama port, or empty for none> [NAME=value ...]
 mac_services() {
   [ "$OS" = Darwin ] || return 0
-  local profile="$1" port="$2" bin kit i
+  local profile="$1" port="$2" bin kit i ctx
   shift 2
   kit="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   if [ -n "$profile" ]; then
@@ -243,7 +284,15 @@ mac_services() {
     fi
     # colima stop can take a minute, and launchd's default wait is 20 seconds.
     UNIT_EXIT_TIMEOUT=150 UNIT_KEEP=1 install_unit colima "HOME=$HOME PATH=$(dirname "$bin"):/usr/bin:/bin:/usr/sbin:/sbin exec $kit/colima-service.sh $profile" "$HOME" "$(id -un)"
-    for i in $(seq 90); do docker info >/dev/null 2>&1 && break; [ "$i" = 90 ] && { echo "Colima's VM $profile did not start. Read /tmp/colima.log."; return 1; }; sleep 2; done
+    # The wait is for the service's own VM. A VM that runs outside the service answers until the
+    # service stops that VM, so Docker answering alone proves nothing. colima start activates the
+    # VM's Docker context, colima or colima-<profile>, which the rest of the setup uses.
+    ctx=colima; [ "$profile" = default ] || ctx="colima-$profile"
+    for i in $(seq 90); do
+      colima_service_started && docker --context "$ctx" info >/dev/null 2>&1 && break
+      [ "$i" = 90 ] && { echo "Colima's VM $profile did not start. Read /tmp/colima.log."; return 1; }
+      sleep 2
+    done
   fi
   if [ -n "$port" ]; then
     bin="$(command -v ollama)" || { echo "site.json gives this computer an Ollama server, and Ollama is not installed. Install Ollama with: brew install ollama"; return 1; }
