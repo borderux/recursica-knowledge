@@ -45,7 +45,11 @@
     "key named default. A task's \"Cloud models\" setting decides when a cloud key answers.",
     "agents: each agent's routes (all routes when left out) and cloud switch (on when left out). A route",
     "here can also name one cluster model, \"<node>/<server id>/<model id>\", to compare models. With",
-    "the switch off, the gateway never calls a cloud model for the agent."
+    "the switch off, the gateway never calls a cloud model for the agent.",
+    "data.repo: a private repo for Barb's Kev disagreement notes, such as your-org/recursica-kev-data.",
+    "Each hour, new notes go to a new branch there, with a pull request for a person to review. Kev's",
+    "training reads only the notes merged into main. Never the knowledge repo or a public repo: the push",
+    "checks the repo's visibility first. The job's token is KEV_DATA_GITHUB_PAT. Empty: no push."
   ],
   "site": {
     "public_host": "circlechat.example.ts.net",
@@ -209,6 +213,6 @@
     "slack": true
   },
   "data": {
-    "kev_disagreements_branch": ""
+    "repo": ""
   }
 }

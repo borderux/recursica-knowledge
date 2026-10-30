@@ -590,8 +590,15 @@ if [ -n "$(site_get porter.watch)" ]; then
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
   install_unit "release-watch$SUFFIX" "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
 fi
-if [ -n "$(site_get data.kev_disagreements_branch)" ]; then
+# Kev's review data, with data.repo in site.json: each hour, Barb's notes go to a new branch of
+# that private repo, with a pull request for a person to review. Each night, the reviewed notes
+# come from the repo's main branch, for Kev's training. Without data.repo, neither job runs.
+if [ -n "$(site_get data.repo)" ]; then
   install_unit "kev-data-push$SUFFIX" "$ENVS $HERE/kit/push-data.sh" "$CC_DIR" "$(id -un)" hourly
+  install_unit "kev-notes-pull$SUFFIX" "$ENVS $HERE/kit/pull-kev-notes.sh" "$CC_DIR" "$(id -un)" "*-*-* 01:30"
+else
+  uninstall_unit "kev-data-push$SUFFIX" >/dev/null
+  uninstall_unit "kev-notes-pull$SUFFIX" >/dev/null
 fi
 
 if grep -qi microsoft /proc/version 2>/dev/null; then

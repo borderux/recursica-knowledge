@@ -211,27 +211,20 @@ test("no kit script runs git in the workspace", () => {
 test("the Kev data push never publishes a file a symlink in the workspace names", () => {
   const s = sandbox([]);
   const secret = path.join(s.outside, "target.txt");
-  s.put(path.join(s.cc, "site.json"), JSON.stringify({ repos: { knowledge: "https://example.com/kb.git" }, data: { kev_disagreements_branch: "data/kev" } }));
+  s.put(path.join(s.cc, "site.json"), JSON.stringify({ repos: { knowledge: "https://github.com/acme/kb" }, data: { repo: "acme/kev-data" } }));
   const log = path.join(s.root, "git.log");
-  // A stand-in for git: the clone makes the folder the notes go to, and every call is recorded.
-  fs.writeFileSync(path.join(s.bin, "git"), `#!/usr/bin/env bash\necho "git $*" >> "${log}"\n[ "$1" = clone ] && mkdir -p "\${@: -1}/.git" "\${@: -1}/tools/kev/evals"\n[ "$1" = ls-remote ] && exit 2\n[ "$1 $2" = "diff --cached" ] && exit 1\nexit 0\n`, { mode: 0o755 });
-  const push = () => spawnSync("bash", [path.join(s.kit, "circlechat/kit/push-data.sh")], { env: { ...s.env, CC_DIR: s.cc, WS: s.ws }, encoding: "utf8", cwd: s.home });
+  // A stand-in for git that records every call. The push itself is tested in kit/kev-data.test.mjs.
+  fs.writeFileSync(path.join(s.bin, "git"), `#!/usr/bin/env bash\necho "git $*" >> "${log}"\nexit 0\n`, { mode: 0o755 });
+  const push = () => spawnSync("bash", [path.join(s.kit, "circlechat/kit/push-data.sh")], { env: { ...s.env, CC_DIR: s.cc, WS: s.ws, KEV_DATA_GITHUB_PAT: "ghp_test" }, encoding: "utf8", cwd: s.home });
   link(secret, path.join(s.ws, "reviews/kev-disagreements.md"));
   const r = push();
   assert.equal(r.status, 1, r.stdout + r.stderr);
   assert.match(r.stderr, /Refused: .*kev-disagreements\.md is a symlink/);
-  assert.ok(!fs.existsSync(log) || !/git (add|commit|push)/.test(fs.readFileSync(log, "utf8")), "nothing was added, committed or pushed");
+  assert.ok(!fs.existsSync(log), "git never ran");
   // A symlinked reviews folder: refused the same way.
   fs.rmSync(path.join(s.ws, "reviews"), { recursive: true });
   link(path.join(s.outside, "dir"), path.join(s.ws, "reviews"));
   fs.writeFileSync(path.join(s.outside, "dir", "kev-disagreements.md"), "outside notes\n");
   assert.equal(push().status, 1);
-  assert.ok(!fs.existsSync(log) || !/git (add|commit|push)/.test(fs.readFileSync(log, "utf8")));
-  // Real notes: published as written.
-  fs.rmSync(path.join(s.ws, "reviews"));
-  s.put(path.join(s.ws, "reviews/kev-disagreements.md"), "Barb's notes\n");
-  const ok = push();
-  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
-  assert.equal(fs.readFileSync(path.join(s.cc, "kev-data/tools/kev/evals/kev-disagreements.md"), "utf8"), "Barb's notes\n");
-  assert.match(fs.readFileSync(log, "utf8"), /git push -q -u origin data\/kev/);
+  assert.ok(!fs.existsSync(log), "git never ran");
 });

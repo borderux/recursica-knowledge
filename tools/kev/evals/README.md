@@ -30,7 +30,9 @@ not enough to be useful. That is why Barb only runs Kev on files under 300 lines
 
 1. **More full-review labels.** Every full review Barb runs is one; her refuted findings are
    just as useful, as known false positives. `kev-disagreements.md` in her reviews folder
-   collects both.
+   collects both. On CircleChat, a person reviews the notes in a private repo first. Training
+   reads only the reviewed notes from that repo's `main` branch:
+   `$CC_DIR/kev-reviewed/kev-disagreements.md` (`circlechat/README.md`, "Kev's review data").
 2. **Thresholds from those labels.** `KEV_FLAG` / `KEV_PASS` are guesses from two screens.
 3. **Fine-tuning Kev-engine on Barb's verdicts** once there are a few hundred labels. Its trainer
    runs on a Mac (MPS); 4B may also fit 16 GB with bf16 weights and checkpointing.

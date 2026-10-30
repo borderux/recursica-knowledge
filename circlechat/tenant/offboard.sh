@@ -79,7 +79,7 @@ remove)
     if [ -n "${BACKUP_REMOTE:-}" ]; then rclone purge "$BACKUP_REMOTE/$CLIENT" >/dev/null 2>&1 || true; fi
     unset DOCKER_CONTEXT
   fi
-  for u in circlechat-boot agents-sync release-watch kev-data-push backup restore-test images jobd; do uninstall_unit "$u-$CLIENT"; done
+  for u in circlechat-boot agents-sync release-watch kev-data-push kev-notes-pull backup restore-test images jobd; do uninstall_unit "$u-$CLIENT"; done
   docker rm -f "cc-jobs-egress-$CLIENT" >/dev/null 2>&1 || true
   docker network rm "jobs-egress-$CLIENT" >/dev/null 2>&1 || true
   # The client's Docker VM sits inside the client's disk image, so destroying the image removes both.

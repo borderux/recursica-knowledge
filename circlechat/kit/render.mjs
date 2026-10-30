@@ -33,6 +33,7 @@
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
+import { repoOf } from "./kev-data.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -460,7 +461,14 @@ export function validate(site, { cluster } = {}) {
     if (!t.tenant) errs.push(`a ${t.kind} stack needs site.tenant, so its containers, ports and jobs never collide with another stack's`);
     if (!t.docker_context) errs.push(`a ${t.kind} stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no stack shares a Docker socket or network with another`);
   }
-  if (t.kind === "client" && site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
+  // Kev's review data goes to a private repo of its own, never to the knowledge repo.
+  if (site.data?.kev_disagreements_branch) errs.push("data.kev_disagreements_branch is gone: the notes went to a branch of the public knowledge repo. Remove it, and set data.repo to a private repo, such as acme/recursica-kev-data");
+  const dataRepo = site.data?.repo;
+  if (dataRepo) {
+    if (t.kind === "client") errs.push("a client stack cannot set data.repo: review data from a client's code never leaves the client's stack");
+    if (typeof dataRepo !== "string" || !/^[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/.test(dataRepo)) errs.push("data.repo must be owner/name, such as acme/recursica-kev-data");
+    else if (repoOf(site.repos?.knowledge) === dataRepo.toLowerCase()) errs.push("data.repo cannot be the knowledge repo: Kev's review data goes to a private repo of its own");
+  }
   if (NEEDS_PERMISSION.includes(t.kind) && !cloudAllowed(site)) {
     for (const [route, backends] of Object.entries(site.routes ?? {})) {
       for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this ${t.kind} stack has no recorded permission for cloud models (site.cloud_models)`);
