@@ -29,8 +29,38 @@ function openNoFollow(file, skipped) {
 }
 
 // A private key in PEM form. A GitHub App's private key is one (github/apps.mjs).
+//
+// The BEGIN line alone is not a key: code and documentation name the marker too, such as npm's
+// help text for its `key` setting, whose example reads
+// "-----BEGIN PRIVATE KEY-----\nXXXX\nXXXX\n-----END PRIVATE KEY-----". Node's compile cache holds
+// that text whenever npm has run, so the marker alone failed the check on a cache in an agent's
+// home. A private key has a body: base64 right after the BEGIN line, at least PRIVATE_KEY_BODY
+// characters. The smallest real body, an Ed25519 key's, is 64. Between the lines of the body may
+// be real line breaks, or the line breaks written as \n, as in an .env file or JSON, with one
+// backslash or more, as in a database dump. An older encrypted key starts its body with
+// Proc-Type: and DEK-Info: header lines. A body with no END marker, such as a key cut off in a
+// log, still counts.
 export const PRIVATE_KEY = /-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED |DSA )?PRIVATE KEY-----/g;
-const SHAPES = [...KEY_SHAPES, ["a private key", PRIVATE_KEY]];
+export const PRIVATE_KEY_BODY = 40;
+// A line break inside a body: a real one, or one written as \n or \r with one backslash or more, with
+// spaces or tabs around it, as in an indented YAML value. A space alone is not one: prose after a
+// marker is words separated by spaces, never a body.
+const BREAK = String.raw`(?:[ \t]*(?:\r|\n|\\+[nr])[ \t]*)`;
+const PEM_HEADERS = new RegExp(String.raw`^${BREAK}*(?:(?:Proc-Type|DEK-Info):[^\n\\]*${BREAK}+)*`);
+const PEM_BODY = new RegExp(String.raw`^(?:[A-Za-z0-9+/=]|${BREAK})*`);
+
+// True when <text> holds a private key in PEM form: a BEGIN line followed by a key body.
+export function hasPrivateKey(text) {
+  PRIVATE_KEY.lastIndex = 0;
+  for (let m; (m = PRIVATE_KEY.exec(text)); ) {
+    let rest = text.slice(m.index + m[0].length, m.index + m[0].length + 10_000);
+    rest = rest.slice(rest.match(PEM_HEADERS)[0].length);
+    const body = rest.match(PEM_BODY)[0].replace(new RegExp(BREAK, "g"), "");
+    if (body.length >= PRIVATE_KEY_BODY) return true;
+  }
+  return false;
+}
+const SHAPES = [...KEY_SHAPES, ["a private key", { test: hasPrivateKey, lastIndex: 0 }]];
 
 // The first line of each private key's body in a folder of .pem files: a key without its PEM
 // header still matches.
