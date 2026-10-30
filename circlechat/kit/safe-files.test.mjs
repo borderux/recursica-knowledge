@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { chmodTree, copy, makeDir, readFile, Refused, writeFile } from "./safe-files.mjs";
+import { chmodTree, copy, makeDir, ownHome, readFile, Refused, writeFile } from "./safe-files.mjs";
 
 // A place, and a folder outside it with one file the place's symlinks name.
 function setup() {
@@ -97,4 +97,37 @@ test("a replaced file keeps the old file's mode, and leaves no half-written file
   writeFile(place, path.join(place, ".env"), "A=2\n");
   assert.equal(fs.statSync(path.join(place, ".env")).mode & 0o777, 0o600);
   assert.deepEqual(fs.readdirSync(place), [".env"]);
+});
+
+test("a home given to the agent's account: the home 700, .env and auth.json 600, no write for others inside, and a symlink's file left alone", () => {
+  const { place, outside } = setup();
+  fs.chmodSync(path.join(outside, "file.txt"), 0o666);
+  const before = snapshot(outside);
+  const mode = (f) => fs.lstatSync(path.join(place, f)).mode & 0o7777;
+  fs.chmodSync(place, 0o777);
+  fs.mkdirSync(path.join(place, "skills/a"), { recursive: true, mode: 0o777 });
+  fs.chmodSync(path.join(place, "skills"), 0o777); fs.chmodSync(path.join(place, "skills/a"), 0o777);
+  for (const [f, m] of [[".env", 0o644], ["auth.json", 0o777], ["config.yaml", 0o640], ["run.sh", 0o777], ["skills/a/SKILL.md", 0o666], ["skills/a/.env", 0o644]]) {
+    fs.writeFileSync(path.join(place, f), "x"); fs.chmodSync(path.join(place, f), m);
+  }
+  fs.symlinkSync(path.join(outside, "file.txt"), path.join(place, "link"));
+  fs.symlinkSync(outside, path.join(place, "dirlink"));
+  // The tests run as an account that cannot give a file away, so the account is the test's own.
+  ownHome(place, place, process.getuid(), process.getgid());
+  assert.equal(mode(""), 0o700);
+  assert.equal(mode(".env"), 0o600);
+  assert.equal(mode("auth.json"), 0o600);
+  assert.equal(mode("config.yaml"), 0o640, "a mode with no write for others stays");
+  assert.equal(mode("run.sh"), 0o755);
+  assert.equal(mode("skills"), 0o755);
+  assert.equal(mode("skills/a"), 0o755);
+  assert.equal(mode("skills/a/SKILL.md"), 0o644);
+  assert.equal(mode("skills/a/.env"), 0o644, "only the home's own .env is a secrets file");
+  assert.ok(fs.lstatSync(path.join(place, "link")).isSymbolicLink());
+  assert.deepEqual(snapshot(outside), before, "the files a symlink names keep their modes");
+  // The home itself as a symlink.
+  const other = path.join(path.dirname(place), "home-link");
+  fs.symlinkSync(outside, other);
+  assert.throws(() => ownHome(other, other, process.getuid(), process.getgid()), Refused);
+  assert.deepEqual(snapshot(outside), before);
 });

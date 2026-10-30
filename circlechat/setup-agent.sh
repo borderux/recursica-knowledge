@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # Run AFTER installing the agent through the CircleChat UI. Safe to rerun.
 # Usage: setup-agent.sh <handle>
-#        setup-agent.sh --sync <handle>   only the skills and the persona, with no sudo (sync-skills.sh)
+#        setup-agent.sh --sync <handle>   only the skills and the persona (sync-skills.sh)
 #   alan, betty, porter: GitHub access comes from the agent's GitHub App in site.json's github_apps
 #   barb: KEV_ENGINE_KEY=... if a Kev-engine is running (optional)
 #
 # Run as the account that owns the stacks, never as root. An agent can change its own home and the
 # shared workspace, so every write there goes through kit/safe-files.mjs, which never follows a
 # symlink. Every file the script copies comes from the kit's own checkout, never from the
-# workspace's checkout, which agents can change too. Without --sync, the writes in the agent's home
-# run with sudo, because the agent's container can own files there.
+# workspace's checkout, which agents can change too. The home belongs to the agent's own account
+# (AGENT_IDS in kit/lib.sh), mode 700, and every read and write in it runs as that account in a
+# small container (as_agent), with no sudo. Each run first gives the home back to that account and
+# sets its modes again (give_home), in case CircleChat or root wrote a file there.
 set -euo pipefail
 
 SYNC=false; [ "${1:-}" = --sync ] && { SYNC=true; shift; }
@@ -31,11 +33,11 @@ MARK="<!-- recursica-circlechat -->"
 KIT_OUT="$CC_DIR/kit-out"
 [ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
 
-# Each write in the agent's home or the workspace: kit/safe-files.mjs, as the owner with --sync and
-# with sudo otherwise.
+# Each read and write in the agent's home: kit/safe-files.mjs, as the agent's account (as_agent).
+# Only a write reads stdin.
 sf() {
-  if [ "$SYNC" = true ]; then node "$HERE/kit/safe-files.mjs" "$@"
-  else sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" "$@"; fi
+  if [ "$1" = write ]; then as_agent "$H" circlechat/kit/safe-files.mjs "$@"
+  else as_agent "$H" circlechat/kit/safe-files.mjs "$@" < /dev/null; fi
 }
 # read_home <file>: the file's text in TEXT, or "" when the file is missing. A symlink stops the script.
 read_home() { TEXT="$(sf read "$H" "$1" && echo x)" || exit 1; TEXT="${TEXT%x}"; }
@@ -49,6 +51,7 @@ if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenan
 fi
 [ ! -L "$H" ] || { echo "Refused: $H is a symlink. Nothing was written."; exit 1; }
 [ -d "$H" ] || { echo "No $H — install $HANDLE in the CircleChat UI first."; exit 1; }
+give_home "$H" || exit 1
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
 # What would break that fence is a tool server reaching client data, so refuse if he has any.
@@ -96,8 +99,9 @@ PERSONA="$(sed -e "s|@APP_REPO_GITHUB@|${APP_REPO_GITHUB:-}|g" -e "s|@APP_REPO@|
 if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
   echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
 fi
-# A symlinked SOUL.md is never read: the write below replaces the symlink.
-if [ -L "$H/SOUL.md" ]; then TEXT=""; else read_home "$H/SOUL.md"; fi
+# A symlinked SOUL.md is never read: the read refuses it, and the write below replaces the symlink.
+# The check runs in the agent's container, because the owner cannot see inside the agent's home.
+TEXT="$(sf read "$H" "$H/SOUL.md" 2>/dev/null && echo x)" || TEXT=x; TEXT="${TEXT%x}"
 if ! printf '%s\n' "$TEXT" | grep -qx "$MARK" && [ -n "$TEXT" ]; then
   printf '%s' "$TEXT" | put_home "$H/SOUL.md.premark.bak"
   BASE=""
@@ -175,7 +179,8 @@ if [ "$HANDLE" = loki ]; then
   if ! printf '%s\n' "$TEXT" | grep -qE '^    context_length:'; then
     printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^[^ ]/ { aux = ($0 == "auxiliary:") } aux && $0 == "  compression:" { print "    context_length: " c }' | put_home "$H/config.yaml"
   fi
-  sf mkdir "$WS" "$WS/loki" 777
+  # The shared workspace keeps its own rules for now: the owner writes there, with sudo.
+  sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/loki" 777
 fi
 
 # Secrets go in the agent's own .env, never in SOUL.md. The value passes on stdin, never as an
@@ -222,7 +227,9 @@ if [ -f "$KIT_OUT/tenant.env" ]; then
   done
 fi
 
-sf chmod "$H" "$H" 777
+# The writes above kept each file's mode. CircleChat or an agent may have left a file open to other
+# accounts; Hermes refuses a home that another account can write to.
+give_home "$H" || exit 1
 # One test turn, the way CircleChat runs an agent turn (kit/hermes-turn.sh). A turn that Hermes
 # refuses stops the setup here with Hermes's reason, instead of showing up as the agent's first
 # reply. The hourly --sync runs no turn: each turn is a model request.

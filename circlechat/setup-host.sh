@@ -536,8 +536,15 @@ if [ -d "$HERE/../tools/kev" ]; then
   node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$HERE/../tools/kev/."
   docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
 fi
+# Each agent's home belongs to the agent's own account, mode 700, with nothing inside open to other
+# accounts (give_home in kit/lib.sh): Hermes refuses a home that another account can write to. The
+# folder that holds the homes is the owner's. CircleChat's api and bridge reach it as root.
+chmod 755 "$CC_DIR/hermes-homes"
+for h in "$CC_DIR"/hermes-homes/.hermes-*; do
+  [ -d "$h" ] && [ ! -L "$h" ] || continue
+  give_home "$h" || echo "Could not give $h to the agent's account. Run setup-agent.sh ${h##*/.hermes-}."
+done
 # Every real file and folder, never a file a symlink names (kit/safe-files.mjs).
-sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$CC_DIR/hermes-homes" "$CC_DIR/hermes-homes" 777
 sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 
 # A port another stack already uses stops the setup here, before anything restarts.

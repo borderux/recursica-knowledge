@@ -5,8 +5,9 @@
 #
 # Agents can change the shared workspace and their own homes, the workspace's checkout of this repo
 # included. So every file this script copies comes from the kit's own checkout, outside the
-# workspace, and every write goes through kit/safe-files.mjs, which never follows a symlink
-# (setup-agent.sh --sync). The script never runs git in the workspace: agents can change each
+# workspace, and every write goes through kit/safe-files.mjs, which never follows a symlink. Each
+# write in an agent's home runs as the agent's own account, in a small container (setup-agent.sh
+# --sync, as_agent in kit/lib.sh). The script never runs git in the workspace: agents can change each
 # checkout there, and the agents update their own checkouts from inside their containers.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"

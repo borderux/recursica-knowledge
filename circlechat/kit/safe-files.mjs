@@ -16,13 +16,14 @@
 //   node safe-files.mjs read  <place> <file>            the file's text, or nothing when missing
 //   node safe-files.mjs mkdir <place> <folder> [mode]
 //   node safe-files.mjs chmod <place> <folder> <mode>   every real file and folder in the folder
+//   node safe-files.mjs own   <place> <home> <uid:gid>  an agent's home to the agent's account
 //
 // A mode is octal, such as 600. A replaced file keeps the old file's mode, owner and group.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
-const { O_RDONLY, O_NOFOLLOW } = fs.constants;
+const { O_RDONLY, O_NOFOLLOW, O_NONBLOCK } = fs.constants;
 
 export class Refused extends Error {}
 
@@ -108,6 +109,38 @@ export function chmodTree(place, dir, mode) {
   walk(realDir(place, dir));
 }
 
+// Gives an agent's home and every real file and folder in it to the agent's account, <uid>:<gid>.
+// The home gets mode 700, .env and auth.json in the home 600, and every other file and folder
+// loses write for the group and others. Hermes refuses a home that another account can write to.
+// Each change goes through a descriptor opened without following a symlink, so a symlink, even one
+// swapped in during the walk, is left alone. A socket or a FIFO is left alone too.
+const PRIVATE_FILES = new Set([".env", "auth.json"]);
+export function ownHome(place, home, uid, gid) {
+  const top = realDir(place, home);
+  const walk = (p, depth) => {
+    let fd;
+    try { fd = fs.openSync(p, O_RDONLY | O_NOFOLLOW | O_NONBLOCK); } catch (e) {
+      if (["ELOOP", "EMLINK", "ENOENT", "ENXIO"].includes(e.code)) return;
+      throw e;
+    }
+    let st;
+    try {
+      st = fs.fstatSync(fd);
+      if (!st.isFile() && !st.isDirectory()) return;
+      fs.fchownSync(fd, uid, gid);
+      const old = st.mode & 0o7777;
+      const mode = depth === 0 ? 0o700 : depth === 1 && st.isFile() && PRIVATE_FILES.has(path.basename(p)) ? 0o600 : old & ~0o022;
+      if (mode !== old) fs.fchmodSync(fd, mode);
+    } finally { fs.closeSync(fd); }
+    if (!st.isDirectory()) return;
+    // A folder swapped for a symlink since the open: its contents are never walked.
+    const now = fs.lstatSync(p);
+    if (now.dev !== st.dev || now.ino !== st.ino) return;
+    for (const name of fs.readdirSync(p)) walk(path.join(p, name), depth + 1);
+  };
+  walk(top, 0);
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, place, a, b] = process.argv.slice(2);
   const mode = (m) => (m === undefined ? undefined : parseInt(m, 8));
@@ -117,7 +150,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     else if (cmd === "read" && a) process.stdout.write(readFile(place, a) ?? "");
     else if (cmd === "mkdir" && a) makeDir(place, a, mode(b) ?? 0o755);
     else if (cmd === "chmod" && b) chmodTree(place, a, mode(b));
-    else { console.error("usage: safe-files.mjs copy|write|read|mkdir|chmod <place> ..."); process.exit(2); }
+    else if (cmd === "own" && /^\d+:\d+$/.test(b ?? "")) ownHome(place, a, ...b.split(":").map(Number));
+    else { console.error("usage: safe-files.mjs copy|write|read|mkdir|chmod|own <place> ..."); process.exit(2); }
   } catch (e) {
     console.error(e instanceof Refused ? `Refused: ${e.message} Nothing was written there.` : e.message);
     process.exit(1);
