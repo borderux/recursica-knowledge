@@ -12,10 +12,12 @@ export const ACTIONS = {
   "allow-source": { label: "Allow this source", twoFactor: true },
   "egress-allow-once": { label: "Allow once (15 min)", twoFactor: true },
   "egress-deny": { label: "Deny", twoFactor: false, style: "danger" },
-  "upgrade-now": { label: "Upgrade now", twoFactor: false },
+  "upgrade-now": { label: "Upgrade now", twoFactor: true },
   "upgrade-skip": { label: "Skip this version", twoFactor: false },
   "agents-stop": { label: "Stop", twoFactor: false, style: "danger" },
   "agents-resume": { label: "Resume", twoFactor: true },
+  // A kit release: the approval goes to every computer in the cluster (cluster: true).
+  "release-install": { label: "Install", twoFactor: true, cluster: true },
 };
 
 export const KINDS = {
@@ -23,6 +25,7 @@ export const KINDS = {
   lockdown: ["cut-off-now", "keep-watching", "shut-down", "release-lockdown", "allow-source"],
   egress: ["egress-allow-once", "egress-deny"],
   upgrade: ["upgrade-now", "upgrade-skip"],
+  release: ["release-install"],
 };
 
 // The cluster's time zone: site.timezone in the cluster's site.json, an IANA name such as

@@ -63,3 +63,12 @@ test("each minute runs the network check, and a failed check stops nothing else"
   await agent.minute();
   assert.equal(ticks, 2);
 });
+
+test("Install for a kit release records the approval on the computer", async () => {
+  const { agent, stateDir } = setup();
+  const r = await agent.act({ action: "release-install", ref: "@recursica/knowledge@0.13.0", extra: { by: "person_a" } });
+  assert.equal(r.ok, true);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(stateDir, "release-approvals.json"), "utf8"))["@recursica/knowledge@0.13.0"].by, "person_a");
+  assert.match(fs.readFileSync(path.join(stateDir, "release-approvals.log"), "utf8"), /"by":"person_a".*"computer":"machine-1"/);
+  assert.equal((await agent.act({ action: "release-install", ref: "../etc/passwd" })).ok, false);
+});

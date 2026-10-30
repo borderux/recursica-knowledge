@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { stackSlack } from "../kit/slack.mjs";
+import { TAG, approvals } from "./release-gate.mjs";
 
 const PASSWORD = /^[0-9a-f]{48}$/;
 
@@ -99,8 +100,9 @@ function ownerIds(owner, run) {
 
 // Steps 1 to 3 for one stack. Resolves when the upgrade and the steps after it end.
 //   ref: a release tag from the "Upgrade now" button, or empty for the hourly check
+//   approved: the releases an approver approved (release-gate.mjs), passed in KIT_APPROVED
 //   spawnFn and run: child_process.spawn and spawnSync, for the tests
-export async function runUpgrade({ env, ccDir, ref = "", mac = process.platform === "darwin", spawnFn = spawn, run = spawnSync, post = stackSlack(ccDir), now = Date.now }) {
+export async function runUpgrade({ env, ccDir, ref = "", approved = Object.keys(approvals("/var/lib/agent-cluster")), mac = process.platform === "darwin", spawnFn = spawn, run = spawnSync, post = stackSlack(ccDir), now = Date.now }) {
   const say = (text) => post(text).catch(() => {});
   let password;
   try { password = prepareGateway({ ccDir, ids: mac ? ownerIds(env.OWNER, run) : null }); }
@@ -108,7 +110,7 @@ export async function runUpgrade({ env, ccDir, ref = "", mac = process.platform 
   const { ws } = stackPaths(env.OWNER_HOME, ccDir);
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
   const started = now();
-  const child = spawnFn("sudo", ["-u", env.OWNER, "-H", "env", "KIT_ROOT_STEPS=1", `CC_DIR=${ccDir}`, `WS=${ws}`, `SITE=${path.join(ccDir, "site.json")}`,
+  const child = spawnFn("sudo", ["-u", env.OWNER, "-H", "env", "KIT_ROOT_STEPS=1", `KIT_APPROVED=${approved.filter((t) => TAG.test(t)).join(",")}`, `CC_DIR=${ccDir}`, `WS=${ws}`, `SITE=${path.join(ccDir, "site.json")}`,
     `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ...(ref ? [ref] : [])],
     { stdio: ["pipe", "inherit", "inherit"] });
   child.stdin.end(`${password}\n`);

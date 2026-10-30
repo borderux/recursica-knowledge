@@ -43,9 +43,15 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
   // longer. So the action starts here, and the acknowledgment goes back without waiting for it.
   function start(...args) { run(...args).catch((e) => console.error(`action failed: ${e.message}`)); }
 
+  // An action for the whole cluster, such as "Install" for a kit release, goes to every computer in
+  // AGENTS. Each computer's reply names the computer, so a computer that missed the approval shows.
   async function run(meta, user, actionId, value, extra = {}) {
-    const result = await relay(value.c, { action: actionId, ref: value.r, extra, by: approvers[user] ?? user });
-    await reply(meta, `${result.ok ? ":white_check_mark:" : ":x:"} <@${user}> pressed "${ACTIONS[actionId]?.label ?? actionId}" for ${value.c}: ${result.message}`);
+    const all = Object.keys(parsePairs(env.AGENTS));
+    const computers = ACTIONS[actionId]?.cluster && all.length ? all : [value.c];
+    for (const c of computers) {
+      const result = await relay(c, { action: actionId, ref: value.r, extra, by: approvers[user] ?? user });
+      await reply(meta, `${result.ok ? ":white_check_mark:" : ":x:"} <@${user}> pressed "${ACTIONS[actionId]?.label ?? actionId}" for ${c}: ${result.message}`);
+    }
   }
 
   function codeModal(actionId, meta) {

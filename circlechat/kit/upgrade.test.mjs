@@ -4,8 +4,10 @@ import { decide, setupRunner } from "./upgrade.mjs";
 
 const tags = ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.11.1", "@recursica/knowledge@0.12.0", "@recursica/knowledge@1.0.0"];
 
-test("a release with the same first number upgrades on its own, to the newest such release", () => {
-  assert.deepEqual(decide("0.11.0", tags), { action: "upgrade", tag: "@recursica/knowledge@0.12.0" });
+test("a release with the same first number installs only once approved, to the newest approved release", () => {
+  assert.deepEqual(decide("0.11.0", tags), { action: "hold", tag: "@recursica/knowledge@0.12.0" });
+  assert.deepEqual(decide("0.11.0", tags, {}, ["@recursica/knowledge@0.12.0"]), { action: "upgrade", tag: "@recursica/knowledge@0.12.0" });
+  assert.deepEqual(decide("0.11.0", tags, {}, ["@recursica/knowledge@0.11.1"]), { action: "upgrade", tag: "@recursica/knowledge@0.11.1" });
 });
 
 test("a new major version asks once, and a skipped one stays skipped", () => {
@@ -21,7 +23,7 @@ test("nothing newer means nothing to do, and other tags are ignored", () => {
 test("a release that failed once is skipped; a newer one is tried", () => {
   const state = { failed: { "@recursica/knowledge@0.12.0": 1 } };
   assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.12.0"], state), { action: "none" });
-  assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.12.0", "@recursica/knowledge@0.12.1"], state), { action: "upgrade", tag: "@recursica/knowledge@0.12.1" });
+  assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.12.0", "@recursica/knowledge@0.12.1"], state, ["@recursica/knowledge@0.12.1"]), { action: "upgrade", tag: "@recursica/knowledge@0.12.1" });
 });
 
 test("with root's steps, the setup gets the password on stdin, needs no sudo, and leaves the skill sync to root", () => {
