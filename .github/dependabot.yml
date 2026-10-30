@@ -1,0 +1,38 @@
+# Dependabot version updates: daily, with a 7-day cooldown, one pull request per package system.
+# Security updates skip the cooldown.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - "/"
+      - "/buzz-agents/agents/stu/app/web"
+      - "/circlechat/gateway"
+      - "/circlechat/notify"
+      - "/tools/kev"
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
+    groups:
+      npm:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directories:
+      - "/circlechat/egress"
+      - "/circlechat/jobd/porter-job"
+    schedule:
+      interval: daily
+    cooldown:
+      default-days: 7
+    groups:
+      docker:
+        patterns: ["*"]
