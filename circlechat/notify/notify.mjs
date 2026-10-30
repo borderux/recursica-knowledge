@@ -5,10 +5,11 @@
 // last event would be re-sent on every poll.
 //
 // Posts: task created / assigned / status changed / done; every comment (marked when it
-// @mentions a person); agent posts CircleChat rejected (the silent failures); and once an hour,
-// tasks stuck in blocked or in_progress with no activity.
+// @mentions a person); each agent reply CircleChat could not use (the silent failures); and once an
+// hour, tasks stuck in blocked or in_progress with no activity.
 import fs from "node:fs";
 import pg from "pg";
+import { droppedNote } from "./drops.mjs";
 
 const { DATABASE_URL, SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on", STACK_NAME = "" } = process.env;
 const STALE_BLOCKED_H = Number(process.env.STALE_BLOCKED_HOURS ?? 24);
@@ -27,9 +28,11 @@ save(st); // so a restart picks up from here, not from whenever it restarts
 const link = (id, title) => CC_URL ? `<${CC_URL.replace(/\/$/, "")}/board?task=${id}|${title}>` : `*${title}*`;
 // With NOTIFY_DETAILS=off (a client stack, by default), Slack gets no task titles or comments:
 // one note at most every 10 minutes that CircleChat has new activity.
+// A message written for that case, such as a dropped reply with no conversation named, passes as
+// it is (`safe`).
 let lastMinimal = 0;
-async function slack(text) {
-  if (NOTIFY_DETAILS === "off") {
+async function slack(text, { safe = false } = {}) {
+  if (NOTIFY_DETAILS === "off" && !safe) {
     if (Date.now() - lastMinimal < 600_000) return;
     lastMinimal = Date.now();
     text = `:bell: New task activity in CircleChat${CC_URL ? ` (<${CC_URL}|open CircleChat>)` : ""}.`;
@@ -88,18 +91,42 @@ async function comments() {
   }
 }
 
-// Agent output CircleChat refused to post. The heartbeat token leaking is noise; anything else
-// is a message somebody was meant to read and never saw.
+// Each agent reply CircleChat could not use. CircleChat records each one in the run's result_json
+// as `dropped`, with the conversation and a reason code, never the text (drops.mjs).
+async function dropped() {
+  const { rows } = await db.query(
+    `select a.id as agent_id, a.handle, d->>'conversationId' as conversation_id, d->>'reason' as reason, c.kind, c.name
+     from agent_runs r join agents a on a.id=r.agent_id
+     cross join lateral jsonb_array_elements(r.result_json->'dropped') d
+     left join conversations c on c.id = d->>'conversationId'
+     where r.started_at > $1::timestamptz and jsonb_typeof(r.result_json->'dropped') = 'array'
+     order by r.started_at limit 50`, [st.runs]);
+  for (const r of rows) {
+    const row = { handle: r.handle, agentId: r.agent_id, conversationId: r.conversation_id, kind: r.kind, name: r.name, reason: r.reason };
+    await slack(droppedNote(row, { details: NOTIFY_DETAILS !== "off", ccUrl: CC_URL }), { safe: true });
+  }
+}
+
+// Agent output CircleChat refused to post, from a CircleChat that records no `dropped` yet. The
+// heartbeat token leaking is noise; anything else is a message somebody was meant to read and
+// never saw. A run with `dropped` is posted by dropped() instead.
 async function rejected() {
   const { rows } = await db.query(
     `select r.started_at, a.handle, e as err
      from agent_runs r join agents a on a.id=r.agent_id,
      lateral jsonb_array_elements_text(coalesce(r.result_json->'errors','[]'::jsonb)) e
      where r.started_at > $1::timestamptz and e ilike '%rejected%' and e not ilike '%heartbeat_leaked%'
+       and r.result_json->'dropped' is null
      order by r.started_at limit 50`, [st.runs]);
   for (const r of rows) {
     await slack(`⚠️ @${r.handle} (agent) tried to post, and CircleChat rejected it: ${String(r.err).slice(0, 200)}`);
   }
+}
+
+// Both checks read the runs since st.runs, then move it on once.
+async function runs() {
+  await dropped();
+  await rejected();
   const { rows: [m] } = await db.query(`select max(started_at)::text as t from agent_runs where started_at > $1::timestamptz`, [st.runs]);
   if (m?.t) { st.runs = m.t; save(st); }
 }
@@ -126,7 +153,7 @@ async function stale() {
 }
 
 async function tick() {
-  try { await refreshWho(); await activity(); await comments(); await rejected(); await stale(); }
+  try { await refreshWho(); await activity(); await comments(); await runs(); await stale(); }
   catch (e) { console.error(new Date().toISOString(), e.message); }
 }
 console.log("circlechat → slack notifier running");

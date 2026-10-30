@@ -781,8 +781,15 @@ Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0
 
 With `"notify": { "slack": true }`, `site.slack_channel_id` and `SLACK_BOT_TOKEN` set, the notifier posts to the stack's channel through the cluster's Slack app:
 task created, assigned, status changed and done; every comment, flagged **needs @person** when it
-mentions one; agent messages CircleChat rejected (otherwise silent); and tasks blocked 24 h or in
-progress 12 h with no activity. It reads the database, so it misses nothing across restarts.
+mentions one; each agent reply CircleChat could not use (otherwise silent); and tasks blocked 24 h
+or in progress 12 h with no activity. It reads the database, so it misses nothing across restarts.
+
+**A reply CircleChat could not use** gets one message: the agent, a link to the conversation and the
+reason, such as `actions_block_visible`. CircleChat records each such reply in the run's
+`result_json` as `dropped`, with the conversation and the reason and never the reply's text, so the
+text never reaches Slack. With `notify.details` off, the default for a client stack, the message
+names no conversation, and the link reads "a conversation". A CircleChat that records no `dropped`
+yet gets the older message, made from the run's error.
 
 ## Privacy
 
