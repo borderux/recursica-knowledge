@@ -52,6 +52,9 @@ fi
 [ ! -L "$H" ] || { echo "Refused: $H is a symlink. Nothing was written."; exit 1; }
 [ -d "$H" ] || { echo "No $H — install $HANDLE in the CircleChat UI first."; exit 1; }
 give_home "$H" || exit 1
+# Every agent's bot token: root's, mode 600 (lock_bridge_config in kit/lib.sh). CircleChat writes the
+# file anew when it installs an agent, so each run, the hourly sync's included, sets it again.
+lock_bridge_config "$CC_DIR/hermes-homes" || exit 1
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
 # What would break that fence is a tool server reaching client data, so refuse if he has any.

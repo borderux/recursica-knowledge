@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { chmodTree, copy, makeDir, ownHome, readFile, Refused, writeFile } from "./safe-files.mjs";
+import { chmodTree, copy, makeDir, ownFile, ownHome, readFile, Refused, writeFile } from "./safe-files.mjs";
 
 // A place, and a folder outside it with one file the place's symlinks name.
 function setup() {
@@ -129,5 +129,22 @@ test("a home given to the agent's account: the home 700, .env and auth.json 600,
   const other = path.join(path.dirname(place), "home-link");
   fs.symlinkSync(outside, other);
   assert.throws(() => ownHome(other, other, process.getuid(), process.getgid()), Refused);
+  assert.deepEqual(snapshot(outside), before);
+});
+
+test("one file given an owner and a mode, never through a symlink", () => {
+  const { place, outside } = setup();
+  fs.chmodSync(path.join(outside, "file.txt"), 0o666);
+  const before = snapshot(outside);
+  fs.writeFileSync(path.join(place, "bridge-config.json"), "[]", { mode: 0o666 });
+  fs.chmodSync(path.join(place, "bridge-config.json"), 0o777);
+  ownFile(place, path.join(place, "bridge-config.json"), process.getuid(), process.getgid(), 0o600);
+  assert.equal(fs.statSync(path.join(place, "bridge-config.json")).mode & 0o7777, 0o600);
+  assert.equal(fs.readFileSync(path.join(place, "bridge-config.json"), "utf8"), "[]", "the text stays");
+  fs.symlinkSync(path.join(outside, "file.txt"), path.join(place, "link.json"));
+  assert.throws(() => ownFile(place, path.join(place, "link.json"), process.getuid(), process.getgid(), 0o600), Refused);
+  fs.mkdirSync(path.join(place, "dir.json"));
+  assert.throws(() => ownFile(place, path.join(place, "dir.json"), process.getuid(), process.getgid(), 0o600), Refused);
+  assert.throws(() => ownFile(place, path.join(outside, "file.txt"), process.getuid(), process.getgid(), 0o600), Refused);
   assert.deepEqual(snapshot(outside), before);
 });

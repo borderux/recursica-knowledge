@@ -15,7 +15,8 @@
 # comes from $CC_DIR/.env, as compose.agents.yml hands it to the bridge: CC_AGENT_NETWORK,
 # CC_AGENT_PROXY, CC_AGENT_NO_PROXY, CC_AGENT_STOP_GRACE_SEC, CC_SHARED_WORKSPACE_DIR,
 # CC_AGENT_API_BASE and PUBLIC_BASE_URL. The bot token comes from the bridge's own list,
-# hermes-homes/bridge-config.json, and passes to docker in the environment, never as an argument.
+# hermes-homes/bridge-config.json, read as root, and passes to docker in the environment, never as
+# an argument.
 #
 # The turn passes when Hermes opens a session and answers. Otherwise the script prints Hermes's
 # message, runs the turn once more with kit/hermes-refusal-detail.py mounted for the refusal detail
@@ -42,7 +43,9 @@ esac
 # start-up would write a default config.yaml into a home CircleChat never installed.
 as_agent "$HOME_DIR" circlechat/kit/safe-files.mjs read "$HOME_DIR" "$HOME_DIR/config.yaml" < /dev/null 2>/dev/null | grep -q . ||
   { echo "$NAME: no config.yaml in $HOME_DIR. Install the agent through CircleChat first."; exit 1; }
-CC_BOT_TOKEN="$(node -e 'const [f, h] = process.argv.slice(1); let l = []; try { l = JSON.parse(require("fs").readFileSync(f, "utf8")); } catch {} process.stdout.write((Array.isArray(l) ? l : []).find((a) => a.hermesHome === h)?.token ?? "")' "$(dirname "$HOME_DIR")/bridge-config.json" "$HOME_DIR")"
+# The bot token, from bridge-config.json, which root keeps with mode 600 (lock_bridge_config). The
+# file's text goes straight to node, which takes this agent's token and prints nothing else.
+CC_BOT_TOKEN="$(read_bridge_config "$(dirname "$HOME_DIR")" 2>/dev/null | node -e 'const h = process.argv[1]; let l = []; try { l = JSON.parse(require("fs").readFileSync(0, "utf8")); } catch {} process.stdout.write((Array.isArray(l) ? l : []).find((a) => a.hermesHome === h)?.token ?? "")' "$HOME_DIR")"
 [ -n "$CC_BOT_TOKEN" ] || { echo "$NAME: $HOME_DIR is not in CircleChat's bridge-config.json, so CircleChat runs no turn for it. Install the agent through CircleChat first."; exit 1; }
 export CC_BOT_TOKEN
 

@@ -57,8 +57,9 @@ function sandbox(agents) {
   const bin = path.join(root, "bin");
   fs.mkdirSync(bin);
   fs.writeFileSync(path.join(bin, "docker"), dockerStub(path.join(root, "docker.log")), { mode: 0o755 });
-  // The agent's account: the tests' own, which is the only account a test can give a file to.
-  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, PATH: `${bin}:${process.env.PATH}`, AGENT_IDS: `${process.getuid()}:${process.getgid()}` };
+  // The agent's account and bridge-config.json's owner: the tests' own, which is the only account a
+  // test can give a file to.
+  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, PATH: `${bin}:${process.env.PATH}`, AGENT_IDS: `${process.getuid()}:${process.getgid()}`, BRIDGE_CONFIG_IDS: `${process.getuid()}:${process.getgid()}` };
   for (const k of ["CC_DIR", "WS", "TENANT", "SITE"]) delete env[k];
   const run = (script, ...args) => spawnSync("bash", [path.join(kit, "circlechat", script), ...args], { env, encoding: "utf8", cwd: home });
   const h = (a, f = "") => path.join(cc, `hermes-homes/.hermes-${a}`, f);
@@ -202,6 +203,7 @@ test("setup-agent.sh replaces a symlinked backup, gives the home to the agent's 
   assert.match(cfg, /^ {2}context_length: 131072$/m);
   assert.match(cfg, /^auxiliary:\n {2}compression:\n {4}context_length: 131072$/m);
   const mode = (f) => fs.lstatSync(s.h("loki", f)).mode & 0o777;
+  assert.equal(fs.statSync(path.join(s.cc, "hermes-homes/bridge-config.json")).mode & 0o777, 0o600, "every bot token: root's, mode 600");
   assert.equal(mode(""), 0o700);
   assert.equal(mode(".env"), 0o600);
   for (const f of ["config.yaml", "SOUL.md", "skills", "skills/recursica-skill-button/SKILL.md"]) assert.equal(mode(f) & 0o022, 0, `${f}: no write for the group or others`);
@@ -210,6 +212,21 @@ test("setup-agent.sh replaces a symlinked backup, gives the home to the agent's 
   const log = fs.readFileSync(path.join(s.root, "docker.log"), "utf8");
   assert.match(log, new RegExp(`--user ${process.getuid()}:${process.getgid()} -v ${s.h("loki")}:${s.h("loki")} -v ${s.kit}:${s.kit}:ro --entrypoint node `));
   assert.match(log, /--cap-drop ALL --cap-add CHOWN --cap-add FOWNER --cap-add DAC_OVERRIDE --cap-add DAC_READ_SEARCH --security-opt no-new-privileges --user 0:0 .* own /);
+});
+
+test("a symlinked bridge-config.json stops setup-agent.sh and sync-skills.sh, and the file it names keeps its mode", () => {
+  const s = sandbox(["loki"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("loki", "config.yaml"), config);
+  fs.rmSync(path.join(s.cc, "hermes-homes/bridge-config.json"));
+  link(path.join(s.outside, "target.txt"), path.join(s.cc, "hermes-homes/bridge-config.json"));
+  const before = snapshot(s.outside);
+  for (const args of [["setup-agent.sh", "loki"], ["sync-skills.sh"]]) {
+    const r = s.run(...args);
+    assert.notEqual(r.status, 0, args.join(" "));
+    assert.match(r.stderr, /Refused: .*bridge-config\.json is a symlink/);
+  }
+  assert.deepEqual(snapshot(s.outside), before);
 });
 
 test("setup-agent.sh ends with one test turn in the agent's home, and stops with Hermes's refusal detail when Hermes refuses the turn", () => {

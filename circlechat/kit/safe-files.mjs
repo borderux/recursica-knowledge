@@ -17,6 +17,7 @@
 //   node safe-files.mjs mkdir <place> <folder> [mode]
 //   node safe-files.mjs chmod <place> <folder> <mode>   every real file and folder in the folder
 //   node safe-files.mjs own   <place> <home> <uid:gid>  an agent's home to the agent's account
+//   node safe-files.mjs own-file <place> <file> <uid:gid> <mode>   one file's owner and mode
 //
 // A mode is octal, such as 600. A replaced file keeps the old file's mode, owner and group.
 import crypto from "node:crypto";
@@ -141,6 +142,22 @@ export function ownHome(place, home, uid, gid) {
   walk(top, 0);
 }
 
+// Gives one real file in <place> to <uid>:<gid> with <mode>, through a descriptor opened without
+// following a symlink. A symlink or a folder at the name is refused.
+export function ownFile(place, file, uid, gid, mode) {
+  realDir(place, path.dirname(file));
+  let fd;
+  try { fd = fs.openSync(file, O_RDONLY | O_NOFOLLOW | O_NONBLOCK); } catch (e) {
+    if (e.code === "ELOOP" || e.code === "EMLINK") throw new Refused(`${file} is a symlink.`);
+    throw e;
+  }
+  try {
+    if (!fs.fstatSync(fd).isFile()) throw new Refused(`${file} is not a file.`);
+    fs.fchownSync(fd, uid, gid);
+    fs.fchmodSync(fd, mode);
+  } finally { fs.closeSync(fd); }
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, place, a, b] = process.argv.slice(2);
   const mode = (m) => (m === undefined ? undefined : parseInt(m, 8));
@@ -151,7 +168,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     else if (cmd === "mkdir" && a) makeDir(place, a, mode(b) ?? 0o755);
     else if (cmd === "chmod" && b) chmodTree(place, a, mode(b));
     else if (cmd === "own" && /^\d+:\d+$/.test(b ?? "")) ownHome(place, a, ...b.split(":").map(Number));
-    else { console.error("usage: safe-files.mjs copy|write|read|mkdir|chmod|own <place> ..."); process.exit(2); }
+    else if (cmd === "own-file" && /^\d+:\d+$/.test(b ?? "") && /^[0-7]{3,4}$/.test(process.argv[6] ?? "")) ownFile(place, a, ...b.split(":").map(Number), mode(process.argv[6]));
+    else { console.error("usage: safe-files.mjs copy|write|read|mkdir|chmod|own|own-file <place> ..."); process.exit(2); }
   } catch (e) {
     console.error(e instanceof Refused ? `Refused: ${e.message} Nothing was written there.` : e.message);
     process.exit(1);

@@ -544,6 +544,7 @@ for h in "$CC_DIR"/hermes-homes/.hermes-*; do
   [ -d "$h" ] && [ ! -L "$h" ] || continue
   give_home "$h" || echo "Could not give $h to the agent's account. Run setup-agent.sh ${h##*/.hermes-}."
 done
+lock_bridge_config "$CC_DIR/hermes-homes" || echo "Could not give bridge-config.json to root with mode 600."
 # Every real file and folder, never a file a symlink names (kit/safe-files.mjs).
 sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 

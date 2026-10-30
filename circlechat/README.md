@@ -176,6 +176,13 @@ image's choice holds. Each agent's home belongs to that account:
   files as root. This one step runs as root, in a small container with no network and only the
   capabilities a chown and a chmod need, through `kit/safe-files.mjs own`. The step changes owners
   and modes, never a file's text.
+- **Root keeps `hermes-homes/bridge-config.json`, mode 600.** The file holds every agent's
+  CircleChat bot token. CircleChat's api writes it, and the bridge reads it, both as root in their
+  containers. No agent mounts it, and no other account reads it. The api rewrites the file in
+  place, which keeps the owner and the mode. `setup-host.sh`, `setup-agent.sh` and the hourly
+  `--sync` set both again through the same root step (`lock_bridge_config`), so a file CircleChat
+  writes anew for a new agent is closed within the hour. The test turn reads the agent's token
+  from the file through that step too.
 - **The kit's reads and writes in a home run as the agent's account** (`as_agent`), in a small
   container (the pinned `node:22-alpine`) with no network, no capabilities and a read-only root.
   The container mounts only the agent's home, read-write, and the kit checkout, read-only, each at
