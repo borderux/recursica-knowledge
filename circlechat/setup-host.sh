@@ -236,9 +236,9 @@ set_env APPROVE_RISK_AT high
 mkdir -p "$WS"
 SAFE="$HERE/kit/safe-files.mjs"
 rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
-KMCP="{\"command\":\"node\",\"args\":[\"$KNOWLEDGE_MCP_SERVER\"],\"enabled\":true,\"timeout\":30}"
+KMCP="{\"command\":\"node\",\"args\":[\"$KNOWLEDGE_MCP_SERVER\"],\"enabled\":true,\"timeout\":$KNOWLEDGE_MCP_TIMEOUT}"
 MCP_MAP=""
-for a in $KNOWLEDGE_MCP_AGENTS; do MCP_MAP="$MCP_MAP${MCP_MAP:+,}\"$a\":{\"recursica-knowledge\":$KMCP}"; done
+for a in $KNOWLEDGE_MCP_AGENTS; do MCP_MAP="$MCP_MAP${MCP_MAP:+,}\"$a\":{\"$KNOWLEDGE_MCP_NAME\":$KMCP}"; done
 set_env CC_AGENT_MCP_SERVERS "{$MCP_MAP}"
 # Hermes, and every MCP server it starts, runs in each agent's own container. CircleChat's host
 # mode would run them inside CircleChat's api container instead, with the api's access.

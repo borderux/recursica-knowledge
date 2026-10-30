@@ -14,6 +14,12 @@ KNOWLEDGE_MCP_AGENTS="betty barb"
 KNOWLEDGE_MCP_DIR=knowledge-mcp
 # shellcheck disable=SC2034
 KNOWLEDGE_MCP_SERVER="/opt/data/$KNOWLEDGE_MCP_DIR/tools/knowledge-mcp/server.mjs"
+# The server's name in mcp_servers, and its start-up timeout in seconds. setup-host.sh passes both
+# to CircleChat (CC_AGENT_MCP_SERVERS), and setup-agent.sh writes both into the agent's config.yaml.
+# shellcheck disable=SC2034
+KNOWLEDGE_MCP_NAME=recursica-knowledge
+# shellcheck disable=SC2034
+KNOWLEDGE_MCP_TIMEOUT=30
 
 # In-place sed that works with both GNU sed and BSD sed (macOS).
 sedi() { if sed --version >/dev/null 2>&1; then sed -i "$@"; else sed -i '' "$@"; fi; }
