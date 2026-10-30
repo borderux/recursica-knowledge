@@ -1,0 +1,48 @@
+# Every commit in a pull request names only no-reply email addresses.
+#
+# A commit's author, committer, Signed-off-by and Co-authored-by lines are published with the
+# commit. A force-push does not take them back: the old commit stays fetchable by its id, and the
+# pull request's timeline links to it. So a personal address has to be caught before the merge.
+# The rules and the allowed addresses are in scripts/check-commit-emails.mjs.
+#
+# Every action is pinned to a commit, with its release in a comment. A tag can be moved to other
+# code. A commit id cannot.
+
+name: Commit emails
+
+on:
+  pull_request:
+
+# Read-only. The check reads commits and writes nothing.
+permissions:
+  contents: read
+
+concurrency:
+  group: commit-emails-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commit-emails:
+    name: Commit email addresses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Every commit in the pull request, not one.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The base branch's copy of the check runs, so a pull request cannot change the check that
+      # judges it. The pull request that adds the check runs its own copy, since the base has none.
+      # The commit ids reach the script through env, never interpolated into it.
+      - name: No email address but a no-reply address in any commit
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git cat-file -e "$BASE_SHA:scripts/check-commit-emails.mjs" 2>/dev/null; then
+            git show "$BASE_SHA:scripts/check-commit-emails.mjs" > "$RUNNER_TEMP/check-commit-emails.mjs"
+          else
+            cp scripts/check-commit-emails.mjs "$RUNNER_TEMP/check-commit-emails.mjs"
+          fi
+          node "$RUNNER_TEMP/check-commit-emails.mjs" "$BASE_SHA" "$HEAD_SHA"

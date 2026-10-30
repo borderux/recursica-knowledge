@@ -13,8 +13,9 @@
  * - Placeholder domains — `example.com`, `.test`, `.invalid`, anything `acme`, `company.com`.
  *   Mock data in this repository uses them on purpose.
  * - Role addresses this repository already publishes: `hi@borderux.com` is the package
- *   author on every skill, `noreply@anthropic.com` is the model's commit credit, `git@` is
- *   an SSH remote.
+ *   author on every skill, `noreply@anthropic.com` is the model's commit credit,
+ *   `noreply@github.com` is the committer GitHub writes for a commit made on github.com, and
+ *   `git@` is an SSH remote.
  * - GitHub's noreply addresses, which exist so a person's real address is not published.
  * - US numbers in the 555 exchange, which are reserved for fiction.
  *
@@ -55,6 +56,7 @@ const ADDRESS_TLDS = new Set([
 const PUBLIC_ADDRESSES = new Set([
   "hi@borderux.com",
   "noreply@anthropic.com",
+  "noreply@github.com",
   "git@github.com",
   "git@gitlab.com",
 ]);

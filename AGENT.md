@@ -147,6 +147,14 @@ needed — so unlike the name rules it runs on a fresh clone, a CI runner and a 
 Placeholder domains (`acme.com`, `example.com`, `.test`), the role addresses this repository
 already publishes, and 555 numbers are allowed. A real person's work address is not.
 
+**Every commit in a pull request names only no-reply email addresses.** The author, the committer
+and each `Signed-off-by` and `Co-authored-by` line must be a GitHub no-reply address
+(`users.noreply.github.com`), `noreply@github.com` or `noreply@anthropic.com`.
+`.github/workflows/commit-emails.yml` runs `scripts/check-commit-emails.mjs` on every pull request,
+and the failure names the commit and the line, never the address. Set `git config user.email` to the
+GitHub no-reply address before the first commit: a rewrite after a push leaves the old commit
+fetchable by its id.
+
 **CI checks client names only if the `LOCAL_REDACTIONS_JSON` repository secret holds a copy of
 `local-redactions.json`.** Without it the log says so and the other rules still run.
 
