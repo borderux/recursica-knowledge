@@ -116,7 +116,7 @@ test("setup-host runs CircleChat's caddy, postgres and redis and the file store 
   fs.writeFileSync(path.join(s.cc, "compose.storage.yml"), "services: {}\n");
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.images\.yml(:|$)/);
+  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.images\.yml:compose\.workspace\.yml(:|$)/);
   assert.ok(!fs.existsSync(path.join(s.cc, "compose.storage.yml")), "the older file store override goes");
   const storage = fs.readFileSync(path.join(s.cc, "compose.images.yml"), "utf8");
   assert.match(storage, /caddy:\n    image: caddy:2@sha256:0123abcd\n/);
@@ -129,6 +129,53 @@ test("setup-host runs CircleChat's caddy, postgres and redis and the file store 
   assert.ok(lock["cgr.dev/chainguard/minio:latest"]);
   assert.ok(lock["cgr.dev/chainguard/minio-client:latest-dev"]);
   for (const t of ["caddy:2", "postgres:16-alpine", "redis:7-alpine"]) assert.equal(lock[t].ref, `${t}@sha256:0123abcd`);
+});
+
+test("setup-host mounts the shared workspace read-only in CircleChat's api, worker and bridge, in every stack and mode", () => {
+  const tenantSite = structuredClone(example);
+  Object.assign(tenantSite.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  tenantSite.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "client-byok" };
+  delete tenantSite.data; delete tenantSite.porter;
+  for (const [site, opts, modes] of [[example, {}, ["--secrets-only", "--upgrade"]], [tenantSite, { tenant: "acme" }, ["--secrets-only"]]]) {
+    for (const mode of modes) {
+      const s = sandbox(site, opts);
+      // CircleChat's compose.agents.yml names the mount in a comment, and an older kit added a
+      // read-write line after each docker.sock line.
+      fs.writeFileSync(path.join(s.cc, "compose.agents.yml"), [
+        "services:",
+        "  api:",
+        "    environment:",
+        "      CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api",
+        "    volumes:",
+        "      - /var/run/docker.sock:/var/run/docker.sock",
+        "      - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
+        "  bridge:",
+        "    environment:",
+        "      # needs the same shared-workspace host path the api uses. If you set it, also add",
+        "      #   - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
+        "      CC_SHARED_WORKSPACE_DIR: ${CC_SHARED_WORKSPACE_DIR:-}",
+        "    volumes:",
+        "      - /var/run/docker.sock:/var/run/docker.sock",
+        "      - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
+        "",
+      ].join("\n"));
+      const r = s.run("setup-host.sh", mode);
+      const what = `${opts.tenant ?? "cluster"} ${mode}`;
+      assert.equal(r.status, 0, what + r.stdout + r.stderr);
+      const e = s.dotenv();
+      assert.ok(e.COMPOSE_FILE.split(":").includes("compose.workspace.yml"), what);
+      assert.ok(e.CC_SHARED_WORKSPACE_DIR, what);
+      const ws = fs.readFileSync(path.join(s.cc, "compose.workspace.yml"), "utf8");
+      for (const svc of ["api", "worker", "bridge"]) {
+        assert.match(ws, new RegExp(`\\n  ${svc}:\\n    volumes:\\n      - \\$\\{CC_SHARED_WORKSPACE_DIR\\}:/workspace:ro\\n`), `${what}: ${svc}`);
+      }
+      assert.doesNotMatch(ws, /:\/workspace(:rw)?\n/, `${what}: no read-write mount`);
+      const agents = fs.readFileSync(path.join(s.cc, "compose.agents.yml"), "utf8");
+      assert.doesNotMatch(agents, /^      - \$\{CC_SHARED_WORKSPACE_DIR\}:\/workspace$/m, `${what}: the older read-write line goes`);
+      assert.match(agents, /^      #   - \$\{CC_SHARED_WORKSPACE_DIR\}:\/workspace$/m, `${what}: CircleChat's comment stays`);
+      assert.equal((agents.match(/docker\.sock:\/var\/run\/docker\.sock/g) ?? []).length, 2, what);
+    }
+  }
 });
 
 test("every setup-host mode pins the Hermes image that runs each agent turn, so the weekly refresh's --upgrade moves the agents too", () => {

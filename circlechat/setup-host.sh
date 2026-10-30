@@ -220,7 +220,26 @@ rm -f compose.storage.yml
   done <<<"$CC_IMAGES"
   printf '  minio:\n    image: %s\n    user: "0:0"\n  minio-setup:\n    image: %s\n' "$MINIO_IMAGE" "$MC_IMAGE"
 } > compose.images.yml
-CF="compose.yml:compose.agents.yml:compose.images.yml"
+# The shared workspace, read-only, in CircleChat's api, worker and bridge. The api reads each file an
+# agent attaches (share_to_task, share_files) from /workspace, and reads BRIEF.md, knowledge/ and
+# projects/ there for an agent's context. Agents write the workspace from their own containers, so
+# none of these three writes it. An older kit added a read-write line to compose.agents.yml, and
+# that line goes.
+sedi '/^      - ${CC_SHARED_WORKSPACE_DIR}:\/workspace$/d' compose.agents.yml
+cat > compose.workspace.yml <<'YAML'
+# Written by setup-host.sh: the shared workspace, read-only, in CircleChat's api, worker and bridge.
+services:
+  api:
+    volumes:
+      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
+  worker:
+    volumes:
+      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
+  bridge:
+    volumes:
+      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
+YAML
+CF="compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml"
 [ "$EGRESS" = on ] && CF="$CF:compose.egress.yml"
 [ "$MASK_PII" = on ] && CF="$CF:compose.privacy.yml"
 set_env COMPOSE_FILE "$CF"
@@ -506,11 +525,6 @@ sedi "s|- \"80:80\"|- \"127.0.0.1:$PORT:80\"|; s|- \"$PORT:80\"|- \"127.0.0.1:$P
 if [ -n "$TENANT" ]; then
   sedi '/- "443:443"/d; /- "443:443\/udp"/d; s|- "9001:9001"|- "127.0.0.1::9001"|' compose.yml
 fi
-# Shared /workspace mounted into the api (the bridge already reads CC_SHARED_WORKSPACE_DIR)
-grep -q ':/workspace' compose.agents.yml || \
-  sedi 's|^      - /var/run/docker.sock:/var/run/docker.sock$|&\
-      - ${CC_SHARED_WORKSPACE_DIR}:/workspace|' compose.agents.yml
-
 mkdir -p hermes-homes "$WS" "$WS/reviews" "$WS/loki"
 # The workspace's checkouts. The setup clones each one once, when nothing is at its path, and never
 # runs git in a checkout after that: agents can change each checkout, its git settings and hooks

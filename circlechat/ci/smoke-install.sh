@@ -52,6 +52,7 @@ check "the key check passes" "(cd '$CC' && docker compose exec -T postgres pg_du
 CURL="docker run --rm --network circlechat_agents curlimages/curl:8.10.1"
 for svc in api worker bridge; do
   check "CircleChat's $svc container has the agents' network setting" "[ \"\$(cd '$CC' && docker compose exec -T $svc printenv CC_AGENT_NETWORK)\" = circlechat_agents ]"
+  check "CircleChat's $svc container has the shared workspace at /workspace, read-only" "(cd '$CC' && docker compose exec -T $svc grep -q ' /workspace [^ ]* ro[, ]' /proc/mounts)"
 done
 check "an agent container reaches CircleChat's api directly" "[ \"\$($CURL -s -o /dev/null -w '%{http_code}' --noproxy '*' http://api:3000/api/ || true)\" != 000 ]"
 check "the filter refuses a site that is not on the list" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://example.com || true)\" = 403 ]"
