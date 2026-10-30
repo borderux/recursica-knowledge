@@ -1,7 +1,9 @@
 // The one update job: hourly, as root, on each computer. One rule for everything:
 //
-//   - Recursica's own software, on a stack with upgrade.auto (the knowledge repo and the CircleChat
-//     fork): right away; a new major version asks in Slack (kit/upgrade.mjs).
+//   - Recursica's own software, on a stack with upgrade.auto: each new commit on the CircleChat
+//     fork's branch right away (kit/upgrade.mjs). A new release of the knowledge repo (the kit)
+//     installs once an approver approves the release in Slack with an authenticator code
+//     (release-gate.mjs); a new major version asks first.
 //   - Everything else: after 7 days, or right away for a flaw on CISA's Known Exploited
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).
@@ -77,6 +79,14 @@ async function main() {
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
+  // A new kit release: the cluster's control computer posts the release once, with an "Install" button.
+  const { isClusterControl, releaseCheck } = await import("./release-gate.mjs");
+  if (isClusterControl(env.OWNER_HOME, env.COMPUTER)) {
+    const git = (...a) => String(spawnSync("sudo", ["-u", env.OWNER, "-H", "git", "-C", env.KIT, ...a], { encoding: "utf8" }).stdout ?? "").trim();
+    const current = JSON.parse(fs.readFileSync(path.join(env.KIT, "package.json"), "utf8")).version;
+    await releaseCheck({ stateDir: path.dirname(stateFile), git, current, post: (text, ref) => chat.post(env.SLACK_CHANNEL_ID, "release", text, ref) })
+      .catch((e) => console.error(`kit release check: ${e.message}`));
+  }
   const stacks = localStacks(env.OWNER_HOME, env.COMPUTER);
   const asOwner = (ccDir, script) => spawnSync("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`,
     `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, script], { stdio: "inherit" });

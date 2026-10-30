@@ -20,6 +20,7 @@ import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 import { AgentControls } from "./agent-controls.mjs";
 import { requireKit } from "./kit-check.mjs";
+import { TAG, approve } from "./release-gate.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 
 export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network }) {
@@ -47,12 +48,17 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "agents-stop": return controls ? controls.stop(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "agents-resume": return controls ? controls.resume(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "upgrade-now": {
-        if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
+        if (!TAG.test(ref ?? "")) return { ok: false, message: "not a release tag" };
+        // The button needs an authenticator code, and the press counts as the release's approval.
+        approve({ stateDir, tag: ref, by: extra.by ?? "an approver", computer: env.COMPUTER, now: now() });
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
         // The upgrade runs as the owner, and the agent takes the steps that need root (root-steps.mjs).
         import("./root-steps.mjs").then(({ runUpgrade }) => runUpgrade({ env, ccDir, ref })).catch((e) => console.error(`upgrade to ${ref}: ${e.message}`));
         return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
       }
+      // "Install" for a kit release, sent to every computer: this computer installs the release at the
+      // next hourly check.
+      case "release-install": return approve({ stateDir, tag: ref, by: extra.by ?? "an approver", computer: env.COMPUTER, now: now() });
       case "upgrade-skip": {
         const f = path.join(env.OWNER_HOME, "circlechat/kit-out/upgrade-state.json");
         let st = {}; try { st = JSON.parse(fs.readFileSync(f, "utf8")); } catch {}

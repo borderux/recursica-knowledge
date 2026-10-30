@@ -128,11 +128,12 @@ test("the upgrade runs as the owner with the password on stdin, and root's steps
     const s = fakeSpawn(ccDir, { ranSetup });
     const f = fakeRun();
     const posts = [];
-    const r = await runUpgrade({ env: env(home), ccDir, ref: "@recursica/knowledge@1.2.3", mac: false, spawnFn: s.spawnFn, run: f.run, post: async (t) => { posts.push(t); } });
+    const r = await runUpgrade({ env: env(home), ccDir, ref: "@recursica/knowledge@1.2.3", approved: ["@recursica/knowledge@1.2.3", "not a tag"], mac: false, spawnFn: s.spawnFn, run: f.run, post: async (t) => { posts.push(t); } });
     const pw = fs.readFileSync(path.join(ccDir, "gateway-state/db-password"), "utf8").trim();
     assert.equal(s.seen.stdin, `${pw}\n`);
     assert.equal(s.seen.cmd, "sudo");
     assert.deepEqual(s.seen.args.slice(0, 5), ["-u", "owner", "-H", "env", "KIT_ROOT_STEPS=1"]);
+    assert.equal(s.seen.args[5], "KIT_APPROVED=@recursica/knowledge@1.2.3", "only the approved release tags reach the upgrade");
     assert.ok(!s.seen.args.some((a) => a.includes(pw)), "the password is never an argument");
     assert.deepEqual(s.seen.args.slice(-2), ["/kit/circlechat/kit/upgrade.mjs", "@recursica/knowledge@1.2.3"]);
     assert.equal(r.ran, ranSetup);

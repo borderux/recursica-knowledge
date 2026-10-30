@@ -7,9 +7,11 @@
 // and personas come from it. The script never runs git in the workspace's checkouts: agents can
 // change them, and the agents update their own checkouts from inside their containers.
 //
-//   - A release with the same first number installs on its own: check out the release, rerun the
-//     setup, sync the agents, and check the stack. On a failure, the stack goes back to the
-//     version it ran, and Slack gets a message.
+//   - A release with the same first number installs once an approver approves the release in
+//     Slack, with an authenticator code (cluster/release-gate.mjs). The root process that starts
+//     this script passes the approved releases in KIT_APPROVED. The install checks out the release,
+//     reruns the setup, syncs the agents, and checks the stack. On a failure, the stack goes back to
+//     the version it ran, and Slack gets a message. Until an approval, the release is held.
 //   - A release with a higher first number (a major version) asks first, in Slack.
 //
 //   node upgrade.mjs              the hourly check
@@ -25,15 +27,21 @@ const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
 export const parse = (t) => { const m = String(t).match(TAG); return m ? m.slice(1).map(Number) : null; };
 const cmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
 
-// What to do: nothing, upgrade on its own, or ask (a new major version, asked once per release).
-export function decide(current, tags, state = {}) {
+// What to do: nothing, upgrade, hold (a release no approver has approved yet), or ask (a new major
+// version, asked once per release).
+//   approved: the approved release tags
+export function decide(current, tags, state = {}, approved = []) {
   const cur = String(current).split(".").map(Number);
   const newer = tags.map((t) => [t, parse(t)]).filter(([, v]) => v && cmp(v, cur) > 0).sort((a, b) => cmp(a[1], b[1]));
   if (!newer.length) return { action: "none" };
   // A release that failed once is skipped until a newer one appears, or a person presses
   // "Upgrade now", so a broken release never restarts the stack every hour.
   const sameMajor = newer.filter(([t, v]) => v[0] === cur[0] && !state.failed?.[t]);
-  if (sameMajor.length) return { action: "upgrade", tag: sameMajor[sameMajor.length - 1][0] };
+  if (sameMajor.length) {
+    // The newest approved release installs. With none approved, the newest release is held.
+    const ok = sameMajor.filter(([t]) => approved.includes(t));
+    return ok.length ? { action: "upgrade", tag: ok[ok.length - 1][0] } : { action: "hold", tag: sameMajor[sameMajor.length - 1][0] };
+  }
   const majors = newer.filter(([, v]) => v[0] > cur[0]);
   if (!majors.length) return { action: "none" };
   const [tag] = majors[majors.length - 1];
@@ -116,7 +124,12 @@ async function main() {
   const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);
   const wanted = process.argv[2];
-  const d = wanted ? { action: "upgrade", tag: wanted } : decide(current, tags, state);
+  const approved = String(process.env.KIT_APPROVED ?? "").split(",").filter(Boolean);
+  const d = wanted ? { action: "upgrade", tag: wanted } : decide(current, tags, state, approved);
+  if (d.action === "hold") {
+    console.log(`held ${d.tag}: the release waits for "Install" in the cluster's Slack channel. Run upgrade.mjs ${d.tag} to install the release by hand.`);
+    return;
+  }
   if (d.action === "ask") {
     const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: Knowledge repo ${d.tag.split("@").pop()} is a new major version (the stack runs ${current}).${releaseNotes(git("remote", "get-url", "origin"), d.tag)}`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
     if (post.status === 0) { state.asked = { ...(state.asked ?? {}), [d.tag]: Date.now() }; fs.writeFileSync(stateFile, JSON.stringify(state)); }

@@ -101,3 +101,38 @@ test("the bot's messages show the control computer's name and icon as the sender
   assert.ok(posts.length > 0);
   for (const [, b] of posts) { assert.equal(b.username, "machine-1"); assert.equal(b.icon_emoji, ":desktop_computer:"); }
 });
+
+const flush = async () => { for (let i = 0; i < 20; i++) await new Promise((r) => setImmediate(r)); };
+const installView = (code) => ({ callback_id: "two-factor", private_metadata: JSON.stringify({ id: "release-install", value: { c: "machine-1", r: "@recursica/knowledge@0.13.0" }, channel: "C1", ts: "1.1" }),
+  state: { values: { code: { code: { value: code } } } } });
+
+test("Install for a kit release asks for a code, then sends the approval to every computer", async () => {
+  const { bot, calls, relays, secret } = setup({ AGENTS: "machine-1=http://127.0.0.1:7500,machine-2=http://machine-2:7500" });
+  await bot.handle({ type: "interactive", payload: { type: "block_actions", user: { id: "U1" }, trigger_id: "T", channel: { id: "C1" }, message: { ts: "1.1" },
+    actions: [{ action_id: "release-install", value: JSON.stringify({ c: "machine-1", r: "@recursica/knowledge@0.13.0" }) }] } });
+  assert.equal(calls[0][0], "views.open");
+  assert.equal(relays.length, 0, "no approval without a code");
+  assert.equal((await bot.handle(submit("U1", installView("000000")))).response_action, "errors");
+  assert.equal((await bot.handle(submit("U1", installView(totp(secret, NOW))))).response_action, "clear");
+  await flush();
+  assert.deepEqual(relays.map(([c, b]) => [c, b.action, b.ref, b.by]), [
+    ["machine-1", "release-install", "@recursica/knowledge@0.13.0", "person_a"],
+    ["machine-2", "release-install", "@recursica/knowledge@0.13.0", "person_a"],
+  ]);
+  const replies = calls.filter(([m, b]) => m === "chat.postMessage" && b.thread_ts === "1.1").map(([, b]) => b.text);
+  assert.equal(replies.length, 2, "one reply for each computer");
+  assert.match(replies[1], /pressed "Install" for machine-2: done/);
+});
+
+test("Upgrade now for a new major version needs a code", async () => {
+  const { bot, calls, relays } = setup();
+  await bot.handle(click("U1", "upgrade-now"));
+  assert.equal(calls[0][0], "views.open");
+  assert.equal(relays.length, 0);
+});
+
+test("the Install button carries the release tag", () => {
+  const blocks = buttonBlocks("release", "Kit release 0.13.0 is ready.", "machine-1", "@recursica/knowledge@0.13.0");
+  assert.deepEqual(blocks[1].elements.map((e) => e.text.text), ["Install"]);
+  assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "machine-1", r: "@recursica/knowledge@0.13.0" });
+});

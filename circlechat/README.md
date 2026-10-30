@@ -691,9 +691,32 @@ Slack shows the name and the icon only when the bot has the `chat:write.customiz
 
 One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
-- **Recursica's own software** (the knowledge repo and the CircleChat fork), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
+- **Recursica's own software**, on a stack with `upgrade.auto`:
+  - Each new commit on the CircleChat fork's branch: right away.
+  - Each new kit release, a release of the knowledge repo: only after an approver approves the release in Slack. "Kit releases" describes the approval. A new major version asks in Slack first.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
+
+#### Kit releases
+
+**A new kit release installs only after an approver approves the release in Slack.** The approval takes an approver and a 6-digit authenticator code, like the "Resume" button.
+
+1. Each hour, the update job on the cluster's control computer looks for a new release with the kit's first number.
+2. The job posts the release once in the cluster's channel, `SLACK_CHANNEL_ID`. The post holds the version, a link to the release notes and an "Install" button.
+3. An approver presses "Install" and enters an authenticator code. The Slack app sends the approval to the cluster agent on every computer in the cluster.
+4. At the next hourly check, each computer installs the approved release on each stack with `upgrade.auto`.
+
+Until an approval, every computer holds the release, and nothing installs. The job posts a reminder once a day. A newer release with no approval gets a post of its own. An approved older release still installs. The Slack app's reply names each computer that recorded the approval. A computer that did not answer missed the approval. Press "Install" again once the computer answers.
+
+**A new major version still asks first.** The post names the version, with "Upgrade now" and "Skip this version". "Upgrade now" needs an authenticator code too, and counts as the release's approval on that computer.
+
+**Each computer logs each approval.** Each line of `/var/lib/agent-cluster/release-approvals.log` names the release, the approver, the time and the computer. Each press of "Install" or "Upgrade now" adds a line. `release-approvals.json` in the same folder keeps the first approval of each release. Root owns both files, with mode 600.
+
+**A run of `kit/upgrade.mjs <tag>` by hand, in a terminal, installs the release without an approval.** A run with no tag installs only an approved release.
+
+Every other update keeps the rules above. Such updates include images, Ollama, the operating system and the CircleChat fork's commits.
+
+#### Root's steps in an upgrade
 
 **A release upgrade needs no password-free sudo for the account that owns the stacks.** The upgrade, `kit/upgrade.mjs`, runs as the owner's account. The root process that starts the upgrade takes each step that needs root: `cluster-updater` each hour, or the cluster agent for the "Upgrade now" button in Slack (`cluster/root-steps.mjs`):
 
