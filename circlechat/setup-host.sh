@@ -434,7 +434,7 @@ start_gateway_and_notifier() {
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
   if [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
-    mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
+    mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/drops.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
     PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
     docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
       -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
