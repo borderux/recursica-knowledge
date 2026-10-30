@@ -116,15 +116,16 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    Never paste a cloud key into CircleChat. Wait for the install to finish, then run:
    ```bash
    ./circlechat/setup-agent.sh betty
-   KEV_ENGINE_KEY=... ./circlechat/setup-agent.sh barb
+   ./circlechat/setup-agent.sh barb
    ./circlechat/setup-agent.sh alan
    ```
    `setup-agent.sh` gives the agent the agent's own gateway key, in place of the placeholder. The
    script fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from `site.json`,
-   and gives Barb the Kev-engine list. The script ends with one test turn, run exactly the way
-   CircleChat's bridge runs an agent turn (`kit/hermes-turn.sh`): the pinned Hermes image with
-   its own start-up, the agents' network, the bridge's stop grace, the agent's home and the shared
-   workspace, the agent's bot token, and `hermes chat -q ... -Q --yolo --source tool`. Only the
+   and gives Barb the Kev-engine list and the Kev-engine key. The key comes from `$CC_DIR/.env`,
+   where the Deploy secrets workflow writes it, unless `KEV_ENGINE_KEY=...` is given. The script
+   ends with one test turn, run exactly the way CircleChat's bridge runs an agent turn
+   (`kit/hermes-turn.sh`): the pinned Hermes image with its own start-up, the agents' network, the
+   bridge's stop grace, the agent's home and the shared workspace, the agent's bot token, and `hermes chat -q ... -Q --yolo --source tool`. Only the
    prompt and the container's name differ. A turn that fails stops the script. The script then
    runs the turn once more with a hook for Hermes's reason, such as
    `hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}`, which
@@ -937,8 +938,14 @@ Never paste `agents/<handle>/SKILL.md` in directly. It still holds unfilled
 her identity line, her intake paragraph and her write fence that way.
 
 Barb's Hermes settings (delegation limits, timeout, Kev access) are explained in
-`agents/barb/runtime/hermes.md`. `setup-agent.sh barb` writes the delegation limits when her
-`config.yaml` has none, and tells you to check them by hand when it does.
+`agents/barb/runtime/hermes.md`, which also holds the values. On each run, `setup-agent.sh barb`
+sets the limits in her `config.yaml` (`kit/barb-limits.mjs`): `delegation.oneshot_max_children`,
+`delegation.max_concurrent_children` and `delegation.max_iterations`, inside the `delegation`
+block that Hermes's own default config already has, and `tool_loop_guardrails.loop_caps.max_subagents`
+at the top level. Every other key stays, and each change is printed. The script refuses, and
+writes nothing, when a block is written on one line or `tool_loop_guardrails` sits under another
+key, where Hermes ignores it. It then checks `HERMES_TIMEOUT` in `$CC_DIR/.env` and prints only
+`HERMES_TIMEOUT ok`, or the value it should be.
 
 ## Hard-won lessons (read before debugging)
 

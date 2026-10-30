@@ -39,6 +39,8 @@ function sandbox(agents) {
   put(path.join(kit, "skills/meta/GLOSSARY.md"), "glossary from the kit\n");
   for (const a of ["alan", "betty", "loki"]) put(path.join(kit, `portable/circlechat/agents/${a}/SOUL.md`), `Persona of ${a} from the kit.\n`);
   for (const s of ["checker", "feisty"]) put(path.join(kit, `agents/barb/subagents/${s}/SKILL.md`), `${s} from the kit\n`);
+  // Barb's limits and HERMES_TIMEOUT come from the real hermes.md (kit/barb-limits.mjs).
+  put(path.join(kit, "agents/barb/runtime/hermes.md"), fs.readFileSync(path.join(here, "../agents/barb/runtime/hermes.md"), "utf8"));
   put(path.join(kit, "tools/kev/index.mjs"), "kev from the kit\n");
   put(path.join(kit, "tools/knowledge-mcp/server.mjs"), "knowledge server from the kit\n");
   put(path.join(kit, "scripts/screen-skill-manifest.mjs"), "manifest from the kit\n");
@@ -275,6 +277,67 @@ test("setup-agent.sh writes the knowledge server's entry for Betty and Barb, kee
     assert.equal(again.match(/^ {2}recursica-knowledge:$/gm).length, 1, a);
   }
   assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8").match(/mcp-recursica-knowledge/g).length, 1);
+});
+
+// Hermes's own default config.yaml has a delegation block, with max_iterations and default_toolsets.
+const hermesDefault = `${config}delegation:\n  max_iterations: 50\n  default_toolsets:\n    - terminal\n    - file\n    - web\nplatform_toolsets:\n  cli:\n    - hermes-cli\n`;
+const BARB_LIMITS = /^delegation:\n {2}max_iterations: 50\n {2}default_toolsets:\n {4}- terminal\n {4}- file\n {4}- web\n {2}oneshot_max_children: 0\n {2}max_concurrent_children: 3\n/m;
+
+test("setup-agent.sh barb sets her limits inside Hermes's default delegation block, gives her the Kev key from CircleChat's .env, and prints only whether HERMES_TIMEOUT is enough", () => {
+  const s = sandbox(["barb"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  fs.writeFileSync(s.h("barb", "config.yaml"), hermesDefault);
+  fs.writeFileSync(path.join(s.cc, ".env"), "JOBD_TOKEN=t\nCC_HERMES_IMAGE=nousresearch/hermes-agent@sha256:0123abcd\nKEV_ENGINE_KEY=kev-secret-1\nHERMES_TIMEOUT=1200\nSLACK_BOT_TOKEN=xoxb-secret\n");
+  const r = s.run("setup-agent.sh", "barb");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const cfg = fs.readFileSync(s.h("barb", "config.yaml"), "utf8");
+  assert.match(cfg, BARB_LIMITS, "the limits go inside the existing block, which keeps default_toolsets");
+  assert.match(cfg, /^tool_loop_guardrails:\n {2}loop_caps:\n {4}max_subagents: 150$/m);
+  assert.equal(cfg.match(/^delegation:/gm).length, 1);
+  assert.doesNotMatch(r.stdout + r.stderr, /already has delegation/);
+  assert.match(fs.readFileSync(s.h("barb", ".env"), "utf8"), /^KEV_ENGINE_KEY=kev-secret-1$/m);
+  const out = r.stdout + r.stderr;
+  assert.match(out, /^HERMES_TIMEOUT should be 4000 or more \(agents\/barb\/runtime\/hermes\.md\)\.$/m);
+  for (const secret of ["kev-secret-1", "xoxb-secret", "1200"]) assert.ok(!out.includes(secret), `the output never shows ${secret}`);
+  // A second run changes nothing, and an enough HERMES_TIMEOUT prints only "HERMES_TIMEOUT ok".
+  fs.writeFileSync(path.join(s.cc, ".env"), "JOBD_TOKEN=t\nCC_HERMES_IMAGE=nousresearch/hermes-agent@sha256:0123abcd\nKEV_ENGINE_KEY=kev-secret-1\nHERMES_TIMEOUT=4000\n");
+  const again = s.run("setup-agent.sh", "barb");
+  assert.equal(again.status, 0, again.stdout + again.stderr);
+  assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), cfg);
+  assert.match(again.stdout, /^HERMES_TIMEOUT ok$/m);
+  assert.doesNotMatch(again.stdout + again.stderr, /Barb's config\.yaml:/, "no limit changed");
+});
+
+test("setup-agent.sh barb takes a Kev key given on the command line over CircleChat's .env, and says when there is none", () => {
+  const s = sandbox(["barb"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  fs.writeFileSync(s.h("barb", "config.yaml"), hermesDefault);
+  const none = s.run("setup-agent.sh", "barb");
+  assert.equal(none.status, 0, none.stdout + none.stderr);
+  assert.match(none.stdout, /No KEV_ENGINE_KEY in .*\.env: Barb's Kev pass fails/);
+  assert.match(none.stdout, /^HERMES_TIMEOUT should be 4000 or more/m, "a missing HERMES_TIMEOUT is not enough");
+  assert.doesNotMatch(fs.existsSync(s.h("barb", ".env")) ? fs.readFileSync(s.h("barb", ".env"), "utf8") : "", /KEV_ENGINE_KEY/);
+  fs.appendFileSync(path.join(s.cc, ".env"), "KEV_ENGINE_KEY=from-env-file\n");
+  s.env.KEV_ENGINE_KEY = "given";
+  const given = s.run("setup-agent.sh", "barb");
+  assert.equal(given.status, 0, given.stdout + given.stderr);
+  assert.match(fs.readFileSync(s.h("barb", ".env"), "utf8"), /^KEV_ENGINE_KEY=given$/m);
+  assert.ok(!(given.stdout + given.stderr).includes("given\n") && !(given.stdout + given.stderr).includes("from-env-file"));
+});
+
+test("setup-agent.sh barb refuses tool_loop_guardrails under agent:, where Hermes ignores it, and writes nothing", () => {
+  const s = sandbox(["barb"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  const wrong = `model:\n  default: x\nagent:\n  reasoning_effort: high\n  tool_loop_guardrails:\n    loop_caps:\n      max_subagents: 150\ncustom_providers: []\n`;
+  fs.writeFileSync(s.h("barb", "config.yaml"), wrong);
+  const r = s.run("setup-agent.sh", "barb");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /tool_loop_guardrails under another key, at line \d+, where Hermes ignores it/);
+  assert.match(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), /^ {2}tool_loop_guardrails:$/m, "the config keeps its text");
+  assert.doesNotMatch(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), /^delegation:/m);
 });
 
 test("setup-agent.sh refuses Betty's or Barb's symlinked config.yaml, and writes no server entry through the symlink", () => {
