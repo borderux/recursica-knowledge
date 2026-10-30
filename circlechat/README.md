@@ -121,7 +121,12 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    ```
    `setup-agent.sh` gives the agent the agent's own gateway key, in place of the placeholder. The
    script fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from `site.json`,
-   and gives Barb the Kev-engine list. Alan's token is fine-grained: Contents, Pull
+   and gives Barb the Kev-engine list. The script ends with one test turn, run the way CircleChat
+   runs an agent turn (`kit/hermes-turn.sh`): the pinned Hermes image, the agent's home, the
+   agents' network, and `hermes chat -q ... -Q --yolo --source tool`. A turn that Hermes refuses
+   stops the script with Hermes's reason, such as
+   `hermes refusal: invalid_params {'reason': 'invalid_params', 'fields': ['source']}`, which
+   `hermes chat` itself leaves out. Alan's token is fine-grained: Contents, Pull
    requests and Issues on this repository, Issues on the adapter repositories and Theme Forge,
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
@@ -719,7 +724,7 @@ Each hour, the update job compares each copy with the kit. For a copy that diffe
 
 **Lima and Colima on Linux and WSL come from each project's GitHub releases, outside apt.** `setup-pc.sh` installs each one at a pinned version and checksum. The update job reads each installed version each hour. A new release waits 7 days, then posts once in Slack. To take the release, move `LIMA_VERSION` or `COLIMA_VERSION` and the checksum in `circlechat/tenant/setup-pc.sh` by pull request. Then rerun `setup-pc.sh`. On a Mac, Homebrew installs Colima, and the Homebrew updates cover Colima.
 
-Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update.
+Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. The pinned images also include the Hermes image that runs every agent turn. Every `setup-host.sh` mode writes the pin to `CC_HERMES_IMAGE` in `.env`, and an agent turn never runs `nousresearch/hermes-agent:latest`. The health check cannot see an agent turn, so the Hermes pin moves only after a test turn answers on the newer version for each agent that answers on the current version. A newer Hermes version that fails is never used, and Slack gets a message that names the agents. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update.
 
 ### Uptime
 

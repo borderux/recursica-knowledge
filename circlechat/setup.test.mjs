@@ -131,6 +131,22 @@ test("setup-host runs CircleChat's caddy, postgres and redis and the file store 
   for (const t of ["caddy:2", "postgres:16-alpine", "redis:7-alpine"]) assert.equal(lock[t].ref, `${t}@sha256:0123abcd`);
 });
 
+test("every setup-host mode pins the Hermes image that runs each agent turn, so the weekly refresh's --upgrade moves the agents too", () => {
+  for (const mode of ["--secrets-only", "--upgrade"]) {
+    const s = sandbox(example);
+    const r = s.run("setup-host.sh", mode);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.equal(s.dotenv().CC_HERMES_IMAGE, "nousresearch/hermes-agent:latest@sha256:0123abcd", mode);
+    const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
+    assert.equal(lock["nousresearch/hermes-agent:latest"].ref, "nousresearch/hermes-agent:latest@sha256:0123abcd", mode);
+    // A moved pin in images.lock reaches .env on the next --upgrade.
+    lock["nousresearch/hermes-agent:latest"].ref = "nousresearch/hermes-agent@sha256:4567cdef";
+    fs.writeFileSync(path.join(s.cc, "images.lock"), JSON.stringify(lock));
+    assert.equal(s.run("setup-host.sh", "--upgrade").status, 0);
+    assert.equal(s.dotenv().CC_HERMES_IMAGE, "nousresearch/hermes-agent@sha256:4567cdef", mode);
+  }
+});
+
 test("setup-host --upgrade also brings the containers and the filter up", () => {
   const s = sandbox(example);
   const r = s.run("setup-host.sh", "--upgrade");
