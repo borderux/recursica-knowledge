@@ -23,8 +23,8 @@ jobs:
     name: ShellCheck, firewall rules and the filter
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "24" }
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck nftables squid
       - name: ShellCheck
@@ -37,8 +37,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with: { node-version: "22" }
       - run: bash circlechat/ci/smoke-install.sh
 
@@ -46,7 +46,7 @@ jobs:
     name: macOS firewall rules and encrypted disk images
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: The pf rules parse
         run: |
           for f in base lockdown; do
@@ -73,7 +73,7 @@ jobs:
     name: Linux encrypted disk images (LUKS)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: A client disk image is created, opened and closed
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq cryptsetup-bin
@@ -101,7 +101,7 @@ jobs:
     name: Windows scripts (PSScriptAnalyzer)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - shell: pwsh
         run: |
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
