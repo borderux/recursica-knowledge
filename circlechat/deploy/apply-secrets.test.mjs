@@ -324,7 +324,7 @@ test("a deploy needs no sudo from the owner: root prepares the gateway's files, 
     // The key check, after the owner's run: the owner's database dump, read by root's key check.
     assert.ok(calls.indexOf("setup-host --secrets-only") < calls.indexOf("key-check "));
     assert.match(calls, /^docker compose exec -T postgres pg_dump -U postgres circlechat$/m);
-    assert.match(calls, new RegExp(`^key-check --secrets \\| \\S+/model-keys\\.env \\| --stdin \\| CircleChat's database \\| \\S+/hermes-homes stdin=dump of the database$`, "m"));
+    assert.match(calls, new RegExp(`^key-check --secrets \\| \\S+/model-keys\\.env \\| --private-keys \\| \\S+/github-apps/\\S+ \\| --stdin \\| CircleChat's database \\| \\S+/hermes-homes stdin=dump of the database$`, "m"));
     // On a Mac, the owner gets the state folder and each file the helper wrote, and no whole folder.
     // On Linux, root keeps them. (The node secrets file goes to the owner on both.)
     const chowns = t.fake.calls().split("\n").filter((c) => c.startsWith("chown -h "));
