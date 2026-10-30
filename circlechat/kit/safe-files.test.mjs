@@ -133,10 +133,12 @@ test("a home given to the agent's account: the home 700, .env and auth.json 600,
 });
 
 // On a Mac, Colima's shared folders refuse to change an entry root owns on the Mac, with EPERM.
-// <locked> holds the inodes the set step refuses, the way the Mac refuses root's old entries.
+// <locked> holds the inodes the set step refuses, the way the Mac refuses root's old entries. Each
+// is refused once, at the old entry: Linux can give a replaced entry's freed inode to a later copy.
 function macLikeSet(locked, refuseNames = []) {
+  const left = new Set(locked);
   return (fd, st, uid, gid, mode, p) => {
-    if (locked.has(st.ino) || refuseNames.some((n) => path.basename(p) === n)) throw Object.assign(new Error("EPERM: operation not permitted, fchmod"), { code: "EPERM" });
+    if (left.delete(st.ino) || refuseNames.some((n) => path.basename(p) === n)) throw Object.assign(new Error("EPERM: operation not permitted, fchmod"), { code: "EPERM" });
     fs.fchownSync(fd, uid, gid);
     if (mode !== (st.mode & 0o7777)) fs.fchmodSync(fd, mode);
   };
@@ -153,6 +155,7 @@ test("a home with entries root owns on a Mac: each is replaced by a copy the wal
   fs.symlinkSync(path.join(outside, "file.txt"), path.join(place, "skills/a/link"));
   const locked = new Set(["SOUL.md", "auth.json", "skills", "skills/a", "skills/a/SKILL.md", "skills/a/scripts/run.sh"].map((f) => fs.lstatSync(path.join(place, f)).ino));
   const notesIno = fs.lstatSync(path.join(place, "notes.md")).ino;
+  const soulIno = fs.lstatSync(path.join(place, "SOUL.md")).ino;
   ownHome(place, place, process.getuid(), process.getgid(), { set: macLikeSet(locked) });
   for (const [f, text] of Object.entries(files)) assert.equal(fs.readFileSync(path.join(place, f), "utf8"), text, `${f} keeps its text`);
   assert.equal(mode("SOUL.md"), 0o755);
@@ -163,7 +166,7 @@ test("a home with entries root owns on a Mac: each is replaced by a copy the wal
   assert.equal(mode("skills/a/scripts"), 0o755);
   assert.equal(mode("skills/a/scripts/run.sh"), 0o755);
   assert.equal(mode("notes.md"), 0o755);
-  assert.ok(!locked.has(fs.lstatSync(path.join(place, "SOUL.md")).ino), "the locked file was replaced");
+  assert.notEqual(fs.lstatSync(path.join(place, "SOUL.md")).ino, soulIno, "the locked file was replaced");
   assert.equal(fs.lstatSync(path.join(place, "notes.md")).ino, notesIno, "an entry the walk can change stays the same file");
   assert.ok(fs.lstatSync(path.join(place, "skills/a/link")).isSymbolicLink(), "a symlink moves with its folder, unfollowed");
   assert.deepEqual(fs.readdirSync(place).filter((n) => n.includes(".own-")), [], "no copy is left behind");
