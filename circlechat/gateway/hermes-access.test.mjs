@@ -34,7 +34,7 @@ test("the agent's config asks the gateway for the agent's route, with the agent'
   assert.equal(writeConfig(out, { baseUrl: "http://cc-gateway:4000/v1", key: "ccg_abc", route: "local-large" }), out);
 });
 
-const URL = "http://cc-gateway:4000/v1";
+const GW_URL = "http://cc-gateway:4000/v1";
 
 // CircleChat's own template: the summary model sits inside compression, and the host kit's extra MCP
 // servers sit beside CircleChat's own.
@@ -88,9 +88,9 @@ _config_version: 51
 `;
 
 test("every model setting in CircleChat's template goes to the gateway, and the retired MCP server goes", () => {
-  assert.notDeepEqual(offGateway(template, URL), []);
-  const out = writeConfig(template, { baseUrl: URL, key: "ccg_abc", route: "local-large" });
-  assert.deepEqual(offGateway(out, URL), []);
+  assert.notDeepEqual(offGateway(template, GW_URL), []);
+  const out = writeConfig(template, { baseUrl: GW_URL, key: "ccg_abc", route: "local-large" });
+  assert.deepEqual(offGateway(out, GW_URL), []);
   assert.match(out, /^compression:\n  enabled: true\n  threshold: 0\.8\n  summary_model: local-large\n/m);
   assert.doesNotMatch(out, /gemini|openrouter|summary_provider/);
   assert.match(out, /^auxiliary:\n  compression:\n    provider: custom:gateway\n    model: local-large$/m);
@@ -98,25 +98,25 @@ test("every model setting in CircleChat's template goes to the gateway, and the 
   assert.match(out, /^tts:\n  provider: piper$/m);
   assert.match(out, /^mcp_servers:\n  circlechat:\n    command: node\n/m, "CircleChat's own server stays");
   assert.doesNotMatch(out, /recursica-mcp/);
-  assert.equal(writeConfig(out, { baseUrl: URL, key: "ccg_abc", route: "local-large" }), out);
+  assert.equal(writeConfig(out, { baseUrl: GW_URL, key: "ccg_abc", route: "local-large" }), out);
 });
 
 test("after Hermes' settings upgrade, the key is found in providers, kept, and written there once", () => {
   assert.equal(currentKey(upgraded), "ccg_kept");
-  const out = writeConfig(upgraded, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
+  const out = writeConfig(upgraded, { baseUrl: GW_URL, key: "ccg_kept", route: "local-large" });
   assert.match(out, /^providers:\n  gateway:\n    name: gateway\n    api: "http:\/\/cc-gateway:4000\/v1"\n    api_key: "ccg_kept"\n    transport: chat_completions$/m);
   assert.doesNotMatch(out, /custom_providers/);
   assert.equal(currentKey(out), "ccg_kept");
   assert.match(out, /^  compression:\n    provider: custom:gateway\n    model: local-large$/m);
   assert.match(out, /^  title_generation:\n    provider: auto\n    model: ''$/m, "a task on auto follows the main model, and stays");
   assert.match(out, /^delegation:\n  max_iterations: 50\n/m, "delegation with no model of its own stays");
-  assert.deepEqual(offGateway(out, URL), []);
-  assert.equal(writeConfig(out, { baseUrl: URL, key: "ccg_kept", route: "local-large" }), out);
+  assert.deepEqual(offGateway(out, GW_URL), []);
+  assert.equal(writeConfig(out, { baseUrl: GW_URL, key: "ccg_kept", route: "local-large" }), out);
 });
 
 test("a home with both provider forms keeps exactly one gateway entry", () => {
   const both = `${upgraded}custom_providers:\n- name: gateway\n  base_url: "http://cc-gateway:4000/v1"\n  api_key: "ccg_old"\n  api_mode: chat_completions\n`;
-  const out = writeConfig(both, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
+  const out = writeConfig(both, { baseUrl: GW_URL, key: "ccg_kept", route: "local-large" });
   assert.doesNotMatch(out, /custom_providers|ccg_old/);
   assert.equal((out.match(/^  gateway:$/gm) ?? []).length, 1);
 });
@@ -134,17 +134,17 @@ fallback_providers:
 tts:
   provider: edge
 `.replace("  max_iterations: 50\n", "  max_iterations: 50\n  provider: openrouter\n  model: x-ai/grok-4\n  base_url: https://openrouter.ai/api/v1\n");
-  const before = offGateway(added, URL);
+  const before = offGateway(added, GW_URL);
   for (const want of ["auxiliary.vision.provider: openrouter", "auxiliary.vision.base_url: https://openrouter.ai/api/v1", "delegation.provider: openrouter", "fallback_providers: set", "tts.provider: not a local engine"]) {
     assert.ok(before.includes(want), want);
   }
-  const out = writeConfig(added, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
-  assert.deepEqual(offGateway(out, URL), []);
+  const out = writeConfig(added, { baseUrl: GW_URL, key: "ccg_kept", route: "local-large" });
+  assert.deepEqual(offGateway(out, GW_URL), []);
   assert.match(out, /^  vision:\n    provider: custom:gateway\n    model: local-large\n    timeout: 30$/m);
   assert.match(out, /^delegation:\n  provider: custom:gateway\n  model: local-large\n  max_iterations: 50\n/m);
   assert.doesNotMatch(out, /openrouter|gemini|grok|sk-or-|fallback_providers|edge/);
   // A second named provider is a setting off the gateway too.
-  assert.ok(offGateway(upgraded.replace("auxiliary:", "  other:\n    api: https://api.x.ai/v1\nauxiliary:"), URL).includes("providers.other: a provider other than the gateway"));
+  assert.ok(offGateway(upgraded.replace("auxiliary:", "  other:\n    api: https://api.x.ai/v1\nauxiliary:"), GW_URL).includes("providers.other: a provider other than the gateway"));
 });
 
 test("an older gateway entry, such as the master key, is replaced", () => {
@@ -194,7 +194,7 @@ test("the script stops when a model setting still points past the gateway", () =
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
   // Delegation written inline cannot be rewritten line by line, so it cannot be checked either.
   fs.writeFileSync(path.join(home, "config.yaml"), `${installed}delegation: {provider: openrouter, model: x-ai/grok-4}\n`);
-  const r = spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "betty", fs.mkdtempSync(path.join(os.tmpdir(), "gwstate-")), URL, "local-large"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "betty", fs.mkdtempSync(path.join(os.tmpdir(), "gwstate-")), GW_URL, "local-large"], { encoding: "utf8" });
   assert.equal(r.status, 1);
   assert.match(r.stderr, /betty: these model settings .* would send requests past the gateway/);
   assert.match(r.stderr, /delegation: written inline/);
