@@ -73,16 +73,18 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.doesNotMatch(litellm, /_PROXY=|_proxy=/, "LiteLLM does not use the outgoing filter");
   assert.match(calls, /docker network create circlechat_models\n/, "the gateway's network has a route out");
   assert.doesNotMatch(calls, /docker network connect \S* ?circlechat_agents cc-litellm/, "LiteLLM is not on the agents' closed network");
-  const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+  const router = calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
   // With the filter on, only the port for port jobs is published, on the Tailscale address.
   assert.match(router, /--network circlechat_default -p 100\.64\.0\.1:4000:4001 -v /);
   assert.match(router, /LITELLM_URL=http:\/\/cc-litellm:4000/);
   assert.doesNotMatch(router, /--env-file|ANTHROPIC|DATABASE_URL|postgres:\/\//);
   // The router's read-only database role, made before the router starts; its address is in a file.
-  assert.match(calls, /docker compose exec -T postgres psql -q -U postgres -d circlechat\n(.*\n)*docker run -d --name cc-gateway /);
+  assert.match(calls, /docker compose exec -T postgres psql -q -U postgres -d circlechat\n(.*\n)*docker create --name cc-gateway /);
   assert.match(fs.readFileSync(path.join(s.units, "db.url"), "utf8"), /^postgres:\/\/cc_gateway_read:.*@postgres:5432\/circlechat$/m);
   assert.match(calls, /docker network connect circlechat_models cc-gateway/);
   assert.match(calls, /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
+  // The router allows a key from each network it has when it starts, so both join before the start.
+  assert.match(calls, /docker create --name cc-gateway (.*\n)*docker network connect circlechat_models cc-gateway\n(.*\n)*docker network connect --alias cc-gateway circlechat_agents cc-gateway\n(.*\n)*docker start cc-gateway\n/);
   assert.ok(fs.existsSync(path.join(s.cc, "gateway-app/router.mjs")));
   assert.equal(e.LITELLM_MASTER_KEY, undefined, "no agent gets a master key");
   const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
@@ -257,7 +259,7 @@ test("on a Mac with Colima, the gateway's port for port jobs is on 127.0.0.1, an
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const calls = s.calls();
-  const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+  const router = calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
   assert.match(router, /--network circlechat_default -p 127\.0\.0\.1:4001:4001 -v /);
   assert.doesNotMatch(router, /100\.64\.0\.1/, "Docker publishes nothing on the Tailscale address");
   assert.match(calls, /^tailscale serve --bg --tcp=4000 tcp:\/\/127\.0\.0\.1:4001$/m);
@@ -287,7 +289,7 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
     s.stub("tailscale", "");
     const r = s.run("setup-host.sh", "--secrets-only");
     assert.equal(r.status, 0, r.stdout + r.stderr);
-    const router = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+    const router = s.calls().split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
     assert.match(router, /-p 100\.64\.0\.1:4000:4001 -v /, system);
     assert.doesNotMatch(s.calls(), /tailscale serve/, system);
   }
@@ -386,7 +388,7 @@ test("with the secrets helper, --secrets-only takes only the Docker steps, and t
     const calls = s.calls();
     assert.doesNotMatch(calls, /^sudo /m, `${system}: no sudo`);
     assert.match(calls, /^docker compose exec -T postgres psql -q -U postgres -d circlechat$/m, "the router's database role");
-    assert.match(calls, /^docker run -d --name cc-gateway /m);
+    assert.match(calls, /^docker create --name cc-gateway /m);
     assert.match(calls, /^docker run -d --name cc-litellm /m);
     // The helper writes the role's address and runs the key check, as root.
     assert.ok(!fs.existsSync(path.join(s.units, "db.url")));

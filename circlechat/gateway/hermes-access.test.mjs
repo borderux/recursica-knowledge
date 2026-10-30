@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { currentKey, scrubEnv, scrubJson, writeConfig } from "./hermes-access.mjs";
+import { currentKey, offGateway, scrubEnv, scrubJson, writeConfig } from "./hermes-access.mjs";
 import { loadKeys, verify } from "./keys.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -26,11 +26,125 @@ test("the agent's config asks the gateway for the agent's route, with the agent'
   assert.match(out, /^model:\n  default: local-large\n  provider: custom:gateway\nagent:/m);
   assert.match(out, /^summary_model: local-large$/m);
   assert.doesNotMatch(out, /base_url: https:\/\/api\.anthropic\.com/);
-  assert.match(out, /custom_providers:\n- name: gateway\n  base_url: "http:\/\/cc-gateway:4000\/v1"\n  api_key: "ccg_abc"\n  api_mode: chat_completions\n$/);
+  assert.match(out, /^custom_providers:\n- name: gateway\n  base_url: "http:\/\/cc-gateway:4000\/v1"\n  api_key: "ccg_abc"\n  api_mode: chat_completions\n/m);
+  assert.deepEqual(offGateway(out, "http://cc-gateway:4000/v1"), []);
   assert.equal((out.match(/^custom_providers:/gm) ?? []).length, 1);
   assert.equal(currentKey(out), "ccg_abc");
   // Run again: the same file.
   assert.equal(writeConfig(out, { baseUrl: "http://cc-gateway:4000/v1", key: "ccg_abc", route: "local-large" }), out);
+});
+
+const URL = "http://cc-gateway:4000/v1";
+
+// CircleChat's own template: the summary model sits inside compression, and the host kit's extra MCP
+// servers sit beside CircleChat's own.
+const template = `model:
+  default: claude-sonnet-5
+  provider: anthropic
+compression:
+  enabled: true
+  threshold: 0.8
+  summary_model: gemini-2.5-pro
+  summary_provider: openrouter
+stt:
+  enabled: true
+  model: base
+custom_providers: []
+mcp_servers:
+  circlechat:
+    command: node
+    args:
+      - /opt/data/circlechat-mcp.mjs
+  recursica-mcp:
+    command: sh
+    args:
+      - /workspace/.recursica-mcp.sh
+      - /workspace/app
+    enabled: true
+`;
+
+// The same home after Hermes' settings upgrade (config version 51): the provider list moved to
+// providers, and the summary model to auxiliary.compression.
+const upgraded = `model:
+  default: local-large
+  provider: custom:gateway
+delegation:
+  max_iterations: 50
+  default_toolsets:
+    - terminal
+providers:
+  gateway:
+    api: http://cc-gateway:4000/v1
+    name: gateway
+    api_key: ccg_kept
+    transport: chat_completions
+auxiliary:
+  compression:
+    model: gemini-2.5-pro
+  title_generation:
+    provider: auto
+    model: ''
+_config_version: 51
+`;
+
+test("every model setting in CircleChat's template goes to the gateway, and the retired MCP server goes", () => {
+  assert.notDeepEqual(offGateway(template, URL), []);
+  const out = writeConfig(template, { baseUrl: URL, key: "ccg_abc", route: "local-large" });
+  assert.deepEqual(offGateway(out, URL), []);
+  assert.match(out, /^compression:\n  enabled: true\n  threshold: 0\.8\n  summary_model: local-large\n/m);
+  assert.doesNotMatch(out, /gemini|openrouter|summary_provider/);
+  assert.match(out, /^auxiliary:\n  compression:\n    provider: custom:gateway\n    model: local-large$/m);
+  assert.match(out, /^stt:\n  provider: local\n  enabled: true/m);
+  assert.match(out, /^tts:\n  provider: piper$/m);
+  assert.match(out, /^mcp_servers:\n  circlechat:\n    command: node\n/m, "CircleChat's own server stays");
+  assert.doesNotMatch(out, /recursica-mcp/);
+  assert.equal(writeConfig(out, { baseUrl: URL, key: "ccg_abc", route: "local-large" }), out);
+});
+
+test("after Hermes' settings upgrade, the key is found in providers, kept, and written there once", () => {
+  assert.equal(currentKey(upgraded), "ccg_kept");
+  const out = writeConfig(upgraded, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
+  assert.match(out, /^providers:\n  gateway:\n    name: gateway\n    api: "http:\/\/cc-gateway:4000\/v1"\n    api_key: "ccg_kept"\n    transport: chat_completions$/m);
+  assert.doesNotMatch(out, /custom_providers/);
+  assert.equal(currentKey(out), "ccg_kept");
+  assert.match(out, /^  compression:\n    provider: custom:gateway\n    model: local-large$/m);
+  assert.match(out, /^  title_generation:\n    provider: auto\n    model: ''$/m, "a task on auto follows the main model, and stays");
+  assert.match(out, /^delegation:\n  max_iterations: 50\n/m, "delegation with no model of its own stays");
+  assert.deepEqual(offGateway(out, URL), []);
+  assert.equal(writeConfig(out, { baseUrl: URL, key: "ccg_kept", route: "local-large" }), out);
+});
+
+test("a home with both provider forms keeps exactly one gateway entry", () => {
+  const both = `${upgraded}custom_providers:\n- name: gateway\n  base_url: "http://cc-gateway:4000/v1"\n  api_key: "ccg_old"\n  api_mode: chat_completions\n`;
+  const out = writeConfig(both, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
+  assert.doesNotMatch(out, /custom_providers|ccg_old/);
+  assert.equal((out.match(/^  gateway:$/gm) ?? []).length, 1);
+});
+
+test("a model setting an agent added, anywhere Hermes reads one, goes to the gateway", () => {
+  const added = `${upgraded.replace("_config_version: 51\n", "")}  vision:
+    provider: openrouter
+    model: google/gemini-2.5-flash
+    base_url: https://openrouter.ai/api/v1
+    api_key: sk-or-v1-${"b".repeat(40)}
+    timeout: 30
+fallback_providers:
+- provider: gemini
+  model: gemini-2.5-pro
+tts:
+  provider: edge
+`.replace("  max_iterations: 50\n", "  max_iterations: 50\n  provider: openrouter\n  model: x-ai/grok-4\n  base_url: https://openrouter.ai/api/v1\n");
+  const before = offGateway(added, URL);
+  for (const want of ["auxiliary.vision.provider: openrouter", "auxiliary.vision.base_url: https://openrouter.ai/api/v1", "delegation.provider: openrouter", "fallback_providers: set", "tts.provider: not a local engine"]) {
+    assert.ok(before.includes(want), want);
+  }
+  const out = writeConfig(added, { baseUrl: URL, key: "ccg_kept", route: "local-large" });
+  assert.deepEqual(offGateway(out, URL), []);
+  assert.match(out, /^  vision:\n    provider: custom:gateway\n    model: local-large\n    timeout: 30$/m);
+  assert.match(out, /^delegation:\n  provider: custom:gateway\n  model: local-large\n  max_iterations: 50\n/m);
+  assert.doesNotMatch(out, /openrouter|gemini|grok|sk-or-|fallback_providers|edge/);
+  // A second named provider is a setting off the gateway too.
+  assert.ok(offGateway(upgraded.replace("auxiliary:", "  other:\n    api: https://api.x.ai/v1\nauxiliary:"), URL).includes("providers.other: a provider other than the gateway"));
 });
 
 test("an older gateway entry, such as the master key, is replaced", () => {
@@ -74,6 +188,16 @@ test("the script gives the agent a key once, keeps it on a rerun, and clears the
   assert.match(cfg, /^model:\n  default: machine-2\/mlx\/large-mlx\n  provider: custom:gateway$/m);
   assert.match(cfg, /^summary_model: machine-2\/mlx\/large-mlx$/m, "summaries move with the route");
   assert.equal(currentKey(cfg), key);
+});
+
+test("the script stops when a model setting still points past the gateway", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "hermes-"));
+  // Delegation written inline cannot be rewritten line by line, so it cannot be checked either.
+  fs.writeFileSync(path.join(home, "config.yaml"), `${installed}delegation: {provider: openrouter, model: x-ai/grok-4}\n`);
+  const r = spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "betty", fs.mkdtempSync(path.join(os.tmpdir(), "gwstate-")), URL, "local-large"], { encoding: "utf8" });
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /betty: these model settings .* would send requests past the gateway/);
+  assert.match(r.stderr, /delegation: written inline/);
 });
 
 test("the script never reads or writes through a symlink an agent put in its home", () => {

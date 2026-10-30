@@ -809,6 +809,17 @@ Barb's Hermes settings (delegation limits, timeout, Kev access) are explained in
 - **Never `rm -rf hermes-homes`.** Each agent's real setup lives in `hermes-homes/.hermes-<handle>/`.
 - **Each agent's gateway key lives in the agent's own home.** `setup-agent.sh` puts the key there. A cloud key never does: the model gateway holds every cloud key.
 - **The route an agent asks for is in `.hermes-<handle>/config.yaml`,** not the label on the agent page. `setup-agent.sh` sets the agent's first route from `agents.<handle>.routes` in site.json. The gateway then picks a cluster model or the agent's cloud key for each request.
+- **Every Hermes setting that picks a model points at the gateway.** CircleChat's template names a cloud model for compression summaries, and Hermes' settings upgrade moves that name to `auxiliary.compression`. `setup-agent.sh` writes the gateway and the agent's route into each of these settings:
+
+  - the main model, and the gateway as the home's one named provider, in `custom_providers` for an older Hermes or `providers` from config version 51;
+  - compression summaries, at the top, inside `compression`, and in `auxiliary.compression`;
+  - each side task in `auxiliary` that names its own provider, model or address, such as vision;
+  - subagents, when `delegation` names a model.
+
+  The script also removes any fallback provider, and keeps speech on the computer: Whisper for speech to text and Piper for text to speech. A side task left on `auto` follows the main model, and Hermes then tries no other provider. The script stops, and names each setting, when one still points past the gateway. A Hermes update can add a new setting, so rerun `setup-agent.sh` after one.
+
+- **"Hermes couldn't start the model connection: Gateway starting: deadline" is about an MCP server, not the model.** The "Gateway" is Hermes' own message gateway inside the agent's container. It finds every MCP server in `config.yaml` before it reports ready, and CircleChat stops waiting after about a minute. A server that hangs, such as an `npx` package that cannot be fetched, holds it there. Read `logs/agent.log` and `logs/mcp-stderr.log` in the agent's home, and remove or fix the server.
+- **The gateway allows a key from each network it has.** `setup-host.sh` attaches the models' network and the agents' network before the gateway starts. A network attached later counts too: a request from an address outside every known network makes the gateway read its networks again, at most every 5 seconds, before it answers `outside_cluster`.
 - **A review that finishes but never appears is `HERMES_TIMEOUT`.** The api drops replies that arrive later than it + 60 s. `setup-host.sh` sets 4000.
 - **Don't `git checkout compose.yml`** — the port change (8080) lives there. `setup-host.sh` reapplies it.
 - **`restart` doesn't reload `.env`.** Use `up -d --force-recreate`.

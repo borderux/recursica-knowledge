@@ -303,3 +303,24 @@ test("a key works only from inside the cluster", async () => {
   assert.ok(!inCidr("10.1.2.3", "172.18.0.0/16"));
   assert.ok(inCidr("100.64.0.5", "100.64.0.5/32"));
 });
+
+test("a network the gateway joins after it starts counts, and an outside address still gets nothing", async () => {
+  // setup-host.sh connects the agents' network after the gateway starts.
+  let reads = 0;
+  const joined = await listen(createGateway({ config, db, litellm: base(litellm), stateDir: state, spendLog, now, allow: ["100.64.0.5"], refreshAllow: async () => { reads++; return ["100.64.0.5", "127.0.0.0/8"]; } }));
+  const r = await fetch(`${base(joined)}/v1/models`, { headers: { authorization: `Bearer ${keys.betty}` } });
+  assert.notEqual(r.status, 403);
+  assert.equal(reads, 1);
+  joined.close();
+  // A source on no network the gateway has: the networks are read again at most every 5 seconds.
+  let t = Date.now(), outsideReads = 0;
+  const outside = await listen(createGateway({ config, db, litellm: base(litellm), stateDir: state, spendLog, now: () => t, allow: ["100.64.0.5"], refreshAllow: async () => { outsideReads++; return ["100.64.0.5"]; } }));
+  const ask = () => fetch(`${base(outside)}/v1/models`, { headers: { authorization: `Bearer ${keys.betty}` } }).then((x) => x.status);
+  assert.equal(await ask(), 403);
+  assert.equal(await ask(), 403);
+  assert.equal(outsideReads, 1);
+  t += 5000;
+  assert.equal(await ask(), 403);
+  assert.equal(outsideReads, 2);
+  outside.close();
+});

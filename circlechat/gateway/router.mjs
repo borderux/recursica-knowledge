@@ -89,14 +89,28 @@ function jsonFile(file, fallback) {
 }
 
 // --- the gateway ---------------------------------------------------------------------------------
-// createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, apiBase, now, allow })
+// createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, apiBase, now, allow, refreshAllow })
 //   db          { runTasks(handle) -> the task id of each of the agent's running turns (null for a
 //                 turn outside a task), onTask(handle, task) -> true when the agent created
 //                 or is assigned to the task, setting(task) -> row or null, botToken(handle) }
 //   litellm     LiteLLM's base URL, such as http://cc-litellm:4000
 //   litellmKey  LiteLLM's master key. Only the router holds the master key, never an agent.
 //   allow    the address ranges allowed to use a key (allowedSources)
-export function createGateway({ config, db, litellm, litellmKey = "", stateDir, spendLog, apiBase, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], retryMs = 5000 }) {
+//   refreshAllow  reads the address ranges again (allowedSources), for a network the container
+//                 joined after the gateway started
+export function createGateway({ config, db, litellm, litellmKey = "", stateDir, spendLog, apiBase, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000 }) {
+  // setup-host.sh starts the gateway on one network and connects the agents' network and the
+  // models' network after the start. A source outside the ranges read so far makes the gateway
+  // read its networks again, at most every 5 seconds, before it refuses the key.
+  let allowed = allow, readAt = -Infinity;
+  const listed = (ip) => allowed.some((c) => inCidr(ip, c.includes("/") ? c : `${c}/${net.isIPv4(c) ? 32 : 128}`));
+  async function insideCluster(ip) {
+    if (listed(ip)) return true;
+    if (!refreshAllow || now() - readAt < 5000) return false;
+    readAt = now();
+    try { allowed = await refreshAllow(); } catch { /* keep the ranges read before */ }
+    return listed(ip);
+  }
   fs.mkdirSync(stateDir, { recursive: true });
   const secret = taskSecret(stateDir);
   const clocks = jsonFile(path.join(stateDir, "clocks.json"), {});
@@ -283,7 +297,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     try {
       const { pathname } = new URL(req.url, "http://gateway");
       if (pathname === "/health" && !jobsPort) { res.writeHead(200, { "content-type": "application/json" }); return res.end('{"ok":true}'); }
-      if (!allow.some((c) => inCidr(req.socket.remoteAddress, c.includes("/") ? c : `${c}/${net.isIPv4(c) ? 32 : 128}`))) {
+      if (!(await insideCluster(req.socket.remoteAddress))) {
         return fail(res, 403, "outside_cluster", "A gateway key works only inside the cluster.");
       }
       const auth = String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "") || String(req.headers["x-api-key"] ?? "");
@@ -376,6 +390,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     config, db: pgDb(fs.readFileSync(env.DATABASE_URL_FILE ?? "/state/db.url", "utf8").trim(), pg), litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
     litellmKey: fs.readFileSync(env.LITELLM_KEY_FILE ?? "/state/litellm-master.key", "utf8").trim(),
     stateDir: env.GATEWAY_STATE ?? "/state", spendLog: env.SPEND_LOG ?? "/logs/spend.jsonl", apiBase: env.CC_API ?? "http://api:3000/api", allow,
+    refreshAllow: () => allowedSources(config.nodes),
   });
   // A turn can wait for the cluster for as long as the turn runs.
   for (const [port, h] of [[4000, handler], [4001, handler.jobs]]) {
