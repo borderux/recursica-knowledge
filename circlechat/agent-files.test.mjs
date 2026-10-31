@@ -338,13 +338,17 @@ test("setup-agent.sh turns off Hermes's model-catalog refresh and update checks 
   assert.match(first.loki, /^ {2}reasoning_effort: medium$/m);
   assert.match(first.betty, KNOWLEDGE_ENTRY, "Betty keeps her knowledge server");
   assert.match(first.barb, BARB_LIMITS, "Barb keeps her limits");
-  // A second run changes nothing and prints no change.
+  // A second run changes none of the three blocks and prints no change. (The gateway step may move
+  // Loki's context_length within its own block, which is not this step's.)
+  const blocks = (text) => ["model_catalog", "updates", "plugins"].map((top) => new RegExp(`^${top}:\n(?: {2}.*\n)*`, "m").exec(text)[0]);
   for (const a of ["loki", "betty", "barb"]) {
     const again = s.run("setup-agent.sh", a);
     assert.equal(again.status, 0, `${a}: ${again.stdout}${again.stderr}`);
-    assert.equal(fs.readFileSync(s.h(a, "config.yaml"), "utf8"), first[a], a);
+    assert.deepEqual(blocks(fs.readFileSync(s.h(a, "config.yaml"), "utf8")), blocks(first[a]), a);
     assert.doesNotMatch(again.stdout + again.stderr, /config\.yaml: set /, a);
   }
+  assert.equal(fs.readFileSync(s.h("betty", "config.yaml"), "utf8"), first.betty, "Betty's whole config is the same");
+  assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), first.barb, "Barb's whole config is the same");
 });
 
 test("setup-agent.sh refuses a model_catalog block under another key, where Hermes ignores it, and adds no block", () => {
