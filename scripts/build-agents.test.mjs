@@ -436,6 +436,48 @@ test("Loki's CircleChat persona asks only when something is truly open", () => {
   assert.doesNotMatch(text, /## Intake|Ask for four things|wait for a yes\. A ten-participant/);
 });
 
+/**
+ * In a test on CircleChat, a person created a task titled "loki test 3" with no description and
+ * commented "@loki One fake 15-minute transcript, 2 speakers, a product demo at Acme Corp. Made-up
+ * names only." Loki's first turn saw only the title. He asked whether the deliverable was a
+ * synthetic transcript, an answer key or another artifact, and then asked the same question five
+ * more times over three hours. Most of the cause was in CircleChat; these rules make the persona
+ * side explicit. Checked in the built SOUL.md, not the source.
+ */
+const lokiTestComment =
+  "@loki One fake 15-minute transcript, 2 speakers, a product demo at Acme Corp. Made-up names only.";
+const lokiTestTitle = "loki test 3";
+
+function lokiCircleChatSoul() {
+  return fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+}
+
+test("Loki's CircleChat persona treats a request that names its deliverable as never unclear", () => {
+  const text = lokiCircleChatSoul();
+  // The comment from the test names its deliverable.
+  assert.match(lokiTestComment, /transcript/);
+  assert.match(text, /\*\*A request that names its deliverable is never unclear\.\*\*/);
+  assert.match(text, /"One fake 15-minute transcript, 2 speakers, a product demo" names what to make, how long, who speaks and the subject\. Write it\./);
+  assert.match(text, /When a request says "transcript", never ask whether it means a transcript, an answer key or something else\./);
+});
+
+test("Loki's CircleChat persona reads the task title as a label and the person's comment as the request", () => {
+  const text = lokiCircleChatSoul();
+  assert.match(text, /\*\*A task's title is a label, not the request\.\*\*/);
+  assert.ok(text.includes(`A title such as "${lokiTestTitle}" says nothing about what to make.`));
+  assert.match(text, /The request is a person's comment on the task, and the newest one wins\./);
+  assert.match(text, /When a person has commented, read the comment before deciding that anything is open\./);
+});
+
+test("Loki's CircleChat persona asks a question once and waits, with no repeats and no waiting notes", () => {
+  const text = lokiCircleChatSoul();
+  assert.match(text, /\*\*Ask a question once\.\*\* Then wait for a person's answer\./);
+  assert.match(text, /Never ask it again, reword it, post a "waiting for" note, or set the task to blocked just to repeat it\./);
+  assert.match(text, /A person's reply ends the wait\./);
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
