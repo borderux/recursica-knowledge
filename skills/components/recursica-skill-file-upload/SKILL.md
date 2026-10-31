@@ -4,7 +4,7 @@ description: Rules for the Recursica file upload, the larger area with a list of
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # File upload

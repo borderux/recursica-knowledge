@@ -4,7 +4,7 @@ description: Rules for the Recursica read-only field — a label and value with 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Read-only field
