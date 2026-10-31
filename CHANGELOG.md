@@ -1,5 +1,165 @@
 # @recursica/knowledge
 
+## 0.13.0
+
+### Minor Changes
+
+- 545eb27: CircleChat host kit: each agent that pushes to GitHub has a GitHub App of the agent's own. The app replaces a personal access token. The agents are Alan, Betty and Porter, and later Otto.
+
+  - **`github_apps` in site.json.** Each agent's entry holds the app ID, the installation ID, the slug, the repos and the permissions. Each app has Contents and Pull requests, and Alan's app adds Issues.
+  - **The private key stays with root.** Each app's key is the GitHub environment secret `APP_KEY_<AGENT>`. The secrets helper writes the key to a root-owned file outside the stack's folder. No agent, container, `.env` file or backup holds the key.
+  - **A token service on the control computer.** The service makes an installation token for each agent, for the agent's repos and permissions. Each token lasts at most one hour. The service makes a new token when the token has 15 minutes left.
+  - **The agent gets only the token.** The token goes to the agent's `.env` as `<AGENT>_GITHUB_TOKEN`. A port job asks the service for a token over Tailscale, with the job's task key. The job's token covers only the job's repo.
+  - **Commits use the app's bot identity,** `<app-slug>[bot]`, with the bot's noreply email address.
+  - **A manifest for each app.** `node circlechat/github/manifest.mjs` prints each agent's manifest and the steps to create the app.
+  - **The key check finds private keys.** The check fails when a private key is in CircleChat's database, an agent's home or a backup.
+
+  A stack with no `github_apps` block keeps working, with no push access.
+
+  ### Upgrading
+
+  1. Create each agent's app, as "GitHub access for agents" in `circlechat/README.md` describes. Save each app's private key as `APP_KEY_<AGENT>`.
+  2. Add the `github_apps` block to site.json.
+  3. Copy `circlechat/deploy/deploy-secrets.yml` to the private repo again. The new workflow passes each app's key.
+  4. Deploy the secrets, then rerun `setup-host.sh` and `setup-node.sh`. Rerun `setup-agent.sh` for each agent.
+  5. Delete `ALAN_GITHUB_PAT`, `BETTY_GITHUB_PAT` and `PORTER_GITHUB_PAT` from each GitHub environment, and revoke each token on GitHub.
+
+- 27a6620: ## CircleChat host kit changes since 0.12.0
+
+  The CircleChat host kit changed in many places since 0.12.0. The changes below are grouped by area.
+
+  ### Model keys and the gateway router
+
+  - **Only the model gateway holds the cloud keys.** Every agent and every port job sends each model request to the stack's gateway. LiteLLM reads the keys from `model-keys.env`, so no container's settings show a key.
+  - **A router sits in front of LiteLLM.** The router checks each agent's gateway key, picks the model, and writes one spend log line per request. The router passes on only model requests, so LiteLLM's admin endpoints stay out of reach.
+  - **`model_keys` and `agents` in `site.json`.** `model_keys` names each cloud key, with the key's provider, model and agents. `agents` sets each agent's routes and cloud switch.
+  - **Each task's "Cloud models" setting decides when a cloud model answers.** The choices are Cluster only, Cloud after a wait, and Cloud now. A route lists only the cluster's models, so a busy cluster never calls a cloud model.
+  - **Each key lives in GitHub as `MODEL_KEY_<NAME>`.** `deploy/set-model-keys.sh` asks for each value at the keyboard and saves the value as a GitHub secret.
+  - **Port jobs get a task key.** A port job calls the gateway with a key for one task, and holds no cloud key.
+  - **The key check fails when a cloud key leaks.** `gateway/key-check.mjs` looks in CircleChat's database, the agent homes and the backups. The check never follows a symlink.
+  - **Every Hermes setting that picks a model points at the gateway.** The setting covers the main model, compression summaries, side tasks and subagents. `setup-agent.sh` stops and names each setting that would still skip the gateway.
+  - **The gateway accepts a key from each network the gateway joins.** Before this fix, every agent got `403 outside_cluster`.
+
+  ### Model servers
+
+  - **A computer can run several model servers.** Each node in `site.json` lists `servers`, of the kind `ollama` or `mlx-lm`. An mlx-lm server runs on a Mac only.
+  - **Any agent can use any server and model.** A route names a model as `<node>/<server id>/<model id>`. The spend log names the server and the model, so runs compare by model.
+  - **Each model records its memory.** The config check refuses a node whose models need more than the node's `model_memory_gb`.
+  - **Ollama's settings come from `site.json`.** An Ollama server sets `context_length`, `parallel` and `keep_alive`.
+  - **Agents never reach a model server's own API.** The outgoing filter closes every model server port, so only the gateway reaches a model server.
+
+  ### Client and demo stacks
+
+  - **A stack runs on the computers picked for the stack.** `site.computers` names one computer or the whole cluster. `kit/stack-site.mjs` writes the stack's `site.json` from the cluster's `site.json`, with free ports.
+  - **A demo stack follows a client stack's rules.** A demo gets cloud keys only with a recorded permission: who granted the permission, the date and who pays. Without a yes, a demo runs on local models only.
+  - **Limits make a large computer act like a smaller one.** `nodes[].limits` caps a stack's CPUs, memory and model memory. The setup leaves out each model that does not fit, and names the model.
+  - **`offboard.sh check` checks the cluster's own stack too.** The check covers each model server, Kev's model, the job runner and the gateway.
+
+  ### Security fixes
+
+  - **Root runs the kit only from a checkout outside the agents' workspace.** `kit/check-kit.sh` refuses a checkout inside a workspace, and a checkout another account can change.
+  - **Root never follows a symlink an agent planted.** `kit/safe-files.mjs` takes every write in the workspace and the agent homes. `sync-skills.sh` and `setup-agent.sh` run as the stack's owner, never as root.
+  - **No kit script runs git in the shared workspace.** An agent can change a checkout's git hooks, and git runs the hooks.
+  - **A secrets deploy and a release upgrade need no password-free sudo.** The secrets helper and the root update job take each step that needs root. The database password passes on stdin, never on a command line.
+  - **The job runner listens only on loopback and Tailscale.**
+  - **The firewall rules pass Tailscale's addresses only on the Tailscale adapter.** The rules cover pf on a Mac and the Windows firewall.
+  - **CircleChat's caddy, postgres and redis images are pinned by digest.**
+  - **No setting holds a value from one install.** `site.stack_name`, `site.timezone` and `site.cloud_models.payer` replace the values the kit had built in.
+
+  ### Slack messages
+
+  - **Each Slack message names the computer or the stack that sent the message.** A computer can set an emoji in `nodes[].slack_icon`. Slack shows both only when the Slack app has the `chat:write.customize` scope.
+  - **The backup and the restore test report every failure to Slack, once.**
+  - **The update job posts when Lima or Colima has a new release.**
+
+  ### The network check
+
+  - **The cluster agent checks each computer's network every 5 minutes.** The agent posts in the cluster's Slack channel when one of three things happens:
+    - The default route leads to a router other than `nodes[].router`.
+    - github.com resolves to an address outside GitHub's own ranges.
+    - The computer's office network address changes.
+
+  ### Kev's private notes
+
+  - **Kev's disagreement notes go to a private repo.** The notes can quote the application's code. The hourly job pushes only to the repo in `data.repo`, and refuses a public repo.
+  - **A person reviews the notes before Kev's training reads them.** Each change opens a pull request. Training reads only the notes on the private repo's `main` branch.
+  - **The job is off by default.** With no `data.repo`, neither job runs.
+
+  ### The setup on a Mac
+
+  - **The kit runs Colima and Ollama as LaunchDaemons.** A full `setup-host.sh` on a Mac installs both. The setup stops when a second Colima or Ollama daemon runs outside the kit.
+  - **Each Colima VM stops cleanly before a Mac restart.** A VM can lose writes when macOS restarts under the VM.
+  - **The gateway's port for port jobs goes through `tailscale serve`.** Colima's VM does not hold the Mac's Tailscale address.
+  - **The gateway and the backup work under Colima.** The stack's owner owns the gateway's secrets and the backup's staging folder. Colima reads the Mac's files as the owner.
+  - **Root jobs get `HOME` and the full path to `chown`.** The backup and the restore test failed on a Mac without both.
+  - **The setup serves CircleChat and the app preview on the tailnet.** With `site.proxy` set to `tailscale`, the setup runs `tailscale serve` and checks the result.
+
+  ### Upgrading
+
+  Make each change below on an existing install before upgrading:
+
+  1. **Add `site.stack_name` and `site.timezone` to `site.json`.** Set `stack_name` to the name of the stack's GitHub environment. Set `timezone` to the time zone the reboot buttons used. Without `stack_name`, the backups move to a new path, and the secrets helper accepts only `cluster`.
+  2. **Rename the GitHub secret `ANTHROPIC_API_KEY` to `MODEL_KEY_DEFAULT`.** Move `PORTER_ANTHROPIC_API_KEY` to a `MODEL_KEY_<NAME>` secret too, and list `porter` in that key's agents.
+  3. **Remove `data.kev_disagreements_branch` from `site.json`.** The config check refuses the setting. Set `data.repo` to a private repo to keep the notes job.
+  4. **Clone the kit to a checkout outside the agents' workspace,** such as `~/recursica-knowledge`. Root refuses to run a checkout inside the workspace.
+  5. **Rerun `setup-host.sh` and `install-cluster.sh` from that checkout.** Also rerun `install-secrets-helper.sh`, and `setup-pc.sh` on Linux or in WSL.
+
+- 15ff792: CircleChat host kit: a new kit release installs only after an approver approves the release in Slack. The approval needs an authenticator code.
+
+  - **One post per release.** Each hour, the update job on the cluster's control computer looks for a new kit release. The job posts the release once in the cluster's Slack channel, with the version, the release notes and an "Install" button.
+  - **One approval for the whole cluster.** "Install" needs an approver and a 6-digit authenticator code, like "Resume". The Slack app sends the approval to the cluster agent on every computer. Each computer installs the release at the next hourly check.
+  - **Held until approved.** Until an approval, every computer holds the release, and nothing installs. The job posts a reminder once a day.
+  - **A new major version still asks first.** "Upgrade now" now needs an authenticator code, and counts as the release's approval.
+  - **A log of each approval.** Each computer logs the release, the approver, the time and the computer in `/var/lib/agent-cluster/release-approvals.log`.
+
+  Every other update keeps the same rules. Such updates include images, Ollama, the operating system and the CircleChat fork's commits.
+
+  ### Upgrading
+
+  The update job holds each kit release after this release. To install a release, an approver presses "Install" in the cluster's Slack channel. Each approver needs an authenticator code from `enroll.mjs`.
+
+- de11f2d: CircleChat host kit: client stacks run on Linux and in WSL with the same isolation as on a Mac. Each stack gets its own Colima VM, with QEMU and KVM, and its own LUKS image file with the client's key. The Unlock stack workflow opens and closes the image. `setup-pc.sh` prepares the computer, and `isolation-check.sh` prints the isolation table.
+
+  On every computer, the client's Docker VM now lives inside the disk image, including the disk that holds the containers and volumes. The VM mounts only the stack's folder, and never becomes the current Docker context.
+
+- a934733: ## The knowledge MCP server replaces `@recursica/mcp`
+
+  Betty and Barb now look up each adapter's names with the knowledge MCP server, which runs from this repository and serves this repository's skills. The old `@recursica/mcp` package is retired everywhere. That package kept a separate copy of the knowledge, which drifted from the skills. The package also recognized only the Mantine and MUI adapters, so the package found no adapter in a Beam project.
+
+  - **A command to register the server.** `npm run mcp:install` registers the knowledge server in Claude Code for every project, or for one project with `--project <dir>`. `npm run mcp:install:check` reports the server's state and changes nothing. The command works without the agents, for anyone who installs only some agents or none.
+  - **The agent install registers the server too.** `npm run agents:install` now runs the same step, and `agents:install:check` reports on the server. `--no-mcp` skips that step. Until now nothing registered a server on Claude Code, so Betty and Barb ran without one and no setup step said so.
+  - **The old server is removed.** Both commands remove a registration of `@recursica/mcp` for every project and for each folder Claude Code knows. A registration in a project's committed `.mcp.json` is reported for the team to remove, not edited. The check fails while any remain. A test fails if any file in this repository starts the old package again.
+  - **Betty and Barb use `component_api`.** The tool reads the adapter the project installs, so the lookup works for every adapter, Beam included. Betty's tool list also gets the knowledge server's skill tools, which her instructions already preferred over the manifest script. When the server is missing, both agents read the installed adapter's API instead.
+  - **The skills name the knowledge server.** The 41 skills that told agents to get the theme's variants from the Recursica MCP server now name the knowledge MCP server and the server's `component_api` tool. No rule changed; each skill gets a patch version.
+  - **Grok and CircleChat.** The Grok plugin starts only the knowledge server. A CircleChat host runs the knowledge server for Betty and Barb from the knowledge checkout, and no longer tracks or upgrades a version of the old package.
+
+  ### Upgrading
+
+  On Claude Code, pull and run `npm run agents:install`, or `npm run mcp:install` without the agents. On a CircleChat host, rerun `circlechat/setup-host.sh`. The setup switches Betty and Barb to the knowledge server and removes the old server's files from the shared workspace.
+
+### Patch Changes
+
+- 01355b6: CircleChat host kit: each GitHub App's private key is the secret `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`. GitHub refuses a secret name that starts with `GITHUB_`. The deploy workflow, the secrets helper and `circlechat/github/manifest.mjs` use the new name. Copy `circlechat/deploy/deploy-secrets.yml` to the private repo again.
+- 06e2f0f: CircleChat host kit: `setup-agent.sh barb` sets Barb's limits from `agents/barb/runtime/hermes.md` on each run. The limits are `delegation.oneshot_max_children`, `delegation.max_concurrent_children`, `delegation.max_iterations` and `tool_loop_guardrails.loop_caps.max_subagents`, set inside the `delegation` block that Hermes's own default config already has. Before, the script added them only when no `delegation` block existed, so a fresh install never got them. The script also gives Barb her Kev-engine key from `$CC_DIR/.env` when none is given, and checks `HERMES_TIMEOUT`, printing only `HERMES_TIMEOUT ok` or the value it should be.
+- 9228ae5: CircleChat host kit: the smoke install and the install guide use the CircleChat fork's renamed branch, `recursica/local-fixes`. The old name no longer exists, so the smoke install failed to clone CircleChat.
+- 688a9ba: Dependabot checks the repository's npm packages, GitHub Actions and Docker images each day. Dependabot opens one pull request per package system, for a version at least 7 days old.
+- 9698524: CircleChat host kit: on a Mac, `give_home` no longer stops at a file in an agent's home that root owns on the Mac. Older kits copied `SOUL.md`, the skills and `knowledge-mcp` into each home with sudo, and Colima refuses to change those files, so `setup-agent.sh` failed with only `EPERM: operation not permitted, fchmod` and left the home part-changed. `give_home` now replaces each such entry with a copy it makes itself, with the same text, and sets the copy. An entry that still cannot be changed is named in the error, and every other entry is still set.
+- 2a2bd9f: CircleChat host kit: `setup-agent.sh` turns off Hermes's model-catalog refresh and update checks for every agent. Hermes's gateway starts on each turn and, 30 seconds later, refreshed its model picker's lists from `hermes-agent.nousresearch.com`, `openrouter.ai` and `portal.nousresearch.com`, which the outgoing filter refuses, so each turn left three refusals in the filter's log. On each run, the script now sets `model_catalog.enabled: false`, `updates.check: false` and `plugins.auto_update_check_hours: 0` in the agent's `config.yaml` (`kit/hermes-lookups.mjs`), inside the blocks the file already has, and keeps every other key. Each change is printed by key name, and a second run changes nothing. Barb's limits and these settings share one YAML merge, `kit/yaml-keys.mjs`.
+- 54df640: Loki: on CircleChat, each file is written with the `write_file` tool, checked with `ls -l` or `read_file` on the exact path, and attached to the study's task with a `share_to_task` action whose path is that `/workspace/loki/...` path. The chat gets one or two sentences, never the transcript. With no task for the request, Loki creates one with `create_task` first. Loki never says a file is created or attached unless the check passed in that turn. On every surface, Loki writes each document with a real tool call, never a tool call printed as text, and reports only documents he checked.
+- 011ffc2: CircleChat host kit: a rerun of `setup-host.sh`, `setup-node.sh` or `install-cluster.sh` restarts each service whose unit changes. Before, `setup-node.sh` rewrote kev-engine's systemd unit with a new `--host`, and kev-engine kept the old setting until a restart by hand.
+
+  - **Linux and WSL:** a changed unit gets `systemctl daemon-reload` and `systemctl restart`. An unchanged unit is not written again, and the service keeps running.
+  - **macOS:** an unchanged plist keeps the service running on every rerun. Before, each rerun restarted each service, changed or not.
+  - **Settings files count as part of the unit.** A service's unit holds a fingerprint of the files the service reads at the start, never the files' contents. The secrets file restarts kev-engine and jobd. The kit's `package.json` restarts jobd, the token service and the cluster agent after a new release.
+  - **Scheduled jobs** get the new schedule or command at the next run, and run nothing at once.
+
+  ### Upgrading
+
+  Rerun `setup-host.sh`, `setup-node.sh` and `install-cluster.sh` once on each computer. The first rerun adds the fingerprint to each unit that reads a settings file, so each such service restarts once.
+
+- aa34c1d: CircleChat host kit: the smoke install clones only Border UX's CircleChat fork, `borderux/recursica-circlechat`. A failed clone now stops the smoke install, instead of falling back to the original CircleChat, which lacks the agents' network setting.
+- ebcdf9a: CircleChat host kit: CircleChat's api, worker and bridge mount the shared workspace at `/workspace`, read-only, so an agent's attachment (`share_to_task`, `share_files`) and its context files (`BRIEF.md`, `knowledge/`, `projects/`) can be read. Before, `setup-host.sh` looked for `:/workspace` in `compose.agents.yml`, found CircleChat's comment that names the mount, and never added it, so every attachment failed with "not a regular file". `setup-host.sh` now writes `compose.workspace.yml` with the mount and adds it to `COMPOSE_FILE`, in every mode and every stack. It removes the read-write line an older kit added to `compose.agents.yml`. CircleChat's `project_note` action writes into `/workspace/projects` from the api, and now fails with an error.
+
 ## 0.12.0
 
 ### Minor Changes
