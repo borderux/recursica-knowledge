@@ -32,6 +32,8 @@ Tailscale or other VPN address, or `host.docker.internal` for the control machin
 never joins a route: cloud models come from `model_keys`, as "Cloud models and the model gateway" describes. Kev-engines are tried best-first by `priority`, and Kev moves on by itself when one
 is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 
+**A rerun restarts only the services that change.** `setup-host.sh`, `setup-node.sh` and `install-cluster.sh` rewrite each service's systemd unit or launchd plist. A running service restarts when the service's command or settings change, such as a new `--host`. A change to a settings file, such as the secrets file, restarts the service too. A new kit release restarts each service that runs the kit's code: jobd, the token service and the cluster agent. Every other service keeps running. Each rerun prints `<service> changed: restarted` or `<service> is running and unchanged`.
+
 ### Model servers
 
 **A computer can run more than one model server.** List each server under the node's `servers`, with the models the server serves. The kit supports two kinds of server:

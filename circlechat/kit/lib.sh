@@ -80,26 +80,51 @@ check_vm_limits() {
   fi
 }
 
+# Writes a unit file only when the file's text changes. Returns 0 after a write, 1 for no change.
+#   write_unit <file> <text>
+write_unit() {
+  [ "$(cat "$1" 2>/dev/null)" = "$2" ] && return 1
+  printf '%s\n' "$2" | sudo tee "$1" >/dev/null
+}
+
+# A fingerprint of the files a service reads at the start. A missing file counts as empty. sudo
+# reads each file, since a secrets file can belong to root.
+#   settings_fingerprint <file>...
+settings_fingerprint() {
+  local f
+  for f in "$@"; do printf '%s\0' "$f"; sudo cat "$f" 2>/dev/null || true; printf '\0'; done \
+    | { sha256sum 2>/dev/null || shasum -a 256; } | cut -c1-16
+}
+
 # Install a long-running service or a scheduled job, the native way for this OS.
 #   install_unit NAME "COMMAND" [WORKDIR] [USER] [SCHEDULE]
 # SCHEDULE empty = keep running (restart on failure, start at boot); "boot" = run once at each
 # start-up; "hourly" = every hour; or a fixed time as a systemd calendar line: "*-*-* 02:00" every
 # day, "Sun *-*-* 03:00" every Sunday, "*-*-01 03:30" on the first of each month. A fixed time also
 # works on macOS, where launchd gets the same day and time.
+# A rerun rewrites a unit only when the unit changes. A running service with a changed unit
+# restarts, so the new command and settings take effect. A service with no change keeps running.
+# UNIT_SETTINGS names the files a service reads at the start, such as a secrets file or the kit's
+# package.json. A change to one of the files counts as a change to the unit. The unit holds only
+# a fingerprint of the files, never the files' contents.
 # On macOS, UNIT_EXIT_TIMEOUT sets the seconds launchd waits for the service to stop, 20 by default.
-# UNIT_KEEP=1 leaves a loaded service running when the service's plist has not changed.
 # On macOS, launchd gives a job no HOME. A root job gets HOME=/var/root, root's home folder, so a
 # program that keeps a cache in the home folder, such as restic in the backup, finds one.
 install_unit() {
-  local name="$1" cmd="$2" dir="${3:-$HOME}" user="${4:-$(id -un)}" sched="${5:-}"
+  local name="$1" cmd="$2" dir="${3:-$HOME}" user="${4:-$(id -un)}" sched="${5:-}" stamp=""
+  [ -n "${UNIT_SETTINGS:-}" ] && stamp="settings $(settings_fingerprint $UNIT_SETTINGS)"
   if [ "$OS" = Linux ]; then
+    # SYSTEMD_UNIT_DIR is for the tests.
+    local units="${SYSTEMD_UNIT_DIR:-/etc/systemd/system}" changed=""
+    local unit="$units/$name.service" timer="$units/$name.timer"
     if [ "$sched" = boot ]; then
-      sudo tee "/etc/systemd/system/$name.service" >/dev/null <<UNIT
+      write_unit "$unit" "$(cat <<UNIT
 [Unit]
 Description=$name (circlechat kit)
 After=network-online.target docker.service
 Wants=network-online.target
-
+${stamp:+# $stamp
+}
 [Service]
 Type=oneshot
 RemainAfterExit=yes
@@ -110,14 +135,17 @@ ExecStart=/bin/bash -lc '$cmd'
 [Install]
 WantedBy=multi-user.target
 UNIT
-      sudo systemctl daemon-reload && sudo systemctl enable "$name.service"
+)" && changed=1
+      if [ -n "$changed" ]; then sudo systemctl daemon-reload; fi
+      sudo systemctl enable --quiet "$name.service"
     elif [ -z "$sched" ]; then
-      sudo tee "/etc/systemd/system/$name.service" >/dev/null <<UNIT
+      write_unit "$unit" "$(cat <<UNIT
 [Unit]
 Description=$name (circlechat kit)
 After=network-online.target docker.service
 Wants=network-online.target
-
+${stamp:+# $stamp
+}
 [Service]
 User=$user
 WorkingDirectory=$dir
@@ -128,19 +156,30 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 UNIT
-      sudo systemctl daemon-reload && sudo systemctl enable --now "$name.service"
+)" && changed=1
+      if [ -n "$changed" ]; then
+        sudo systemctl daemon-reload
+        sudo systemctl enable --quiet "$name.service"
+        # restart starts a stopped service too.
+        sudo systemctl restart "$name.service"
+        echo "$name changed: restarted"; return 0
+      fi
+      sudo systemctl enable --quiet --now "$name.service"
+      echo "$name is running and unchanged"; return 0
     else
-      sudo tee "/etc/systemd/system/$name.service" >/dev/null <<UNIT
+      write_unit "$unit" "$(cat <<UNIT
 [Unit]
 Description=$name (circlechat kit)
-
+${stamp:+# $stamp
+}
 [Service]
 Type=oneshot
 User=$user
 WorkingDirectory=$dir
 ExecStart=/bin/bash -lc '$cmd'
 UNIT
-      sudo tee "/etc/systemd/system/$name.timer" >/dev/null <<UNIT
+)" && changed=1
+      write_unit "$timer" "$(cat <<UNIT
 [Unit]
 Description=$name schedule
 
@@ -151,10 +190,14 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 UNIT
-      sudo systemctl daemon-reload && sudo systemctl enable --now "$name.timer"
+)" && changed=1
+      if [ -n "$changed" ]; then sudo systemctl daemon-reload; fi
+      sudo systemctl enable --quiet --now "$name.timer"
     fi
+    [ -n "$changed" ] || { echo "$name is unchanged"; return 0; }
   elif [ "$OS" = Darwin ]; then
-    local label="io.recursica.$name" plist="/Library/LaunchDaemons/io.recursica.$name.plist" timing
+    # LAUNCHD_DIR is for the tests.
+    local label="io.recursica.$name" plist="${LAUNCHD_DIR:-/Library/LaunchDaemons}/io.recursica.$name.plist" timing
     local xcmd; xcmd="$(printf '%s' "$cmd" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')"   # plist is XML
     if [ "$sched" = boot ]; then
       timing="<key>RunAtLoad</key><true/>"
@@ -171,7 +214,8 @@ UNIT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>Label</key><string>$label</string>
+${stamp:+  <!-- $stamp -->
+}  <key>Label</key><string>$label</string>
   <key>UserName</key><string>$user</string>
   <key>WorkingDirectory</key><string>$dir</string>
   <key>ProgramArguments</key><array><string>/bin/bash</string><string>-lc</string><string>$xcmd</string></array>
@@ -181,11 +225,15 @@ UNIT
 </dict></plist>
 PLIST
 )"
-    if [ -n "${UNIT_KEEP:-}" ] && [ "$(sudo cat "$plist" 2>/dev/null)" = "$body" ] && sudo launchctl print "system/$label" >/dev/null 2>&1; then
+    if [ "$(sudo cat "$plist" 2>/dev/null)" = "$body" ] && sudo launchctl print "system/$label" >/dev/null 2>&1; then
       echo "$name is running and unchanged"; return 0
     fi
     printf '%s\n' "$body" | sudo tee "$plist" >/dev/null
-    sudo launchctl bootout system "$plist" 2>/dev/null || true
+    # bootout stops a loaded service, and bootstrap starts the service with the new plist.
+    if sudo launchctl bootout system "$plist" 2>/dev/null; then
+      sudo launchctl bootstrap system "$plist"
+      echo "$name changed: restarted"; return 0
+    fi
     sudo launchctl bootstrap system "$plist"
   else
     echo "install_unit: unsupported OS $OS. Set up '$name' by hand: $cmd" >&2
@@ -289,7 +337,7 @@ mac_services() {
       brew services stop colima
     fi
     # colima stop can take a minute, and launchd's default wait is 20 seconds.
-    UNIT_EXIT_TIMEOUT=150 UNIT_KEEP=1 install_unit colima "HOME=$HOME PATH=$(dirname "$bin"):/usr/bin:/bin:/usr/sbin:/sbin exec $kit/colima-service.sh $profile" "$HOME" "$(id -un)"
+    UNIT_EXIT_TIMEOUT=150 install_unit colima "HOME=$HOME PATH=$(dirname "$bin"):/usr/bin:/bin:/usr/sbin:/sbin exec $kit/colima-service.sh $profile" "$HOME" "$(id -un)"
     # The wait is for the service's own VM. A VM that runs outside the service answers until the
     # service stops that VM, so Docker answering alone proves nothing. colima start activates the
     # VM's Docker context, colima or colima-<profile>, which the rest of the setup uses.
@@ -303,7 +351,7 @@ mac_services() {
   if [ -n "$port" ]; then
     bin="$(command -v ollama)" || { echo "site.json gives this computer an Ollama server, and Ollama is not installed. Install Ollama with: brew install ollama"; return 1; }
     if brew services list 2>/dev/null | awk '$1 == "ollama" && $2 != "none" { f = 1 } END { exit !f }'; then brew services stop ollama; fi
-    UNIT_KEEP=1 install_unit ollama "HOME=$HOME OLLAMA_HOST=127.0.0.1:$port${*:+ $*} exec $bin serve" "$HOME" "$(id -un)"
+    install_unit ollama "HOME=$HOME OLLAMA_HOST=127.0.0.1:$port${*:+ $*} exec $bin serve" "$HOME" "$(id -un)"
   fi
 }
 
