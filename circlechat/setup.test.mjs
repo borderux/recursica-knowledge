@@ -549,3 +549,74 @@ test("the Slack notifier shows the stack's name as the sender of each message", 
   assert.ok(notifier, r.stdout);
   assert.match(notifier, / -e STACK_NAME=ops /);
 });
+
+// Cloud-model requests in Slack (cluster/cloud-requests.mjs).
+function cloudSite() {
+  const site = structuredClone(example);
+  Object.assign(site.site, { slack_channel_id: "C0STACK01" });
+  site.cloud_approvers = [{ email: "pat@example.com", slack_user: "U0PAT0001" }];
+  return site;
+}
+
+test("setup-host makes the service token and the webhook secret once, in root-only files", () => {
+  const s = sandbox(cloudSite());
+  // The sudo stand-in finds no secret yet, so the setup makes both.
+  s.stub("sudo", `case "$*" in "test -s "*cloud-approvals*) exit 1 ;; esac; if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; fi; exit 0`);
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls();
+  const dir = path.join(s.cc, "cloud-approvals");
+  assert.match(calls, new RegExp(`sudo chmod 711 ${dir}\\n`));
+  for (const f of ["approval-token", "webhook-secret"]) {
+    assert.match(calls, new RegExp(`sudo install -m 600 /dev/null ${dir}/${f}\\nsudo tee ${dir}/${f}\\n`), "the file is root-only before the secret goes in");
+    assert.match(fs.readFileSync(path.join(s.units, f), "utf8"), /^[0-9a-f]{64}\n$/);
+  }
+  const e = s.dotenv();
+  assert.equal(e.CLOUD_APPROVAL_TOKEN, undefined);
+  assert.equal(e.CLOUD_REQUEST_WEBHOOK_SECRET, undefined);
+
+  // A second run finds both secrets, and keeps them.
+  const again = sandbox(cloudSite());
+  assert.equal(again.run("setup-host.sh", "--secrets-only").status, 0);
+  assert.doesNotMatch(again.calls(), /sudo install -m 600 \/dev\/null \S*cloud-approvals/);
+});
+
+test("with cloud_approvers, CircleChat's api gets the approvers, the webhook's address and both secret files", () => {
+  const s = sandbox(cloudSite());
+  fs.appendFileSync(path.join(s.cc, ".env.example"), "SLACK_BOT_TOKEN=xoxb-1\n");
+  const dir = path.join(s.cc, "cloud-approvals");
+  fs.mkdirSync(dir);
+  for (const f of ["approval-token", "webhook-secret"]) fs.writeFileSync(path.join(dir, f), "s3cret-value\n");
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(s.dotenv().COMPOSE_FILE, /:compose\.cloud-approvals\.yml$/);
+  const yml = fs.readFileSync(path.join(s.cc, "compose.cloud-approvals.yml"), "utf8");
+  assert.match(yml, /CLOUD_APPROVERS: "pat@example\.com"/);
+  assert.match(yml, /CLOUD_REQUEST_WEBHOOK_URL: http:\/\/cloud-requests:8080\/cloud-request/);
+  assert.match(yml, new RegExp(`- ${dir}/approval-token:/run/secrets/cloud-approval-token:ro`));
+  assert.match(yml, new RegExp(`- ${dir}/webhook-secret:/run/secrets/cloud-request-webhook-secret:ro`));
+  assert.match(yml, /export CLOUD_APPROVAL_TOKEN="\$\$\(cat \/run\/secrets\/cloud-approval-token\)" CLOUD_REQUEST_WEBHOOK_SECRET="\$\$\(cat \/run\/secrets\/cloud-request-webhook-secret\)"; exec "\$\$@"/);
+  assert.doesNotMatch(yml, /s3cret-value/);
+  // The receiver: on the stack's own network, with no published port and no secret on its command line.
+  const calls = s.calls();
+  const rx = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-cloud-requests "));
+  assert.ok(rx, r.stdout);
+  assert.match(rx, /--network circlechat_default --network-alias cloud-requests /);
+  assert.match(rx, new RegExp(`-v ${dir}/webhook-secret:/run/secrets/webhook-secret:ro`));
+  assert.match(rx, / -e COMPUTER=machine-1 -e CLOUD_APPROVER_SLACK=pat@example\.com=U0PAT0001 /);
+  assert.match(rx, / node cloud-requests\.mjs serve$/);
+  assert.doesNotMatch(rx, / -p |s3cret-value/);
+  assert.doesNotMatch(calls, /docker network connect \S*( \S+)* cc-cloud-requests/, "the receiver joins no other network");
+  assert.ok(fs.existsSync(path.join(s.cc, "cloud-requests/cloud-requests.mjs")));
+});
+
+test("without cloud_approvers, the setup removes the api's settings and the receiver", () => {
+  const s = sandbox(example);
+  fs.writeFileSync(path.join(s.cc, "compose.cloud-approvals.yml"), "old\n");
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.existsSync(path.join(s.cc, "compose.cloud-approvals.yml")), false);
+  assert.doesNotMatch(s.dotenv().COMPOSE_FILE, /cloud-approvals/);
+  assert.match(s.calls(), /docker rm -f cc-cloud-requests\n/);
+  assert.doesNotMatch(s.calls(), /docker run -d --name cc-cloud-requests /);
+});

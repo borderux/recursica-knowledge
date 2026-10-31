@@ -403,6 +403,29 @@ export function placeStack(site) {
   return { site: out, notes, errs };
 }
 
+// The people who answer the stack's cloud-model requests in Slack (cluster/cloud-requests.mjs).
+// Each entry holds the person's CircleChat email and Slack user ID.
+export function cloudApproverErrors(site) {
+  const list = site.cloud_approvers;
+  if (list === undefined) return [];
+  if (!Array.isArray(list)) return ["cloud_approvers must be a list of { \"email\", \"slack_user\" }"];
+  const errs = [], emails = new Set(), users = new Set();
+  list.forEach((a, i) => {
+    const where = `cloud_approvers[${i}]`;
+    if (typeof a !== "object" || a === null) { errs.push(`${where} must be an object with email and slack_user`); return; }
+    const extra = Object.keys(a).filter((k) => !["email", "slack_user"].includes(k));
+    if (extra.length) errs.push(`${where}: ${extra.join(", ")} is not a setting. Use email and slack_user`);
+    if (typeof a.email !== "string" || !/^[^\s@,=]+@[^\s@,=]+\.[^\s@,=]+$/.test(a.email)) errs.push(`${where}.email must be the person's CircleChat email`);
+    else if (emails.has(a.email.toLowerCase())) errs.push(`${where}.email ${a.email} is listed twice`);
+    else emails.add(a.email.toLowerCase());
+    if (typeof a.slack_user !== "string" || !/^[UW][A-Z0-9]{6,}$/.test(a.slack_user)) errs.push(`${where}.slack_user must be a Slack user ID, such as U0123ABCD`);
+    else if (users.has(a.slack_user)) errs.push(`${where}.slack_user ${a.slack_user} is listed twice`);
+    else users.add(a.slack_user);
+  });
+  if (list.length && !site.site?.slack_channel_id) errs.push("cloud_approvers needs site.slack_channel_id: the requests go to the stack's own channel");
+  return errs;
+}
+
 export function validate(site, { cluster } = {}) {
   const errs = [];
   const nodes = site.nodes ?? [];
@@ -435,6 +458,7 @@ export function validate(site, { cluster } = {}) {
     else if (!SLUG.test(t.stack_name) || t.stack_name.startsWith("client-")) errs.push(`site.stack_name "${t.stack_name}" must be lowercase letters, digits and hyphens, and must not start with "client-"`);
   }
   if (t.slack_channel_id !== undefined && !/^[CG][A-Z0-9]{6,}$/.test(t.slack_channel_id)) errs.push("site.slack_channel_id must be a Slack channel ID, such as C0123ABCD");
+  errs.push(...cloudApproverErrors(site));
   // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
@@ -714,6 +738,12 @@ export function render(site) {
     // The control computer's limits: the most the stack's Docker VM may have (setup-host.sh checks).
     `LIMIT_CPUS=${control?.limits?.cpus ?? ""}`,
     `LIMIT_MEMORY_GB=${control?.limits?.memory_gb ?? ""}`,
+    // The cloud approvers (cluster/cloud-requests.mjs): the emails for CircleChat's CLOUD_APPROVERS,
+    // each email with the person's Slack user ID for the Slack posts, and the stack's control
+    // computer, whose cluster agent sends each answer to CircleChat.
+    `CLOUD_APPROVERS=${(site.cloud_approvers ?? []).map((a) => a.email.toLowerCase()).join(",")}`,
+    `CLOUD_APPROVER_SLACK=${(site.cloud_approvers ?? []).map((a) => `${a.email.toLowerCase()}=${a.slack_user}`).join(",")}`,
+    `CONTROL_COMPUTER=${control?.name ?? ""}`,
   ].join("\n") + "\n";
   const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":");
   const hosts = egressAllow(site);

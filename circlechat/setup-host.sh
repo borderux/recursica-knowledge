@@ -324,6 +324,53 @@ if [ "$CLOUD_MODELS" = local-only ]; then
 fi
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
+# Cloud-model requests in Slack (cluster/cloud-requests.mjs). Two secrets, each made once, like the
+# session secret, in root-only files: CircleChat's service token for the answer API, and the
+# signing secret of CircleChat's request webhook. The folder lets the owner check that a file
+# exists, and read neither. Only the full setup and --secrets-only without the helper have sudo.
+CLOUD_DIR="$CC_DIR/cloud-approvals"
+if [ "$HELPER" = false ]; then
+  sudo mkdir -p "$CLOUD_DIR" && sudo chmod 711 "$CLOUD_DIR"
+  for f in approval-token webhook-secret; do
+    if ! sudo test -s "$CLOUD_DIR/$f"; then
+      sudo install -m 600 /dev/null "$CLOUD_DIR/$f"
+      openssl rand -hex 32 | sudo tee "$CLOUD_DIR/$f" >/dev/null
+    fi
+  done
+  # On a Mac, the owner owns both, so Colima can mount them (kit/lib.sh).
+  own_for_docker "$CLOUD_DIR/approval-token" "$CLOUD_DIR/webhook-secret"
+fi
+# With cloud_approvers in site.json, CircleChat's api gets the approvers' emails, the webhook's
+# address and both secrets. The api reads the secrets from the mounted files when it starts, so
+# neither secret is in .env or in the api's settings that docker inspect shows. The webhook's
+# address is the receiver's name on the stack's own network, which nothing outside the stack
+# reaches.
+CLOUD_REQUESTS=off
+if [ -n "$CLOUD_APPROVERS" ] && [ -f "$CLOUD_DIR/approval-token" ] && [ -f "$CLOUD_DIR/webhook-secret" ]; then
+  CLOUD_REQUESTS=on
+  cat > compose.cloud-approvals.yml <<YAML
+# Written by setup-host.sh: cloud-model requests in Slack (circlechat/README.md, "Cloud-model
+# requests in Slack").
+services:
+  api:
+    environment:
+      CLOUD_APPROVERS: "$CLOUD_APPROVERS"
+      CLOUD_REQUEST_WEBHOOK_URL: http://cloud-requests:8080/cloud-request
+    volumes:
+      - $CLOUD_DIR/approval-token:/run/secrets/cloud-approval-token:ro
+      - $CLOUD_DIR/webhook-secret:/run/secrets/cloud-request-webhook-secret:ro
+    entrypoint:
+      - sh
+      - -c
+      - 'export CLOUD_APPROVAL_TOKEN="\$\$(cat /run/secrets/cloud-approval-token)" CLOUD_REQUEST_WEBHOOK_SECRET="\$\$(cat /run/secrets/cloud-request-webhook-secret)"; exec "\$\$@"'
+      - cloud-secrets
+YAML
+  CF="$CF:compose.cloud-approvals.yml"
+else
+  rm -f compose.cloud-approvals.yml
+  [ -z "$CLOUD_APPROVERS" ] || echo "Cloud-model requests are off: $CLOUD_DIR has no service token or webhook secret yet. Run setup-host.sh in a terminal."
+fi
+set_env COMPOSE_FILE "$CF"
 NET="${COMPOSE_PROJECT_NAME}_default"
 
 start_egress() {
@@ -465,6 +512,23 @@ start_gateway_and_notifier() {
     echo "Slack notifier running."
   else
     echo "Slack notifier off (needs notify.slack and site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env)."
+  fi
+
+  # The receiver of CircleChat's cloud-model requests (cluster/cloud-requests.mjs): on the stack's
+  # own network only, with no published port. The receiver checks each request's signature, then
+  # posts the request in the stack's channel with Approve and Deny buttons.
+  docker rm -f "cc-cloud-requests$SUFFIX" >/dev/null 2>&1 || true
+  if [ "$CLOUD_REQUESTS" = on ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL; then
+    mkdir -p "$CC_DIR/cloud-requests" && cp "$HERE/cluster/cloud-requests.mjs" "$CC_DIR/cloud-requests/"
+    docker run -d --name "cc-cloud-requests$SUFFIX" --restart unless-stopped --network "$NET" --network-alias cloud-requests \
+      -v "$CC_DIR/cloud-requests":/app:ro -v "$CLOUD_DIR/webhook-secret":/run/secrets/webhook-secret:ro -w /app \
+      -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
+      -e STACK_NAME="$STACK_NAME" -e COMPUTER="$CONTROL_COMPUTER" -e CLOUD_APPROVER_SLACK="$CLOUD_APPROVER_SLACK" \
+      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e CC_URL="$PUBLIC_URL" \
+      "$(pin_image node:22-alpine)" node cloud-requests.mjs serve >/dev/null
+    echo "Cloud-model requests go to the stack's Slack channel."
+  elif [ "$CLOUD_REQUESTS" = on ]; then
+    echo "Cloud-model requests reach no Slack channel: the receiver needs site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env."
   fi
 }
 
