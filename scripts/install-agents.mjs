@@ -22,7 +22,7 @@
  *
  * Only the agents that touch no client data. Claire, Stu, Janice and Loki are not installed here: their
  * isolation is a data fence a prompt cannot carry, and a copy in every project on the machine is
- * the opposite of a fence. See their PORTING.md.
+ * the opposite of a fence. Loki runs on CircleChat only. See their PORTING.md.
  *
  * Betty and Barb also need the Recursica knowledge MCP server, so this registers it for every
  * project on the machine through `install-mcp.mjs`. `--no-mcp` skips that, and `npm run mcp:install` does it on

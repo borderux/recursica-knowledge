@@ -369,38 +369,78 @@ test("the Grok marketplace lists the plugin by this repository's git URL", () =>
 });
 
 /**
- * On CircleChat, Loki once said four files were "created and attached to the task" without
- * calling a tool, and once printed a raw tool call as his reply. His CircleChat persona names
- * each step of a file's turn in order: write with the tool, check the file, attach the file,
- * summarize in the chat, and create a task first when there is none. Checked in the persona that
- * ships, not only in the source fragment.
+ * On CircleChat, a step-by-step procedure for writing, checking and attaching files failed on
+ * gpt-oss: Loki wrote the tool calls as action entries, called a tool that does not exist, and
+ * never wrote a file. His CircleChat agent has the deliverables-only setting, so CircleChat saves a
+ * long reply as a file by itself. The persona that ships therefore says the transcript is the
+ * reply, makes only what the request asks for, keeps the synthetic banner and the made-up-names
+ * rule, and asks only when something is truly open. Checked in the built SOUL.md, not the source.
  */
-test("Loki's CircleChat persona writes, checks and attaches each file before claiming it", () => {
+test("Loki's CircleChat persona delivers each transcript as the reply, with no file step", () => {
   const soul = fs.readFileSync(
     path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"),
     "utf8",
   );
-  const at = (re) => {
-    const m = re.exec(soul);
-    assert.ok(m, `Loki's SOUL.md has no ${re}`);
-    return m.index;
-  };
-  const task = at(/emit one `create_task` action for the study/);
-  const write = at(/Write the file with the `write_file` tool\.\*\* Call the tool, with the full path: `\/workspace\/loki\/Loki_<project_name>\/<file>`/);
-  at(/Never print the call, a JSON object such as `\{"code": \.\.\.\}`, or code in the reply/);
-  const check = at(/Check that the file exists\.\*\* Run `ls -l` on the exact path, or read the file back with `read_file`/);
-  const attach = at(/"type":"share_to_task".*"files":\[\{"path":"\/workspace\/loki\/Loki_<project_name>\/<file>"\}\]/);
-  const reply = at(/Write one or two sentences.*Never paste the plan, a transcript or the answer key into the chat/);
-  assert.ok(task < write && write < check && check < attach && attach < reply, "the steps run in order");
-  at(/Never say a file is created, written or attached unless step 6 found the file in this turn/);
-  assert.doesNotMatch(soul, /Do not attach files/);
-  for (const f of [
-    path.join(repoRoot, "buzz-agents", "agents", "loki", "SYSTEM_PROMPT.md"),
-    path.join(artifactDir, "loki.md"),
+  const text = soul.replace(/\s+/g, " ");
+  assert.match(text, /## The transcript is the reply/);
+  assert.match(text, /Write each transcript as the text of the reply\. That is the whole delivery\./);
+  assert.match(text, /Never call `write_file`, `read_file`, a terminal or any other tool to deliver a transcript\./);
+  assert.match(text, /Never write an actions block or a `share_to_task` action for it\./);
+  assert.match(text, /\*\*One transcript per reply\.\*\*/);
+  // PR #198's procedure is gone: no step tells him to write, check or attach a file.
+  assert.doesNotMatch(text, /Write the file with the `write_file` tool/);
+  assert.doesNotMatch(text, /Check that the file exists/);
+  assert.doesNotMatch(text, /"type":"share_to_task"/);
+  assert.doesNotMatch(text, /emit one `create_task` action/);
+  assert.doesNotMatch(text, /\/workspace\/loki/);
+  assert.doesNotMatch(text, /create_folder|list_files/);
+});
+
+test("Loki's CircleChat persona makes only what is asked: no study plan or answer key unless asked", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /## Make exactly what the request asks for/);
+  assert.match(text, /Write no study plan, no answer key, no roster and no extra transcript unless the request asks for one\./);
+  assert.match(text, /Write down what was planted only when the request asks for an answer key\./);
+  // The Buzz layout, which always wrote a plan and a key, is gone.
+  assert.doesNotMatch(text, /00_STUDY_PLAN|99_ANSWER_KEY|Finish with the answer key/);
+});
+
+test("Loki's CircleChat persona keeps the synthetic banner, the made-up-names rule and the dataset refusal", () => {
+  const soul = fs.readFileSync(
     path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"),
-  ]) {
-    const text = fs.readFileSync(f, "utf8").replace(/\s+/g, " ");
-    assert.match(text, /Write every document with a real tool call\. A tool call printed in the reply as text, such as a block of JSON or code, writes nothing\./, path.relative(repoRoot, f));
-    assert.match(text, /Never report a document Loki did not check\./, path.relative(repoRoot, f));
-  }
+    "utf8",
+  );
+  assert.ok(
+    soul.includes("⚠️ SYNTHETIC — generated by Loki. Not real research.\nNo real person said any of this. Do not analyze as client data.\n"),
+    "the banner's two lines, verbatim",
+  );
+  const text = soul.replace(/\s+/g, " ");
+  assert.match(text, /The banner's two lines, then a title line in the same paragraph/);
+  assert.match(text, /Put nothing before the banner/);
+  assert.match(text, /Never use a real person's name, a real company, a real product, or anything a real participant said\./);
+  assert.match(text, /to add a transcript to a real or client dataset, .*say no and explain why\./);
+  assert.match(text, /## Blocked sites/);
+});
+
+test("Loki's CircleChat persona asks only when something is truly open", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /## Ask only when something is truly open/);
+  assert.match(text, /Choose sensible values for anything the request leaves out, and go/);
+  assert.match(text, /Ask a question only when the request leaves open something Loki cannot reasonably choose himself/);
+  assert.match(text, /Never ask to confirm a value Loki can choose\. Never echo a spec back and wait for a yes\./);
+  // The Buzz intake asked four questions and waited for a yes.
+  assert.doesNotMatch(text, /## Intake|Ask for four things|wait for a yes\. A ten-participant/);
+});
+
+test("Loki is built for CircleChat only", () => {
+  assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
+  assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
+  assert.match(
+    fs.readFileSync(path.join(agentsDir, "loki", "SKILL.md"), "utf8"),
+    /^targets: circlechat$/m,
+  );
 });

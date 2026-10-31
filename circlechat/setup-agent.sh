@@ -56,13 +56,14 @@ give_home "$H" || exit 1
 # file anew when it installs an agent, so each run, the hourly sync's included, sets it again.
 lock_bridge_config "$CC_DIR/hermes-homes" || exit 1
 
-# Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
-# What would break that fence is a tool server reaching client data, so refuse if he has any.
+# Loki on CircleChat has no Drive and no tool servers: each transcript is his reply
+# (agents/loki/platform/circlechat.md). A tool server reaching client data would break that fence,
+# so refuse if he has any.
 if [ "$SYNC" = false ] && [ "$HANDLE" = loki ]; then
   read_home "$H/config.yaml"
   if printf '%s\n' "$TEXT" | grep -qE '^mcp_servers:'; then
-    echo "Loki's config.yaml has mcp_servers. On CircleChat his fence is /workspace/loki and he has no"
-    echo "tool servers; one that reaches client data breaks the fence. Remove it, or set him up by hand."
+    echo "Loki's config.yaml has mcp_servers. On CircleChat he has no tool servers: each transcript is"
+    echo "his reply, and one that reaches client data breaks the fence. Remove it, or set him up by hand."
     exit 1
   fi
 fi
@@ -181,7 +182,8 @@ if [ "$HANDLE" = loki ]; then
   if ! printf '%s\n' "$TEXT" | grep -qE '^    context_length:'; then
     printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^[^ ]/ { aux = ($0 == "auxiliary:") } aux && $0 == "  compression:" { print "    context_length: " c }' | put_home "$H/config.yaml"
   fi
-  # The shared workspace keeps its own rules for now: the owner writes there, with sudo.
+  # The shared workspace keeps its own rules for now: the owner writes there, with sudo. The
+  # persona no longer writes here (his reply is the transcript); the folder is a harmless scratch space.
   sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/loki" 777
 fi
 

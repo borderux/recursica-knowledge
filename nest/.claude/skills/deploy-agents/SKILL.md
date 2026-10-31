@@ -335,14 +335,6 @@ still one shared `agents/claire/` for everybody.
 Do not hand-rename an agent in Buzz Desktop to achieve this. Use `--owner`, so the name is
 applied the one way the tooling recognises.
 
-**A fifth draft opens, for Loki, and you must tell the operator not to save it.** Every agent
-in the repository is restored — there is no skip list — and Loki generates synthetic
-transcripts. His fence is an environment variable no CLI flag reaches, so until
-`GUIDES/LOKI_SANDBOX_SETUP.md` has been worked through, saving him produces an agent with every
-client Drive and dataset on the machine in reach and a prompt that states they are absent. Say
-that plainly, in the channel, in the same message as the names: discard Loki's draft for now, or
-save it and leave him stopped. He is not part of this install and nothing in it waits on him.
-
 Someone else's `Claire (…)` already in the channel is **not** a conflict and not a reason to
 reuse it — it is theirs, on their machine, spending their budget. Two owner-suffixed Claires
 in one room is the convention working. What is a real problem is two agents on *one* Mac

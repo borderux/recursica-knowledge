@@ -924,9 +924,11 @@ The secrets helper writes the token to `$CC_DIR/kev-data.env` only, with mode 60
 | Alan   | Turns feedback about the rules into PRs on this repo, and adapter or theme problems into issues      | PR branches in `/workspace/kb-proposals`, issues |
 | Porter | Ports each golden-adapter (Mantine) release to the other adapters, one capped job per adapter        | One PR per target adapter, from a job            |
 
-Loki is set up the same way. On CircleChat he has no Drive: he writes only in `/workspace/loki`,
-and `setup-agent.sh` refuses him if his config has any tool server that could reach client data.
-He runs on a local model, so the script also pins his context sizes; see
+Loki, who makes synthetic interview transcripts for testing, is set up the same way, and
+CircleChat is the only place he runs. He has no Drive and no tool servers: each transcript is his
+reply, and with his agent set to deliverables-only CircleChat saves a long reply as `reply.md` on
+the message or the task. `setup-agent.sh` refuses him if his config has any tool server that could
+reach client data. He runs on a local model, so the script also pins his context sizes; see
 `agents/loki/runtime/hermes.md`.
 
 **Each persona is the built file `portable/circlechat/agents/<handle>/SOUL.md`**, made by

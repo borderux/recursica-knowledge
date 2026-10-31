@@ -7,9 +7,21 @@ every setting below came from.
 
 ## Fence
 
-On CircleChat Loki has no Drive and no tool servers. He writes only in `/workspace/loki/`, one
-folder per study (`Loki_<project_name>`). `setup-agent.sh` refuses him if his `config.yaml` has
-any `mcp_servers`, since a server that reaches client data would break the fence.
+On CircleChat Loki has no Drive and no tool servers, and needs none: his reply is the transcript.
+`setup-agent.sh` refuses him if his `config.yaml` has any `mcp_servers`, since a server that
+reaches client data would break the fence.
+
+## Delivery: the reply, not a file
+
+Set Loki's CircleChat agent to **deliverables-only**. With that setting, CircleChat turns any reply
+over 600 characters into a file named `reply.md`: attached to the message in a chat, or saved on
+the task when he replies on one. The message keeps the reply's first paragraph, which for Loki is
+the synthetic banner and the title line. So a transcript reaches the task as a file without Loki
+calling a tool or writing an action. Without the setting, a reply up to 2,000 characters in chat
+(6,000 on a task) stays a message, and anything longer still becomes `reply.md`.
+
+`setup-host.sh` and `setup-agent.sh` still make `/workspace/loki`. Nothing in the persona uses it
+now; it is harmless, and left for an operator who wants a scratch folder.
 
 ## Model
 
@@ -43,19 +55,16 @@ his summaries stay on the cluster.
 
 ## What a small local model gets wrong
 
-Seen in testing, and why `platform/circlechat.md` spells each turn out as
-numbered steps: it split one study across two folders, marked a two-interview study done after
-one, and lost the link to its transcript to a malformed attachment. It did write a good
-transcript. Concrete, checkable steps (one folder, list before and after each write, reply with
-the path, progress counted from files) are what it follows.
+On a small local model Loki split one study across two folders, marked a two-interview study done
+after one, and lost the link to a transcript to a malformed attachment. He did write a good
+transcript.
 
-On gpt-oss, two more failures followed. Loki said four files were "created and attached to the
-task" without calling a tool at all, and once printed a raw tool call (`{"code": ...}`) as his
-chat reply. So each turn now names the tool and the check: write the file with `write_file`,
-check it with `ls -l` or `read_file` on the exact path, attach it with a `share_to_task` action
-whose path is that `/workspace/loki/...` path, and post one or two sentences in the chat. With
-no task for the request, he creates one with `create_task` first. He never says a file exists
-or is attached unless the check passed in that turn.
+On gpt-oss, a numbered procedure (write the file with `write_file`, check it with `ls -l` or
+`read_file`, attach it with a `share_to_task` action) failed too. He said four files were "created
+and attached to the task" without calling a tool, printed a raw tool call as his chat reply, wrote
+`write_file` and `read_file` as entries in his actions block, called a `run_code` tool that does
+not exist, and never wrote a file.
 
-The attachment works only when CircleChat's api can read `/workspace`. `setup-host.sh` mounts the
-workspace there, read-only, in the api, the worker and the bridge (`compose.workspace.yml`).
+So the persona asks for nothing he can get wrong that way. He writes the transcript as his reply,
+one per turn, and CircleChat's deliverables-only setting makes it a file. Writing text is the one
+thing every one of those runs did well.

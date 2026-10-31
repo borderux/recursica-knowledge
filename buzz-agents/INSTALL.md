@@ -27,13 +27,7 @@ Two halves, and it is worth knowing which is which when something breaks:
 An agent without the nest starts up and then cannot do anything, because every tool it
 reaches for lives in `~/.buzz`. Install both.
 
-There is a fifth agent in `buzz-agents/` — **Loki**, who manufactures synthetic transcripts so
-the pipeline can be tested without real research in it. He is not part of this install and
-nothing here depends on him: he needs a sandbox Drive of his own before he is safe to run, and
-that is [`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../nest/GUIDES/LOKI_SANDBOX_SETUP.md). Step 5 says
-what to do with his draft in the meantime.
-
-And a seventh — **Betty**, the designer agent, who takes a product request and builds the UI on
+And a fifth — **Betty**, the designer agent, who takes a product request and builds the UI on
 Recursica. She installs in minutes and independently of everything else here, because she needs
 no service-account key, no dataset, no Drive folder and no client: research reaches her through
 Claire rather than through credentials of her own. See
@@ -237,14 +231,6 @@ branch should be read by a person before it starts answering them.
 
 The script also prints a `MANUAL` block for the few settings the CLI has no flag for
 (parallelism, timeouts, avatar upload). Work through it; it is short.
-
-> **Loki is in that list, and he is the one draft not to save yet.** Every agent stored in this
-> repository is restored — there is no skip list — so a Loki form opens along with the rest. His
-> isolation is an environment variable that no CLI flag can set, and until
-> [`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../nest/GUIDES/LOKI_SANDBOX_SETUP.md) is done a saved Loki
-> starts with every client Drive and dataset on the machine in reach, while his prompt tells him
-> they are absent. Discard the draft now and come back to it, or save it and leave him stopped.
-> Nothing else in this install needs him.
 
 Then **restart Buzz Desktop.** MCP servers are read once at startup, so until you do, your
 agents have no tools.
