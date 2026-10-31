@@ -98,8 +98,7 @@ values file entry and no dataset. Nothing in the install is hers alone.
 
 **Her one property does not come with her, and three of the four ways to carry it do not work.**
 A Buzz agent has no `tools:` line: it inherits whatever the session holds. Two mechanisms that
-look like they would fix that are recorded as failures in
-[`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../../nest/GUIDES/LOKI_SANDBOX_SETUP.md). `agent_args` is
+look like they would fix that were tried, for a Buzz agent before her, and failed. `agent_args` is
 dropped before it reaches the CLI. Buzz overwrites a per-agent `CLAUDE_CODE_EXECUTABLE` after
 per-agent config, and a wrapper script set there never runs. Neither says anything when it
 fails.
@@ -124,9 +123,8 @@ A design reviewer should be able to reach none of it.
 
 **The cost is the operator's to weigh, not ours to hide.** An isolated config directory is not
 read from the Keychain. The login token has to be written into a file in that directory instead.
-The Loki guide sets out the same trade-off and the same reasoning. For an agent whose entire
-risk is editing a git checkout, an operator may reasonably decide the prose fence plus code
-review is the better choice.
+For an agent whose entire risk is editing a git checkout, an operator may reasonably decide
+the prose fence plus code review is the better choice.
 
 **If the operator chooses the prose fence, her prompt is honest about it.** The Buzz fragment tells her she is
 holding write tools, forbids the two paths that survive any fence (`Bash`, and dispatching a

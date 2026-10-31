@@ -94,7 +94,7 @@ In order, first hit wins:
 | `fences/<community>/<agent>/` | A **client-bound** agent — different tools per client |
 | `fences/_shared/<agent>/` | A **client-independent** agent — the same tools everywhere |
 | `claude-config-<agent>-<community>/` | Legacy, written by `deploy-claire-channel.sh` |
-| `claude-config-<agent>/` | Legacy, written by `deploy-betty.sh` and `deploy-loki.sh` |
+| `claude-config-<agent>/` | Legacy, written by `deploy-betty.sh` |
 | `fences/<community>/_default/` | An agent you have not set up yet, in a community you have |
 | `fences/_unknown/_default/` | Nothing matched. Deny-all, rather than the operator's own registry |
 

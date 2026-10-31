@@ -66,7 +66,7 @@ fi
 #   fences/<community>/<agent>     a client-bound agent: different tools per client
 #   fences/_shared/<agent>         a client-independent agent: same tools everywhere
 #   claude-config-<agent>-<fence>  legacy, written by deploy-claire-channel.sh
-#   claude-config-<agent>          legacy, written by deploy-betty.sh and deploy-loki.sh
+#   claude-config-<agent>          legacy, written by deploy-betty.sh
 #   fences/<community>/_default    an agent nobody has set up yet, in a known community
 #
 # The two legacy names are in the list because the deploy scripts write there and several

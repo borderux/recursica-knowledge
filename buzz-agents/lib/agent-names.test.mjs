@@ -13,7 +13,7 @@ import {
  * The repository's own agent list. What it contains is the whole mechanism: it is what
  * decides whether the bracketed half of a name is the agent or the qualifier.
  */
-const KNOWN = ["claire", "stu", "barb", "janice", "alan", "loki", "betty"];
+const KNOWN = ["claire", "stu", "barb", "janice", "alan", "betty"];
 
 test("the owner-suffix form is unchanged by the inverted-form support", () => {
   assert.equal(canonicalAgentName("Claire (Alex)"), "Claire");
