@@ -367,3 +367,40 @@ test("the Grok marketplace lists the plugin by this repository's git URL", () =>
   );
   assert.equal(entry.source.ref, "main");
 });
+
+/**
+ * On CircleChat, Loki once said four files were "created and attached to the task" without
+ * calling a tool, and once printed a raw tool call as his reply. His CircleChat persona names
+ * each step of a file's turn in order: write with the tool, check the file, attach the file,
+ * summarize in the chat, and create a task first when there is none. Checked in the persona that
+ * ships, not only in the source fragment.
+ */
+test("Loki's CircleChat persona writes, checks and attaches each file before claiming it", () => {
+  const soul = fs.readFileSync(
+    path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"),
+    "utf8",
+  );
+  const at = (re) => {
+    const m = re.exec(soul);
+    assert.ok(m, `Loki's SOUL.md has no ${re}`);
+    return m.index;
+  };
+  const task = at(/emit one `create_task` action for the study/);
+  const write = at(/Write the file with the `write_file` tool\.\*\* Call the tool, with the full path: `\/workspace\/loki\/Loki_<project_name>\/<file>`/);
+  at(/Never print the call, a JSON object such as `\{"code": \.\.\.\}`, or code in the reply/);
+  const check = at(/Check that the file exists\.\*\* Run `ls -l` on the exact path, or read the file back with `read_file`/);
+  const attach = at(/"type":"share_to_task".*"files":\[\{"path":"\/workspace\/loki\/Loki_<project_name>\/<file>"\}\]/);
+  const reply = at(/Write one or two sentences.*Never paste the plan, a transcript or the answer key into the chat/);
+  assert.ok(task < write && write < check && check < attach && attach < reply, "the steps run in order");
+  at(/Never say a file is created, written or attached unless step 6 found the file in this turn/);
+  assert.doesNotMatch(soul, /Do not attach files/);
+  for (const f of [
+    path.join(repoRoot, "buzz-agents", "agents", "loki", "SYSTEM_PROMPT.md"),
+    path.join(artifactDir, "loki.md"),
+    path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"),
+  ]) {
+    const text = fs.readFileSync(f, "utf8").replace(/\s+/g, " ");
+    assert.match(text, /Write every document with a real tool call\. A tool call printed in the reply as text, such as a block of JSON or code, writes nothing\./, path.relative(repoRoot, f));
+    assert.match(text, /Never report a document Loki did not check\./, path.relative(repoRoot, f));
+  }
+});

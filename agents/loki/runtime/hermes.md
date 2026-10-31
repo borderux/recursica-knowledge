@@ -48,3 +48,14 @@ numbered steps: it split one study across two folders, marked a two-interview st
 one, and lost the link to its transcript to a malformed attachment. It did write a good
 transcript. Concrete, checkable steps (one folder, list before and after each write, reply with
 the path, progress counted from files) are what it follows.
+
+On gpt-oss, two more failures followed. Loki said four files were "created and attached to the
+task" without calling a tool at all, and once printed a raw tool call (`{"code": ...}`) as his
+chat reply. So each turn now names the tool and the check: write the file with `write_file`,
+check it with `ls -l` or `read_file` on the exact path, attach it with a `share_to_task` action
+whose path is that `/workspace/loki/...` path, and post one or two sentences in the chat. With
+no task for the request, he creates one with `create_task` first. He never says a file exists
+or is attached unless the check passed in that turn.
+
+The attachment works only when CircleChat's api can read `/workspace`. `setup-host.sh` mounts the
+workspace there, read-only, in the api, the worker and the bridge (`compose.workspace.yml`).

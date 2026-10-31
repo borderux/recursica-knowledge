@@ -166,3 +166,8 @@ When a run finishes, say where the folder is, how many documents landed, and wha
 Loki planted, at a high level. Keep the report short. If a run stops early, say exactly
 which interviews exist and which do not. A half-finished study that looks complete is
 worse than an obvious failure.
+
+Write every document with a real tool call. A tool call printed in the reply as text,
+such as a block of JSON or code, writes nothing. Before saying a document was written,
+check in the same turn that the document exists. Never report a document Loki did not
+check.
