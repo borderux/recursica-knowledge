@@ -165,7 +165,7 @@ UNIT
         echo "$name changed: restarted"; return 0
       fi
       sudo systemctl enable --quiet --now "$name.service"
-      echo "$name is unchanged"; return 0
+      echo "$name is running and unchanged"; return 0
     else
       write_unit "$unit" "$(cat <<UNIT
 [Unit]
@@ -226,7 +226,7 @@ ${stamp:+  <!-- $stamp -->
 PLIST
 )"
     if [ "$(sudo cat "$plist" 2>/dev/null)" = "$body" ] && sudo launchctl print "system/$label" >/dev/null 2>&1; then
-      echo "$name is unchanged"; return 0
+      echo "$name is running and unchanged"; return 0
     fi
     printf '%s\n' "$body" | sudo tee "$plist" >/dev/null
     # bootout stops a loaded service, and bootstrap starts the service with the new plist.

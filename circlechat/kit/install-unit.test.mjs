@@ -47,7 +47,7 @@ test("Linux: a new service starts, an unchanged service keeps running, and a cha
   assert.ok(r.calls.includes("systemctl restart kev-engine.service"), "a new service starts");
 
   r = s.run(install("0.0.0.0"));
-  assert.match(r.out, /kev-engine is unchanged/);
+  assert.match(r.out, /kev-engine is running and unchanged/);
   assert.ok(!r.calls.some((c) => /restart|daemon-reload/.test(c)), r.calls.join("\n"));
   assert.ok(r.calls.includes("systemctl enable --quiet --now kev-engine.service"), "a stopped service starts, a running service keeps running");
 
@@ -95,7 +95,7 @@ RestartSec=10
 WantedBy=multi-user.target
 `);
   const r = s.run(`install_unit kev-engine "exec kev.serve" /kev owner`);
-  assert.match(r.out, /kev-engine is unchanged/);
+  assert.match(r.out, /kev-engine is running and unchanged/);
   assert.ok(!r.calls.some((c) => c.includes("restart")));
 });
 
@@ -123,7 +123,7 @@ test("macOS: an unchanged service keeps running, and a changed command or settin
   assert.match(fs.readFileSync(plist, "utf8"), /<!-- settings [0-9a-f]{16} -->/);
 
   r = s.run(install("127.0.0.1"), { UNIT_SETTINGS: settings });
-  assert.match(r.out, /github-tokens is unchanged/);
+  assert.match(r.out, /github-tokens is running and unchanged/);
   assert.ok(!r.calls.some((c) => /bootout|bootstrap/.test(c)), r.calls.join("\n"));
 
   r = s.run(install("127.0.0.1,192.0.2.10"), { UNIT_SETTINGS: settings });
