@@ -949,6 +949,24 @@ writes nothing, when a block is written on one line or `tool_loop_guardrails` si
 key, where Hermes ignores it. It then checks `HERMES_TIMEOUT` in `$CC_DIR/.env` and prints only
 `HERMES_TIMEOUT ok`, or the value it should be.
 
+**Every agent's Hermes makes no model-catalog lookups and no update checks.** Hermes's gateway
+starts on each turn and, 30 seconds later, refreshes its model picker's lists from
+`hermes-agent.nousresearch.com`, `openrouter.ai` and `portal.nousresearch.com`. The outgoing
+filter refuses all three, so each turn left three refusals in the filter's log, and the model
+gateway picks each model anyway. On each run, `setup-agent.sh <handle>` sets these in the
+agent's `config.yaml` (`kit/hermes-lookups.mjs`):
+
+| Key                               | Value   | What it turns off                                                           |
+| --------------------------------- | ------- | --------------------------------------------------------------------------- |
+| `model_catalog.enabled`           | `false` | the model catalog, OpenRouter's model list and the Nous Portal's model list |
+| `updates.check`                   | `false` | Hermes's passive version check                                              |
+| `plugins.auto_update_check_hours` | `0`     | the gateway's plugin update check                                           |
+
+Each key goes inside the block Hermes's own default config already has, or a new block at the
+top level, and every other key stays (`kit/yaml-keys.mjs`, which Barb's limits use too). Each
+change is printed by key name. A second run changes nothing. The script refuses, and writes
+nothing, when a block is written on one line or sits under another key, where Hermes ignores it.
+
 ## Hard-won lessons (read before debugging)
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".

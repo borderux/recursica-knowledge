@@ -309,6 +309,61 @@ test("setup-agent.sh barb sets her limits inside Hermes's default delegation blo
   assert.doesNotMatch(again.stdout + again.stderr, /Barb's config\.yaml:/, "no limit changed");
 });
 
+// Hermes's own default blocks for the model catalog, update checks and plugins
+// (hermes_cli/config_defaults.py).
+const hermesLookups = `model_catalog:\n  enabled: true\n  url: https://hermes-agent.nousresearch.com/docs/api/model-catalog.json\n  ttl_minutes: 20\n  providers: {}\nupdates:\n  check: true\n  pre_update_backup: quick\nplugins:\n  clone_timeout_seconds: 300\n  auto_update_check_hours: 24\n  auto_apply: false\n`;
+
+test("setup-agent.sh turns off Hermes's model-catalog refresh and update checks for every agent, keeps every other key, and a second run changes nothing", () => {
+  const s = sandbox(["loki", "betty", "barb"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  fs.writeFileSync(s.h("loki", "config.yaml"), `${config}${hermesLookups}`);
+  fs.writeFileSync(s.h("betty", "config.yaml"), config);
+  fs.writeFileSync(s.h("barb", "config.yaml"), hermesDefault);
+  const first = {};
+  for (const a of ["loki", "betty", "barb"]) {
+    const r = s.run("setup-agent.sh", a);
+    assert.equal(r.status, 0, `${a}: ${r.stdout}${r.stderr}`);
+    for (const key of ["model_catalog.enabled", "updates.check", "plugins.auto_update_check_hours"]) {
+      assert.match(r.stderr, new RegExp(`^${a}'s config\\.yaml: set ${key.replace(/\./g, "\\.")}$`, "m"), `${a}: ${key}`);
+    }
+    first[a] = fs.readFileSync(s.h(a, "config.yaml"), "utf8");
+    assert.match(first[a], /^model_catalog:\n(?: {2}.*\n)*? {2}enabled: false$/m, a);
+    assert.match(first[a], /^updates:\n(?: {2}.*\n)*? {2}check: false$/m, a);
+    assert.match(first[a], /^plugins:\n(?: {2}.*\n)*? {2}auto_update_check_hours: 0$/m, a);
+    for (const top of ["model_catalog", "updates", "plugins"]) assert.equal(first[a].match(new RegExp(`^${top}:`, "gm")).length, 1, `${a}: one ${top} block`);
+  }
+  // Hermes's default blocks keep their other keys, in place.
+  assert.match(first.loki, /^model_catalog:\n {2}enabled: false\n {2}url: https:\/\/hermes-agent\.nousresearch\.com\/docs\/api\/model-catalog\.json\n {2}ttl_minutes: 20\n {2}providers: \{\}\nupdates:\n {2}check: false\n {2}pre_update_backup: quick\nplugins:\n {2}clone_timeout_seconds: 300\n {2}auto_update_check_hours: 0\n {2}auto_apply: false\n/m);
+  assert.match(first.loki, /^ {2}reasoning_effort: medium$/m);
+  assert.match(first.betty, KNOWLEDGE_ENTRY, "Betty keeps her knowledge server");
+  assert.match(first.barb, BARB_LIMITS, "Barb keeps her limits");
+  // A second run changes none of the three blocks and prints no change. (The gateway step may move
+  // Loki's context_length within its own block, which is not this step's.)
+  const blocks = (text) => ["model_catalog", "updates", "plugins"].map((top) => new RegExp(`^${top}:\n(?: {2}.*\n)*`, "m").exec(text)[0]);
+  for (const a of ["loki", "betty", "barb"]) {
+    const again = s.run("setup-agent.sh", a);
+    assert.equal(again.status, 0, `${a}: ${again.stdout}${again.stderr}`);
+    assert.deepEqual(blocks(fs.readFileSync(s.h(a, "config.yaml"), "utf8")), blocks(first[a]), a);
+    assert.doesNotMatch(again.stdout + again.stderr, /config\.yaml: set /, a);
+  }
+  assert.equal(fs.readFileSync(s.h("betty", "config.yaml"), "utf8"), first.betty, "Betty's whole config is the same");
+  assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), first.barb, "Barb's whole config is the same");
+});
+
+test("setup-agent.sh refuses a model_catalog block under another key, where Hermes ignores it, and adds no block", () => {
+  const s = sandbox(["loki"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("loki", "config.yaml"), config.replace("  reasoning_effort: high\n", "  reasoning_effort: medium\n  model_catalog:\n    enabled: false\n"));
+  const r = s.run("setup-agent.sh", "loki");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /model_catalog under another key, at line \d+, where Hermes ignores it/);
+  const cfg = fs.readFileSync(s.h("loki", "config.yaml"), "utf8");
+  assert.match(cfg, /^ {2}model_catalog:\n {4}enabled: false$/m, "the config keeps its text");
+  assert.doesNotMatch(cfg, /^(model_catalog|updates|plugins):/m, "no block was added");
+  assert.equal(turns(s).length, 0, "no test turn ran");
+});
+
 test("setup-agent.sh barb takes a Kev key given on the command line over CircleChat's .env, and says when there is none", () => {
   const s = sandbox(["barb"]);
   fullSetup(s);

@@ -156,6 +156,16 @@ if [ "$HANDLE" = barb ]; then
   node "$HERE/kit/barb-limits.mjs" timeout "$CC_DIR/.env"
 fi
 
+# Every agent: no model-catalog refresh and no update checks (kit/hermes-lookups.mjs). On each turn
+# Hermes refreshed its model picker's lists from hermes-agent.nousresearch.com, openrouter.ai and
+# portal.nousresearch.com, which the outgoing filter refuses, and the model gateway picks each
+# model anyway. Set on each run, inside the config's own blocks, and every other key stays. Each
+# change is printed by key name. The new text is complete before the write starts, so a failure
+# writes nothing.
+read_home "$H/config.yaml"
+NEW="$(printf '%s' "$TEXT" | node "$HERE/kit/hermes-lookups.mjs" "$HANDLE")" || exit 1
+printf '%s\n' "$NEW" | put_home "$H/config.yaml"
+
 # Loki's context sizes. Hermes guesses a local model's window from its own model list and
 # has guessed 51,200 for a model served with 262,144: below Hermes' 64K compression minimum
 # (every turn refused) and too small for a long task thread (turns died "too long to read").
