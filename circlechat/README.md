@@ -690,6 +690,40 @@ The log holds no prompt and no answer.
 
 **A private key counts only with its body.** The check finds a private key in PEM form, such as a GitHub App's, by a `-----BEGIN … PRIVATE KEY-----` line followed by at least 40 base64 characters of key body. The body's lines may be split by real line breaks or by `\n`, as in an `.env` file, JSON or a database dump. A key with no END line, such as one cut off in a log, still counts. The BEGIN line alone does not: code and help text name it too. npm's help for its `key` setting shows `-----BEGIN PRIVATE KEY-----\nXXXX\nXXXX\n-----END PRIVATE KEY-----`, and Node's compile cache in an agent's home holds that text after npm runs. The compile cache stays in the scan, so a cache built from code that holds a real key is still caught. A GitHub App's key is also found by the exact first line of its body, with or without the PEM lines.
 
+### Cloud-model requests in Slack
+
+**Only an approver moves a task off "Cluster only" in CircleChat.** Anyone else sends a request, and the request leaves the setting unchanged. An approver answers each request in the stack's Slack channel. List the approvers in the stack's site.json, with each person's CircleChat email and Slack user ID:
+
+```json
+"cloud_approvers": [
+  { "email": "person-a@example.com", "slack_user": "U0123ABCD" },
+  { "email": "person-b@example.com", "slack_user": "U0456EFGH" }
+]
+```
+
+`cloud_approvers` needs `site.slack_channel_id`, the stack's own channel. Rerun `setup-host.sh` after each change to the list.
+
+**A request travels in five steps:**
+
+1. CircleChat sends the request to a webhook. The receiver, `cc-cloud-requests`, runs in a container on the stack's own Docker network. The receiver has no published port, and no agent's network reaches the receiver.
+2. The receiver checks the webhook's signature, and refuses a request with a wrong or old signature. The receiver posts each request once in the stack's channel. The post mentions each approver, and has an Approve and a Deny button.
+3. The cluster's Slack app takes the press. Only a person on the stack's `cloud_approvers` can press either button. "Approve" needs the person's 6-digit authenticator code, like "Resume". "Deny" needs no code.
+4. The cluster agent on the stack's control computer checks the person against `cloud_approvers` again. The agent then calls CircleChat's answer API inside the stack's api container, with the service token and the approver's email.
+5. The Slack app replies in the request's thread with the result. CircleChat posts the answer as a comment on the task.
+
+**The secrets stay with root.** `setup-host.sh` makes two secrets once, in root-only files in `cloud-approvals/` in the stack's folder:
+
+| File             | Secret                                                        |
+| ---------------- | ------------------------------------------------------------- |
+| `approval-token` | `CLOUD_APPROVAL_TOKEN`, CircleChat's token for the answer API |
+| `webhook-secret` | `CLOUD_REQUEST_WEBHOOK_SECRET`, the webhook's signing secret  |
+
+`compose.cloud-approvals.yml` gives CircleChat's api the two files, `CLOUD_APPROVERS` and `CLOUD_REQUEST_WEBHOOK_URL`. The api reads each secret from the file when the api starts. Neither secret is in `.env`, and `docker inspect` shows neither. Without `cloud_approvers`, the setup removes the file and the receiver.
+
+**Enroll each approver's authenticator.** An approver on the cluster's `APPROVERS` uses the same code as the cluster's other buttons. Any other approver enrolls under the Slack user ID, in lowercase: `node circlechat/cluster/enroll.mjs u0123abcd`. Save the secret as `TOTP_SECRET_U0123ABCD` in the GitHub environment of the cluster's own stack, and deploy the secrets.
+
+**A client stack's details stay out of Slack.** With `NOTIFY_DETAILS` off, the post leaves out the task's title and the asker's name. No email reaches Slack.
+
 ## Backups
 
 **Back up each stack every night, encrypted on the computer before the backup leaves the computer.** restic encrypts each backup with the stack's own `RESTIC_PASSWORD`, and rclone uploads the backup to Google Drive. Both tools are open source.

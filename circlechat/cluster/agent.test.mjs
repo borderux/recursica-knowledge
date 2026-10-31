@@ -72,3 +72,15 @@ test("Install for a kit release records the approval on the computer", async () 
   assert.match(fs.readFileSync(path.join(stateDir, "release-approvals.log"), "utf8"), /"by":"person_a".*"computer":"machine-1"/);
   assert.equal((await agent.act({ action: "release-install", ref: "../etc/passwd" })).ok, false);
 });
+
+test("Approve and Deny on a cloud-model request reach the cloud answers, with the Slack user who pressed", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const asked = [];
+  const cloud = { answer: async (ref, decision, user) => { asked.push([ref, decision, user]); return { ok: true, message: "answered" }; } };
+  const agent = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir, cloud });
+  await agent.act({ action: "cloud-approve", ref: "acme|cmreq_abc123", extra: { slackUser: "U0PAT0001" } });
+  await agent.act({ action: "cloud-deny", ref: "acme|cmreq_abc123", extra: { slackUser: "U0PAT0001" } });
+  assert.deepEqual(asked, [["acme|cmreq_abc123", "approve", "U0PAT0001"], ["acme|cmreq_abc123", "deny", "U0PAT0001"]]);
+  const without = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir });
+  assert.deepEqual(await without.act({ action: "cloud-approve", ref: "x" }), { ok: false, message: "no cloud-model requests on this computer" });
+});

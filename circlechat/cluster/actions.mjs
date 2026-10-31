@@ -18,6 +18,10 @@ export const ACTIONS = {
   "agents-resume": { label: "Resume", twoFactor: true },
   // A kit release: the approval goes to every computer in the cluster (cluster: true).
   "release-install": { label: "Install", twoFactor: true, cluster: true },
+  // A cloud-model request from CircleChat (cloud-requests.mjs). Only the stack's cloud approvers
+  // press these (cloud: true), and the stack's control computer sends the answer to CircleChat.
+  "cloud-approve": { label: "Approve", twoFactor: true, cloud: true },
+  "cloud-deny": { label: "Deny", twoFactor: false, cloud: true, style: "danger" },
 };
 
 export const KINDS = {

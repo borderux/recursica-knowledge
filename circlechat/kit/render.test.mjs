@@ -550,3 +550,35 @@ test("github_apps: a client stack that uses the public knowledge repo gets no ap
   s.github_apps = { alan: { app_id: 1, installation_id: 2, slug: "acme-alan", repos: ["acme/knowledge"], permissions: { contents: "write", pull_requests: "write", issues: "write" } } };
   assert.ok(validate(s).some((e) => /github_apps.alan: this client stack uses the public knowledge repo/.test(e)));
 });
+
+test("cloud_approvers gives CircleChat the emails, and the Slack receiver each email with its Slack user ID", () => {
+  const s = clone();
+  s.site.slack_channel_id = "C0STACK01";
+  s.cloud_approvers = [{ email: "Pat@Example.com", slack_user: "U0PAT0001" }, { email: "sam@example.com", slack_user: "W0SAM0001" }];
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.match(r.tenantEnv, /^CLOUD_APPROVERS=pat@example\.com,sam@example\.com$/m);
+  assert.match(r.tenantEnv, /^CLOUD_APPROVER_SLACK=pat@example\.com=U0PAT0001,sam@example\.com=W0SAM0001$/m);
+  assert.match(r.tenantEnv, /^CONTROL_COMPUTER=machine-1$/m);
+  const none = render(example);
+  assert.match(none.tenantEnv, /^CLOUD_APPROVERS=$/m);
+  assert.match(none.tenantEnv, /^CLOUD_APPROVER_SLACK=$/m);
+});
+
+test("cloud_approvers catches each mistake", () => {
+  const s = clone();
+  s.cloud_approvers = [
+    { email: "pat@example.com", slack_user: "U0PAT0001" },
+    { email: "PAT@example.com", slack_user: "pat" },
+    { email: "not-an-email", slack_user: "U0PAT0001", name: "Pat" },
+  ];
+  const errs = validate(s).join("\n");
+  assert.match(errs, /cloud_approvers\[1\]\.email PAT@example\.com is listed twice/);
+  assert.match(errs, /cloud_approvers\[1\]\.slack_user must be a Slack user ID/);
+  assert.match(errs, /cloud_approvers\[2\]: name is not a setting/);
+  assert.match(errs, /cloud_approvers\[2\]\.email must be the person's CircleChat email/);
+  assert.match(errs, /cloud_approvers\[2\]\.slack_user U0PAT0001 is listed twice/);
+  assert.match(errs, /cloud_approvers needs site\.slack_channel_id/);
+  s.cloud_approvers = { email: "pat@example.com" };
+  assert.match(validate(s).join("\n"), /cloud_approvers must be a list/);
+});

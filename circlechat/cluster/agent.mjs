@@ -19,11 +19,12 @@ import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 import { AgentControls } from "./agent-controls.mjs";
+import { CloudAnswers, apiCall, stackApprovers, stackToken } from "./cloud-requests.mjs";
 import { requireKit } from "./kit-check.mjs";
 import { TAG, approve } from "./release-gate.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network }) {
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network, cloud }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -47,6 +48,9 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "egress-deny": return egress ? egress.deny(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
       case "agents-stop": return controls ? controls.stop(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "agents-resume": return controls ? controls.resume(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
+      // A cloud-model request's answer: CircleChat's answer API, as the cloud approver who pressed.
+      case "cloud-approve": return cloud ? cloud.answer(ref, "approve", extra.slackUser) : { ok: false, message: "no cloud-model requests on this computer" };
+      case "cloud-deny": return cloud ? cloud.answer(ref, "deny", extra.slackUser) : { ok: false, message: "no cloud-model requests on this computer" };
       case "upgrade-now": {
         if (!TAG.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         // The button needs an authenticator code, and the press counts as the release's approval.
@@ -187,7 +191,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const run = (cmd, args) => new Promise((resolve) => execFile(cmd, args, { timeout: 30_000 }, (err, out) => resolve(err ? "" : out)));
   const network = new NetworkWatch({ computer: env.COMPUTER, expectedRouter: env.EXPECTED_ROUTER ?? "", post: (text) => post("info", text),
     stateFile: path.join(stateDir, "network.json"), read: () => readNetwork({ run, mac: IS_MAC, wsl: IS_WSL }) });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network });
+  // The answers to cloud-model requests, for each open stack on this computer (cloud-requests.mjs).
+  const cloud = new CloudAnswers({ stacks: controlStacks, approversOf: stackApprovers, tokenOf: stackToken, call: apiCall });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network, cloud });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());
