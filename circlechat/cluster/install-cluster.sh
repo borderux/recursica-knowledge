@@ -95,16 +95,18 @@ sudo tee /etc/opencanaryd/opencanary.conf >/dev/null <<CANARY
     "handlers": { "file": { "class": "logging.FileHandler", "filename": "/var/lib/agent-cluster/opencanary.log" } } } }
 }
 CANARY
-install_unit opencanary "/opt/opencanary/bin/opencanaryd --dev" / root
+UNIT_SETTINGS=/etc/opencanaryd/opencanary.conf install_unit opencanary "/opt/opencanary/bin/opencanaryd --dev" / root
 
 ENVS="set -a; . /etc/agent-cluster.conf; . /etc/agent-cluster.env; set +a;"
-install_unit cluster-agent "$ENVS exec $NODE_BIN $HERE/agent.mjs" / root
+# Each service restarts when the service's settings, secrets or the kit's version change.
+CLUSTER_SETTINGS="/etc/agent-cluster.conf /etc/agent-cluster.env $KIT/package.json"
+UNIT_SETTINGS="$CLUSTER_SETTINGS" install_unit cluster-agent "$ENVS exec $NODE_BIN $HERE/agent.mjs" / root
 # One update job, hourly: Recursica's own software right away (with upgrade.auto), everything else
 # after 7 days. Replaces the separate daily, weekly and hourly jobs of earlier versions.
 uninstall_unit cluster-updates >/dev/null
 install_unit cluster-updater "$ENVS exec $NODE_BIN $HERE/updater.mjs" / root hourly
 if [ "$ROLE" = control ]; then
-  install_unit cluster-bot "$ENVS exec $NODE_BIN $HERE/bot.mjs" / root
+  UNIT_SETTINGS="$CLUSTER_SETTINGS" install_unit cluster-bot "$ENVS exec $NODE_BIN $HERE/bot.mjs" / root
 else
   # Only the control computer runs the Slack app; a computer that becomes a helper drops it.
   uninstall_unit cluster-bot >/dev/null

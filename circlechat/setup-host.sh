@@ -626,7 +626,8 @@ if [ "$GITHUB_APPS" = on ]; then
   TOKEN_HOSTS="127.0.0.1"
   a="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
   [ -n "$a" ] && TOKEN_HOSTS="$TOKEN_HOSTS,$a"
-  install_unit "github-tokens$SUFFIX" "KIT=$(cd "$HERE/.." && pwd) OWNER=$(id -un) OWNER_HOME=$HOME WS=$WS CC_DIR=$CC_DIR STACK=$GH_ENV TOKEN_HOSTS=$TOKEN_HOSTS TOKEN_PORT=$GITHUB_TOKEN_PORT $(command -v node) $HERE/github/token-service.mjs" "$CC_DIR" root
+  # The service restarts when the kit's version changes, so a new release's code runs.
+  UNIT_SETTINGS="$(cd "$HERE/.." && pwd)/package.json" install_unit "github-tokens$SUFFIX" "KIT=$(cd "$HERE/.." && pwd) OWNER=$(id -un) OWNER_HOME=$HOME WS=$WS CC_DIR=$CC_DIR STACK=$GH_ENV TOKEN_HOSTS=$TOKEN_HOSTS TOKEN_PORT=$GITHUB_TOKEN_PORT $(command -v node) $HERE/github/token-service.mjs" "$CC_DIR" root
 else
   uninstall_unit "github-tokens$SUFFIX" >/dev/null
 fi

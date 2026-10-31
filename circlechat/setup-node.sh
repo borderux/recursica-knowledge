@@ -54,7 +54,9 @@ node -e '
     console.log([v.name, v.dir, `${secrets}${env ? env + " " : ""}${v.command}`].join("\t"));
   }' "$SPEC" "$SECRETS" | while IFS=$'\t' read -r name dir cmd; do
   [ -d "$dir" ] || { echo "$name: $dir does not exist on this machine; install it first."; continue; }
-  install_unit "$name" "$cmd" "$dir" "$(id -un)"
+  # A service that reads the secrets file restarts when the file changes.
+  settings=""; case "$cmd" in *"$SECRETS"*) settings="$SECRETS" ;; esac
+  UNIT_SETTINGS="$settings" install_unit "$name" "$cmd" "$dir" "$(id -un)"
 done
 # A job runner, when the node has a `jobs` block: builds the porter job image and runs jobd, which
 # starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN,
@@ -106,6 +108,7 @@ if [ -n "$JOBS" ]; then
     [ -n "$a" ] && JOBD_HOST="$JOBD_HOST,$a"
   done
   [ "$JOBD_HOST" != 127.0.0.1 ] || echo "No Tailscale address found: the job runner listens on 127.0.0.1 only, so other computers cannot reach the job runner."
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_GITHUB_TOKEN_URL=$(jget github_token_url) JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  # jobd restarts when the secrets file or the kit's version changes.
+  UNIT_SETTINGS="$SECRETS $ROOT/package.json" install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_GITHUB_TOKEN_URL=$(jget github_token_url) JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."
