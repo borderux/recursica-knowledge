@@ -341,7 +341,7 @@ keeps running.
 
 **Give each client, and each demo, a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no data with the cluster's own stack or another client's stack. Several stacks can run on one computer. A demo stack (`site.kind` `"demo"`) follows the same rules as a client stack, including the recorded permission for cloud models.
 
-CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
+CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. CircleChat's api, worker and bridge read that folder, read-only. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
 
 ### The stack's computers
 
@@ -949,7 +949,8 @@ key, where Hermes ignores it. It then checks `HERMES_TIMEOUT` in `$CC_DIR/.env` 
 
 ## Hard-won lessons (read before debugging)
 
-- **Compose needs both files.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml` into `.env`, so a plain `docker compose up -d` in the CircleChat folder loads both. Without the second file, the api loses Docker access and new agents fail to install.
+- **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".
+- **CircleChat's api, worker and bridge read the shared workspace, and never write it.** `setup-host.sh` writes `compose.workspace.yml`, which mounts `CC_SHARED_WORKSPACE_DIR` at `/workspace`, read-only, in all three. The api reads each file an agent attaches (`share_to_task`, `share_files`) there, and reads `BRIEF.md`, `knowledge/` and `projects/` for an agent's context. Agents write the workspace from their own containers. CircleChat's `project_note` action writes into `/workspace/projects` from the api, so it now fails with an error. CircleChat's `compose.agents.yml` names the mount only in a comment. An older kit added a read-write line to that file, and `setup-host.sh` removes the line.
 - **On WSL, keep WSL running.** It stops when no Windows program holds it open, taking every service with it. `setup-host.sh` prints the keep-alive task.
 
 - **Use the UI's Install + link to create agents.** Never insert agent rows in Postgres or hand-write `bridge-config.json`. The bridge only reads `handle`, `token`, `hermesHome` from it; tokens come from the install.
