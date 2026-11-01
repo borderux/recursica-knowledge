@@ -92,7 +92,7 @@ SITE="$CC_DIR/site.json"
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
 # MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
 # older name of MODEL_KEY_DEFAULT.
-KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|CC_CHECK_PASSWORD|APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -153,6 +153,10 @@ fi
 if [[ " $ROLES " == *" control "* ]] && has KEV_DATA_GITHUB_PAT && { [ -L "$CC_DIR/kev-data.env" ] || [ -n "$(find "$CC_DIR/kev-data.env" -links +1 2>/dev/null)" ]; }; then
   echo "Refused: $CC_DIR/kev-data.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
+# The same for the agent check's password file.
+if [[ " $ROLES " == *" control "* ]] && has CC_CHECK_PASSWORD && { [ -L "$CC_DIR/agent-check.env" ] || [ -n "$(find "$CC_DIR/agent-check.env" -links +1 2>/dev/null)" ]; }; then
+  echo "Refused: $CC_DIR/agent-check.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
+fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
 set_kv() {
@@ -176,6 +180,7 @@ drop_kv() {
 
 WROTE_CONTROL=false
 WROTE_APPS=false
+WROTE_CHECK=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
@@ -229,6 +234,14 @@ if [[ " $ROLES " == *" control "* ]]; then
       set_kv "$KEV_ENV" KEV_DATA_GITHUB_PAT "$(val KEV_DATA_GITHUB_PAT)"; chmod 600 "$KEV_ENV"; "$CHOWN" -h "$OWNER" "$KEV_ENV"
     fi
   fi
+  # The agent check's password (kit/check-account.mjs, kit/agent-check.mjs) goes in a file of its
+  # own, which the owner reads and no agent and no container reads. The check signs in to
+  # CircleChat with the password, as an account that is a member and never an admin.
+  if has CC_CHECK_PASSWORD; then
+    CHECK_ENV="$CC_DIR/agent-check.env"
+    set_kv "$CHECK_ENV" CC_CHECK_PASSWORD "$(val CC_CHECK_PASSWORD)"; chmod 600 "$CHECK_ENV"; "$CHOWN" -h "$OWNER" "$CHECK_ENV"
+    WROTE_CHECK=true
+  fi
 fi
 
 # The cluster's own secrets: the Slack app, the cluster token and the approvers' authenticator
@@ -261,7 +274,11 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* ]]; then
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
-[ "$RESTART" = true ] || { echo "Secrets written. Nothing restarted."; exit 0; }
+if [ "$RESTART" != true ]; then
+  echo "Secrets written. Nothing restarted."
+  [ "$WROTE_CHECK" = false ] || echo "The agent check's account keeps the old password until a deploy with restart."
+  exit 0
+fi
 
 restart_unit() {
   if [ "$(uname -s)" = Darwin ]; then launchctl kickstart -k "system/io.recursica.$1"
@@ -319,5 +336,12 @@ if [ "$WROTE_CONTROL" = true ]; then
   (sudo -u "$OWNER" -H env ${DCTX:+DOCKER_CONTEXT="$DCTX"} PATH="$(dirname "$NODE_BIN"):$PATH" \
     bash -c 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat' _ "$CC_DIR" 2>/dev/null || true) |
     "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --private-keys "${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
+fi
+# The agent check's account: made when missing, with the delivered password, and kept a member of
+# the agents' workspace. The owner runs the step, in Docker; the password stays in the file, and
+# reaches CircleChat's api container on stdin.
+if [ "$WROTE_CHECK" = true ]; then
+  sudo -u "$OWNER" -H env TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" PATH="$(dirname "$NODE_BIN"):$PATH" \
+    "$NODE_BIN" "$KIT/circlechat/kit/check-account.mjs" </dev/null || { echo "The check's password is written, and the check's account is not ready: see the line above."; exit 1; }
 fi
 echo "Secrets written and applied for stack $STACK on $COMPUTER."

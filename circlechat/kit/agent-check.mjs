@@ -1,26 +1,35 @@
 #!/usr/bin/env node
-// The agent check: drives a running CircleChat through its HTTP API as a person, and checks how one
-// agent behaves. circlechat/check-agent.sh runs it after setup-agent.sh, as its own command.
+// The agent check: drives a running CircleChat through its HTTP API, and checks how one agent
+// behaves. circlechat/check-agent.sh runs it after setup-agent.sh, as its own command.
+//
+// The check signs in as its own CircleChat account, made only for the check
+// (kit/check-account.mjs): a member of the agents' workspace, never an admin. The email is
+// site.check_account in site.json, or agent-check@<site.public_host>. The password is
+// CC_CHECK_PASSWORD, which the secrets deploy writes to $CC_DIR/agent-check.env. The check signs
+// out at the end, and stops before the first check when the account is anything but a member.
 //
 //   node agent-check.mjs <handle>
 //
 // It works in a private throwaway channel, on throwaway tasks, and archives them at the end. It
 // checks four things:
 //   1. A request that arrives during a running turn still gets answered. The run for the request
-//      waits in the agent's queue (GET /api/agents/:id/queue), and is never refused as agent_busy.
+//      waits in the agent's queue (GET /api/agents/:id/queue), and never fails. A member sees no
+//      run's error text, so a request refused as agent_busy shows as a failed run.
 //   2. A question gets asked once, then waits. No second question and no further comment on the
 //      task until a person replies, through heartbeats. After the reply, the agent acts.
 //   3. A settled task stays untouched. A task a person moved to review gets no comment, status
 //      change or file from the agent, through heartbeats.
 //   4. A long reply lands as a file. A reply past the chat limit (600 characters for an agent with
 //      the deliverables-only setting, 2,000 otherwise) is posted as its opening paragraph, with the
-//      whole text attached as reply.md (api/src/agents/long-reply.ts in the CircleChat fork).
+//      whole text attached as reply.md (api/src/agents/long-reply.ts in the CircleChat fork). Only
+//      an admin sees the agent's setting, so CHECK_DELIVERABLES_ONLY=1 says the agent has it.
 // One PASS, FAIL or SKIP line per check. Exit 1 on any FAIL, 2 on a usage or setup error.
 //
 // Settings, from the environment (seconds unless noted):
 //   CC_API_BASE            CircleChat's API, such as http://localhost:8080/api
-//   CHECK_SESSION          a person's session (the cc_session cookie's value), or
-//   CHECK_EMAIL, CHECK_PASSWORD   a person's sign-in, used once for a session that is ended after
+//   CC_DIR                 the stack's folder, which holds agent-check.env
+//   SITE                   the stack's site.json ($CC_DIR/site.json)
+//   CHECK_DELIVERABLES_ONLY  1 when the agent has the deliverables-only setting (off)
 //   CHECK_REPLY_TIMEOUT    how long to wait for each answer from the agent (900)
 //   CHECK_TURN_TIMEOUT     how long to wait for each heartbeat turn to finish (600)
 //   CHECK_QUIET            how long to keep watching after the heartbeats (60)
@@ -31,6 +40,11 @@
 //   CHECK_KEEP             1 to leave the channel and the tasks in place
 // No secret reaches the output: an error names the route and the status, never a header or a body.
 
+import fs from "node:fs";
+import path from "node:path";
+import { readCheckPassword } from "./check-account.mjs";
+import { checkAccountEmail } from "./render.mjs";
+
 export const DEFAULTS = {
   replyTimeoutMs: 900_000,
   turnTimeoutMs: 600_000,
@@ -40,6 +54,7 @@ export const DEFAULTS = {
   pollMs: 5_000,
   only: [1, 2, 3, 4],
   keep: false,
+  deliverablesOnly: false,
 };
 
 // The limits in the fork's api/src/agents/long-reply.ts.
@@ -58,10 +73,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const time = (v) => (v ? Date.parse(v) : NaN);
 const after = (v, t) => time(v) > t;
 
-// A small client for CircleChat's API, with a person's session cookie.
-export function apiClient({ base, session = "", fetchImpl = globalThis.fetch }) {
+// A small client for CircleChat's API, with the session cookie of one sign-in.
+export function apiClient({ base, fetchImpl = globalThis.fetch }) {
   const root = String(base).replace(/\/+$/, "");
-  let cookie = session ? `cc_session=${session}` : "";
+  let cookie = "";
   async function call(method, path, body) {
     const r = await fetchImpl(root + path, {
       method,
@@ -99,6 +114,7 @@ export function apiClient({ base, session = "", fetchImpl = globalThis.fetch }) 
     },
     async logout() {
       if (cookie) await call("POST", "/auth/logout").catch(() => {});
+      cookie = "";
     },
   };
 }
@@ -133,7 +149,11 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
   };
 
   const me = await api.get("/me");
-  if (!me?.memberId) throw new Error("the session has no workspace member; sign in as a person in the agent's workspace");
+  if (!me?.memberId) throw new Error("the check's account is in no workspace. Run kit/check-account.mjs, which check-agent.sh runs first");
+  // The check runs as a member only: an admin sees and can change more than a member, so a pass as
+  // an admin says nothing about what a member sees.
+  const role = (me.workspaces ?? []).find((w) => w.id === me.workspaceId)?.role ?? "unknown";
+  if (me.spectator || role !== "member") throw new Error(`the check's account is ${me.spectator ? "a spectator" : role} in the workspace, and the check runs as a member only. Run kit/check-account.mjs, which sets the role back to member`);
   const { agents = [] } = await api.get("/agents");
   const agent = agents.find((a) => a.handle === handle);
   if (!agent) throw new Error(`no agent @${handle} in this workspace`);
@@ -214,8 +234,8 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
         const q = await queue();
         const w = (q?.waiting ?? []).find((x) => x.taskId === task.id);
         if (w && !held) held = w;
-        const bad = (await agentRuns()).find((r) => time(r.startedAt) >= t - 1000 &&
-          (/^agent_busy/.test(String(r.errorText ?? "")) || (r.status === "failed" && r.trigger === "task_comment")));
+        // A member sees each run's status and trigger, never the run's error text.
+        const bad = (await agentRuns()).find((r) => time(r.startedAt) >= t - 1000 && r.status === "failed" && r.trigger === "task_comment");
         if (bad) { refused = bad; return "refused"; }
         const touch = await agentTouches(task.id, t);
         if (touch.files.length) return { kind: "file on the task", body: touch.files[0].name };
@@ -226,9 +246,7 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
         return null;
       }, o.replyTimeoutMs, o.pollMs);
       if (answer === "refused") {
-        record(1, "FAIL", /^agent_busy/.test(String(refused.errorText ?? ""))
-          ? "the comment's run was refused as agent_busy instead of waiting in the agent's queue"
-          : `the comment's run failed (${refused.status}); a run that waits in the queue never fails`);
+        record(1, "FAIL", `the comment's run failed instead of waiting in the agent's queue (a refusal as agent_busy, or another error; an admin sees the run's error text on the agent's page${refused.summary ? `; CircleChat says "${shortText(refused.summary, 60)}"` : ""})`);
       } else if (!answer) {
         record(1, "FAIL", `no answer naming three fruits within ${Math.round(o.replyTimeoutMs / 1000)} s`);
       } else {
@@ -316,8 +334,9 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
     // 4. A long reply lands as a file.
     if (o.only.includes(4)) {
       await waitIdle();
-      const full = (await api.get(`/agents/${agent.id}`)).agent ?? {};
-      const deliverablesOnly = full.configJson?.deliverablesOnly === true;
+      // Only an admin sees the agent's deliverables-only setting, so the setting comes from
+      // CHECK_DELIVERABLES_ONLY.
+      const deliverablesOnly = o.deliverablesOnly === true;
       const limit = deliverablesOnly ? SUMMARY_MAX : CHAT_BODY_MAX;
       const { message } = await api.post(`/conversations/${channel.id}/messages`, {
         bodyMd: `@${handle} Reply here, in this channel, with a text of at least ${LONG_REPLY_ASK.toLocaleString("en-US")} characters: a made-up guide to looking after a garden, in several paragraphs. Open with one short paragraph that says what it is.`,
@@ -374,33 +393,44 @@ export function optionsFromEnv(env) {
     pollMs: Math.max(secs("CHECK_POLL", DEFAULTS.pollMs), 10),
     only,
     keep: env.CHECK_KEEP === "1",
+    deliverablesOnly: env.CHECK_DELIVERABLES_ONLY === "1",
   };
+}
+
+// The check's sign-in: the email from site.json, the password from $CC_DIR/agent-check.env.
+export function checkAccount(env) {
+  const ccDir = env.CC_DIR || path.join(env.HOME ?? "", env.TENANT ? `tenants/${env.TENANT}/circlechat` : "circlechat");
+  const sitePath = env.SITE || path.join(ccDir, "site.json");
+  let site;
+  try { site = JSON.parse(fs.readFileSync(sitePath, "utf8")); } catch { throw new Error(`no readable ${sitePath}`); }
+  const email = checkAccountEmail(site);
+  if (!email) throw new Error("the check's account has no email: set site.public_host or site.check_account in site.json");
+  return { email, password: readCheckPassword(ccDir) };
 }
 
 export async function main(argv, env, out = console.log) {
   const handle = argv[0];
   if (!handle || !/^[a-z0-9_-]+$/i.test(handle)) {
-    out("usage: agent-check.mjs <handle>   (CC_API_BASE and CHECK_SESSION, or CHECK_EMAIL and CHECK_PASSWORD, in the environment)");
+    out("usage: agent-check.mjs <handle>   (CC_API_BASE, CC_DIR and SITE in the environment)");
     return 2;
   }
   let opts;
   try { opts = optionsFromEnv(env); } catch (e) { out(`agent check: ${e.message}`); return 2; }
   if (!env.CC_API_BASE) { out("agent check: no CC_API_BASE"); return 2; }
-  const api = apiClient({ base: env.CC_API_BASE, session: env.CHECK_SESSION || "" });
+  let account;
+  try { account = checkAccount(env); } catch (e) { out(`agent check: ${e.message}`); return 2; }
+  const api = apiClient({ base: env.CC_API_BASE });
   let signedIn = false;
   try {
-    if (!env.CHECK_SESSION) {
-      if (!env.CHECK_EMAIL || !env.CHECK_PASSWORD) { out("agent check: no CHECK_SESSION, and no CHECK_EMAIL and CHECK_PASSWORD"); return 2; }
-      await api.login(env.CHECK_EMAIL, env.CHECK_PASSWORD);
-      signedIn = true;
-    }
-    out(`Checking @${handle} on ${env.CC_API_BASE.replace(/\/\/[^/@]*@/, "//")}. Each wait is bounded; the model can take minutes.`);
+    await api.login(account.email, account.password);
+    signedIn = true;
+    out(`Checking @${handle} on ${env.CC_API_BASE.replace(/\/\/[^/@]*@/, "//")}, as ${account.email}, a member of the workspace. Each wait is bounded; the model can take minutes.`);
     const results = await runChecks({ api, handle, opts, log: out });
     const failed = results.filter((r) => r.status === "FAIL").length;
     out(failed ? `${failed} of ${results.length} checks failed.` : `All ${results.length} checks passed or were skipped.`);
     return failed ? 1 : 0;
   } catch (e) {
-    out(`agent check: ${e.message}`);
+    out(`agent check: ${String(e.message).split(account.password).join("<password>")}`);
     return 2;
   } finally {
     if (signedIn) await api.logout();

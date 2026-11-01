@@ -14,7 +14,7 @@ mkdir -p "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
 
 cat > "$CC/site.json" <<JSON
 {
-  "site": { "public_host": "ci.example.ts.net", "port": 8080, "proxy": "other" },
+  "site": { "public_host": "ci.example.ts.net", "port": 8080, "proxy": "other", "check_account": "agent-check@ci.example.com" },
   "repos": { "knowledge": "https://github.com/borderux/recursica-knowledge", "app": "https://github.com/octocat/Hello-World", "app_dir": "Hello-World", "app_github": "octocat/Hello-World" },
   "nodes": [ { "name": "ci", "os": "linux", "control": true, "address": "host.docker.internal" } ],
   "routes": { "claude-sonnet": ["anthropic/claude-sonnet-5-5"] },
@@ -68,6 +68,21 @@ check "the file store has CircleChat's bucket" "(cd '$CC' && docker compose run 
 check "CircleChat's default secrets are gone" "! grep -qE '^(SESSION_SECRET=change-me|MINIO_ROOT_PASSWORD=minioadmin$)' '$CC/.env'"
 check "the approval gate is on" "grep -q '^APPROVE_RISK_AT=high' '$CC/.env'"
 check "the firewall rules are loaded" "sudo nft list table inet agentguard >/dev/null"
+# The agent check's own account (kit/check-account.mjs), against CircleChat's real tables: made in
+# the only workspace as a member, able to sign in, set back to member after a change to admin, and
+# unchanged by a second run.
+API=http://127.0.0.1:8080/api
+printf '%s' '{"email":"admin@example.com","password":"ci-admin-password-0123","name":"CI admin","handle":"ci-admin","workspaceName":"CI"}' |
+  curl -fsS -o /dev/null -H 'content-type: application/json' --data-binary @- "$API/auth/signup" || echo "FAIL: the first account could not sign up"
+CHECK_PW="ci-check-$(openssl rand -hex 12)"
+( umask 077; printf 'CC_CHECK_PASSWORD=%s\n' "$CHECK_PW" > "$CC/agent-check.env" )
+check_role() { (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select string_agg(wm.role, ',') from workspace_members wm join users u on u.id = wm.user_id where u.email = 'agent-check@ci.example.com'"); }
+check_account() { CC_DIR="$CC" node "$KIT/circlechat/kit/check-account.mjs"; }
+check "the check's account is made as a member of the workspace" "check_account && [ \"\$(check_role)\" = member ]"
+check "the check's account signs in with the delivered password" "printf '{\"email\":\"agent-check@ci.example.com\",\"password\":\"%s\"}' \"\$CHECK_PW\" | curl -fsS -o /dev/null -H 'content-type: application/json' --data-binary @- '$API/auth/login'"
+(cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -qc "update workspace_members set role = 'admin' where user_id = (select id from users where email = 'agent-check@ci.example.com')")
+check "a rerun sets an admin check account back to member" "check_account | grep -q 'set the role from admin back to member' && [ \"\$(check_role)\" = member ]"
+check "a second rerun changes nothing" "check_account | grep -q 'nothing to change'"
 for u in cluster-agent opencanary; do check "service $u runs" "systemctl is-active --quiet $u"; done
 check "the decoy answers" "curl -s -m 5 -o /dev/null http://127.0.0.1:8088/ || nc -z 127.0.0.1 2222"
 [ "$fail" = 0 ] && echo "Smoke install passed." || { echo "Smoke install failed."; exit 1; }

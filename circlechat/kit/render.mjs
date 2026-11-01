@@ -426,6 +426,26 @@ export function cloudApproverErrors(site) {
   return errs;
 }
 
+// The CircleChat account the agent check signs in as (kit/check-account.mjs, kit/agent-check.mjs):
+// an account made only for the check, a member of the agents' workspace and never an admin. The
+// email is site.check_account, or agent-check@<site.public_host>. The account receives no mail, so
+// the address only has to be unique on the stack. The password is CC_CHECK_PASSWORD, in the
+// stack's GitHub environment.
+const EMAIL = /^[^\s@,=]+@[^\s@,=]+\.[^\s@,=]+$/;
+export function checkAccountEmail(site) {
+  const set = site?.site?.check_account;
+  if (set !== undefined) return String(set).toLowerCase();
+  const host = String(site?.site?.public_host ?? "").toLowerCase();
+  return host ? `agent-check@${host}` : "";
+}
+export function checkAccountErrors(site) {
+  const set = site?.site?.check_account;
+  if (set === undefined) return [];
+  if (typeof set !== "string" || !EMAIL.test(set)) return ["site.check_account must be an email address for the agent check's own CircleChat account, such as agent-check@circlechat.example.com"];
+  if ((site.cloud_approvers ?? []).some((a) => String(a?.email ?? "").toLowerCase() === set.toLowerCase())) return ["site.check_account must be an account made only for the agent check, not a cloud approver's account"];
+  return [];
+}
+
 export function validate(site, { cluster } = {}) {
   const errs = [];
   const nodes = site.nodes ?? [];
@@ -459,6 +479,7 @@ export function validate(site, { cluster } = {}) {
   }
   if (t.slack_channel_id !== undefined && !/^[CG][A-Z0-9]{6,}$/.test(t.slack_channel_id)) errs.push("site.slack_channel_id must be a Slack channel ID, such as C0123ABCD");
   errs.push(...cloudApproverErrors(site));
+  errs.push(...checkAccountErrors(site));
   // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");

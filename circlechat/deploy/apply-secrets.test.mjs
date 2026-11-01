@@ -380,3 +380,55 @@ test("the helper refuses a symlinked gateway state folder, and a hard-linked sec
   assert.match(r2.stdout, /Refused: .*model-keys\.env is a symlink or has a second hard link/);
   assert.equal(fs.readFileSync(path.join(b.home, "other.env"), "utf8"), "");
 });
+
+test("the agent check's password goes to a file of its own, mode 600, and never to .env or an agent's home", () => {
+  const { home, conf } = setup();
+  const cc = path.join(home, "circlechat"), file = path.join(cc, "agent-check.env");
+  const pw = "check-password-0123456789abcdef";
+  let r = apply(conf, ["cluster", control, "false"], `CC_CHECK_PASSWORD=${pw}\n`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(file, "utf8"), `CC_CHECK_PASSWORD=${pw}\n`);
+  assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+  assert.match(r.stdout, /The agent check's account keeps the old password until a deploy with restart/);
+  assert.ok(!r.stdout.includes(pw), "the password is never printed");
+  assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /CC_CHECK_PASSWORD/);
+  assert.ok(!fs.existsSync(path.join(cc, "hermes-homes", ".hermes-alan", ".env")));
+  // A symlink at the file: refused, and nothing written.
+  fs.rmSync(file);
+  const target = path.join(home, "elsewhere.txt");
+  fs.writeFileSync(target, "untouched\n");
+  fs.symlinkSync(target, file);
+  r = apply(conf, ["cluster", control, "false"], `CC_CHECK_PASSWORD=${pw}\nJOBD_TOKEN=jt\n`);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Refused: .*agent-check\.env is a symlink/);
+  assert.equal(fs.readFileSync(target, "utf8"), "untouched\n");
+  assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /JOBD_TOKEN/);
+});
+
+test("a deploy with restart makes the check's account as the owner, with no password on a command line", () => {
+  const t = restartRun("Linux");
+  const log = path.join(t.home, "account.log");
+  const pw = "check-password-0123456789abcdef";
+  fs.writeFileSync(path.join(t.home, "kit", "circlechat", "kit", "check-account.mjs"),
+    `import fs from "node:fs";\nfs.appendFileSync(${JSON.stringify(log)}, "check-account " + process.argv.slice(2).join(" ") + " cc=" + process.env.CC_DIR + "\\n");\n`);
+  const r = t.run(`CC_CHECK_PASSWORD=${pw}\n`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(fs.readFileSync(log, "utf8"), new RegExp(`^check-account  ?cc=${path.join(t.home, "circlechat").replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "m"));
+  const calls = t.calls();
+  assert.match(calls, /^sudo -u \S+ -H env TENANT= CC_DIR=\S+ SITE=\S+ PATH=.* \S+\/kit\/check-account\.mjs$/m);
+  assert.ok(!calls.includes(pw), "no password on a command line");
+  assert.ok(!r.stdout.includes(pw), "the password is never printed");
+  // The account step failing fails the deploy.
+  fs.writeFileSync(path.join(t.home, "kit", "circlechat", "kit", "check-account.mjs"), `console.log("The check's account: no workspace yet."); process.exit(1);\n`);
+  const bad = t.run(`CC_CHECK_PASSWORD=${pw}\n`);
+  assert.equal(bad.status, 1);
+  assert.match(bad.stdout, /the check's account is not ready/);
+});
+
+test("every secret the deploy workflow passes is one the helper reads", () => {
+  const yml = fs.readFileSync(path.join(here, "deploy-secrets.yml"), "utf8");
+  const passed = [...yml.matchAll(/secrets\.([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]);
+  assert.ok(passed.includes("CC_CHECK_PASSWORD"), "the agent check's password is in the workflow's list");
+  const known = new RegExp(/^KNOWN='(.*)'$/m.exec(fs.readFileSync(path.join(here, "apply-secrets.sh"), "utf8"))[1]);
+  for (const name of passed) assert.ok(known.test(name), `${name} is passed by the workflow and ignored by the helper`);
+});

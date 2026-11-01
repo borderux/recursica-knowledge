@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { checkAccountEmail, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
@@ -204,6 +204,20 @@ test("Kev's review data goes to a repo named owner/name, never the knowledge rep
   const kb = repoOf(clone().repos.knowledge);
   assert.match(check({ repo: kb.toUpperCase() }), /data.repo cannot be the knowledge repo/);
   assert.match(check({ kev_disagreements_branch: "data/kev" }), /data.kev_disagreements_branch is gone/);
+});
+
+test("the agent check's account: site.check_account, or agent-check@ the stack's host, and never a person's", () => {
+  const s = clone();
+  assert.equal(checkAccountEmail(s), `agent-check@${s.site.public_host}`);
+  s.site.check_account = "Check@Acme.com";
+  assert.equal(checkAccountEmail(s), "check@acme.com");
+  assert.deepEqual(validate(s), []);
+  s.site.check_account = "not an email";
+  assert.match(validate(s).join("\n"), /site.check_account must be an email address/);
+  s.site.check_account = "person-a@acme.com";
+  s.site.slack_channel_id = "C0123ABCD";
+  s.cloud_approvers = [{ email: "Person-A@acme.com", slack_user: "U0123ABCD" }];
+  assert.match(validate(s).join("\n"), /site.check_account must be an account made only for the agent check/);
 });
 
 test("a stack's three ports must differ, and the tenant name is a slug", () => {
