@@ -17,6 +17,14 @@ The knowledge checkout is `/workspace/recursica-knowledge`. The knowledge checko
 
 The default target repository on CircleChat is `/workspace/@APP_REPO@`. A project that names a repository of its own uses that repository instead (see "New projects"), cloned to `/workspace/projects/<project>`. Build in the project's target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
 
+**A prototype in `@APP_REPO@` uses Recursica's adapter, so a plain request is enough.** The interview and the brief still come first. Then build by these rules:
+
+- **Import every UI component from `@recursica/adapter-mantine-v8`.** Never import a component from `@mantine/core`. A Mantine component skips Recursica's theme, so the page looks like stock Mantine.
+- **Look up each component with the knowledge server's `component_api` tool** before using the component, for the adapter's name and props. The adapter's names differ from Mantine's: `TextField`, not `TextInput`, and `TextArea`, not `Textarea`.
+- **Wrap each page in `<Prototype>`** from `../../Prototype`, the way `src/routes/prototypes/demo/index.tsx` does. Read the demo prototype before writing the first page.
+- **Put each page at `src/routes/prototypes/<slug>/index.tsx`.** The app finds each page by that path, and a page anywhere else has no route.
+- **Write each file with the `write_file` tool,** at its path under `/workspace/@APP_REPO@`.
+
 ## New projects
 
 At the start of a new project, ask the user which repository the project builds in. Offer a numbered list:
@@ -304,7 +312,9 @@ The pull request body holds only the four items below:
 
 On CircleChat, the preview is the prototype server that is already running for the target repository. Lead with the route (`/prototypes/<slug>`).
 
-Commit to the `betty/<slug>` branch, and push the branch. The GitHub credential is `$BETTY_GITHUB_TOKEN`, the token of Betty's GitHub App. The kit renews the token before the token ends. The commit's committer is the app's bot identity, which the kit sets in git's environment. Hermes, the agent runtime, removes `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on each command. Push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_TOKEN" | base64 -w0)" push origin betty/<slug>`. Open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_TOKEN" https://api.github.com/repos/@APP_REPO_GITHUB@/pulls ...`. Never echo the credential, and never write the credential to a file. If the credential is unset or rejected, say so, and report the branch instead.
+**A prototype in `@APP_REPO@` is never pushed.** The preview server shows the page as soon as the file is written, and a person decides when to keep the work. Do not push a branch, and do not open a pull request; this replaces Stage 5's pull request on this surface. Before replying, check the page: the file is at `src/routes/prototypes/<slug>/index.tsx`, every import comes from `@recursica/adapter-mantine-v8` or the repository's own files, and the repository's type check (`npx tsc -b`) reports no error in the page. Then reply with the preview route first, then what could not be verified, and stop.
+
+For any other repository, commit to the `betty/<slug>` branch, and push the branch. The GitHub credential is `$BETTY_GITHUB_TOKEN`, the token of Betty's GitHub App. The kit renews the token before the token ends. The commit's committer is the app's bot identity, which the kit sets in git's environment. Hermes, the agent runtime, removes `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on each command. Push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_TOKEN" | base64 -w0)" push origin betty/<slug>`. Open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_TOKEN" https://api.github.com/repos/@APP_REPO_GITHUB@/pulls ...`. Never echo the credential, and never write the credential to a file. If the credential is unset or rejected, say so, and report the branch instead.
 
 Then report the preview route first, then the branch or the pull request, the review tier that ran, and each item that could not be verified. Then stop. Do not merge. Do not start the gap reports until the build is handed over.
 
