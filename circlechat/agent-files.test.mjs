@@ -364,6 +364,37 @@ test("setup-agent.sh refuses a model_catalog block under another key, where Herm
   assert.equal(turns(s).length, 0, "no test turn ran");
 });
 
+// An agent's file tools could write only inside the agent's home (the Hermes image sets
+// HERMES_WRITE_SAFE_ROOT=/opt/data). Asked to build a page in the shared workspace, an agent's
+// write_file calls were refused four times; it wrote the page inside its own home and reported it
+// done, while the preview stayed blank.
+test("setup-agent.sh lets each agent's file tools write to the shared workspace, once, and keeps the rest of the .env", () => {
+  const s = sandbox(["betty"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("betty", "config.yaml"), hermesDefault);
+  fs.writeFileSync(s.h("betty", ".env"), "BETTY_GITHUB_TOKEN=ghs_stand_in\nHERMES_WRITE_SAFE_ROOT=/opt/data\n");
+  for (let i = 0; i < 2; i++) {
+    const r = s.run("setup-agent.sh", "betty");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const env = fs.readFileSync(s.h("betty", ".env"), "utf8");
+    assert.deepEqual(env.match(/^HERMES_WRITE_SAFE_ROOT=.*$/gm), ["HERMES_WRITE_SAFE_ROOT=/opt/data:/workspace"], `run ${i + 1}`);
+    assert.match(env, /^BETTY_GITHUB_TOKEN=ghs_stand_in$/m);
+    assert.ok(!(r.stdout + r.stderr).includes("ghs_stand_in"), "the output never shows the token");
+  }
+  assert.equal(fs.statSync(s.h("betty", ".env")).mode & 0o777, 0o600);
+});
+
+test("setup-agent.sh leaves the write root alone on a stack with no shared workspace", () => {
+  const s = sandbox(["betty"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("betty", "config.yaml"), hermesDefault);
+  s.env.WS = path.join(s.home, "no-workspace-here");
+  const r = s.run("setup-agent.sh", "betty");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const env = fs.existsSync(s.h("betty", ".env")) ? fs.readFileSync(s.h("betty", ".env"), "utf8") : "";
+  assert.doesNotMatch(env, /HERMES_WRITE_SAFE_ROOT/);
+});
+
 test("setup-agent.sh barb takes a Kev key given on the command line over CircleChat's .env, and says when there is none", () => {
   const s = sandbox(["barb"]);
   fullSetup(s);
