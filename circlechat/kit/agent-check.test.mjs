@@ -19,7 +19,7 @@ const SESSION = "stand-in-session-0123456789abcdef";
 const EMAIL = "agent-check@circlechat.example.com";
 const PASSWORD = "stand-in-password-0123456789";
 const HANDLE = "standin";
-const PERSON = "m_person";
+const CHECKER = "m_checker";
 const AGENT_MEMBER = "m_agent";
 const AGENT_ID = "a_standin";
 const TURN_MS = 120;
@@ -171,7 +171,7 @@ function standIn(faults = {}, { role = "member" } = {}) {
 
   // ---- the routes ----
   const routes = [
-    ["GET", /^\/api\/me$/, () => ({ user: { email: EMAIL }, memberId: PERSON, workspaceId: "w_1", workspaces: [{ id: "w_1", name: "Agents", role: s.role }] })],
+    ["GET", /^\/api\/me$/, () => ({ user: { email: EMAIL }, memberId: CHECKER, workspaceId: "w_1", workspaces: [{ id: "w_1", name: "Agents", role: s.role }] })],
     ["GET", /^\/api\/agents$/, () => ({ agents: [admin() ? { ...s.agent } : publicAgent(s.agent)] })],
     ["GET", /^\/api\/agents\/([^/]+)$/, ([id]) => {
       if (id !== AGENT_ID) return 404;
@@ -197,13 +197,13 @@ function standIn(faults = {}, { role = "member" } = {}) {
     }],
     ["POST", /^\/api\/conversations$/, (_, b) => {
       const id = nid("c");
-      s.conversations.set(id, { id, name: b.name, isPrivate: b.isPrivate, archived: false, createdBy: PERSON, members: [PERSON, ...(b.memberIds ?? [])] });
+      s.conversations.set(id, { id, name: b.name, isPrivate: b.isPrivate, archived: false, createdBy: CHECKER, members: [CHECKER, ...(b.memberIds ?? [])] });
       return { id };
     }],
     // The channel's own admin, its maker, archives it, as in CircleChat.
     ["POST", /^\/api\/conversations\/([^/]+)\/archive$/, ([id]) => {
       const c = s.conversations.get(id);
-      if (c.createdBy !== PERSON) return deny("POST /conversations/:id/archive");
+      if (c.createdBy !== CHECKER) return deny("POST /conversations/:id/archive");
       c.archived = true;
       return { ok: true };
     }],
@@ -211,12 +211,12 @@ function standIn(faults = {}, { role = "member" } = {}) {
       const parent = q.get("parent_id");
       return { messages: s.messages.filter((m) => m.conversationId === id && (parent ? m.parentId === parent : !m.parentId)), hasMore: false };
     }],
-    ["POST", /^\/api\/conversations\/([^/]+)\/messages$/, ([id], b) => ({ message: post(id, PERSON, b.bodyMd, b.parentId ?? null) })],
+    ["POST", /^\/api\/conversations\/([^/]+)\/messages$/, ([id], b) => ({ message: post(id, CHECKER, b.bodyMd, b.parentId ?? null) })],
     ["POST", /^\/api\/tasks$/, (_, b) => {
       const t = { id: nid("task"), title: b.title, bodyMd: b.bodyMd ?? "", status: b.status ?? "backlog", archived: false, conversationId: b.conversationId ?? null,
         assignees: b.assignees ?? [], comments: [], activity: [], artifacts: [], createdAt: now() };
       s.tasks.set(t.id, t);
-      t.activity.push({ id: nid("act"), taskId: t.id, actorMemberId: PERSON, kind: "created", ts: t.createdAt });
+      t.activity.push({ id: nid("act"), taskId: t.id, actorMemberId: CHECKER, kind: "created", ts: t.createdAt });
       if (t.assignees.includes(AGENT_MEMBER)) enqueue("task_assigned", { taskId: t.id });
       return { task: taskView(t) };
     }],
@@ -228,13 +228,13 @@ function standIn(faults = {}, { role = "member" } = {}) {
     ["PATCH", /^\/api\/tasks\/([^/]+)$/, ([id], b) => {
       const t = s.tasks.get(id);
       if (b.status && b.status !== t.status) {
-        t.activity.push({ id: nid("act"), taskId: id, actorMemberId: PERSON, kind: "status_changed", payload: { from: t.status, to: b.status }, ts: now() });
+        t.activity.push({ id: nid("act"), taskId: id, actorMemberId: CHECKER, kind: "status_changed", payload: { from: t.status, to: b.status }, ts: now() });
         t.status = b.status;
       }
       if (b.archived !== undefined) t.archived = b.archived;
       return { task: taskView(t) };
     }],
-    ["POST", /^\/api\/tasks\/([^/]+)\/comments$/, ([id], b) => ({ comment: comment(id, PERSON, b.bodyMd) })],
+    ["POST", /^\/api\/tasks\/([^/]+)\/comments$/, ([id], b) => ({ comment: comment(id, CHECKER, b.bodyMd) })],
     ["GET", /^\/api\/tasks\/([^/]+)\/artifacts$/, ([id]) => ({ artifacts: s.tasks.get(id)?.artifacts ?? [] })],
   ];
 
@@ -247,7 +247,7 @@ function standIn(faults = {}, { role = "member" } = {}) {
         const b = raw ? JSON.parse(raw) : {};
         if (b.email !== EMAIL || b.password !== PASSWORD) return send(401, { error: "invalid_credentials" });
         s.logins++;
-        return send(200, { ok: true, memberId: PERSON, workspaceId: "w_1" }, { "set-cookie": `cc_session=${SESSION}; Path=/; HttpOnly; SameSite=Lax` });
+        return send(200, { ok: true, memberId: CHECKER, workspaceId: "w_1" }, { "set-cookie": `cc_session=${SESSION}; Path=/; HttpOnly; SameSite=Lax` });
       }
       if (req.headers.cookie !== `cc_session=${SESSION}`) return send(401, { error: "unauthenticated" });
       const url = new URL(req.url, "http://x");

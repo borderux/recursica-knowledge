@@ -69,20 +69,24 @@ check "CircleChat's default secrets are gone" "! grep -qE '^(SESSION_SECRET=chan
 check "the approval gate is on" "grep -q '^APPROVE_RISK_AT=high' '$CC/.env'"
 check "the firewall rules are loaded" "sudo nft list table inet agentguard >/dev/null"
 # The agent check's own account (kit/check-account.mjs), against CircleChat's real tables: made in
-# the only workspace as a member, able to sign in, set back to member after a change to admin, and
-# unchanged by a second run.
+# the only workspace as a member and locked, so the delivered password signs in nowhere; unlocked
+# for a check, and able to sign in then; locked again, which ends the check's session; set back to
+# member after a change to admin.
 API=http://127.0.0.1:8080/api
 printf '%s' '{"email":"admin@example.com","password":"ci-admin-password-0123","name":"CI admin","handle":"ci-admin","workspaceName":"CI"}' |
   curl -fsS -o /dev/null -H 'content-type: application/json' --data-binary @- "$API/auth/signup" || echo "FAIL: the first account could not sign up"
 CHECK_PW="ci-check-$(openssl rand -hex 12)"
 ( umask 077; printf 'CC_CHECK_PASSWORD=%s\n' "$CHECK_PW" > "$CC/agent-check.env" )
 check_role() { (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select string_agg(wm.role, ',') from workspace_members wm join users u on u.id = wm.user_id where u.email = 'agent-check@ci.example.com'"); }
-check_account() { CC_DIR="$CC" node "$KIT/circlechat/kit/check-account.mjs"; }
-check "the check's account is made as a member of the workspace" "check_account && [ \"\$(check_role)\" = member ]"
-check "the check's account signs in with the delivered password" "printf '{\"email\":\"agent-check@ci.example.com\",\"password\":\"%s\"}' \"\$CHECK_PW\" | curl -fsS -o /dev/null -H 'content-type: application/json' --data-binary @- '$API/auth/login'"
+check_account() { CC_DIR="$CC" node "$KIT/circlechat/kit/check-account.mjs" "$@"; }
+check_login() { printf '{"email":"agent-check@ci.example.com","password":"%s"}' "$CHECK_PW" | curl -fsS -o /dev/null -c "$CC/check-cookies" -H 'content-type: application/json' --data-binary @- "$API/auth/login"; }
+check "the check's account is made as a member of the workspace, locked" "check_account | grep -q 'locked the account' && [ \"\$(check_role)\" = member ]"
+check "the locked account does not sign in with the delivered password" "! check_login"
+check "the unlocked account signs in with the delivered password" "check_account unlock | grep -q 'unlocked the account' && check_login"
+check "locking again ends the session, and the password signs in nowhere" "check_account lock | grep -q 'ended 1 session' && ! curl -fsS -o /dev/null -b '$CC/check-cookies' '$API/me' && ! check_login"
+rm -f "$CC/check-cookies"
 (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -qc "update workspace_members set role = 'admin' where user_id = (select id from users where email = 'agent-check@ci.example.com')")
-check "a rerun sets an admin check account back to member" "check_account | grep -q 'set the role from admin back to member' && [ \"\$(check_role)\" = member ]"
-check "a second rerun changes nothing" "check_account | grep -q 'nothing to change'"
+check "a rerun sets an admin check account back to member, and locked" "check_account | grep -q 'set the role from admin back to member' && [ \"\$(check_role)\" = member ] && ! check_login"
 for u in cluster-agent opencanary; do check "service $u runs" "systemctl is-active --quiet $u"; done
 check "the decoy answers" "curl -s -m 5 -o /dev/null http://127.0.0.1:8088/ || nc -z 127.0.0.1 2222"
 [ "$fail" = 0 ] && echo "Smoke install passed." || { echo "Smoke install failed."; exit 1; }

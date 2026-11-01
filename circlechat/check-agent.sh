@@ -14,9 +14,10 @@
 #   - The check's own CircleChat account: the email in site.json (site.check_account, or
 #     agent-check@<site.public_host>), and CC_CHECK_PASSWORD from the stack's GitHub environment,
 #     which the secrets deploy writes to $CC_DIR/agent-check.env. The account is a member of the
-#     agents' workspace, never an admin. First, kit/check-account.mjs makes the account when the
-#     account is missing, and sets the role back to member when the role changed. The password
-#     stays in the file: no argument, no environment variable and no output holds the password.
+#     agents' workspace, never an admin, and locked except while a check runs: kit/check-account.mjs
+#     unlocks the account (and makes it, or sets the role back to member), the check runs, and the
+#     account is locked again on every way out, a failed check, an error or Ctrl-C included. The
+#     password stays in the file: no argument, no environment variable and no output holds it.
 set -euo pipefail
 
 HANDLE="${1:?usage: check-agent.sh <handle>}"
@@ -28,7 +29,33 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 CC_API_BASE="${CC_API_BASE:-$({ sed -n 's/^CC_API_BASE=//p' "$CC_DIR/.env" 2>/dev/null || true; } | tail -1)}"
 [ -n "$CC_API_BASE" ] || { echo "No CC_API_BASE in the environment or in $CC_DIR/.env. Run setup-host.sh first, or set CC_API_BASE."; exit 2; }
 
-# The account first: made, or kept a member. A failure says what is missing.
-CC_DIR="$CC_DIR" SITE="$SITE" TENANT="${TENANT:-}" node "$HERE/kit/check-account.mjs" || exit 2
+CHECK_NODE="${CHECK_NODE:-node}"
+account() { CC_DIR="$CC_DIR" SITE="$SITE" TENANT="${TENANT:-}" "$CHECK_NODE" "$HERE/kit/check-account.mjs" "$1"; }
 
-CC_API_BASE="$CC_API_BASE" CC_DIR="$CC_DIR" SITE="$SITE" exec node "$HERE/kit/agent-check.mjs" "$HANDLE"
+# Locked again on every way out. A lock that fails is said loudly and fails the run.
+LOCKED=false
+lock_again() {
+  [ "$LOCKED" = true ] && return 0
+  LOCKED=true
+  account lock || { echo "The check's account could NOT be locked again. Run: CC_DIR=$CC_DIR node $HERE/kit/check-account.mjs lock"; return 1; }
+}
+on_exit() {
+  local code=$?
+  lock_again || code=3
+  exit "$code"
+}
+# A signal stops the check at once and locks: bash runs a trap only after the command in front
+# finishes, so the check runs in the background and the shell waits for it.
+CHILD=""
+stop_check() { [ -z "$CHILD" ] || kill "$CHILD" 2>/dev/null || true; }
+trap on_exit EXIT
+trap 'stop_check; exit 130' INT
+trap 'stop_check; exit 143' TERM HUP
+
+# Unlock for this check: the account is made, or kept a member, and gets the delivered password.
+# A failure says what is missing, and the account is locked again on the way out.
+account unlock || exit 2
+
+CC_API_BASE="$CC_API_BASE" CC_DIR="$CC_DIR" SITE="$SITE" "$CHECK_NODE" "$HERE/kit/agent-check.mjs" "$HANDLE" &
+CHILD=$!
+wait "$CHILD"

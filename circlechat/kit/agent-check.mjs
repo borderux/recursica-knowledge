@@ -16,8 +16,8 @@
 //      waits in the agent's queue (GET /api/agents/:id/queue), and never fails. A member sees no
 //      run's error text, so a request refused as agent_busy shows as a failed run.
 //   2. A question gets asked once, then waits. No second question and no further comment on the
-//      task until a person replies, through heartbeats. After the reply, the agent acts.
-//   3. A settled task stays untouched. A task a person moved to review gets no comment, status
+//      task until the check replies, through heartbeats. After the reply, the agent acts.
+//   3. A settled task stays untouched. A task the check moved to review gets no comment, status
 //      change or file from the agent, through heartbeats.
 //   4. A long reply lands as a file. A reply past the chat limit (600 characters for an agent with
 //      the deliverables-only setting, 2,000 otherwise) is posted as its opening paragraph, with the
@@ -288,7 +288,7 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
           await heartbeats();
           const later = (await said()).all.filter((c) => time(c.ts) > time(q.ts));
           if (later.length) {
-            record(2, "FAIL", `after its question the agent posted ${later.length} more time${later.length === 1 ? "" : "s"} before a person replied${later.some((c) => isQuestion(c.bodyMd)) ? ", asking again" : ""}`);
+            record(2, "FAIL", `after its question the agent posted ${later.length} more time${later.length === 1 ? "" : "s"} before the check replied${later.some((c) => isQuestion(c.bodyMd)) ? ", asking again" : ""}`);
           } else {
             const { comment } = await api.post(`/tasks/${task.id}/comments`, {
               bodyMd: `@${handle} Anything you like: four lines about the sea.`,

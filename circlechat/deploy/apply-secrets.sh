@@ -356,9 +356,9 @@ if [ "$WROTE_CONTROL" = true ]; then
     bash -c 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat' _ "$CC_DIR" 2>/dev/null || true) |
     "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --private-keys "${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
 fi
-# The agent check's account: made when missing, with the delivered password, and kept a member of
-# the agents' workspace. The owner runs the step, in Docker; the password stays in the file, and
-# reaches CircleChat's api container on stdin.
+# The agent check's account: made when missing, kept a member of the agents' workspace, and
+# locked, so the delivered password signs in only while check-agent.sh runs a check. The owner
+# runs the step, in Docker.
 if [ "$WROTE_CHECK" = true ]; then
   sudo -u "$OWNER" -H env TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" PATH="$(dirname "$NODE_BIN"):$PATH" \
     "$NODE_BIN" "$KIT/circlechat/kit/check-account.mjs" </dev/null || { echo "The check's password is written, and the check's account is not ready: see the line above."; exit 1; }

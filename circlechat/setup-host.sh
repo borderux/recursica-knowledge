@@ -690,7 +690,8 @@ start_egress
 agents_to_gateway
 key_check
 # The agent check's own CircleChat account (kit/check-account.mjs), once the secrets deploy has
-# written the check's password: made when missing, and kept a member, never an admin. Before the
+# written the check's password: made when missing, kept a member, never an admin, and locked, so
+# its password signs in only while check-agent.sh runs a check. Before the
 # first agent is installed the step has no workspace to join, so the setup goes on; check-agent.sh
 # runs the same step again before each check.
 if [ -f "$CC_DIR/agent-check.env" ]; then

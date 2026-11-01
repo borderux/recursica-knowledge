@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 // The agent check's own CircleChat account (kit/agent-check.mjs signs in as this account). Makes
-// the account when the account is missing, and keeps the account a member of the agents'
-// workspace, never an admin. Safe to rerun.
+// the account when the account is missing, keeps the account a member of the agents' workspace,
+// never an admin, and keeps the account locked except while a check runs. Safe to rerun.
 //
-//   CC_DIR=<stack folder> node kit/check-account.mjs
+//   CC_DIR=<stack folder> node kit/check-account.mjs [lock|unlock]
+//
+// Locked is the default, and the state after every step but unlock: the account's password is a
+// hash of a random secret that nothing keeps, and every session of the account is ended, so the
+// delivered password signs in nowhere. unlock sets the delivered password, for one check;
+// check-agent.sh unlocks, runs the check, and locks again on every way out, a failure included.
 //
 // - The email is site.check_account in site.json, or agent-check@<site.public_host>
 //   (kit/render.mjs checkAccountEmail).
@@ -17,11 +22,13 @@
 // What the step does, in one transaction:
 //   - The workspace: the one workspace that holds an agent, or the only workspace when no
 //     workspace holds an agent yet. More than one, or none, stops the step with a message.
-//   - The account: made when no account has the email, with the handle agent-check. An existing
-//     account gets the delivered password when the stored hash does not match.
+//   - The account: made when no account has the email, with the handle agent-check.
+//   - The lock: unlock sets the delivered password. Any other mode sets a hash of a random secret
+//     and ends the account's sessions, so the account is locked.
 //   - The role: member in the workspace. Another role, admin included, is set back to member. The
 //     account leaves every other workspace, so a sign-in always lands in the agents' workspace.
-// Exit 0 when the account is ready, 1 with a message when the step cannot make the account.
+// Exit 0 when the account is ready, 1 with a message when the step cannot make the account or
+// cannot lock the account.
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
@@ -33,6 +40,8 @@ export const HANDLE = "agent-check";
 export const NAME = "Agent check";
 // CircleChat asks for 8 characters. The check's password is a generated one, so ask for more.
 export const MIN_PASSWORD = 16;
+
+export const MODES = ["lock", "unlock"];
 
 // The password from $CC_DIR/agent-check.env. Throws a message that never holds the password.
 export function readCheckPassword(ccDir) {
@@ -54,8 +63,10 @@ export function readCheckPassword(ccDir) {
 //   db: workspaces() -> [{ id, agents }], userByEmail(email) -> { id, passwordHash } | null,
 //       handleTaken(handle), createUser(u), setPassword(userId, hash), memberships(userId) ->
 //       [{ workspaceId, role }], addMembership(wsId, userId), setMemberRole(wsId, userId),
-//       removeMembership(wsId, userId), ensureMember(wsId, userId, memberId)
-//   o:  { email, password, handle, name, hash(pw), compare(pw, hash), newId(prefix) }
+//       removeMembership(wsId, userId), ensureMember(wsId, userId, memberId),
+//       endSessions(userId) -> number ended
+//   o:  { email, password (unlock only), unlock, handle, name, hash(pw), compare(pw, hash),
+//         newId(prefix), secret() -> a random string nothing keeps }
 export async function ensureAccount(db, o) {
   const all = await db.workspaces();
   const withAgents = all.filter((w) => Number(w.agents) > 0);
@@ -65,14 +76,21 @@ export async function ensureAccount(db, o) {
   const ws = pick[0].id;
   const changes = [];
   let user = await db.userByEmail(o.email);
+  // Unlocked: the delivered password. Locked: a hash of a secret nothing keeps.
+  const passwordHash = o.unlock ? await o.hash(o.password) : await o.hash(o.secret());
   if (!user) {
     if (await db.handleTaken(o.handle)) throw new Error(`another CircleChat account already has the handle ${o.handle}. Rename that account's handle, or set site.check_account to that account's email`);
-    user = { id: o.newId("u"), email: o.email, name: o.name, handle: o.handle, passwordHash: await o.hash(o.password) };
+    user = { id: o.newId("u"), email: o.email, name: o.name, handle: o.handle, passwordHash };
     await db.createUser(user);
     changes.push("made the account");
-  } else if (!(await o.compare(o.password, user.passwordHash))) {
-    await db.setPassword(user.id, await o.hash(o.password));
-    changes.push("set the delivered password");
+  } else if (!o.unlock || !(await o.compare(o.password, user.passwordHash))) {
+    await db.setPassword(user.id, passwordHash);
+  }
+  if (o.unlock) {
+    changes.push("unlocked the account for this check");
+  } else {
+    const ended = await db.endSessions(user.id);
+    changes.push(`locked the account${ended ? `, and ended ${ended} session${ended === 1 ? "" : "s"}` : ""}`);
   }
   let joined = false;
   for (const m of await db.memberships(user.id)) {
@@ -104,6 +122,7 @@ export const ACCOUNT_SCRIPT = `
 import postgres from "postgres";
 import bcrypt from "bcryptjs";
 import { customAlphabet } from "nanoid";
+import { randomBytes } from "node:crypto";
 const ensureAccount = ${ensureAccount.toString()};
 let input = ""; for await (const c of process.stdin) input += c;
 const o = JSON.parse(input);
@@ -121,10 +140,12 @@ try {
     setMemberRole: (w, id) => tx\`update workspace_members set role = 'member' where workspace_id = \${w} and user_id = \${id}\`,
     removeMembership: (w, id) => tx\`delete from workspace_members where workspace_id = \${w} and user_id = \${id}\`,
     ensureMember: (w, id, mid) => tx\`insert into members (id, workspace_id, kind, ref_id) values (\${mid}, \${w}, 'user', \${id}) on conflict do nothing\`,
-  }, { ...o, hash: (pw) => bcrypt.hash(pw, 10), compare: (pw, h) => bcrypt.compare(pw, h), newId: (p) => p + "_" + nid() }));
+    endSessions: async (id) => (await tx\`delete from sessions where user_id = \${id} returning id\`).length,
+  }, { ...o, hash: (pw) => bcrypt.hash(pw, 10), compare: (pw, h) => bcrypt.compare(pw, h), newId: (p) => p + "_" + nid(), secret: () => randomBytes(32).toString("base64url") }));
   process.stdout.write(JSON.stringify({ ok: true, ...r }) + "\\n");
 } catch (e) {
-  process.stdout.write(JSON.stringify({ ok: false, error: String(e?.message ?? e).split(o.password).join("<password>") }) + "\\n");
+  const msg = String(e?.message ?? e);
+  process.stdout.write(JSON.stringify({ ok: false, error: o.password ? msg.split(o.password).join("<password>") : msg }) + "\\n");
 } finally {
   await sql.end({ timeout: 5 });
 }
@@ -135,24 +156,30 @@ function dockerContext(ccDir) {
   try { return /^DOCKER_CONTEXT=(.*)$/m.exec(fs.readFileSync(path.join(ccDir, "kit-out", "tenant.env"), "utf8"))?.[1] ?? ""; } catch { return ""; }
 }
 
-// Makes or updates the account. Returns { ok, lines } with lines to print; never the password.
-export function run({ ccDir, site, env = process.env }) {
+// Makes or updates the account, locked, or unlocked with mode "unlock". Returns { ok, lines } with
+// lines to print; never the password. Locking needs no password, so a stack without the password
+// file can still lock the account.
+export function run({ ccDir, site, mode = "lock", env = process.env }) {
+  if (!MODES.includes(mode)) return { ok: false, lines: [`The check's account: unknown mode ${mode}; use lock or unlock.`] };
+  const unlock = mode === "unlock";
   const email = checkAccountEmail(site);
   if (!email) return { ok: false, lines: ["The check's account has no email: set site.public_host or site.check_account in site.json."] };
-  let password;
-  try { password = readCheckPassword(ccDir); } catch (e) { return { ok: false, lines: [`The check's account: ${e.message}.`] }; }
+  let password = "";
+  if (unlock) {
+    try { password = readCheckPassword(ccDir); } catch (e) { return { ok: false, lines: [`The check's account: ${e.message}.`] }; }
+  }
   const context = dockerContext(ccDir);
   const r = spawnSync("docker", ["compose", "exec", "-T", "api", "node", "--input-type=module", "-e", ACCOUNT_SCRIPT], {
     cwd: ccDir,
     env: { ...env, ...(context ? { DOCKER_CONTEXT: context } : {}) },
-    input: JSON.stringify({ email, password, handle: HANDLE, name: NAME }),
+    input: JSON.stringify({ email, password, unlock, handle: HANDLE, name: NAME }),
     encoding: "utf8",
     timeout: 60_000,
   });
   let out = null;
   try { out = JSON.parse(String(r.stdout ?? "").trim().split("\n").pop()); } catch { out = null; }
   if (!out) return { ok: false, lines: [`The check's account: CircleChat's api container did not answer (docker compose exec api exited ${r.status ?? "on a signal"}). Start CircleChat with setup-host.sh, then run this step again.`] };
-  if (!out.ok) return { ok: false, lines: [`The check's account ${email}: ${String(out.error).split(password).join("<password>")}.`] };
+  if (!out.ok) return { ok: false, lines: [`The check's account ${email}: ${password ? String(out.error).split(password).join("<password>") : String(out.error)}.`] };
   const what = out.changes?.length ? out.changes.join(", ") : "nothing to change";
   return { ok: true, lines: [`The check's account ${email} is a member of the agents' workspace, never an admin: ${what}.`] };
 }
@@ -163,7 +190,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const sitePath = process.env.SITE || path.join(ccDir, "site.json");
   let site;
   try { site = JSON.parse(fs.readFileSync(sitePath, "utf8")); } catch { console.log(`No readable ${sitePath}.`); process.exit(1); }
-  const r = run({ ccDir, site });
+  const r = run({ ccDir, site, mode: process.argv[2] ?? "lock" });
   for (const l of r.lines) console.log(l);
   process.exitCode = r.ok ? 0 : 1;
 }

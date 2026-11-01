@@ -136,7 +136,7 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
-7. Check how each agent behaves, as a person would see it: `./circlechat/check-agent.sh <handle>`.
+7. Check how each agent behaves: `./circlechat/check-agent.sh <handle>`, as the check's own member account.
    `setup-agent.sh` prints the command and never runs it. "Checking an agent" below has the details.
 
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
@@ -1074,6 +1074,15 @@ computer, by hand, only when the operator asks for a check.** Nothing schedules 
 of the agents' workspace and never an admin, so the check sees what a member sees. The check
 signs out at the end, and stops before the first check when the account has any role but member.
 
+**The account is locked except while a check runs.** Locked, its stored password is the hash of a
+random secret that nothing keeps, and it has no session, so the delivered password signs in
+nowhere. `check-agent.sh` unlocks the account, runs the check, and locks the account again on every
+way out: a passed check, a failed one, an error, Ctrl-C or a stop signal. Locking again ends
+every session of the account. A lock that fails is printed with the command that locks the
+account by hand (`node circlechat/kit/check-account.mjs lock`), and the run exits 3. A computer
+that stops in the middle of a check leaves the account unlocked until the next lock: the next
+check, setup or secrets deploy.
+
 1. **Pick the email.** The email is `site.check_account` in site.json, or
    `agent-check@<site.public_host>` when the setting is left out. The account receives no mail.
    The config check refuses an email that is not an address, or that is a cloud approver's.
@@ -1083,7 +1092,7 @@ signs out at the end, and stops before the first check when the account has any 
 4. **Run the "Deploy secrets" workflow** with the stack and the control computer, with restart on.
    The secrets helper writes the password to `$CC_DIR/agent-check.env`, mode 600, owned by the
    owner, and to no other file. The helper then runs `kit/check-account.mjs` as the owner, which
-   makes the account.
+   makes the account, locked.
 
 `kit/check-account.mjs` runs inside CircleChat's api container, with CircleChat's own password
 hashing, in one database transaction:
@@ -1091,16 +1100,18 @@ hashing, in one database transaction:
 - **The workspace** is the one workspace that holds an agent, or the only workspace when no
   workspace holds an agent yet. With no workspace, or with agents in two workspaces, the step
   stops and says so.
-- **The account** is made when no account has the email, with the handle `agent-check`. An
-  existing account gets the delivered password when the stored password differs.
+- **The account** is made when no account has the email, with the handle `agent-check`.
+- **The lock.** `kit/check-account.mjs unlock` sets the delivered password. Every other run,
+  `lock` and the default, sets a fresh random secret's hash and ends every session of the account.
+  Locking reads no password file.
 - **The role** is member. Another role, admin included, is set back to member. The account leaves
   every other workspace, so a sign-in always lands in the agents' workspace.
 
-The step is safe to rerun, and prints what the step changed. The full `setup-host.sh` runs the
-step once the password file exists, and `check-agent.sh` runs the step before each check. A
-deploy with restart off writes the file and leaves the account's password as the account's old
-password. The email and the password reach the api container on stdin. No argument, no
-environment variable and no output holds the password.
+The step is safe to rerun, and prints what the step changed. The secrets deploy and the full
+`setup-host.sh` run the step and leave the account locked; `check-agent.sh` unlocks before the
+check and locks after it. A new password from the secrets deploy takes effect at the next check's
+unlock. The email and the password reach the api container on stdin. No argument, no environment
+variable and no output holds the password.
 
 ### What a member can do
 
