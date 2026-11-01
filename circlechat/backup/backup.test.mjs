@@ -8,7 +8,9 @@ import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-function setup({ restic = "ok", system, chown = "ok", dump = "ok" } = {}) {
+// storage: whether the stack has CircleChat's storage volume (a CircleChat that keeps its stored
+// files on a volume) or not (an older one that keeps them inside its containers).
+function setup({ restic = "ok", system, chown = "ok", dump = "ok", storage = false } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "backup-"));
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
@@ -18,7 +20,8 @@ function setup({ restic = "ok", system, chown = "ok", dump = "ok" } = {}) {
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   stub("docker", `case "$1" in
   compose) ${dump === "fail" ? "exit 1" : 'echo "CREATE TABLE messages (id int);"'} ;;
-  run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; esac; done; mkdir -p /tmp/e$$ && tar czf "$out/minio.tgz" -C /tmp/e$$ . ;;
+  run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; /out/*.tgz) name="\${a#/out/}" ;; esac; done; mkdir -p /tmp/e$$ && tar czf "$out/$name" -C /tmp/e$$ . ;;
+  volume) [ "$2" = inspect ] && ${storage ? "exit 0" : "exit 1"} ;;
 esac`);
   stub("restic", restic === "fail-backup" ? `[ "$1" = backup ] && exit 1; [ "$1" = cat ] && exit 1; exit 0` : `
 case "$1" in
@@ -145,4 +148,40 @@ test("an expected failure in the restore test posts its own reason once, and no 
   const posts = slackPosts(log);
   assert.equal(posts.length, 1, posts.join("\n"));
   assert.match(posts[0], /Test restore of stack acme failed on .*: restic could not restore the newest backup/);
+});
+
+test("with CircleChat's storage volume, the backup holds the stored files, and the restore test checks them", () => {
+  const { env, cc, log } = setup({ storage: true });
+  const b = run("backup.sh", env);
+  assert.equal(b.status, 0, b.stdout + b.stderr);
+  assert.match(fs.readFileSync(log, "utf8"), /^docker run --rm -v cc-acme_storage:\/data:ro -v \S+:\/out alpine:3\.20 tar czf \/out\/storage\.tgz -C \/data \.$/m);
+  assert.ok(fs.existsSync(path.join(cc, "backup-saved/storage.tgz")), "storage.tgz is in the backup");
+  assert.ok(fs.existsSync(path.join(cc, "backup-saved/minio.tgz")), "MinIO's archive stays");
+  assert.equal(fs.existsSync(path.join(cc, "backup-saved/storage.none")), false);
+  const r = run("restore-test.sh", env);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  // A damaged archive fails the restore test.
+  fs.writeFileSync(path.join(cc, "backup-saved/storage.tgz"), "not a tar file");
+  assert.match(run("restore-test.sh", env).stdout, /Test restore of stack acme failed .*: the stored files archive is damaged/);
+});
+
+test("without the storage volume, the backup skips the stored files with a log line, and says so for the restore test", () => {
+  const { env, cc, log } = setup();
+  const b = run("backup.sh", env);
+  assert.equal(b.status, 0, b.stdout + b.stderr);
+  assert.match(b.stdout, /No volume cc-acme_storage: this CircleChat keeps its stored files inside its containers\. storage\.tgz skipped\./);
+  assert.doesNotMatch(fs.readFileSync(log, "utf8"), /storage\.tgz/, "no archive step ran");
+  assert.equal(fs.existsSync(path.join(cc, "backup-saved/storage.tgz")), false);
+  assert.ok(fs.existsSync(path.join(cc, "backup-saved/minio.tgz")), "MinIO's archive stays");
+  assert.ok(fs.existsSync(path.join(cc, "backup-saved/storage.none")));
+  assert.equal(run("restore-test.sh", env).status, 0);
+});
+
+test("the restore test fails when the backup has neither the stored files nor the note that they were skipped", () => {
+  const { env, cc } = setup();
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.rmSync(path.join(cc, "backup-saved/storage.none"));
+  const r = run("restore-test.sh", env);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Test restore of stack acme failed .*: the stored files archive is missing/);
 });

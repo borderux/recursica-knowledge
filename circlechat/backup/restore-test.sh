@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Prove a stack's backup restores. Runs as root, on the first day of each month; does the test in
 # January, April, July and October, or any time with FORCE=1. Restores the newest backup to a
-# scratch folder inside the stack's own folder, checks the database dump, the file store and the
-# agent homes, runs the key check (no cloud model key may be in a backup), deletes the scratch
-# folder, and posts the result to the stack's Slack channel.
+# scratch folder inside the stack's own folder, checks the database dump, the file store, the stored
+# files and the agent homes, runs the key check (no cloud model key may be in a backup), deletes the
+# scratch folder, and posts the result to the stack's Slack channel.
 # -E: a failure inside a function also runs the ERR trap. -E also gives the trap to each subshell,
 # so only the main shell reports, and each failure posts once.
 set -Eeuo pipefail
@@ -41,6 +41,14 @@ gzip -dc "$db" | grep -q "CREATE TABLE" || fail "the database dump holds no tabl
 STEP="file store"
 store="$(find "$SCRATCH" -name minio.tgz | head -1)"
 [ -n "$store" ] && tar tzf "$store" >/dev/null || fail "the file store archive is missing or damaged"
+STEP="stored files"
+# storage.none: the stack had no storage volume yet, so the backup holds no stored files on purpose.
+stored="$(find "$SCRATCH" -name storage.tgz | head -1)"
+if [ -n "$stored" ]; then
+  tar tzf "$stored" >/dev/null || fail "the stored files archive is damaged"
+else
+  [ -n "$(find "$SCRATCH" -name storage.none | head -1)" ] || fail "the stored files archive is missing"
+fi
 STEP="agent homes"
 [ -d "$(find "$SCRATCH" -type d -name hermes-homes | head -1)" ] || fail "the agent homes are missing"
 STEP="generated secrets"

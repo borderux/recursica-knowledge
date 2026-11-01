@@ -6,7 +6,8 @@
 #
 # restic encrypts each backup on this computer with the stack's own RESTIC_PASSWORD, from the
 # stack's .env, before anything leaves the computer. The backup holds the database, CircleChat's
-# file store, the agent homes, the shared workspace and site.json. The backup leaves out .env:
+# file store (MinIO), CircleChat's stored files (the storage volume), the agent homes, the shared
+# workspace and site.json. The backup leaves out .env:
 # every secret lives in the stack's GitHub environment.
 # -E: a failure inside a function, such as own_for_docker, also runs the ERR trap and reports. -E
 # also gives the trap to each subshell, so only the main shell reports, and each failure posts once.
@@ -50,6 +51,19 @@ STEP="database dump"
 STEP="file store"
 docker run --rm -v "${COMPOSE_PROJECT_NAME}_miniodata:/data:ro" -v "$STAGE:/out" alpine:3.20 \
   tar czf /out/minio.tgz -C /data .
+# CircleChat's stored files: uploads, task deliverables and long replies saved as files, on the
+# storage volume the api and the worker share. An older CircleChat keeps them inside its containers
+# and has no such volume (kit/carry-storage.sh moves them). storage.none then tells the restore
+# test the skip was on purpose.
+STEP="stored files"
+STORAGE_VOLUME="${COMPOSE_PROJECT_NAME}_storage"
+if docker volume inspect "$STORAGE_VOLUME" >/dev/null 2>&1; then
+  docker run --rm -v "$STORAGE_VOLUME:/data:ro" -v "$STAGE:/out" alpine:3.20 \
+    tar czf /out/storage.tgz -C /data .
+else
+  echo "No volume $STORAGE_VOLUME: this CircleChat keeps its stored files inside its containers. storage.tgz skipped."
+  echo "No volume $STORAGE_VOLUME at $(date -u +%Y-%m-%dT%H:%MZ)." > "$STAGE/storage.none"
+fi
 STEP="restic init"
 restic cat config >/dev/null 2>&1 || restic init
 STEP="restic backup"
