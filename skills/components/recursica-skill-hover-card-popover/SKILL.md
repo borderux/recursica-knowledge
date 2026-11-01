@@ -4,7 +4,7 @@ description: Rules for the Recursica hover card and popover — richer content b
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Hover card and popover
