@@ -209,14 +209,14 @@ test("Kev's review data goes to a repo named owner/name, never the knowledge rep
 test("the agent check's account: site.check_account, or agent-check@ the stack's host, and never a person's", () => {
   const s = clone();
   assert.equal(checkAccountEmail(s), `agent-check@${s.site.public_host}`);
-  s.site.check_account = "Check@Acme.com";
-  assert.equal(checkAccountEmail(s), "check@acme.com");
+  s.site.check_account = "Person-A@Example.com";
+  assert.equal(checkAccountEmail(s), "person-a@example.com");
   assert.deepEqual(validate(s), []);
   s.site.check_account = "not an email";
   assert.match(validate(s).join("\n"), /site.check_account must be an email address/);
-  s.site.check_account = "person-a@acme.com";
+  s.site.check_account = "person-a@example.com";
   s.site.slack_channel_id = "C0123ABCD";
-  s.cloud_approvers = [{ email: "Person-A@acme.com", slack_user: "U0123ABCD" }];
+  s.cloud_approvers = [{ email: "Person-A@Example.com", slack_user: "U0123ABCD" }];
   assert.match(validate(s).join("\n"), /site.check_account must be an account made only for the agent check/);
 });
 

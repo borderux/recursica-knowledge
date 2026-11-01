@@ -76,7 +76,7 @@ test("a new password from the secrets deploy replaces the stored one", async () 
 test("stops with a message when the workspace is unclear or the handle belongs to another account", async () => {
   await assert.rejects(ensureAccount(store({ workspaces: [] }).db, opts()), /no workspace yet/);
   await assert.rejects(ensureAccount(store({ workspaces: [{ id: "a", agents: 1 }, { id: "b", agents: 1 }] }).db, opts()), /2 workspaces with agents/);
-  const taken = store({ users: [{ id: "u_x", email: "person-a@acme.com", name: "A", handle: HANDLE, passwordHash: "x" }] });
+  const taken = store({ users: [{ id: "u_x", email: "person-a@example.com", name: "A", handle: HANDLE, passwordHash: "x" }] });
   await assert.rejects(ensureAccount(taken.db, opts()), /already has the handle agent-check/);
   assert.equal(taken.s.memberships.length, 0);
   // With no agent yet, the only workspace is the agents' workspace.
