@@ -22,7 +22,7 @@ function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "compose config") cat "${home}/compose-config.json" 2>/dev/null ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
@@ -619,4 +619,63 @@ test("without cloud_approvers, the setup removes the api's settings and the rece
   assert.doesNotMatch(s.dotenv().COMPOSE_FILE, /cloud-approvals/);
   assert.match(s.calls(), /docker rm -f cc-cloud-requests\n/);
   assert.doesNotMatch(s.calls(), /docker run -d --name cc-cloud-requests /);
+});
+
+// A Mac with Colima: Docker runs in the VM, and reads the Mac's files as the owner.
+test("on a Mac, the owner owns the folder of the two secret files, and on Linux root keeps the folder", () => {
+  const me = os.userInfo().username;
+  for (const [system, mode, owned] of [["Darwin", "700", true], ["Linux", "711", false]]) {
+    const s = sandbox(cloudSite(), { system });
+    s.stub("sudo", `case "$*" in "test -s "*cloud-approvals*) exit 1 ;; esac; if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; fi; exit 0`);
+    const r = s.run("setup-host.sh", "--secrets-only");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const calls = s.calls().split("\n");
+    const dir = path.join(s.cc, "cloud-approvals");
+    assert.ok(calls.includes(`sudo chmod ${mode} ${dir}`), `${system}: ${calls.filter((c) => c.includes("cloud-approvals")).join("\n")}`);
+    for (const f of ["approval-token", "webhook-secret"]) assert.ok(calls.includes(`sudo install -m 600 /dev/null ${dir}/${f}`), f);
+    assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${dir}`), owned, system);
+    // Both files exist before docker compose runs.
+    const made = calls.indexOf(`sudo install -m 600 /dev/null ${dir}/webhook-secret`);
+    const compose = calls.findIndex((c) => c.startsWith("docker compose config"));
+    assert.ok(made >= 0 && made < compose, `${system}: the files come before docker compose`);
+  }
+});
+
+test("on a Mac, a mount the owner can't read stops the setup before any container changes", () => {
+  const s = sandbox(cloudSite(), { system: "Darwin" });
+  const dir = path.join(s.cc, "cloud-approvals");
+  fs.mkdirSync(dir);
+  for (const f of ["approval-token", "webhook-secret"]) fs.writeFileSync(path.join(dir, f), "s3cret\n", { mode: 0o600 });
+  const token = path.join(dir, "approval-token");
+  // The api's mounts: the token in the owner's home, and the Docker socket, a path in Colima's VM.
+  fs.writeFileSync(path.join(s.home, "compose-config.json"), JSON.stringify({ services: { api: { volumes: [
+    { type: "bind", source: token, target: "/run/secrets/cloud-approval-token" },
+    { type: "bind", source: "/var/run/docker.sock", target: "/var/run/docker.sock" },
+    { type: "volume", source: "pgdata", target: "/data" },
+  ] } } }));
+  fs.chmodSync(token, 0o000);
+  let r = s.run("setup-host.sh", "--upgrade");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, new RegExp(`Docker in the VM reads ${token} as ${os.userInfo().username}, and ${os.userInfo().username} can't read it\\.`));
+  assert.match(r.stdout, /Stopped before docker compose, so every running container keeps running/);
+  assert.doesNotMatch(r.stdout, /docker\.sock/, "a path in the VM is not checked on the Mac");
+  const touched = s.calls().split("\n").filter((c) => /^docker (compose up|rm|run|create|start|stop)/.test(c));
+  assert.deepEqual(touched, [], "no container changes");
+  fs.chmodSync(token, 0o600);
+  r = s.run("setup-host.sh", "--upgrade");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(s.calls(), /^docker compose up -d --remove-orphans$/m);
+});
+
+test("on Linux, a missing mount source stops the setup before any container changes", () => {
+  const s = sandbox(example, { system: "Linux" });
+  const missing = path.join(s.cc, "Caddyfile");
+  fs.writeFileSync(path.join(s.home, "compose-config.json"), JSON.stringify({ services: { caddy: { volumes: [{ type: "bind", source: missing, target: "/etc/caddy/Caddyfile" }] } } }));
+  let r = s.run("setup-host.sh", "--upgrade");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, new RegExp(`Docker mounts ${missing}, and ${missing} does not exist\\.`));
+  assert.deepEqual(s.calls().split("\n").filter((c) => /^docker (compose up|rm|run|create|start)/.test(c)), []);
+  fs.writeFileSync(missing, "");
+  r = s.run("setup-host.sh", "--upgrade");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
 });

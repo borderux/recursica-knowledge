@@ -432,3 +432,39 @@ test("every secret the deploy workflow passes is one the helper reads", () => {
   const known = new RegExp(/^KNOWN='(.*)'$/m.exec(fs.readFileSync(path.join(here, "apply-secrets.sh"), "utf8"))[1]);
   for (const name of passed) assert.ok(known.test(name), `${name} is passed by the workflow and ignored by the helper`);
 });
+
+test("before the owner's Docker steps, the helper makes the two secrets of cloud-model requests, owned as Docker needs", () => {
+  const me = os.userInfo().username;
+  for (const system of ["Linux", "Darwin"]) {
+    const t = restartRun(system);
+    const dir = path.join(t.home, "circlechat", "cloud-approvals");
+    // An old token the owner swapped for a link is replaced, never written through.
+    fs.mkdirSync(dir, { recursive: true });
+    const outside = path.join(t.home, "outside");
+    fs.writeFileSync(outside, "keep\n");
+    fs.symlinkSync(outside, path.join(dir, "approval-token"));
+    const r = t.run();
+    assert.equal(r.status, 0, system + r.stdout + r.stderr);
+    assert.equal(fs.readFileSync(outside, "utf8"), "keep\n");
+    assert.equal(fs.statSync(dir).mode & 0o777, system === "Darwin" ? 0o700 : 0o711, system);
+    const tokens = {};
+    for (const f of ["approval-token", "webhook-secret"]) {
+      const file = path.join(dir, f);
+      assert.equal(fs.lstatSync(file).isSymbolicLink(), false);
+      assert.equal(fs.statSync(file).mode & 0o777, 0o600, `${system} ${f}`);
+      tokens[f] = fs.readFileSync(file, "utf8");
+      assert.match(tokens[f], /^[0-9a-f]{64}\n$/);
+    }
+    const chowns = t.fake.calls().split("\n").filter((c) => c.startsWith("chown -h "));
+    if (system === "Darwin") {
+      assert.ok(chowns.includes(`chown -h ${me} ${dir}`), chowns.join("\n"));
+      assert.equal(chowns.filter((c) => c.includes(`${dir}/.new.`)).length, 2, "each new file goes to the owner");
+    } else assert.deepEqual(chowns, []);
+    // The files exist before the owner's run of setup-host.sh, which runs docker compose.
+    assert.match(t.calls(), /setup-host --secrets-only/);
+    // A second deploy keeps both secrets, and on a Mac gives both files to the owner again.
+    assert.equal(t.run().status, 0);
+    for (const f of Object.keys(tokens)) assert.equal(fs.readFileSync(path.join(dir, f), "utf8"), tokens[f]);
+    if (system === "Darwin") assert.ok(t.fake.calls().split("\n").includes(`chown -h ${me} ${path.join(dir, "approval-token")}`));
+  }
+});

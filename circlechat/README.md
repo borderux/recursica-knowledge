@@ -550,6 +550,38 @@ The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no 
 
 **The key check also finds private keys.** The check fails when a private key is in CircleChat's database, an agent's home or a backup.
 
+## Repo settings on GitHub
+
+**Set up each new repo the way the plan repos are set up,** with `circlechat/github/protect-repo.sh`:
+
+```bash
+bash circlechat/github/protect-repo.sh acme/recursica-app acme/recursica-docs
+```
+
+The script changes only the repos on the command line. For each repo, the script sets these settings:
+
+| Setting                     | What the setting does                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Ruleset "Protect main"      | No deletion and no force push on the default branch. Each change arrives in a pull request.                   |
+| Ruleset "Only admins merge" | Only a repo admin merges a pull request into the default branch. Nobody pushes to the branch.                 |
+| Secret scanning             | On, with push protection: GitHub refuses a push that holds a known kind of secret.                            |
+| Dependabot                  | Alerts and security updates on.                                                                               |
+| Workflow token              | Read-only, and unable to approve a pull request.                                                              |
+| Branch deletion             | On: GitHub deletes a pull request's branch after the merge.                                                   |
+| Forking                     | Off, for a private repo. A public repo keeps GitHub's setting.                                                |
+| `dependabot.yml`            | A pull request that adds the file, for the repo's package systems, when the repo has no `dependabot.yml` yet. |
+
+A ruleset with the same name, in any case, is updated in place, so a second run adds no copy. The `dependabot.yml` checks daily, with a 7-day cooldown and one pull request for each package system, like this repo's file. A second run reuses the open pull request.
+
+**The token.** The script asks for a GitHub token with a one-day expiry, and keeps the token only in `GH_TOKEN`. gh gets an empty settings folder for the run, so gh never reads or saves this computer's gh login. A fine-grained token needs these permissions on each repo:
+
+- Administration, Contents and Pull requests: read and write.
+- Secret scanning alerts: read.
+
+Run the script in a separate terminal, and revoke the token after the run.
+
+**The table.** The script reads each setting back from GitHub, and prints one row for each repo and setting. A setting that GitHub refused shows as `FAILED`, and the script ends with an error. For example, secret scanning on a private repo needs GitHub Secret Protection on the organization's plan.
+
 ## Outgoing filter
 
 **Each stack's agents reach only the sites on the stack's allowlist.** CircleChat starts agent containers on a closed Docker network with no route out. The only exit is the stack's filter, Squid from Ubuntu's LTS packages. CircleChat's api and the model gateway sit on the closed network too. Port jobs get the same kind of filter on each computer that runs jobs.
