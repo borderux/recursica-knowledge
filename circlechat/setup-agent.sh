@@ -235,6 +235,14 @@ if [ -f "$KIT_OUT/tenant.env" ]; then
   done
 fi
 
+# Hermes's file tools (write_file, patch) write only under HERMES_WRITE_SAFE_ROOT, which the pinned
+# image sets to /opt/data, the agent's own home. The agent's terminal already writes to the shared
+# workspace at /workspace; the file tools could not, so an agent built a page inside its own home
+# and reported it done. Hermes loads the agent's .env over the image's environment, so this line
+# lets the file tools write to the workspace too, and nowhere else. Every turn mounts the workspace
+# at /workspace (the CircleChat fork's bridge, and kit/hermes-turn.sh).
+if [ -d "$WS" ]; then set_secret HERMES_WRITE_SAFE_ROOT /opt/data:/workspace; fi
+
 # The writes above kept each file's mode. CircleChat or an agent may have left a file open to other
 # accounts; Hermes refuses a home that another account can write to.
 give_home "$H" || exit 1

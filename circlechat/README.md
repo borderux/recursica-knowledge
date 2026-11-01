@@ -145,6 +145,13 @@ upgrade job does the same after each release instead.
 
 ### Files in the workspace and the agents' homes
 
+**An agent's file tools write to its home and to the shared workspace.** The Hermes image lets
+`write_file` and `patch` write only under `HERMES_WRITE_SAFE_ROOT`, which the image sets to the
+agent's home (`/opt/data`). The agent's terminal could already write to `/workspace`. So
+`setup-agent.sh` writes `HERMES_WRITE_SAFE_ROOT=/opt/data:/workspace` to the agent's `.env`, which
+Hermes loads over the image's setting. A path outside both is still refused. Rerun
+`setup-agent.sh <handle>` for each agent to apply it.
+
 **An agent can change any file in the shared workspace and in the agent's own Hermes home,
 symlinks included.** A plain `cp -r`, `tee` or `chmod -R` there would follow a symlink an agent
 put there, and change a file anywhere on the computer. So the kit keeps four rules:
