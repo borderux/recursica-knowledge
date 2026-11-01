@@ -87,6 +87,9 @@ async function main() {
   for (const c of choice) if (!c.changed && c.use) await run("docker", ["tag", c.use, c.tag], { env });   // keep the old version under the tag
   fs.writeFileSync(stateFile, JSON.stringify(seen));
   await dc(["build", "--pull"]);
+  // Stored files move from the old containers onto the storage volume before compose recreates
+  // them (kit/carry-storage.sh). It does nothing once they have moved.
+  await run("bash", [path.join(here, "../kit/carry-storage.sh")], { cwd: ccDir, env: { ...env, CC_DIR: ccDir } });
   await dc(["up", "-d"]);
 
   const healthy = async () => {

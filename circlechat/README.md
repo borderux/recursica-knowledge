@@ -742,11 +742,19 @@ The log holds no prompt and no answer.
 
 The test restore also runs the key check over the restored backup. The test fails when the backup holds a cloud key. The Slack message gives the count of places, and the restore test's log on the computer lists the places.
 
-Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
+Each nightly backup holds six parts: the database, CircleChat's file store (MinIO), CircleChat's stored files, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
 On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as the backup and the test restore, gets `HOME=/var/root`, root's home folder. restic keeps the restic cache there. Rerun `setup-host.sh` to give a job installed by an earlier kit the `HOME` setting.
 
-A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
+**CircleChat's stored files** are the uploads, the task deliverables and the long replies saved as files. CircleChat keeps them on disk at `STORAGE_DIR`, not in MinIO, so MinIO's archive holds none of them. A CircleChat that mounts the `storage` volume keeps them on that volume, and the backup saves the volume as `storage.tgz`. An older CircleChat keeps them inside its api and worker containers, where no backup reaches them. The backup then logs `storage.tgz skipped` and saves `storage.none` in its place.
+
+A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store, the stored files and the agent homes. The stored files check needs `storage.tgz` to unpack, or `storage.none` in its place. A backup made by an earlier kit has neither, so the test fails until the next nightly backup. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
+
+### The move to the storage volume
+
+An older CircleChat kept the stored files at `/app/storage` inside each container. The api could not serve a file the worker saved, and every file was lost when a container was recreated. A newer CircleChat mounts one named volume, `storage`, at `/app/storage` in the api and the worker.
+
+`kit/carry-storage.sh` saves the old files once. `setup-host.sh`, the upgrade job and the weekly image refresh run it before each `docker compose up` that can recreate the containers. It copies `/app/storage` out of the old api and worker containers, merges the two, and writes the result onto the volume. When both hold a file with the same name, the newer file wins. It does nothing when compose names no `storage` volume yet, when no old container is left, or when the volume already holds files. It never deletes a file. When a copy fails, it stops, and nothing is recreated.
 
 ## Security services
 

@@ -57,7 +57,10 @@ function pickUpCircleChat(ccDir, say, state, saveState) {
   const before = cc("rev-parse", "HEAD"), after = cc("rev-parse", `origin/${branch}`);
   if (before === after || state.ccFailed === after) return;
   const port = (fs.readFileSync(path.join(ccDir, ".env"), "utf8").match(/^CC_API_BASE=http:\/\/localhost:(\d+)/m) ?? [])[1] ?? "8080";
-  const rebuild = () => spawnSync("docker", ["compose", "up", "-d", "--build"], { cwd: ccDir, stdio: "inherit" }).status === 0
+  // Stored files move from the old containers onto the storage volume before compose recreates
+  // them (carry-storage.sh). When the copy fails, nothing is recreated.
+  const carry = () => spawnSync("bash", [path.join(path.dirname(new URL(import.meta.url).pathname), "carry-storage.sh")], { cwd: ccDir, env: { ...process.env, CC_DIR: ccDir }, stdio: "inherit" }).status === 0;
+  const rebuild = () => carry() && spawnSync("docker", ["compose", "up", "-d", "--build"], { cwd: ccDir, stdio: "inherit" }).status === 0
     && spawnSync("bash", ["-c", `for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:${port}/ && exit 0; sleep 10; done; exit 1`]).status === 0;
   cc("merge", "--ff-only", "--quiet", `origin/${branch}`);
   if (rebuild()) { console.log(`CircleChat updated to ${after.slice(0, 7)}`); return; }
