@@ -136,6 +136,8 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
+7. Check how each agent behaves, as a person would see it: `./circlechat/check-agent.sh <handle>`.
+   `setup-agent.sh` prints the command and never runs it. "Checking an agent" below has the details.
 
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
 checkout, as "Files in the workspace and the agents' homes" describes. With `upgrade.auto`, the
@@ -1002,6 +1004,55 @@ Each key goes inside the block Hermes's own default config already has, or a new
 top level, and every other key stays (`kit/yaml-keys.mjs`, which Barb's limits use too). Each
 change is printed by key name. A second run changes nothing. The script refuses, and writes
 nothing, when a block is written on one line or sits under another key, where Hermes ignores it.
+
+## Checking an agent
+
+`./circlechat/check-agent.sh <handle>` drives the running CircleChat through its API, as a person,
+and checks four things about one agent (`kit/agent-check.mjs`):
+
+1. **A request that arrives during a running turn still gets answered.** The check assigns a task
+   to the agent, comments a request on the task within 2 seconds, and waits for the answer. The
+   comment's run must wait in the agent's queue (`GET /api/agents/:id/queue`) and never be refused
+   as `agent_busy`.
+2. **A question gets asked once, then waits.** The check gives the agent an open request. It
+   allows one question. Through two heartbeats it starts itself, the agent must post nothing more
+   on the task. After a person's reply, the agent must act.
+3. **A settled task stays untouched.** The check moves a task to review, as a person, and starts
+   two heartbeats. The agent must add no comment, status change or file.
+4. **A long reply lands as a file.** The check asks in the channel for a reply over 2,500
+   characters. The post must stay under the limit (600 characters for an agent with the
+   deliverables-only setting, 2,000 otherwise), with the whole reply attached as `reply.md`. A
+   reply under the limit is a SKIP, with a note.
+
+These need the CircleChat fork with the agent queue (borderux/recursica-circlechat#24). The same
+change adds the rules for reading a request to CircleChat's prompt for every agent
+(`REQUEST_RULES` in `api/hermes-multi-bridge.mjs`), so no persona carries them.
+
+The check works in a private throwaway channel and on throwaway tasks, and archives them at the
+end. It prints one PASS, FAIL or SKIP line per check, and exits 1 on any FAIL. Each check is a
+real model turn, so a run can take tens of minutes. Run it by hand; nothing schedules it.
+
+| Setting                         | Default                       | What it does                                                 |
+| ------------------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `CC_API_BASE`                   | from `$CC_DIR/.env`           | CircleChat's API, as `setup-host.sh` writes it               |
+| `CHECK_SESSION`                 | from `$CC_DIR/.env`           | a person's session: the `cc_session` cookie's value          |
+| `CHECK_EMAIL`, `CHECK_PASSWORD` | from `$CC_DIR/.env`, or asked | a person's sign-in, used for one session that the check ends |
+| `CHECK_REPLY_TIMEOUT`           | 900 s                         | the wait for each answer                                     |
+| `CHECK_TURN_TIMEOUT`            | 600 s                         | the wait for each heartbeat turn                             |
+| `CHECK_QUIET`                   | 60 s                          | the watch after the heartbeats                               |
+| `CHECK_HEARTBEATS`              | 2                             | the heartbeats checks 2 and 3 start                          |
+| `CHECK_COMMENT_DELAY`           | 1 s, at most 2                | the time between check 1's assignment and its comment        |
+| `CHECK_POLL`                    | 5 s                           | how often the check looks                                    |
+| `CHECK_ONLY`                    | all                           | the checks to run, such as `1,3`                             |
+| `CHECK_KEEP`                    | off                           | `1` leaves the channel and the tasks in place                |
+
+Use an account in the agent's workspace. An admin's account also sees each run's error. The
+session and the password reach the check in its environment only, and nothing prints them.
+
+`circlechat/kit/agent-check.test.mjs` runs the check on GitHub against a small stand-in CircleChat
+and a scripted stand-in agent. The stand-in passes when it behaves well, and fails the right check
+when it refuses a request, asks twice, touches a task in review or posts a long reply without a
+file.
 
 ## Hard-won lessons (read before debugging)
 

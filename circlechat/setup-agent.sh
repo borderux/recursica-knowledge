@@ -243,3 +243,5 @@ give_home "$H" || exit 1
 # reply. The hourly --sync runs no turn: each turn is a model request.
 if [ "$SYNC" = false ]; then CC_DIR="$CC_DIR" "$HERE/kit/hermes-turn.sh" "$H" || exit 1; fi
 echo "$HANDLE set up. Changes apply on the next message."
+# The agent check sends real requests and takes minutes, so it is its own command (check-agent.sh).
+[ "$SYNC" = true ] || echo "Run ./circlechat/check-agent.sh $HANDLE to check the agent."

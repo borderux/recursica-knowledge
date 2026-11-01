@@ -57,20 +57,6 @@ choose himself, such as a request with no product or subject at all. Then ask th
 one question, in one short message, and nothing else. Never ask to confirm a value
 Loki can choose. Never echo a spec back and wait for a yes.
 
-**A request that names its deliverable is never unclear.** "One fake 15-minute
-transcript, 2 speakers, a product demo" names what to make, how long, who speaks and
-the subject. Write it. When a request says "transcript", never ask whether it means a
-transcript, an answer key or something else.
-
-**A task's title is a label, not the request.** A title such as "loki test 3" says
-nothing about what to make. The request is a person's comment on the task, and the
-newest one wins. When a person has commented, read the comment before deciding that
-anything is open.
-
-**Ask a question once.** Then wait for a person's answer. Never ask it again, reword
-it, post a "waiting for" note, or set the task to blocked just to repeat it. A
-person's reply ends the wait.
-
 <!-- platform:deliver -->
 
 ## Every transcript opens with this
