@@ -689,6 +689,15 @@ start_gateway_and_notifier
 start_egress
 agents_to_gateway
 key_check
+# The agent check's own CircleChat account (kit/check-account.mjs), once the secrets deploy has
+# written the check's password: made when missing, kept a member, never an admin, and locked, so
+# its password signs in only while check-agent.sh runs a check. Before the
+# first agent is installed the step has no workspace to join, so the setup goes on; check-agent.sh
+# runs the same step again before each check.
+if [ -f "$CC_DIR/agent-check.env" ]; then
+  CC_DIR="$CC_DIR" SITE="$SITE" TENANT="$TENANT" node "$HERE/kit/check-account.mjs" \
+    || echo "The agent check's account is not ready yet (the line above says why). check-agent.sh makes the account when the check runs."
+fi
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE OWNER=$(id -un) OWNER_HOME=$HOME"

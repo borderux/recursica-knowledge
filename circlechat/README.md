@@ -136,7 +136,7 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
-7. Check how each agent behaves, as a person would see it: `./circlechat/check-agent.sh <handle>`.
+7. Check how each agent behaves: `./circlechat/check-agent.sh <handle>`, as the check's own member account.
    `setup-agent.sh` prints the command and never runs it. "Checking an agent" below has the details.
 
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
@@ -508,6 +508,7 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
 | `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                |
 | `KEV_DATA_GITHUB_PAT`                           | `kev-data.env` on the control computer                                                               | The Kev data jobs, and nothing else. See "Kev's review data"               |
+| `CC_CHECK_PASSWORD`                             | `agent-check.env` on the control computer, mode 600, owned by the owner                              | The agent check and its account, and nothing else. See "Checking an agent" |
 
 The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too.
 
@@ -774,19 +775,11 @@ The log holds no prompt and no answer.
 
 The test restore also runs the key check over the restored backup. The test fails when the backup holds a cloud key. The Slack message gives the count of places, and the restore test's log on the computer lists the places.
 
-Each nightly backup holds six parts: the database, CircleChat's file store (MinIO), CircleChat's stored files, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
+Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
 On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as the backup and the test restore, gets `HOME=/var/root`, root's home folder. restic keeps the restic cache there. Rerun `setup-host.sh` to give a job installed by an earlier kit the `HOME` setting.
 
-**CircleChat's stored files** are the uploads, the task deliverables and the long replies saved as files. CircleChat keeps them on disk at `STORAGE_DIR`, not in MinIO, so MinIO's archive holds none of them. A CircleChat that mounts the `storage` volume keeps them on that volume, and the backup saves the volume as `storage.tgz`. An older CircleChat keeps them inside its api and worker containers, where no backup reaches them. The backup then logs `storage.tgz skipped` and saves `storage.none` in its place.
-
-A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store, the stored files and the agent homes. The stored files check needs `storage.tgz` to unpack, or `storage.none` in its place. A backup made by an earlier kit has neither, so the test fails until the next nightly backup. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
-
-### The move to the storage volume
-
-An older CircleChat kept the stored files at `/app/storage` inside each container. The api could not serve a file the worker saved, and every file was lost when a container was recreated. A newer CircleChat mounts one named volume, `storage`, at `/app/storage` in the api and the worker.
-
-`kit/carry-storage.sh` saves the old files once. `setup-host.sh`, the upgrade job and the weekly image refresh run it before each `docker compose up` that can recreate the containers. It copies `/app/storage` out of the old api and worker containers, merges the two, and writes the result onto the volume. When both hold a file with the same name, the newer file wins. It does nothing when compose names no `storage` volume yet, when no old container is left, or when the volume already holds files. It never deletes a file. When a copy fails, it stops, and nothing is recreated.
+A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
 
 ## Security services
 
@@ -1047,22 +1040,23 @@ nothing, when a block is written on one line or sits under another key, where He
 
 ## Checking an agent
 
-`./circlechat/check-agent.sh <handle>` drives the running CircleChat through its API, as a person,
-and checks four things about one agent (`kit/agent-check.mjs`):
+`./circlechat/check-agent.sh <handle>` drives the running CircleChat through its API and checks
+four things about one agent (`kit/agent-check.mjs`):
 
 1. **A request that arrives during a running turn still gets answered.** The check assigns a task
    to the agent, comments a request on the task within 2 seconds, and waits for the answer. The
-   comment's run must wait in the agent's queue (`GET /api/agents/:id/queue`) and never be refused
-   as `agent_busy`.
+   comment's run must wait in the agent's queue (`GET /api/agents/:id/queue`) and never fail. A
+   member sees no run's error text, so a request refused as `agent_busy` shows as a failed run.
 2. **A question gets asked once, then waits.** The check gives the agent an open request. It
    allows one question. Through two heartbeats it starts itself, the agent must post nothing more
-   on the task. After a person's reply, the agent must act.
-3. **A settled task stays untouched.** The check moves a task to review, as a person, and starts
-   two heartbeats. The agent must add no comment, status change or file.
+   on the task. After a reply on the task, the agent must act.
+3. **A settled task stays untouched.** The check moves a task to review and starts two
+   heartbeats. The agent must add no comment, status change or file.
 4. **A long reply lands as a file.** The check asks in the channel for a reply over 2,500
-   characters. The post must stay under the limit (600 characters for an agent with the
-   deliverables-only setting, 2,000 otherwise), with the whole reply attached as `reply.md`. A
-   reply under the limit is a SKIP, with a note.
+   characters. The post must stay under the limit, with the whole reply attached as `reply.md`.
+   The limit is 2,000 characters, or 600 with `CHECK_DELIVERABLES_ONLY=1` for an agent with the
+   deliverables-only setting. Only an admin sees the setting in CircleChat. A reply under the
+   limit is a SKIP, with a note.
 
 These need the CircleChat fork with the agent queue (borderux/recursica-circlechat#24). The same
 change adds the rules for reading a request to CircleChat's prompt for every agent
@@ -1070,29 +1064,87 @@ change adds the rules for reading a request to CircleChat's prompt for every age
 
 The check works in a private throwaway channel and on throwaway tasks, and archives them at the
 end. It prints one PASS, FAIL or SKIP line per check, and exits 1 on any FAIL. Each check is a
-real model turn, so a run can take tens of minutes. Run it by hand; nothing schedules it.
+real model turn, so a run can take tens of minutes. **Run the check on the stack's control
+computer, by hand, only when the operator asks for a check.** Nothing schedules the check, and
+`setup-agent.sh` only prints the command.
 
-| Setting                         | Default                       | What it does                                                 |
-| ------------------------------- | ----------------------------- | ------------------------------------------------------------ |
-| `CC_API_BASE`                   | from `$CC_DIR/.env`           | CircleChat's API, as `setup-host.sh` writes it               |
-| `CHECK_SESSION`                 | from `$CC_DIR/.env`           | a person's session: the `cc_session` cookie's value          |
-| `CHECK_EMAIL`, `CHECK_PASSWORD` | from `$CC_DIR/.env`, or asked | a person's sign-in, used for one session that the check ends |
-| `CHECK_REPLY_TIMEOUT`           | 900 s                         | the wait for each answer                                     |
-| `CHECK_TURN_TIMEOUT`            | 600 s                         | the wait for each heartbeat turn                             |
-| `CHECK_QUIET`                   | 60 s                          | the watch after the heartbeats                               |
-| `CHECK_HEARTBEATS`              | 2                             | the heartbeats checks 2 and 3 start                          |
-| `CHECK_COMMENT_DELAY`           | 1 s, at most 2                | the time between check 1's assignment and its comment        |
-| `CHECK_POLL`                    | 5 s                           | how often the check looks                                    |
-| `CHECK_ONLY`                    | all                           | the checks to run, such as `1,3`                             |
-| `CHECK_KEEP`                    | off                           | `1` leaves the channel and the tasks in place                |
+### The check's account
 
-Use an account in the agent's workspace. An admin's account also sees each run's error. The
-session and the password reach the check in its environment only, and nothing prints them.
+**The check signs in as a CircleChat account made only for the check.** The account is a member
+of the agents' workspace and never an admin, so the check sees what a member sees. The check
+signs out at the end, and stops before the first check when the account has any role but member.
+
+**The account is locked except while a check runs.** Locked, its stored password is the hash of a
+random secret that nothing keeps, and it has no session, so the delivered password signs in
+nowhere. `check-agent.sh` unlocks the account, runs the check, and locks the account again on every
+way out: a passed check, a failed one, an error, Ctrl-C or a stop signal. Locking again ends
+every session of the account. A lock that fails is printed with the command that locks the
+account by hand (`node circlechat/kit/check-account.mjs lock`), and the run exits 3. A computer
+that stops in the middle of a check leaves the account unlocked until the next lock: the next
+check, setup or secrets deploy.
+
+1. **Pick the email.** The email is `site.check_account` in site.json, or
+   `agent-check@<site.public_host>` when the setting is left out. The account receives no mail.
+   The config check refuses an email that is not an address, or that is a cloud approver's.
+2. **Create the password in the password manager,** at least 16 random characters, on one line.
+3. **Add the password to the stack's GitHub environment** as `CC_CHECK_PASSWORD`, as "Secrets in
+   GitHub" describes.
+4. **Run the "Deploy secrets" workflow** with the stack and the control computer, with restart on.
+   The secrets helper writes the password to `$CC_DIR/agent-check.env`, mode 600, owned by the
+   owner, and to no other file. The helper then runs `kit/check-account.mjs` as the owner, which
+   makes the account, locked.
+
+`kit/check-account.mjs` runs inside CircleChat's api container, with CircleChat's own password
+hashing, in one database transaction:
+
+- **The workspace** is the one workspace that holds an agent, or the only workspace when no
+  workspace holds an agent yet. With no workspace, or with agents in two workspaces, the step
+  stops and says so.
+- **The account** is made when no account has the email, with the handle `agent-check`.
+- **The lock.** `kit/check-account.mjs unlock` sets the delivered password. Every other run,
+  `lock` and the default, sets a fresh random secret's hash and ends every session of the account.
+  Locking reads no password file.
+- **The role** is member. Another role, admin included, is set back to member. The account leaves
+  every other workspace, so a sign-in always lands in the agents' workspace.
+
+The step is safe to rerun, and prints what the step changed. The secrets deploy and the full
+`setup-host.sh` run the step and leave the account locked; `check-agent.sh` unlocks before the
+check and locks after it. A new password from the secrets deploy takes effect at the next check's
+unlock. The email and the password reach the api container on stdin. No argument, no environment
+variable and no output holds the password.
+
+### What a member can do
+
+A member can make a private channel, make and assign tasks, comment, move a task to review, read
+the agent's queue, start a heartbeat and read each run's status. The check archives its channel
+as the channel's maker. Two things in CircleChat are for an admin only, and the check works
+without them:
+
+- **Each run's error text.** Check 1 fails on a failed run of the comment, and names the run's
+  summary. An admin reads the error on the agent's page.
+- **The agent's deliverables-only setting.** Check 4 takes the setting from
+  `CHECK_DELIVERABLES_ONLY`.
+
+| Setting                   | Default             | What it does                                                  |
+| ------------------------- | ------------------- | ------------------------------------------------------------- |
+| `CC_API_BASE`             | from `$CC_DIR/.env` | CircleChat's API, as `setup-host.sh` writes it                |
+| `CHECK_DELIVERABLES_ONLY` | off                 | `1` for an agent with the deliverables-only setting (check 4) |
+| `CHECK_REPLY_TIMEOUT`     | 900 s               | the wait for each answer                                      |
+| `CHECK_TURN_TIMEOUT`      | 600 s               | the wait for each heartbeat turn                              |
+| `CHECK_QUIET`             | 60 s                | the watch after the heartbeats                                |
+| `CHECK_HEARTBEATS`        | 2                   | the heartbeats checks 2 and 3 start                           |
+| `CHECK_COMMENT_DELAY`     | 1 s, at most 2      | the time between check 1's assignment and check 1's comment   |
+| `CHECK_POLL`              | 5 s                 | how often the check looks                                     |
+| `CHECK_ONLY`              | all                 | the checks to run, such as `1,3`                              |
+| `CHECK_KEEP`              | off                 | `1` leaves the channel and the tasks in place                 |
 
 `circlechat/kit/agent-check.test.mjs` runs the check on GitHub against a small stand-in CircleChat
-and a scripted stand-in agent. The stand-in passes when it behaves well, and fails the right check
-when it refuses a request, asks twice, touches a task in review or posts a long reply without a
-file.
+and a scripted stand-in agent. The stand-in gives a member only what CircleChat gives a member, and
+refuses each admin-only route. The stand-in passes when the agent behaves well, and fails the
+right check when the agent refuses a request, asks twice, touches a task in review or posts a
+long reply without a file. An account with the admin role stops the check.
+`circlechat/kit/check-account.test.mjs` runs the account step against stand-in tables, and the
+smoke install runs the step against CircleChat's real database.
 
 ## Hard-won lessons (read before debugging)
 

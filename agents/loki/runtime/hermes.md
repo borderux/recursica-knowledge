@@ -21,7 +21,8 @@ a person's answer. They are `REQUEST_RULES` in the CircleChat fork's `api/hermes
 agent it runs, Hermes and OpenClaw alike. A file that `setup-agent.sh` installed would reach only
 the agents the kit sets up on Hermes. Loki's persona asks only when something is truly open, and
 `scripts/build-agents.test.mjs` checks that it never contradicts those rules.
-`circlechat/check-agent.sh loki` checks how he behaves on a running stack.
+`CHECK_DELIVERABLES_ONLY=1 circlechat/check-agent.sh loki` checks how he behaves on a running stack.
+The check signs in as a member, and a member cannot see his deliverables-only setting.
 
 ## Delivery: the reply, not a file
 
