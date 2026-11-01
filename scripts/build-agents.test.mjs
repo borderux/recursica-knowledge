@@ -455,6 +455,33 @@ test("Loki's CircleChat persona does not contradict CircleChat's request rules",
   assert.doesNotMatch(text, /the (?:task's )?title is the request/i);
 });
 
+/**
+ * On CircleChat, a page Betty built in the prototype repository imported its components from
+ * `@mantine/core`, skipped the `<Prototype>` wrapper, and looked like stock Mantine. Her file tools
+ * could not write to the workspace either, and her handoff pushed a branch and opened a pull
+ * request. The persona that ships therefore names the adapter, the lookup, the wrapper, the path
+ * and the write tool, never pushes a prototype, replies with the preview route, and still puts the
+ * interview and the brief first. Checked in the built SOUL.md, not the source.
+ */
+test("Betty's CircleChat persona builds prototypes with Recursica's adapter, never pushes, and still interviews first", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /\*\*Import every UI component from `@recursica\/adapter-mantine-v8`\.\*\* Never import a component from `@mantine\/core`\./);
+  assert.match(text, /\*\*Look up each component with the knowledge server's `component_api` tool\*\*/);
+  assert.match(text, /\*\*Wrap each page in `<Prototype>`\*\* from `\.\.\/\.\.\/Prototype`, the way `src\/routes\/prototypes\/demo\/index\.tsx` does\./);
+  assert.match(text, /\*\*Put each page at `src\/routes\/prototypes\/<slug>\/index\.tsx`\.\*\*/);
+  assert.match(text, /\*\*Write each file with the `write_file` tool,\*\*/);
+  assert.match(text, /\*\*A prototype in `@APP_REPO@` is never pushed\.\*\* .* Do not push a branch, and do not open a pull request/);
+  assert.match(text, /Then reply with the preview route first/);
+  // The interview and the brief still come before building.
+  assert.match(text, /The interview and the brief still come first\./);
+  assert.match(text, /However the request arrives, get answers to the six questions below before building/);
+  assert.match(text, /Post the brief in the thread, and wait for agreement before building\./);
+  // The rules come after the interview and brief stages are named, and before the build.
+  assert.ok(text.indexOf("Import every UI component from") < text.indexOf("## Stage 3"), "the build rules come before Stage 3");
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
