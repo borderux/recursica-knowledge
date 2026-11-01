@@ -5,7 +5,7 @@ import { EventEmitter } from "node:events";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { afterUpgrade, prepareGateway, runUpgrade, stackPaths } from "./root-steps.mjs";
+import { afterUpgrade, prepareCloudApprovals, prepareGateway, runUpgrade, stackPaths } from "./root-steps.mjs";
 
 const stack = () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "root-steps-"));
@@ -156,4 +156,31 @@ test("a problem after the upgrade goes to the stack's Slack channel, and a refus
   assert.equal(r.ran, false);
   assert.equal(s.seen.cmd, undefined, "the upgrade never started");
   assert.match(posts[1], /The upgrade job stopped before the upgrade: .*gateway-state is a symlink/);
+});
+
+test("the upgrade job makes the two secrets of cloud-model requests before the upgrade, owned as Docker needs", () => {
+  for (const mac of [false, true]) {
+    const ccDir = fs.mkdtempSync(path.join(os.tmpdir(), "cloud-"));
+    const me = { uid: process.getuid(), gid: process.getgid() };
+    const dir = path.join(ccDir, "cloud-approvals");
+    fs.mkdirSync(dir);
+    fs.writeFileSync(path.join(ccDir, "outside"), "keep\n");
+    fs.symlinkSync(path.join(ccDir, "outside"), path.join(dir, "webhook-secret"));
+    prepareCloudApprovals({ ccDir, ids: mac ? me : null });
+    assert.equal(fs.statSync(dir).mode & 0o777, mac ? 0o700 : 0o711);
+    const first = {};
+    for (const f of ["approval-token", "webhook-secret"]) {
+      const file = path.join(dir, f);
+      assert.equal(fs.lstatSync(file).isFile(), true, f);
+      assert.equal(fs.statSync(file).mode & 0o777, 0o600, f);
+      first[f] = fs.readFileSync(file, "utf8");
+      assert.match(first[f], /^[0-9a-f]{64}\n$/);
+    }
+    assert.equal(fs.readFileSync(path.join(ccDir, "outside"), "utf8"), "keep\n", "never written through a link");
+    prepareCloudApprovals({ ccDir, ids: mac ? me : null });
+    for (const f of Object.keys(first)) assert.equal(fs.readFileSync(path.join(dir, f), "utf8"), first[f], "a second run keeps both");
+  }
+  const linked = fs.mkdtempSync(path.join(os.tmpdir(), "cloud-"));
+  fs.symlinkSync(os.tmpdir(), path.join(linked, "cloud-approvals"));
+  assert.throws(() => prepareCloudApprovals({ ccDir: linked }), /cloud-approvals is a symlink/);
 });

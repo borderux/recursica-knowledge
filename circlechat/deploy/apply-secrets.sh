@@ -308,6 +308,25 @@ if [ "$WROTE_CONTROL" = true ]; then
   fi
   printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$DB_PASSWORD" | put_state db.url
   if [ ! -f "$KEYS_FILE" ]; then install -m 600 /dev/null "$KEYS_FILE"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$KEYS_FILE"; fi
+  # The two secrets of cloud-model requests (cluster/cloud-requests.mjs), the same files
+  # setup-host.sh makes, so both exist before setup-host.sh runs docker compose. On Linux, root owns both, in a
+  # folder the owner can only pass through (711). On a Mac, Docker in Colima's VM reads the files
+  # as the owner, so the owner owns the folder (700) and both files (600). A file that is not 64 hex
+  # digits, or is a link, is replaced with a new file.
+  CLOUD_DIR="$CC_DIR/cloud-approvals"
+  [ ! -L "$CLOUD_DIR" ] || { echo "Refused: $CLOUD_DIR is a symlink. Replace the symlink with a folder."; exit 1; }
+  mkdir -p "$CLOUD_DIR"
+  if [ "$MAC" = true ]; then chmod 700 "$CLOUD_DIR"; "$CHOWN" -h "$OWNER" "$CLOUD_DIR"; else chmod 711 "$CLOUD_DIR"; fi
+  for f in approval-token webhook-secret; do
+    if [ ! -L "$CLOUD_DIR/$f" ] && [ -f "$CLOUD_DIR/$f" ] && [[ "$(cat "$CLOUD_DIR/$f")" =~ ^[0-9a-f]{64}$ ]]; then
+      chmod 600 "$CLOUD_DIR/$f"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$CLOUD_DIR/$f"
+      continue
+    fi
+    tmp="$(mktemp "$CLOUD_DIR/.new.XXXXXX")"
+    openssl rand -hex 32 > "$tmp"; chmod 600 "$tmp"
+    [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$tmp"
+    mv -f "$tmp" "$CLOUD_DIR/$f"
+  done
   #   2. The owner: the gateway and the notifier, in Docker. The database role's password goes on
   #      stdin, never on a command line, which every account can read in ps.
   printf '%s\n' "$DB_PASSWORD" | sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \

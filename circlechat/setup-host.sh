@@ -325,20 +325,28 @@ fi
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
 # Cloud-model requests in Slack (cluster/cloud-requests.mjs). Two secrets, each made once, like the
-# session secret, in root-only files: CircleChat's service token for the answer API, and the
-# signing secret of CircleChat's request webhook. The folder lets the owner check that a file
-# exists, and read neither. Only the full setup and --secrets-only without the helper have sudo.
+# session secret: CircleChat's service token for the answer API, and the signing secret of
+# CircleChat's request webhook. Each file has the owner and mode of the stack's other secret files
+# that Docker mounts, such as model-keys.env:
+#   - Linux: root owns both files (600). The folder (711) lets the owner check that a file exists,
+#     and read neither. Docker runs as root and mounts both.
+#   - A Mac: Docker runs in Colima's VM, which reads the Mac's files as the owner, never as root.
+#     So the owner owns the folder (700) and both files (600), as with the gateway's state folder.
+# The full setup and --secrets-only without the helper make both here. With the helper, the root
+# process makes both first (deploy/apply-secrets.sh, cluster/root-steps.mjs). Either way, both
+# exist before docker compose runs.
 CLOUD_DIR="$CC_DIR/cloud-approvals"
 if [ "$HELPER" = false ]; then
-  sudo mkdir -p "$CLOUD_DIR" && sudo chmod 711 "$CLOUD_DIR"
+  sudo mkdir -p "$CLOUD_DIR"
+  if [ "$OS" = Darwin ]; then sudo chmod 700 "$CLOUD_DIR"; else sudo chmod 711 "$CLOUD_DIR"; fi
   for f in approval-token webhook-secret; do
     if ! sudo test -s "$CLOUD_DIR/$f"; then
       sudo install -m 600 /dev/null "$CLOUD_DIR/$f"
       openssl rand -hex 32 | sudo tee "$CLOUD_DIR/$f" >/dev/null
     fi
   done
-  # On a Mac, the owner owns both, so Colima can mount them (kit/lib.sh).
-  own_for_docker "$CLOUD_DIR/approval-token" "$CLOUD_DIR/webhook-secret"
+  # On a Mac, the owner gets the folder and both files (kit/lib.sh).
+  own_for_docker "$CLOUD_DIR"
 fi
 # With cloud_approvers in site.json, CircleChat's api gets the approvers' emails, the webhook's
 # address and both secrets. The api reads the secrets from the mounted files when it starts, so
@@ -371,6 +379,36 @@ else
   [ -z "$CLOUD_APPROVERS" ] || echo "Cloud-model requests are off: $CLOUD_DIR has no service token or webhook secret yet. Run setup-host.sh in a terminal."
 fi
 set_env COMPOSE_FILE "$CF"
+
+# Before any container changes: Docker must be able to read each file and folder the stack's
+# compose files mount. A source Docker can't read stops the api from starting, and a missing
+# source becomes an empty folder. So a source that fails stops the setup here, while every
+# running container keeps running. On a Mac, Docker reads the files in the owner's home as the
+# owner, so each one there must be readable by the owner. Other sources, such as the Docker
+# socket, are paths inside Colima's VM. On Linux, Docker runs as root, so each source must exist.
+mount_check() {
+  local cfg src bad=0
+  cfg="$(docker compose config --format json)" || { echo "docker compose config failed, so no container was changed. Fix the compose files in $CC_DIR."; exit 1; }
+  while IFS= read -r src; do
+    [ -n "$src" ] || continue
+    if [ "$OS" = Darwin ]; then
+      case "$src" in "$HOME"/*) ;; *) continue ;; esac
+      if [ -d "$src" ]; then [ -r "$src" ] && [ -x "$src" ] && continue; else [ -r "$src" ] && continue; fi
+      echo "Docker in the VM reads $src as $(id -un), and $(id -un) can't read it."; bad=1
+    else
+      [ -e "$src" ] && continue
+      echo "Docker mounts $src, and $src does not exist."; bad=1
+    fi
+  done < <(printf '%s' "$cfg" | node -e '
+    let j = {}; try { j = JSON.parse(require("fs").readFileSync(0, "utf8") || "{}"); } catch {}
+    for (const s of Object.values(j.services ?? {})) for (const v of s.volumes ?? []) if (v.type === "bind" && v.source) console.log(v.source);
+  ' | sort -u)
+  [ "$bad" = 0 ] || { echo "Stopped before docker compose, so every running container keeps running. Rerun setup-host.sh in a terminal, which fixes the kit's own secret files."; exit 1; }
+}
+# The kit's own folders that the compose files mount exist before the check: a fresh stack has
+# neither yet.
+mkdir -p "$CC_DIR/hermes-homes" "$WS"
+mount_check
 NET="${COMPOSE_PROJECT_NAME}_default"
 
 start_egress() {

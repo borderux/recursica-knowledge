@@ -64,6 +64,34 @@ function isLink(f) { try { return fs.lstatSync(f).isSymbolicLink(); } catch { re
 
 // The stack's workspace: ~/circlechat-workspace for the cluster's own stack, and
 // ~/tenants/<name>/workspace for a client or demo stack.
+// The two secrets of cloud-model requests (cloud-requests.mjs), the same files setup-host.sh
+// makes: the service token and the webhook's signing secret, each 64 hex digits. Both exist before
+// setup-host.sh runs docker compose. On Linux, root owns both, in a folder the owner can only pass
+// through (711). On a Mac, Docker in Colima's VM reads the files as the owner, so the owner owns
+// the folder (700) and both files (600). A file that is not 64 hex digits, or is a link, is
+// replaced with a new file.
+export function prepareCloudApprovals({ ccDir, ids = null }) {
+  const dir = path.join(ccDir, "cloud-approvals");
+  if (isLink(dir)) throw new Error(`${dir} is a symlink. Replace the symlink with a folder.`);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.chmodSync(dir, ids ? 0o700 : 0o711);
+  if (ids) fs.lchownSync(dir, ids.uid, ids.gid);
+  for (const name of ["approval-token", "webhook-secret"]) {
+    const f = path.join(dir, name);
+    let text = "";
+    try { text = fs.lstatSync(f).isFile() ? fs.readFileSync(f, "utf8").trim() : ""; } catch {}
+    if (/^[0-9a-f]{64}$/.test(text)) {
+      fs.chmodSync(f, 0o600);
+      if (ids) fs.lchownSync(f, ids.uid, ids.gid);
+      continue;
+    }
+    const tmp = path.join(dir, `.new.${crypto.randomBytes(6).toString("hex")}`);
+    fs.writeFileSync(tmp, `${crypto.randomBytes(32).toString("hex")}\n`, { mode: 0o600, flag: "wx" });
+    if (ids) fs.lchownSync(tmp, ids.uid, ids.gid);
+    fs.renameSync(tmp, f);
+  }
+}
+
 export function stackPaths(ownerHome, ccDir) {
   const tenant = path.dirname(path.dirname(ccDir)) === path.join(ownerHome, "tenants") ? path.basename(path.dirname(ccDir)) : "";
   return { tenant, ws: tenant ? path.join(path.dirname(ccDir), "workspace") : path.join(ownerHome, "circlechat-workspace") };
@@ -105,7 +133,11 @@ function ownerIds(owner, run) {
 export async function runUpgrade({ env, ccDir, ref = "", approved = Object.keys(approvals("/var/lib/agent-cluster")), mac = process.platform === "darwin", spawnFn = spawn, run = spawnSync, post = stackSlack(ccDir), now = Date.now }) {
   const say = (text) => post(text).catch(() => {});
   let password;
-  try { password = prepareGateway({ ccDir, ids: mac ? ownerIds(env.OWNER, run) : null }); }
+  try {
+    const ids = mac ? ownerIds(env.OWNER, run) : null;
+    password = prepareGateway({ ccDir, ids });
+    prepareCloudApprovals({ ccDir, ids });
+  }
   catch (e) { await say(`:x: The upgrade job stopped before the upgrade: ${e.message}`); return { ran: false, problems: [e.message] }; }
   const { ws } = stackPaths(env.OWNER_HOME, ccDir);
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
