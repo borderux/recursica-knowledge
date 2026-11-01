@@ -163,3 +163,17 @@ test("the receiver's server answers each request, and refuses a body over 64 KB"
     assert.equal(posts.length, 1);
   } finally { server.close(); }
 });
+
+test("the cluster agent reads the token only from a plain file, never through a link", async () => {
+  const fs = await import("node:fs"), os = await import("node:os"), path = await import("node:path");
+  const { stackToken } = await import("./cloud-requests.mjs");
+  const ccDir = fs.mkdtempSync(path.join(os.tmpdir(), "tok-"));
+  fs.mkdirSync(path.join(ccDir, "cloud-approvals"));
+  const file = path.join(ccDir, "cloud-approvals", "approval-token");
+  fs.writeFileSync(file, "abc\n");
+  assert.equal(stackToken({ ccDir }), "abc");
+  fs.rmSync(file);
+  fs.writeFileSync(path.join(ccDir, "outside"), "root-only text\n");
+  fs.symlinkSync(path.join(ccDir, "outside"), file);
+  assert.throws(() => stackToken({ ccDir }), /is not a plain file/);
+});

@@ -202,7 +202,13 @@ export function stackApprovers(st) {
   const site = JSON.parse(fs.readFileSync(`${st.ccDir}/site.json`, "utf8"));
   return (site.cloud_approvers ?? []).map((a) => ({ email: String(a.email).toLowerCase(), slack_user: a.slack_user }));
 }
-export const stackToken = (st) => fs.readFileSync(`${st.ccDir}/cloud-approvals/approval-token`, "utf8").trim();
+// On a Mac the owner owns the folder (setup-host.sh), so root reads only a plain file, never a link
+// the owner put there.
+export function stackToken(st) {
+  const f = `${st.ccDir}/cloud-approvals/approval-token`;
+  if (!fs.lstatSync(f).isFile()) throw new Error(`${f} is not a plain file`);
+  return fs.readFileSync(f, "utf8").trim();
+}
 
 // `docker compose exec -T api node --input-type=module -e <script>`, in the stack's folder and
 // Docker context, with the input on stdin.
