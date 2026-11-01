@@ -436,6 +436,25 @@ test("Loki's CircleChat persona asks only when something is truly open", () => {
   assert.doesNotMatch(text, /## Intake|Ask for four things|wait for a yes\. A ten-participant/);
 });
 
+/**
+ * How every agent reads a request lives in CircleChat's prompt for every agent, not in a persona
+ * (REQUEST_RULES in the fork's api/hermes-multi-bridge.mjs): the person's newest comment is the
+ * request and the title is a label; a request that names its deliverable is clear; ask once, then
+ * wait. Loki's persona must not contradict them with a step that asks before making a named
+ * deliverable, or that asks again.
+ */
+test("Loki's CircleChat persona does not contradict CircleChat's request rules", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "loki", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /Then ask that one question, in one short message, and nothing else\./);
+  assert.doesNotMatch(text, /\bask\b[^.]{0,80}\bbefore (?:writing|making|starting|you write|he writes)/i);
+  assert.doesNotMatch(text, /\bconfirm\b[^.]{0,60}\bbefore\b/i);
+  assert.doesNotMatch(text, /\bask\b[^.]{0,40}\bagain\b/i);
+  assert.doesNotMatch(text, /\b(?:remind|follow up|waiting for)\b/i);
+  assert.doesNotMatch(text, /the (?:task's )?title is the request/i);
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");

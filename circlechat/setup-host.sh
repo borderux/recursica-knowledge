@@ -596,6 +596,8 @@ set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
 
 if [ "$SECRETS_ONLY" = true ]; then
   if [ "$UPGRADE_ONLY" = true ]; then
+    # Stored files move from the old containers onto the storage volume first (kit/carry-storage.sh).
+    CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
     docker compose up -d --remove-orphans
   fi
   start_gateway_and_notifier
@@ -671,6 +673,9 @@ for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] &
   [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
 done
 
+# Stored files move from the old containers onto the storage volume before the containers are
+# recreated (kit/carry-storage.sh). It does nothing once they have moved.
+CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
 docker compose up -d --force-recreate
 
 # Always-on dev server for the application (hot-reloads as Betty edits)

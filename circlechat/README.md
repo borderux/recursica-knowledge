@@ -136,6 +136,8 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
+7. Check how each agent behaves, as a person would see it: `./circlechat/check-agent.sh <handle>`.
+   `setup-agent.sh` prints the command and never runs it. "Checking an agent" below has the details.
 
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
 checkout, as "Files in the workspace and the agents' homes" describes. With `upgrade.auto`, the
@@ -772,11 +774,19 @@ The log holds no prompt and no answer.
 
 The test restore also runs the key check over the restored backup. The test fails when the backup holds a cloud key. The Slack message gives the count of places, and the restore test's log on the computer lists the places.
 
-Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
+Each nightly backup holds six parts: the database, CircleChat's file store (MinIO), CircleChat's stored files, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
 On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as the backup and the test restore, gets `HOME=/var/root`, root's home folder. restic keeps the restic cache there. Rerun `setup-host.sh` to give a job installed by an earlier kit the `HOME` setting.
 
-A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
+**CircleChat's stored files** are the uploads, the task deliverables and the long replies saved as files. CircleChat keeps them on disk at `STORAGE_DIR`, not in MinIO, so MinIO's archive holds none of them. A CircleChat that mounts the `storage` volume keeps them on that volume, and the backup saves the volume as `storage.tgz`. An older CircleChat keeps them inside its api and worker containers, where no backup reaches them. The backup then logs `storage.tgz skipped` and saves `storage.none` in its place.
+
+A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store, the stored files and the agent homes. The stored files check needs `storage.tgz` to unpack, or `storage.none` in its place. A backup made by an earlier kit has neither, so the test fails until the next nightly backup. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
+
+### The move to the storage volume
+
+An older CircleChat kept the stored files at `/app/storage` inside each container. The api could not serve a file the worker saved, and every file was lost when a container was recreated. A newer CircleChat mounts one named volume, `storage`, at `/app/storage` in the api and the worker.
+
+`kit/carry-storage.sh` saves the old files once. `setup-host.sh`, the upgrade job and the weekly image refresh run it before each `docker compose up` that can recreate the containers. It copies `/app/storage` out of the old api and worker containers, merges the two, and writes the result onto the volume. When both hold a file with the same name, the newer file wins. It does nothing when compose names no `storage` volume yet, when no old container is left, or when the volume already holds files. It never deletes a file. When a copy fails, it stops, and nothing is recreated.
 
 ## Security services
 
@@ -1034,6 +1044,55 @@ Each key goes inside the block Hermes's own default config already has, or a new
 top level, and every other key stays (`kit/yaml-keys.mjs`, which Barb's limits use too). Each
 change is printed by key name. A second run changes nothing. The script refuses, and writes
 nothing, when a block is written on one line or sits under another key, where Hermes ignores it.
+
+## Checking an agent
+
+`./circlechat/check-agent.sh <handle>` drives the running CircleChat through its API, as a person,
+and checks four things about one agent (`kit/agent-check.mjs`):
+
+1. **A request that arrives during a running turn still gets answered.** The check assigns a task
+   to the agent, comments a request on the task within 2 seconds, and waits for the answer. The
+   comment's run must wait in the agent's queue (`GET /api/agents/:id/queue`) and never be refused
+   as `agent_busy`.
+2. **A question gets asked once, then waits.** The check gives the agent an open request. It
+   allows one question. Through two heartbeats it starts itself, the agent must post nothing more
+   on the task. After a person's reply, the agent must act.
+3. **A settled task stays untouched.** The check moves a task to review, as a person, and starts
+   two heartbeats. The agent must add no comment, status change or file.
+4. **A long reply lands as a file.** The check asks in the channel for a reply over 2,500
+   characters. The post must stay under the limit (600 characters for an agent with the
+   deliverables-only setting, 2,000 otherwise), with the whole reply attached as `reply.md`. A
+   reply under the limit is a SKIP, with a note.
+
+These need the CircleChat fork with the agent queue (borderux/recursica-circlechat#24). The same
+change adds the rules for reading a request to CircleChat's prompt for every agent
+(`REQUEST_RULES` in `api/hermes-multi-bridge.mjs`), so no persona carries them.
+
+The check works in a private throwaway channel and on throwaway tasks, and archives them at the
+end. It prints one PASS, FAIL or SKIP line per check, and exits 1 on any FAIL. Each check is a
+real model turn, so a run can take tens of minutes. Run it by hand; nothing schedules it.
+
+| Setting                         | Default                       | What it does                                                 |
+| ------------------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `CC_API_BASE`                   | from `$CC_DIR/.env`           | CircleChat's API, as `setup-host.sh` writes it               |
+| `CHECK_SESSION`                 | from `$CC_DIR/.env`           | a person's session: the `cc_session` cookie's value          |
+| `CHECK_EMAIL`, `CHECK_PASSWORD` | from `$CC_DIR/.env`, or asked | a person's sign-in, used for one session that the check ends |
+| `CHECK_REPLY_TIMEOUT`           | 900 s                         | the wait for each answer                                     |
+| `CHECK_TURN_TIMEOUT`            | 600 s                         | the wait for each heartbeat turn                             |
+| `CHECK_QUIET`                   | 60 s                          | the watch after the heartbeats                               |
+| `CHECK_HEARTBEATS`              | 2                             | the heartbeats checks 2 and 3 start                          |
+| `CHECK_COMMENT_DELAY`           | 1 s, at most 2                | the time between check 1's assignment and its comment        |
+| `CHECK_POLL`                    | 5 s                           | how often the check looks                                    |
+| `CHECK_ONLY`                    | all                           | the checks to run, such as `1,3`                             |
+| `CHECK_KEEP`                    | off                           | `1` leaves the channel and the tasks in place                |
+
+Use an account in the agent's workspace. An admin's account also sees each run's error. The
+session and the password reach the check in its environment only, and nothing prints them.
+
+`circlechat/kit/agent-check.test.mjs` runs the check on GitHub against a small stand-in CircleChat
+and a scripted stand-in agent. The stand-in passes when it behaves well, and fails the right check
+when it refuses a request, asks twice, touches a task in review or posts a long reply without a
+file.
 
 ## Hard-won lessons (read before debugging)
 

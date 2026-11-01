@@ -11,6 +11,18 @@ On CircleChat Loki has no Drive and no tool servers, and needs none: his reply i
 `setup-agent.sh` refuses him if his `config.yaml` has any `mcp_servers`, since a server that
 reaches client data would break the fence.
 
+## How he reads a request
+
+The rules for reading a request are in CircleChat's prompt for every agent, on every runtime, not
+in Loki's persona: the person's newest comment on a task is the request, and the task's title is
+only a label; a request that names what to make is clear; and an agent asks once, then waits for
+a person's answer. They are `REQUEST_RULES` in the CircleChat fork's `api/hermes-multi-bridge.mjs`
+(borderux/recursica-circlechat#24), which the bridge adds after each task's request for every
+agent it runs, Hermes and OpenClaw alike. A file that `setup-agent.sh` installed would reach only
+the agents the kit sets up on Hermes. Loki's persona asks only when something is truly open, and
+`scripts/build-agents.test.mjs` checks that it never contradicts those rules.
+`circlechat/check-agent.sh loki` checks how he behaves on a running stack.
+
 ## Delivery: the reply, not a file
 
 Set Loki's CircleChat agent to **deliverables-only**. With that setting, CircleChat turns any reply
