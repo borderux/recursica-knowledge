@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Summarises how a prototype was built, from the Claude Code session transcripts on
 // this machine: tokens, time, models, MCP servers, skills and agents. Not scored.
-// Usage: node build-info.mjs <prototype-root> [--out file.json]
+// Usage: node build-info.mjs <repo-root> [--include <folder>]... [--out file.json]
 //
 // A "build session" is any session (or one of its subagents) that wrote or edited a
-// file inside the prototype folder, outside audits/. Transcripts live in
+// file inside the prototype, outside audits/. The prototype is the --include folders
+// (relative to the repo root, repeat the flag for each), or the whole repo root if
+// none is given. On macOS and Windows paths are compared ignoring case, because the
+// same folder can appear in transcripts as ~/Developer and ~/developer. Transcripts live in
 // ~/.claude/projects (or $CLAUDE_CONFIG_DIR/projects). Claude Code deletes old
 // transcripts after a while (30 days by default), so run this soon after the build.
 //
@@ -19,9 +22,15 @@ import os from "node:os";
 import path from "node:path";
 
 const args = process.argv.slice(2);
-const outIdx = args.indexOf("--out");
-const outFile = outIdx >= 0 ? args[outIdx + 1] : null;
-const root = path.resolve(args.find((a, i) => !a.startsWith("--") && (outIdx < 0 || i !== outIdx + 1)) ?? ".");
+const FLAGS_WITH_VALUE = new Set(["--out", "--include"]);
+const flagValues = (flag) => args.flatMap((a, i) => (a === flag && args[i + 1] ? [args[i + 1]] : []));
+const outFile = flagValues("--out")[0] ?? null;
+const root = path.resolve(args.find((a, i) => !a.startsWith("--") && !FLAGS_WITH_VALUE.has(args[i - 1])) ?? ".");
+const include = flagValues("--include").map((d) => path.resolve(root, d));
+// The folders that make up the prototype, as absolute paths.
+const prototypeDirs = include.length ? include : [root];
+const caseInsensitive = process.platform === "darwin" || process.platform === "win32";
+const norm = (p) => (caseInsensitive ? p.toLowerCase() : p);
 const projectsDir = path.join(process.env.CLAUDE_CONFIG_DIR ?? path.join(os.homedir(), ".claude"), "projects");
 
 const WRITE_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
@@ -29,7 +38,12 @@ const WRITE_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 // all work periods added up, so a session reopened days later isn't counted as days.
 const PERIOD_GAP_MINUTES = 30;
 
-const inPrototype = (p) => typeof p === "string" && p.startsWith(`${root}/`) && !p.startsWith(`${root}/audits/`);
+const inPrototype = (p) => {
+  if (typeof p !== "string") return false;
+  const f = norm(p);
+  if (f.startsWith(norm(`${root}/audits/`))) return false;
+  return prototypeDirs.some((d) => f.startsWith(norm(`${d}/`)) && !f.startsWith(norm(`${d}/audits/`)));
+};
 
 function* records(file) {
   for (const line of fs.readFileSync(file, "utf8").split("\n")) {
@@ -99,7 +113,7 @@ if (fs.existsSync(projectsDir)) {
       const id = f.replace(/\.jsonl$/, "");
       const files = sessionFiles(dir, id);
       const all = [files.main, ...files.subs];
-      if (!all.some((p) => fs.readFileSync(p, "utf8").includes(root))) continue;
+      if (!all.some((p) => prototypeDirs.some((d) => norm(fs.readFileSync(p, "utf8")).includes(norm(d))))) continue;
       const cutoff = auditCutoff(files);
       let writes = 0;
       for (const p of all) {
@@ -307,6 +321,7 @@ const merge = (pick) => {
 
 const result = {
   prototype: root,
+  include: prototypeDirs,
   transcriptsSearched: projectsDir,
   found: perSession.length > 0,
   note:

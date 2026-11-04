@@ -12,8 +12,10 @@ question scored 1 or 0. The list grows over time.
 
 ## Rules
 
-- **Don't change the prototype's source.** Only write files in its `audits/`
-  folder. The build check writes the build output to `dist/`, which git ignores.
+- **Don't change the prototype's source.** Only write files in the `audits/` folder
+  at the root of the repository. The build check builds a temporary copy of the
+  repository, so a build script that rewrites files (`prettier --write`,
+  `eslint --fix`) can't change the real one.
 - **Some checks are scored by a script.** `rubric.md` says which ("Who checks it")
   and the field that holds the score. Copy those scores exactly.
 - **You score the rest.** Follow `rubric.md` and give evidence for every score.
@@ -24,19 +26,40 @@ question scored 1 or 0. The list grows over time.
   were deleted, write "Not scored" and the reason.
 - **Unsure and Not scored checks are left out of the totals.**
 
+## Names used below
+
+- `<repo>`: the root of the git repository the prototype is in.
+- `<slug>`: the prototype's name, in kebab case. In a repository that holds several
+  prototypes, it's the prototype's folder name, for example
+  `src/routes/prototypes/<slug>/`. In a repository that is one prototype, it's the
+  `name` in `package.json`.
+- `<folders>`: the folders that make up this prototype, relative to `<repo>`. In a
+  repository that holds several prototypes, find them all: usually the screens'
+  folder plus the prototype's own mock data and mock API folders, for example
+  `src/routes/prototypes/<slug>`, `src/data/<name>` and `src/api/<name>`. Leave out
+  the shared app shell and other prototypes. Check the imports to be sure. In a
+  repository that is one prototype, there are no `<folders>`: leave out `--include`.
+- `<report>`: `<repo>/audits/<slug>-<YYYY-MM-DD>-<commit>`. Every file this audit
+  writes is named `<report>` plus an extension. The slug is in the name so audits of
+  different prototypes in one repository don't overwrite each other.
+
+The report must say which folders were scored, and that the shared shell wasn't.
+
 ## Steps
 
-1. **Measure the code** and save the result:
+1. **Measure the code** and save the result. Give one `--include` for each of
+   `<folders>`:
    ```sh
-   mkdir -p <prototype>/audits
-   node <this skill's folder>/scripts/measure.mjs <prototype> --out <prototype>/audits/<YYYY-MM-DD>-<commit>.measure.json
+   mkdir -p <repo>/audits
+   node <this skill's folder>/scripts/measure.mjs <repo> --include <folder> --include <folder> --out <report>.measure.json
    ```
 
 2. **Collect the build info.** This reads the Claude Code transcripts on this
    machine to find the sessions that built the prototype: tokens, time, models, MCP
-   servers, skills, agents, the person's prompts and the design reviews.
+   servers, skills, agents, the person's prompts and the design reviews. Use the
+   same `--include` flags as in step 1.
    ```sh
-   node <this skill's folder>/scripts/build-info.mjs <prototype> --out <prototype>/audits/<YYYY-MM-DD>-<commit>.build.json
+   node <this skill's folder>/scripts/build-info.mjs <repo> --include <folder> --include <folder> --out <report>.build.json
    ```
    Measuring stops when the audit starts: if this skill is running in the same
    session that built the prototype, everything from the prompt that started it is
@@ -48,9 +71,12 @@ question scored 1 or 0. The list grows over time.
 
 3. **Check that it builds:**
    ```sh
-   node <this skill's folder>/scripts/build-check.mjs <prototype> --out <prototype>/audits/<YYYY-MM-DD>-<commit>.build-check.json
+   node <this skill's folder>/scripts/build-check.mjs <repo> --out <report>.build-check.json
    ```
-   If it says `node_modules` is missing, run `npm install` in the prototype first.
+   It runs in a temporary copy of the repository and deletes the copy afterwards.
+   If it says `node_modules` is missing, run `npm install` in `<repo>` first. If
+   `buildChangedFiles` isn't empty, the repository's own build rewrites those source
+   files: say so in the report. It isn't scored.
 
 4. **Read `rubric.md`.**
 
@@ -62,9 +88,10 @@ question scored 1 or 0. The list grows over time.
 7. **Write the report** using `templates/report.md`, in the template's order: the
    score table, what Recursica is missing, the build info, then under "Score
    details" one section for every dimension in `rubric.md`, in order, with a row
-   for every check. Save it as `<prototype>/audits/<YYYY-MM-DD>-<commit>.md`.
+   for every check. Save it as `<report>.md`.
 
-8. **Compare.** If `audits/` has an earlier report, put its scores next to the new
+8. **Compare.** If `<repo>/audits/` has an earlier report for the same prototype
+   (a file named `<slug>-*.md`; reports for other prototypes don't count), put its scores next to the new
    ones and explain each change. Compare totals only when both audits scored the
    same checks. An earlier report from a different rubric version (the version is at
    the top of each report) can't be compared check by check: say so, and only
@@ -73,9 +100,9 @@ question scored 1 or 0. The list grows over time.
    rubric isn't clear enough there.
 
 9. **Make the HTML version** once the Markdown report is finished. It's written next
-   to the report, as `<prototype>/audits/<YYYY-MM-DD>-<commit>.html`:
+   to the report, as `<report>.html`:
    ```sh
-   node <this skill's folder>/scripts/report-html.mjs <prototype>/audits/<YYYY-MM-DD>-<commit>.md
+   node <this skill's folder>/scripts/report-html.mjs <report>.md
    ```
    Don't edit the HTML by hand. If the report changes, change the Markdown and run
    this again.

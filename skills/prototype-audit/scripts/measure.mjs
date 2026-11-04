@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 // Measures a Recursica prototype for the prototype-audit rubric. Every number here is
 // a count, so two runs on the same commit always give the same result.
-// Usage: node measure.mjs <prototype-root> [--out file.json]
-// Optional overrides: <prototype-root>/prototype-audit.config.json (see DEFAULTS).
+// Usage: node measure.mjs <repo-root> [--include <folder>]... [--out file.json]
+// --include limits the measuring to those folders (relative to the repo root), for a
+// repository that holds several prototypes. Repeat it for each folder, for example
+// --include src/routes/prototypes/foo --include src/data/foo --include src/api/foo.
+// Without it, everything under srcDir is measured.
+// Optional overrides: <repo-root>/prototype-audit.config.json (see DEFAULTS).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -28,11 +32,20 @@ const DEFAULTS = {
 };
 
 const args = process.argv.slice(2);
-const outIdx = args.indexOf("--out");
-const outFile = outIdx >= 0 ? args[outIdx + 1] : null;
-const root = path.resolve(args.find((a, i) => !a.startsWith("--") && (outIdx < 0 || i !== outIdx + 1)) ?? ".");
+const FLAGS_WITH_VALUE = new Set(["--out", "--include"]);
+const flagValues = (flag) => args.flatMap((a, i) => (a === flag && args[i + 1] ? [args[i + 1]] : []));
+const outFile = flagValues("--out")[0] ?? null;
+const root = path.resolve(args.find((a, i) => !a.startsWith("--") && !FLAGS_WITH_VALUE.has(args[i - 1])) ?? ".");
 const cfgFile = path.join(root, "prototype-audit.config.json");
 const cfg = { ...DEFAULTS, ...(fs.existsSync(cfgFile) ? JSON.parse(fs.readFileSync(cfgFile, "utf8")) : {}) };
+// Folders to measure, relative to the repo root. Empty means all of srcDir.
+const include = [...(cfg.include ?? []), ...flagValues("--include")].map((d) => d.replace(/^\.\//, "").replace(/\/$/, ""));
+for (const d of include) {
+  if (!fs.existsSync(path.join(root, d))) {
+    console.error(`--include folder not found: ${d}`);
+    process.exit(1);
+  }
+}
 
 const rel = (p) => path.relative(root, p).split(path.sep).join("/");
 const read = (p) => fs.readFileSync(p, "utf8");
@@ -61,7 +74,9 @@ function git(cmd) {
 const pkg = fs.existsSync(path.join(root, "package.json")) ? JSON.parse(read(path.join(root, "package.json"))) : {};
 const deps = { ...(pkg.dependencies ?? {}), ...(pkg.devDependencies ?? {}) };
 
-const all = walk(path.join(root, cfg.srcDir)).filter((p) => !under(rel(p), cfg.excludeDirs));
+const all = (include.length ? include.flatMap((d) => walk(path.join(root, d))) : walk(path.join(root, cfg.srcDir))).filter(
+  (p) => !under(rel(p), cfg.excludeDirs),
+);
 const fakeRe = new RegExp(cfg.fakeDataPattern, "i");
 const isStory = (f) => /\.stories\.[jt]sx?$/.test(f);
 const isFake = (f) => fakeRe.test(path.basename(f)) && !isStory(f) && !f.endsWith(".d.ts");
@@ -313,7 +328,9 @@ const result = {
   prototype: pkg.name ?? path.basename(root),
   root,
   commit: git("rev-parse --short HEAD"),
-  dirty: (git("status --porcelain -- src") ?? "") !== "",
+  // Uncommitted or untracked changes in the measured folders.
+  dirty: (git(`status --porcelain -- ${(include.length ? include : [cfg.srcDir]).map((d) => `"${d}"`).join(" ")}`) ?? "") !== "",
+  include,
   measuredAt: new Date().toISOString(),
   config: cfg,
   counts: {

@@ -28,7 +28,13 @@ scored is defined in `rubric.md`: dimensions, each split into yes/no checks scor
 ## Try the script on its own
 
 ```sh
+# A repository that is one prototype:
 node scripts/measure.mjs ../../fixpoint-dashboard
+
+# A repository that holds several prototypes: name this prototype's folders.
+node scripts/measure.mjs ~/Developer/recursica/prototypes/recursica-proto-mantine \
+  --include src/routes/prototypes/fixpoint-business-dashboard \
+  --include src/data/fixpoint --include src/api/fixpoint
 ```
 
 ## Install
@@ -58,3 +64,11 @@ Decided:
 - Design review fixed: no design review fails both checks, and a fix with no review
   after it doesn't count as fixed.
 - It builds: every warning counts.
+- Reports go in `audits/` at the repository root, named
+  `<slug>-<YYYY-MM-DD>-<commit>.*`, so several prototypes in one repository can
+  share the folder.
+- In a repository that holds several prototypes, `measure.mjs` and `build-info.mjs`
+  take `--include <folder>` (repeated) to score only that prototype's folders.
+- `build-check.mjs` builds a temporary copy of the repository, because some build
+  scripts rewrite source files. It lists what the build would have changed under
+  `buildChangedFiles`.
