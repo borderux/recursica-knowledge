@@ -28,7 +28,10 @@ question scored 1 or 0. The list grows over time.
 
 ## Names used below
 
-- `<repo>`: the root of the git repository the prototype is in.
+- `<repo>`: the root of the git worktree the prototype is in. This is often **not**
+  the folder the audit was started from: builders often work in a separate worktree
+  next to the repository, such as `<repository>-<slug>` on branch
+  `prototype/<slug>`. Step 0 finds it.
 - `<slug>`: the prototype's name, in kebab case. In a repository that holds several
   prototypes, it's the prototype's folder name, for example
   `src/routes/prototypes/<slug>/`. In a repository that is one prototype, it's the
@@ -46,6 +49,35 @@ question scored 1 or 0. The list grows over time.
 The report must say which folders were scored, and that the shared shell wasn't.
 
 ## Steps
+
+0. **Find the prototype.** Never audit a prototype just because it's in the folder
+   the audit was started from. Run this from that folder first:
+   ```sh
+   node <this skill's folder>/scripts/find-prototypes.mjs .
+   ```
+   It lists every git worktree of the repository, every prototype in each one, the
+   Claude Code sessions that wrote files in each prototype (with the session's title,
+   such as "Fixpoint PRD prototype"), whether the prototype's files are committed, and
+   the `--include` folders its sessions wrote (`suggestedIncludes`). Then choose:
+   - **The person named a prototype, a session title or a folder:** use the
+     prototype that matches. If none matches, or more than one does, ask.
+   - **They didn't, and exactly one prototype has build sessions:** use that one, and
+     say which one it is, its worktree and its session title before going on.
+   - **Anything else** (several prototypes have build sessions, or none does): ask
+     which one to audit, listing each candidate with its worktree, branch and session
+     titles. Don't pick the template's example prototype (such as `demo`) unless the
+     person asks for it.
+
+   From here on, `<repo>` is the **worktree** the chosen prototype is in, and every
+   command below runs against it. Start `<folders>` from its `suggestedIncludes`,
+   then check the imports as described above. If `uncommittedFiles` isn't 0, the
+   report's commit is the worktree's base commit with uncommitted changes on top:
+   say so at the top of the report.
+
+   **Write each `--include` flag out in the command.** Don't put them in a shell
+   variable: zsh doesn't split `$VAR` into words, so the flags are silently ignored
+   and the whole `src/` folder is measured. Check that `include` in the measure
+   result lists the folders you gave.
 
 1. **Measure the code** and save the result. Give one `--include` for each of
    `<folders>`:
@@ -67,7 +99,9 @@ The report must say which folders were scored, and that the shared shell wasn't.
    report must say so (see the template).
    Claude Code deletes old transcripts after a while (30 days by default), so this
    only works soon after the build. If it finds nothing, the checks that need it are
-   Not scored.
+   Not scored. **But if step 0 listed build sessions for this prototype and this
+   finds none, the folders or `<repo>` are wrong:** stop and fix them. Don't mark
+   anything Not scored.
 
 3. **Check that it builds:**
    ```sh
@@ -75,6 +109,8 @@ The report must say which folders were scored, and that the shared shell wasn't.
    ```
    It runs in a temporary copy of the repository and deletes the copy afterwards.
    If it says `node_modules` is missing, run `npm install` in `<repo>` first. If
+   that changes `package-lock.json`, restore it with `git checkout -- package-lock.json`,
+   because the audit mustn't change the repository. If
    `buildChangedFiles` isn't empty, the repository's own build rewrites those source
    files: say so in the report. It isn't scored.
 

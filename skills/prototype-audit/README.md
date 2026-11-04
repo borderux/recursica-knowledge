@@ -11,6 +11,10 @@ scored is defined in `rubric.md`: dimensions, each split into yes/no checks scor
 
 - `SKILL.md`: the steps Claude follows.
 - `rubric.md`: what gets scored, and what each score means.
+- `scripts/find-prototypes.mjs`: run first. Lists every git worktree of the
+  repository, the prototypes in each, the sessions that built each one (with their
+  titles), and the `--include` folders to use, so the audit scores the right
+  prototype even when it was built in another worktree.
 - `scripts/measure.mjs`: the scores for checks that can be counted, plus the
   evidence for the others.
 - `scripts/build-info.mjs`: how the prototype was built (tokens, time, models, MCP
@@ -69,6 +73,10 @@ Decided:
   share the folder.
 - In a repository that holds several prototypes, `measure.mjs` and `build-info.mjs`
   take `--include <folder>` (repeated) to score only that prototype's folders.
+- The audit starts by finding the prototype (`find-prototypes.mjs`) across every
+  git worktree, not only the folder it was started from. If more than one prototype
+  could be meant, it asks. Added after an audit scored the template's `demo` instead
+  of a prototype built in a worktree next to the repository.
 - `build-check.mjs` builds a temporary copy of the repository, because some build
   scripts rewrite source files. It lists what the build would have changed under
   `buildChangedFiles`.
