@@ -1,0 +1,46 @@
+// The access rules for the cluster's RustDesk server, to add to the tailnet's policy file in
+// Tailscale's admin console. The kit never changes the policy file. Replace the placeholders:
+// 100.64.0.7 is the server computer's Tailscale address, and person-a@example.com an admin.
+//
+// - The admins' own devices reach the console (HTTPS, through tailscale serve) and the server's
+//   ports. The group names people, so an admin's laptop stays untagged and keeps its owner.
+// - Each computer RustDesk controls, tagged tag:rustdesk-device, reaches the server's ports only,
+//   never the console. Every session runs through the relay (force-always-relay on each client),
+//   so no rule lets one device reach another.
+// - Nothing else reaches the server. These rules add access only: a broader rule elsewhere in the
+//   policy file, such as the default rule that lets every device reach every device, still applies.
+//   Remove that rule first, or the server is open to the whole tailnet.
+{
+  "groups": {
+    "group:rustdesk-admins": ["person-a@example.com"],
+  },
+  "tagOwners": {
+    "tag:rustdesk-device": ["autogroup:admin"],
+  },
+  "hosts": {
+    "rustdesk-server": "100.64.0.7",
+  },
+  "grants": [
+    {
+      "src": ["group:rustdesk-admins"],
+      "dst": ["rustdesk-server"],
+      "ip": ["tcp:443", "tcp:21115-21117", "udp:21116"],
+    },
+    {
+      "src": ["tag:rustdesk-device"],
+      "dst": ["rustdesk-server"],
+      "ip": ["tcp:21115-21117", "udp:21116"],
+    },
+  ],
+  "tests": [
+    {
+      "src": "person-a@example.com",
+      "accept": ["rustdesk-server:443", "rustdesk-server:21116"],
+    },
+    {
+      "src": "tag:rustdesk-device",
+      "accept": ["rustdesk-server:21116", "rustdesk-server:21117"],
+      "deny": ["rustdesk-server:443", "rustdesk-server:22"],
+    },
+  ],
+}

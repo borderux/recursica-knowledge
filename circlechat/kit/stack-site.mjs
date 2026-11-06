@@ -110,6 +110,8 @@ export function stackSite(cluster, { stack, kind, computers, limits = {}, cloud,
     const n = structuredClone(c);
     // The cluster's own stack starts the shared model servers and Kev's model.
     n.services = [];
+    // So does the cluster's RustDesk server, which serves every computer and no one stack.
+    delete n.rustdesk;
     if (n.jobs) n.jobs.port = jobsPort;
     if (computers !== "cluster") {
       n.control = true;

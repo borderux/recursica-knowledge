@@ -92,7 +92,7 @@ SITE="$CC_DIR/site.json"
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
 # MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
 # older name of MODEL_KEY_DEFAULT.
-KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|CC_CHECK_PASSWORD|APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GIT_NAME|PORTER_GIT_EMAIL|KEV_DATA_GITHUB_PAT|CC_CHECK_PASSWORD|RUSTDESK_RESTIC_PASSWORD|APP_KEY_[A-Z0-9_]+|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -112,6 +112,7 @@ ROLES="$("$NODE_BIN" -e '
   if (n.control) r.push("control");
   if (n.jobs) r.push("jobs");
   for (const v of n.services ?? []) r.push(`service:${v.name}`);
+  if (n.rustdesk) r.push("rustdesk");
   console.log(r.join(" ") || "none");
 ' "$SITE" "$COMPUTER")"
 [ "$ROLES" != none ] || { echo "Computer $COMPUTER runs nothing for stack $STACK in $SITE."; exit 1; }
@@ -260,11 +261,14 @@ if [ -z "$TENANT" ]; then
 fi
 
 WROTE_NODE=false
-if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* ]]; then
+if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *" rustdesk "* ]]; then
   echo "Services of stack $STACK on $COMPUTER:"
   for k in KEV_API_KEY JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }
   done
+  # The RustDesk server's backup secret, only on the computer that runs the server. The backup
+  # reads it at each run, so nothing restarts for it.
+  if [[ " $ROLES " == *" rustdesk "* ]] && has RUSTDESK_RESTIC_PASSWORD; then set_kv "$NODE_ENV" RUSTDESK_RESTIC_PASSWORD "$(val RUSTDESK_RESTIC_PASSWORD)"; fi
   # Port jobs reach cloud models through the gateway, with a key for each task. The node secrets
   # file holds no cloud key.
   has PORTER_ANTHROPIC_API_KEY && echo "  PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway. Rename the secret to MODEL_KEY_PORTER, and name porter in that key's agents in site.json."

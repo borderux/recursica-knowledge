@@ -60,6 +60,8 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `notify`                                              | Slack alerts for task changes                                                                                                                    |
 | `data`                                                | `repo`: a private repo for Kev's review data (README, "Kev's review data"); leave out for a client                                               |
 | `backup`                                              | The rclone remote and the time of the nightly backup                                                                                             |
+| `nodes[].rustdesk`                                    | The cluster's RustDesk server: its pinned image, the console's Tailscale name and the backup time (README, "The RustDesk server")                |
+| `remote_access`                                       | `remote_access.direct_ip`: `false` once every computer uses the RustDesk server, so each firewall refuses direct-address access                  |
 | `security`                                            | `security.evidence_recipient`: the age public key for lockdown evidence                                                                          |
 | `egress`                                              | The outgoing filter: `egress.allow` lists extra sites the agents may reach                                                                       |
 | `privacy`                                             | `privacy.mask_pii`: personal information masking before cloud model calls                                                                        |
@@ -101,7 +103,7 @@ The kit sets each of these up. Each one has a section in `circlechat/README.md`:
 - **Backups:** nightly and encrypted, with a test restore each quarter.
 - **Updates:** security updates after a 7-day wait, and right away for actively exploited flaws.
 - **Agent controls:** Slack posts each waiting approval, with Stop buttons per agent and per stack.
-- **Remote access:** RustDesk, only over Tailscale or the client's own VPN, with two-factor sign-in.
+- **Remote access:** RustDesk, only over Tailscale or the client's own VPN, with two-factor sign-in. The cluster's own RustDesk server is in the README, "The RustDesk server".
 
 ## Working with Betty
 
