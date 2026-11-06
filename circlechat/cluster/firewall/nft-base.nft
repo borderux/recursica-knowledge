@@ -19,8 +19,10 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
-    meta l4proto { tcp, udp } th dport 21114-21117 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
-    meta l4proto { tcp, udp } th dport 21114-21117 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
+    tcp dport 21114-21117 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
+    udp dport 21116 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
+    tcp dport 21114-21117 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
+    udp dport 21116 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
 @RUSTDESK_DIRECT@
     ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept
     ip6 saddr fd7a:115c:a1e0::/48 accept
@@ -38,7 +40,8 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
-    meta l4proto { tcp, udp } th dport 21115-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
+    tcp dport 21115-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
+    udp dport 21116 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     ct state new ip saddr != { 100.64.0.0/10, 172.16.0.0/12, 127.0.0.0/8 } ip saddr != @allowed4 drop
   }
 }

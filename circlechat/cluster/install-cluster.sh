@@ -36,7 +36,8 @@ CANARY_PORTS="2222, 2121, 8088"
 DIRECT_IP="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.remote_access?.direct_ip === false ? "off" : "on")' "$SITE")"
 NFT_DIRECT=""; PF_DIRECT=""
 if [ "$DIRECT_IP" = off ]; then
-  NFT_DIRECT='    meta l4proto { tcp, udp } th dport { 21118, 21119 } drop comment "rustdesk direct"'
+  # Two rules: GNU sed turns \n into a line break.
+  NFT_DIRECT='    tcp dport { 21118, 21119 } drop comment "rustdesk direct"\n    udp dport { 21118, 21119 } drop comment "rustdesk direct"'
   PF_DIRECT='block in quick proto { tcp udp } to port { 21118 21119 }'
 fi
 

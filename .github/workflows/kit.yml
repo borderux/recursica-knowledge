@@ -49,9 +49,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: The pf rules parse
         run: |
-          for f in base lockdown; do
-            sed "s/@CANARY_PORTS@/2222 2121 8088/; s/@SPLASHTOP_PORT@/6783/" "circlechat/cluster/firewall/pf-$f.conf" > "/tmp/pf-$f.conf"
-            sudo pfctl -a agentguard-ci -nf "/tmp/pf-$f.conf"
+          # @RUSTDESK_DIRECT@ both ways install-cluster.sh fills it: empty, and the direct-address rule.
+          direct="$(sed -n "s/^  PF_DIRECT='\(.*\)'$/\1/p" circlechat/cluster/install-cluster.sh)"
+          [ -n "$direct" ]
+          for rule in "" "$direct"; do
+            for f in base lockdown; do
+              sed "s/@CANARY_PORTS@/2222 2121 8088/; s/@SPLASHTOP_PORT@/6783/; s/^@RUSTDESK_DIRECT@\$/$rule/" "circlechat/cluster/firewall/pf-$f.conf" > "/tmp/pf-$f.conf"
+              sudo pfctl -a agentguard-ci -nf "/tmp/pf-$f.conf"
+            done
           done
           # macOS's main rules with the loopback skip and the agentguard anchor.
           bash circlechat/cluster/firewall/pf-main.sh < /etc/pf.conf > /tmp/pf-main.conf

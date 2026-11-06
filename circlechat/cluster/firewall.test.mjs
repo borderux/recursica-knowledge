@@ -23,7 +23,7 @@ test("the Linux firewall rules parse", { skip: !has("nft") && "nftables is not i
   // RustDesk's direct-address ports (remote_access.direct_ip false).
   const base = fs.readFileSync(path.join(here, "firewall/nft-base.nft"), "utf8").replaceAll("@CANARY_PORTS@", "2222, 2121, 8088");
   fs.writeFileSync(path.join(tmp, "base.nft"), base.replace("@RUSTDESK_DIRECT@", ""));
-  fs.writeFileSync(path.join(tmp, "base-direct-off.nft"), base.replace("@RUSTDESK_DIRECT@", directRule("NFT_DIRECT")));
+  fs.writeFileSync(path.join(tmp, "base-direct-off.nft"), base.replace("@RUSTDESK_DIRECT@", directRule("NFT_DIRECT").replaceAll("\\n", "\n")));
   for (const f of [path.join(tmp, "base.nft"), path.join(tmp, "base-direct-off.nft"), path.join(here, "firewall/nft-lockdown.nft")]) {
     const [cmd, ...args] = asRoot(["nft", "-c", "-f", f]);
     const r = spawnSync(cmd, args, { encoding: "utf8" });
@@ -100,12 +100,14 @@ test("pf passes Tailscale's addresses only on Tailscale's utun interfaces", () =
 test("RustDesk's server ports take only Tailscale and loopback, before any wider rule, and the direct-address rule comes before Tailscale's pass", () => {
   const nft = rules("firewall/nft-base.nft").map((l) => l.trim());
   const at = (re) => nft.findIndex((l) => re.test(l));
-  const input = at(/^meta l4proto \{ tcp, udp \} th dport 21114-21117 ip saddr != \{ 100\.64\.0\.0\/10, 127\.0\.0\.0\/8 \} drop comment "rustdesk"$/);
+  const input = at(/^tcp dport 21114-21117 ip saddr != \{ 100\.64\.0\.0\/10, 127\.0\.0\.0\/8 \} drop comment "rustdesk"$/);
+  assert.ok(at(/^udp dport 21116 ip saddr != \{ 100\.64\.0\.0\/10, 127\.0\.0\.0\/8 \} drop comment "rustdesk"$/) > 0);
   assert.ok(input > 0 && input < at(/^ip saddr \{ 100\.64\.0\.0\/10, 172\.16\.0\.0\/12 \} accept$/), "before Docker's networks and allowed sources pass");
   assert.ok(at(/^@RUSTDESK_DIRECT@$/) < at(/^ip saddr \{ 100\.64\.0\.0\/10, 172\.16\.0\.0\/12 \} accept$/));
-  const forward = at(/^meta l4proto \{ tcp, udp \} th dport 21115-21117 ip saddr != 100\.64\.0\.0\/10 drop comment "rustdesk"$/);
+  const forward = at(/^tcp dport 21115-21117 ip saddr != 100\.64\.0\.0\/10 drop comment "rustdesk"$/);
+  assert.ok(at(/^udp dport 21116 ip saddr != 100\.64\.0\.0\/10 drop comment "rustdesk"$/) > forward);
   assert.ok(forward > 0 && forward < at(/^ct state new ip saddr !=/), "forwarded connections to the server's ports come from Tailscale only");
-  assert.match(directRule("NFT_DIRECT"), /th dport \{ 21118, 21119 \} drop/);
+  assert.match(directRule("NFT_DIRECT"), /^    tcp dport \{ 21118, 21119 \} drop .*\\n    udp dport \{ 21118, 21119 \} drop /);
   const pf = rules("firewall/pf-base.conf");
   assert.ok(pf.indexOf("@RUSTDESK_DIRECT@") >= 0 && pf.indexOf("@RUSTDESK_DIRECT@") < pf.findIndex((l) => l.startsWith("pass in quick on $tailscale_if")));
   assert.equal(directRule("PF_DIRECT"), "block in quick proto { tcp udp } to port { 21118 21119 }");

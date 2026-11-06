@@ -16,6 +16,7 @@ SPEC="${1:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
 TENANT_ENV="${2:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../kit/lib.sh"
+# shellcheck source=/dev/null
 . "$TENANT_ENV"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
 RD="node $HERE/rustdesk.mjs"
