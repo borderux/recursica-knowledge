@@ -31,6 +31,14 @@ IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXP
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
 CANARY_PORTS="2222, 2121, 8088"
+# RustDesk's direct-address ports, 21118 and 21119: refused from everywhere once every computer
+# reaches the others through the cluster's RustDesk server (remote_access.direct_ip false).
+DIRECT_IP="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.remote_access?.direct_ip === false ? "off" : "on")' "$SITE")"
+NFT_DIRECT=""; PF_DIRECT=""
+if [ "$DIRECT_IP" = off ]; then
+  NFT_DIRECT='    meta l4proto { tcp, udp } th dport { 21118, 21119 } drop comment "rustdesk direct"'
+  PF_DIRECT='block in quick proto { tcp udp } to port { 21118 21119 }'
+fi
 
 sudo mkdir -p /var/lib/agent-cluster && sudo chmod 700 /var/lib/agent-cluster
 # DOCKER_CONFIG: the cluster's root services read Docker's settings from the owner's ~/.docker.
@@ -56,15 +64,16 @@ CONF
 
 # Firewall rules, loaded now and at every start-up.
 if [ "$OS" = Linux ]; then
-  sed "s/@CANARY_PORTS@/$CANARY_PORTS/" "$HERE/firewall/nft-base.nft" | sudo tee /etc/agentguard.nft >/dev/null
+  sed "s/@CANARY_PORTS@/$CANARY_PORTS/; s/^@RUSTDESK_DIRECT@\$/$NFT_DIRECT/" "$HERE/firewall/nft-base.nft" | sudo tee /etc/agentguard.nft >/dev/null
   sudo nft -f /etc/agentguard.nft
   install_unit agentguard-firewall "nft -f /etc/agentguard.nft" / root boot
   if grep -qi microsoft /proc/version; then
     echo "Windows side: run circlechat/cluster/windows/install-windows-guard.ps1 once in an Administrator PowerShell."
+    echo "  With the RustDesk server on this computer, add -RustDeskServer. With remote_access.direct_ip false, add -BlockRustDeskDirect."
   fi
 else
   for f in base lockdown; do
-    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/;" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
+    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/^@RUSTDESK_DIRECT@\$/$PF_DIRECT/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
   # The main rules skip loopback and load the agentguard anchor (firewall/pf-main.sh). A backup of
   # macOS's own rules stays in /etc/pf.conf.agentguard-backup.

@@ -817,13 +817,66 @@ macOS has no interface groups, and Tailscale takes the first free `utun` number,
 
 ### Remote access
 
-**Reach each computer only through Tailscale, with RustDesk.** RustDesk is an open-source remote desktop for Linux, macOS and Windows. Set each computer's RustDesk this way:
+**Reach each computer only through Tailscale, with RustDesk.** RustDesk is an open-source remote desktop for Linux, macOS and Windows. A cluster with the RustDesk server below connects every computer through that server. Until then, set each computer's RustDesk this way:
 
 - Turn on "Direct IP access", so connections go straight from computer to computer over Tailscale.
 - Set the ID server to `127.0.0.1`, so RustDesk never contacts RustDesk's public servers.
 - Set a permanent password, and turn on RustDesk's two-factor sign-in.
 
 The firewall rules let RustDesk's port open only to Tailscale addresses. A RustDesk connection from the office network starts a lockdown.
+
+### The RustDesk server
+
+**One computer can run RustDesk Server Pro for the whole cluster, reachable only over Tailscale.** People then sign in to RustDesk with Google, each with their own Google two-factor, and every session runs through the server's relay. The server is Pro's two programs, `hbbs` (the ID server and the web console) and `hbbr` (the relay), in Docker, from one image pinned by digest.
+
+| Port            | What it is                   | Opens on                                                       |
+| --------------- | ---------------------------- | -------------------------------------------------------------- |
+| 21114/tcp       | The web console and its API  | `127.0.0.1` only. `tailscale serve` gives it HTTPS on port 443 |
+| 21115/tcp       | The NAT type test            | The computer's Tailscale address only                          |
+| 21116/tcp + udp | ID registration and requests | The computer's Tailscale address only                          |
+| 21117/tcp       | The relay                    | The computer's Tailscale address only                          |
+| 21118, 21119    | RustDesk's web client        | Nowhere: the kit never publishes them                          |
+
+**Run the server on Linux, or on Windows in WSL with mirrored networking.** Port 21116 needs UDP. On a Mac, Docker runs in Colima's VM, which does not hold the Mac's Tailscale address, and `tailscale serve` carries no UDP, so the port would open on every address. The config check refuses a `rustdesk` block on a Mac. In WSL with mirrored networking, WSL shares Windows' addresses, Tailscale's included, so Docker opens each port on the Tailscale address alone. Mirrored networking passes a port to WSL only while a program in WSL listens on the port, so Docker's userland-proxy stays on, as Docker sets by default.
+
+**Four guards keep the ports on the tailnet:**
+
+- **Docker** opens each port on one address, as the table shows. The setup reads `ss` and stops the server when a RustDesk port listens anywhere else. It also stops the server when a port answers on any other address of the computer, such as the office address.
+- **nftables**, on Linux and in WSL: the server's ports take only Tailscale and the computer itself. Docker's internal networks and allowed sources are refused, so no agent container reaches the server.
+- **Windows Firewall and the Hyper-V firewall**, on Windows: `install-windows-guard.ps1 -RustDeskServer` adds block rules for TCP 21114 to 21117 and UDP 21116 from every address outside Tailscale and loopback. A block rule wins over every allow rule. Loopback stays open, because Tailscale on Windows reaches the console in WSL at `127.0.0.1`.
+- **Tailscale's access rules** decide which tailnet devices reach the ports. `circlechat/rustdesk/tailnet-policy.example.hujson` holds the rules to add to the tailnet's policy file. The kit never changes the policy file.
+
+**Set it up in this order.** Each step's command runs on the server's computer, except the policy change.
+
+1. In site.json, give the computer a `rustdesk` block, and set the computer's `address` to its Tailscale IPv4 address:
+
+   ```json
+   "rustdesk": {
+     "image": "docker.io/rustdesk/rustdesk-server-pro@sha256:<digest>",
+     "console_host": "machine-2.example.ts.net",
+     "backup_time": "03:30"
+   }
+   ```
+
+   `image` must name the digest: the config check refuses a tag alone. Read the digest of the release to run from Docker Hub. A new release is a site.json change, after the release has been out for 7 days. `backup_time` is the nightly backup's time, 03:30 when unset. site.json also needs `backup.remote`.
+
+2. Add `RUSTDESK_RESTIC_PASSWORD` to the cluster's GitHub environment: a new random secret, used only for this backup. Run the "Deploy secrets" workflow for the computer. The secrets helper writes the secret to the computer's `~/.recursica-node.env` only. The computer then holds no key to the stack's other backups.
+3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`.
+4. `install-cluster.sh <computer>`, for the nftables rules.
+5. `setup-node.sh <computer>`. The setup runs `circlechat/rustdesk/setup-rustdesk.sh`, which stops before the server starts when WSL networking is not mirrored, when a guard is missing, when the node's address is not the computer's Tailscale address, or when the backup's secret is missing. It then starts the server, checks the ports, runs `tailscale serve --bg --https=443 http://127.0.0.1:21114`, checks that Funnel is off, and installs the nightly backup. On Windows, `tailscale serve` may need an Administrator PowerShell; the setup prints the command.
+6. Add the access rules from `tailnet-policy.example.hujson` to the tailnet's policy file.
+7. Run the first backup, and check that it holds the key: `sudo systemctl start rustdesk-backup.service`.
+8. Open the console at `https://<console_host>` from an admin's device. Change the default admin password, and turn on two-factor sign-in for that account. Keep it as the one local account, for when Google sign-in fails.
+9. Enter the license in the console's settings. A Pro license is bound to the computer that activates it.
+10. Add Google as the OIDC provider in the console, with a Google OAuth client of type Internal. Use the redirect address the console shows. Internal limits sign-in to the Google Workspace's own accounts. Enforce 2-Step Verification in the Workspace's admin console, so every account has two-factor.
+11. Point every RustDesk client at the server. Use the console's strategy settings or a custom client: the ID server and the relay at the computer's Tailscale address, the API server at `https://<console_host>`, and the key from the console. Lock these settings on each client: "Direct IP access" off (`direct-server`), always relay (`force-always-relay`), and no changes on the device.
+12. Once every computer uses the server, set `"remote_access": { "direct_ip": false }` in site.json. Run `install-cluster.sh` on each computer, and `install-windows-guard.ps1 -BlockRustDeskDirect` on each Windows computer. Each firewall then refuses RustDesk's direct-address ports, 21118 and 21119, from everywhere.
+
+**The backup runs each night as root, from `circlechat/rustdesk/backup-rustdesk.sh`.** The containers pause for the copy, so the database is copied whole, and each connection stays open. restic encrypts the copy with `RUSTDESK_RESTIC_PASSWORD` and sends it to `<backup.remote>/<stack>-rustdesk`. The backup checks that the copy holds the server's key, `id_ed25519`, and posts in Slack when any step fails. A lost key means every client must be set up again.
+
+**To restore,** restore the newest snapshot with that password, and unpack `rustdesk.tgz` into the `rustdesk_data` volume before the server starts.
+
+**Tagging a device changes who owns it.** A device with a tag belongs to the tag, not to a person, so rules that name a person or a group no longer apply to it. Tag only the computers the cluster owns. A person's own laptop or phone stays untagged; a rule that names the person's group reaches it instead. A computer that already has a tag, such as `tag:cluster`, keeps every tag it has: add the new tag next to the old one in the admin console. `tailscale up --advertise-tags` with only the new tag removes the old tag, and every rule for the old tag with it.
 
 ### Lockdown
 

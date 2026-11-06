@@ -35,6 +35,7 @@ import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, validateApps } from "../github/apps.mjs";
+import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -631,6 +632,8 @@ export function validate(site, { cluster } = {}) {
   const control = nodes.find((n) => n.control);
   if (control && nodes.some((n) => n.jobs && !n.control) && !control.tailnet_address) errs.push(`node ${control.name}: a job runner on another computer needs the control computer's tailnet_address, its Tailscale IP address`);
   for (const n of nodes) if (n.tailnet_address !== undefined && !/^(\d{1,3}(\.\d{1,3}){3}|[0-9a-f:]+)$/i.test(n.tailnet_address)) errs.push(`node ${n.name}: tailnet_address must be an IP address, such as 100.64.0.5`);
+  // The cluster's RustDesk server (rustdesk/rustdesk.mjs).
+  errs.push(...rustdeskErrors(site));
   if (site.porter) {
     const p = site.porter;
     if (!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(p.watch ?? "")) errs.push("porter.watch must be owner/name");
@@ -723,7 +726,7 @@ export function render(site) {
     if (l.cpus) j.cpus = l.cpus;
     return j;
   };
-  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null }]));
+  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null, rustdesk: rustdeskSpec(site, n) }]));
   const appEnv = `APP_REPO=${site.repos.app_dir}\nAPP_REPO_GITHUB=${site.repos.app_github}\n`;
   // No tenant keeps the names a single-stack install has always used, so an existing install
   // keeps its containers, volumes and jobs.
