@@ -22,8 +22,8 @@ test("the Linux firewall rules parse", { skip: !has("nft") && "nftables is not i
   // Both ways install-cluster.sh fills @RUSTDESK_DIRECT@: empty, and the rule that refuses
   // RustDesk's direct-address ports (remote_access.direct_ip false).
   const base = fs.readFileSync(path.join(here, "firewall/nft-base.nft"), "utf8").replaceAll("@CANARY_PORTS@", "2222, 2121, 8088");
-  fs.writeFileSync(path.join(tmp, "base.nft"), base.replace("@RUSTDESK_DIRECT@", ""));
-  fs.writeFileSync(path.join(tmp, "base-direct-off.nft"), base.replace("@RUSTDESK_DIRECT@", directRule("NFT_DIRECT").replaceAll("\\n", "\n")));
+  fs.writeFileSync(path.join(tmp, "base.nft"), base.replace(/^@RUSTDESK_DIRECT@$/m, ""));
+  fs.writeFileSync(path.join(tmp, "base-direct-off.nft"), base.replace(/^@RUSTDESK_DIRECT@$/m, directRule("NFT_DIRECT").replaceAll("\\n", "\n")));
   for (const f of [path.join(tmp, "base.nft"), path.join(tmp, "base-direct-off.nft"), path.join(here, "firewall/nft-lockdown.nft")]) {
     const [cmd, ...args] = asRoot(["nft", "-c", "-f", f]);
     const r = spawnSync(cmd, args, { encoding: "utf8" });
