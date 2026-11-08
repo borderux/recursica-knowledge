@@ -494,6 +494,34 @@ test("Betty's CircleChat persona replies after a build with the preview address 
   assert.match(text, /After building, reply with the page's preview address and at most two sentences, never code\./);
 });
 
+/**
+ * Betty's persona used to ask "a few questions at a time". Every built Betty now asks exactly one
+ * question per message and waits for the answer, keeps her six intake questions, asked one by one,
+ * and never batches questions.
+ */
+test("every built Betty asks one question per message, and asks her six intake questions one by one", () => {
+  const built = [
+    ["buzz-agents", "agents", "betty", "SYSTEM_PROMPT.md"],
+    ["portable", "circlechat", "agents", "betty", "SOUL.md"],
+    ["portable", "claude-code", "agents", "betty.md"],
+    ["portable", "grok", "agents", "betty.md"],
+  ];
+  for (const parts of built) {
+    const file = parts.join("/");
+    const text = fs.readFileSync(path.join(repoRoot, ...parts), "utf8").replace(/\s+/g, " ");
+    assert.match(text, /\*\*Ask exactly one question in each message, and wait for the answer before asking the next one\.\*\*/, file);
+    assert.match(text, /Each question is one or two plain sentences, with an example answer when an example helps\./, file);
+    assert.match(text, /Never open with a greeting, never number or list questions with "First" or "Also", never recap what Betty will do next, and never add a sign-off\./, file);
+    assert.match(text, /Ask them one by one, in this order, and skip each question the request already answers:/, file);
+    assert.match(text, /one question per message\./, `${file}: the platform's interview line`);
+    // The six intake questions are all still there.
+    for (const q of ["What object is the screen about", "The domain model", "The status lifecycle, including the off-path states", "The interactions that must work", "The edge states that matter", "For a prototype, the amount and spread of mock data"]) {
+      assert.ok(text.includes(q), `${file}: ${q}`);
+    }
+    assert.doesNotMatch(text, /a few questions at a time|in one batch|ask three good questions|one long message full of questions/i, file);
+  }
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
