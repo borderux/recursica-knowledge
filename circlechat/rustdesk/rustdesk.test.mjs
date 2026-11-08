@@ -8,7 +8,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { validate, render } from "../kit/render.mjs";
 import { stackSite } from "../kit/stack-site.mjs";
-import { NFT_RULES, RELAY_KEY_WAIT, composeFile, guardProblems, listenProblems, rustdeskErrors, serveProblems } from "./rustdesk.mjs";
+import { NFT_RULES, RELAY_KEY_WAIT, composeFile, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
@@ -145,8 +145,45 @@ test("the guard check names each firewall that lacks port 21114, port 21118 or 2
   }
 });
 
+// The web client's ports, 21118 and 21119. In the host's network, hbbs and hbbr must open both ports,
+// and a RustDesk client's direct IP access uses 21118 by default.
+const q = (v) => `'${v}'`;
+const directOn = `[options]\ndirect-server = ${q("Y")}\n`;
+
+test("a client's direct IP access uses 21118 unless direct-access-port says otherwise", () => {
+  assert.deepEqual(directAccessPorts(""), []);
+  assert.deepEqual(directAccessPorts(`[options]\ndirect-server = ${q("N")}\n`), []);
+  assert.deepEqual(directAccessPorts(directOn), [21118]);
+  assert.deepEqual(directAccessPorts(`${directOn}direct-access-port = ${q("21200")}\n`), [21200]);
+  // Two settings files, the signed-in user's with direct access off and the service's with direct access on.
+  assert.deepEqual(directAccessPorts(`direct-server = ${q("N")}\n${directOn}`), [21118]);
+});
+
+test("the web port check passes free ports, and ports held by hbbs and hbbr", () => {
+  assert.deepEqual(webPortProblems({ ss: goodSs, windows: "end", clients: "" }), []);
+  const held = `LISTEN 0 4096 *:21118 *:* users:(("hbbs",pid=1,fd=9))\nLISTEN 0 4096 *:21119 *:* users:(("hbbr",pid=2,fd=9))`;
+  assert.deepEqual(webPortProblems({ ss: held, windows: "end" }), []);
+  assert.deepEqual(webPortProblems({ ss: goodSs, windows: null }), [], "outside WSL, Windows is not read");
+  assert.deepEqual(webPortProblems({ windows: "end", clients: `${directOn}direct-access-port = ${q("21200")}\n` }), [], "direct access on another port");
+});
+
+test("the web port check refuses each conflict that would break direct access or stop hbbs", () => {
+  const why = /hbbs needs port 21118 and hbbr needs port 21119, and neither program can move the port or turn the port off/;
+  let p = webPortProblems({ windows: "21118|rustdesk\nend" });
+  assert.match(p.join("\n"), /^rustdesk listens on TCP 21118 in Windows, and WSL shares the port\./);
+  assert.match(p.join("\n"), why);
+  p = webPortProblems({ windows: "end", clients: directOn });
+  assert.match(p.join("\n"), /^The RustDesk client on this computer has direct IP access on port 21118\..*the client's direct access would break$/);
+  p = webPortProblems({ ss: `LISTEN 0 4096 *:21118 *:* users:(("rustdesk",pid=3,fd=9))`, windows: null });
+  assert.match(p.join("\n"), /^rustdesk listens on TCP 21118 in Linux\./);
+  p = webPortProblems({ ss: `LISTEN 0 4096 *:21119 *:* users:(("hbbs",pid=1,fd=9))` });
+  assert.match(p.join("\n"), /^hbbs listens on TCP 21119 in Linux/, "only hbbr may hold 21119");
+  assert.match(webPortProblems({ windows: "" }).join("\n"), /^Could not read Windows' listeners on TCP 21118 and 21119\./);
+  assert.deepEqual(webPortProblems({ windows: "21118|wslrelay\nend" }), [], "WSL's own processes pass a WSL listener to Windows");
+});
+
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = winRules, hypervRules = winRules, serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -166,6 +203,7 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = wi
   // docker logs rustdesk-hbbr: the relay's start-up log, with or without the key.
   stub("docker", `[ "$1 $2" = "logs rustdesk-hbbr" ] && { printf '%s\\n' ${JSON.stringify(relayLog)}; exit 0; }; exit 0`);
   stub("sleep", "exit 0");
+  if (clientSettings) { fs.mkdirSync(path.join(home, ".config", "rustdesk"), { recursive: true }); fs.writeFileSync(path.join(home, ".config", "rustdesk", "RustDesk2.toml"), clientSettings); }
   const secrets = path.join(home, "node.env");
   fs.writeFileSync(secrets, secret ? "RUSTDESK_RESTIC_PASSWORD=p\n" : "JOBD_TOKEN=t\n");
   const out = path.join(home, "out");
@@ -180,7 +218,9 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = wi
     fs.writeFileSync(path.join(home, "fw.txt"), windowsRules.replaceAll("\n", "\r\n"));
     fs.writeFileSync(path.join(home, "hv.txt"), hypervRules.replaceAll("\n", "\r\n"));
     stub("wslinfo", "echo mirrored");
-    stub("powershell.exe", `case "$*" in *Get-NetFirewallHyperVRule*) cat "${home}/hv.txt" ;; *Get-NetFirewallRule*) cat "${home}/fw.txt" ;; esac`);
+    fs.writeFileSync(path.join(home, "listeners.txt"), windowsListeners.replaceAll("\n", "\r\n"));
+    fs.writeFileSync(path.join(home, "client.toml"), winClientSettings.replaceAll("\n", "\r\n"));
+    stub("powershell.exe", `case "$*" in *Get-NetFirewallHyperVRule*) cat "${home}/hv.txt" ;; *Get-NetFirewallRule*) cat "${home}/fw.txt" ;; *Get-NetTCPConnection*) cat "${home}/listeners.txt" ;; *RustDesk2.toml*) cat "${home}/client.toml" ;; esac`);
   }
   const run = spawnSync("bash", [path.join(here, "setup-rustdesk.sh"), path.join(out, "services", "machine-3.json"), path.join(out, "tenant.env")], {
     env: { ...process.env, HOME: home, SECRETS: secrets, PROC_VERSION: path.join(home, "version"), SYSTEMD_UNIT_DIR: units, RUSTDESK_LISTEN_TRIES: "2", PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin` },
@@ -235,6 +275,24 @@ test("in WSL, the setup starts the server only when all three firewalls hold the
     assert.match(r.stdout, /The RustDesk server did not start\./);
     assert.doesNotMatch(r.calls(), /docker compose/, `nothing starts: ${JSON.stringify(opts)}`);
   }
+});
+
+test("the setup starts nothing when the web client's ports would break the client's direct access", () => {
+  for (const [opts, said] of [
+    [{ wsl: true, windowsListeners: "21118|rustdesk\nend" }, /rustdesk listens on TCP 21118 in Windows/],
+    [{ wsl: true, winClientSettings: directOn }, /The RustDesk client on this computer has direct IP access on port 21118/],
+    [{ wsl: true, windowsListeners: "" }, /Could not read Windows' listeners/],
+    [{ clientSettings: directOn }, /direct IP access on port 21118/],
+    [{ ss: `${goodSs}\nLISTEN 0 4096 0.0.0.0:21118 0.0.0.0:* users:(("rustdesk",pid=3,fd=9))` }, /rustdesk listens on TCP 21118 in Linux/],
+  ]) {
+    const r = sandbox(opts);
+    assert.equal(r.status, 1, JSON.stringify(opts));
+    assert.match(r.stdout, said);
+    assert.match(r.stdout, /would break the RustDesk client's direct IP access on this computer, or stop hbbs\. The RustDesk server did not start\./);
+    assert.doesNotMatch(r.calls(), /docker compose/, `nothing starts: ${JSON.stringify(opts)}`);
+  }
+  const r = sandbox({ wsl: true, winClientSettings: `${directOn}direct-access-port = ${q("21200")}\n` });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
 });
 
 test("the setup stops the server when a RustDesk port does not listen", () => {

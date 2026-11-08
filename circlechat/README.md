@@ -913,6 +913,14 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 
 **The rules cover the web client's ports, 21118 and 21119, too.** In the host's network, `hbbs` and `hbbr` open both ports on every address.
 
+**The server's computer keeps 21118 and 21119 free for `hbbs` and `hbbr`.** `hbbs` opens its port plus 2, 21118, and `hbbr` opens its port plus 2, 21119. Neither program can move the port or turn the port off. Each program stops when the port is taken. A RustDesk client's direct IP access uses 21118 by default. WSL in mirrored networking shares each port with Windows. So the server and the computer's own client can't both use 21118. `setup-rustdesk.sh` refuses to start the server on any of these:
+
+- A program other than `hbbs` or `hbbr` listens on 21118 or 21119, in Linux or in Windows.
+- The computer's RustDesk client has direct IP access on 21118 or 21119. The script reads the client's `RustDesk2.toml`: the signed-in user's and the RustDesk service's.
+- WSL can't read Windows' listeners on the ports.
+
+A computer with direct IP access can still run the server. Set the client's `direct-access-port` to another port, such as 21120. Or turn off direct IP access on that client.
+
 **`setup-rustdesk.sh` starts the server only when each of the three firewalls holds the RustDesk rule.** The script reads each rule and checks the ports, the action and that the rule is on. A rule that WSL can't read counts as missing.
 
 **Tailscale's access rules decide which tailnet devices reach the ports.** `circlechat/rustdesk/tailnet-policy.example.hujson` holds the rules to add to the tailnet's policy file. The kit never changes the policy file.
@@ -938,6 +946,7 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 
    - WSL networking is not mirrored.
    - A firewall lacks the RustDesk rule.
+   - The web client's ports, 21118 and 21119, would break the computer's direct IP access.
    - The node's address is not the computer's Tailscale address.
    - The backup's secret is missing.
 

@@ -16,11 +16,15 @@
 //   node rustdesk.mjs serve-check <https port> <local port> < tailscale serve status --json
 //   node rustdesk.mjs listen-check < ss -Hlntu
 //   node rustdesk.mjs guard-check nft < nft list chain inet agentguard input
+//   node rustdesk.mjs web-port-check <ss -Hlntp file> <Windows listeners file> < RustDesk client settings
 //   node rustdesk.mjs guard-check windows|hyperv < "<protocol>|<ports>|<action>|<enabled>|<direction>" lines
 // Each check prints one line per problem and nothing when all is well.
 import fs from "node:fs";
 
 export const PORTS = { console: 21114, nat: 21115, id: 21116, relay: 21117 };
+// The web client's ports. hbbs opens its port + 2, 21118, and hbbr opens its port + 2, 21119. Neither
+// program can move the port or turn the port off, and each program stops when the port is taken.
+export const WEB_PORTS = [21118, 21119];
 // Every TCP port the firewalls guard: the server's ports and the web client's ports.
 export const GUARDED_TCP = [21114, 21115, 21116, 21117, 21118, 21119];
 export const SERVER_PORTS = [PORTS.nat, PORTS.id, PORTS.relay];
@@ -170,6 +174,48 @@ export function guardProblems(which, text) {
   return missing.map((m) => `${name} lack${which === "nft" ? "" : "s"} the RustDesk rule: ${m}. ${GUARD_FIX[which]}, then run this script again.`);
 }
 
+// A RustDesk client's direct IP access, from one or more RustDesk2.toml files: the ports direct
+// access may use, or none when every file has direct access off. direct-access-port defaults to 21118.
+export function directAccessPorts(toml) {
+  const all = (k) => [...String(toml).matchAll(new RegExp(`^\\s*${k}\\s*=\\s*['"]([^'"]*)['"]`, "gm"))].map((m) => m[1]);
+  if (!all("direct-server").includes("Y")) return [];
+  const ports = all("direct-access-port").filter(Boolean).map(Number);
+  return ports.length ? ports : [21118];
+}
+
+// The web client's ports, 21118 and 21119, must be free for hbbs and hbbr, or held by hbbs and hbbr.
+// A RustDesk client's direct IP access on the same computer uses 21118 by default. WSL in mirrored
+// networking shares the ports with Windows. Either hbbs stops, or the client's direct access breaks.
+//   ss: sudo ss -Hlntp. windows: one "<port>|<process name>" line per Windows listener, then "end",
+//   or null outside WSL. clients: the RustDesk client settings on this computer.
+const WSL_PROCESS = /^(wslservice|wslhost|wslrelay|vmmem\S*|vmcompute)$/i;
+export function webPortProblems({ ss = "", windows = null, clients = "" } = {}) {
+  const problems = [];
+  const why = "hbbs needs port 21118 and hbbr needs port 21119, and neither program can move the port or turn the port off";
+  for (const line of String(ss).split("\n")) {
+    const f = line.trim().split(/\s+/);
+    const local = f.find((x, i) => i >= 3 && /:\d+$/.test(x));
+    const port = Number(/:(\d+)$/.exec(local ?? "")?.[1]);
+    if (!WEB_PORTS.includes(port)) continue;
+    const name = /users:\(\("([^"]+)"/.exec(line)?.[1] ?? "an unknown program";
+    if (name === (port === 21118 ? "hbbs" : "hbbr")) continue;
+    problems.push(`${name} listens on TCP ${port} in Linux. ${why}`);
+  }
+  if (windows !== null) {
+    const lines = String(windows).split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.at(-1) !== "end") problems.push(`Could not read Windows' listeners on TCP 21118 and 21119. ${why}`);
+    for (const l of lines.filter((x) => x !== "end")) {
+      const [port, name = ""] = l.split("|");
+      if (WSL_PROCESS.test(name)) continue;
+      problems.push(`${name || "an unknown program"} listens on TCP ${port} in Windows, and WSL shares the port. ${why}`);
+    }
+  }
+  for (const port of new Set(directAccessPorts(clients).filter((p) => WEB_PORTS.includes(p)))) {
+    problems.push(`The RustDesk client on this computer has direct IP access on port ${port}. ${why}, so the client's direct access would break`);
+  }
+  return problems;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, a, b] = process.argv.slice(2);
   const stdin = () => { try { return fs.readFileSync(0, "utf8"); } catch { return ""; } };
@@ -183,10 +229,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const p of serveProblems(status, a, b)) console.log(p);
   } else if (cmd === "listen-check") {
     for (const p of listenProblems(stdin())) console.log(p);
+  } else if (cmd === "web-port-check") {
+    const read = (f) => (f && f !== "-" ? fs.readFileSync(f, "utf8") : null);
+    for (const p of webPortProblems({ ss: read(a) ?? "", windows: read(b), clients: stdin() })) console.log(p);
   } else if (cmd === "guard-check" && GUARD_NAME[a]) {
     for (const p of guardProblems(a, stdin())) console.log(p);
   } else {
-    console.error("usage: rustdesk.mjs compose <spec> | serve-check <https port> <local port> | listen-check | guard-check nft|windows|hyperv");
+    console.error("usage: rustdesk.mjs compose <spec> | serve-check <https port> <local port> | listen-check | web-port-check <ss> <windows|-> | guard-check nft|windows|hyperv");
     process.exit(2);
   }
 }

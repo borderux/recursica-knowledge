@@ -11,6 +11,8 @@
 # The script stops before the server starts, or right after, on any of these:
 # - In WSL, networking is not mirrored.
 # - One of the three firewalls lacks a RustDesk rule (install-cluster.sh, install-windows-guard.ps1).
+# - A program other than hbbs and hbbr holds the web client's ports, 21118 and 21119, or the
+#   computer's RustDesk client has direct IP access on one of the ports.
 # - The node's address in site.json is not this computer's Tailscale address.
 # - The secret for the server's backup, RUSTDESK_RESTIC_PASSWORD, is not on this computer.
 # - A RustDesk port does not listen, or hbbr runs as a public relay.
@@ -63,6 +65,32 @@ if [ -n "$problems" ]; then
   echo "$problems"
   [ "$WSL" = true ] && echo "When the rules exist, WSL could not read the rules. Check in an Administrator PowerShell: Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*', and Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*'."
   echo "The RustDesk server did not start."; exit 1
+fi
+
+# 2b. The web client's ports. In the host's network, hbbs opens TCP 21118 and hbbr opens TCP 21119.
+#     Neither program can move the port or turn the port off. A RustDesk client's direct IP access
+#     uses 21118 by default, and WSL in mirrored networking shares the ports with Windows. Either
+#     hbbs stops, or the client's direct access breaks. A listener list that WSL can't read stops
+#     the setup too.
+scratch="$(mktemp -d)"
+trap 'rm -rf "$scratch"' EXIT
+sudo ss -Hlntp > "$scratch/ss" 2>/dev/null || true
+win=-
+clients="$(cat "$HOME/.config/rustdesk/RustDesk2.toml" 2>/dev/null || true)"
+if [ "$WSL" = true ]; then
+  # One "<port>|<process name>" line per listener, then "end" once the command ran to the end.
+  listeners="Get-NetTCPConnection -State Listen -LocalPort 21118,21119 -ErrorAction SilentlyContinue | ForEach-Object { '{0}|{1}' -f \$_.LocalPort, (Get-Process -Id \$_.OwningProcess -ErrorAction SilentlyContinue).ProcessName }; 'end'"
+  powershell.exe -NoProfile -NonInteractive -Command "$listeners" 2>/dev/null | tr -d '\r' > "$scratch/windows" || true
+  win="$scratch/windows"
+  # The client's settings: the signed-in user's, and the RustDesk service's.
+  settings="foreach (\$f in \"\$env:APPDATA\\RustDesk\\config\\RustDesk2.toml\", \"\$env:windir\\ServiceProfiles\\LocalService\\AppData\\Roaming\\RustDesk\\config\\RustDesk2.toml\") { Get-Content -LiteralPath \$f -ErrorAction SilentlyContinue }"
+  clients="$clients
+$(powershell.exe -NoProfile -NonInteractive -Command "$settings" 2>/dev/null | tr -d '\r' || true)"
+fi
+problems="$(printf '%s\n' "$clients" | $RD web-port-check "$scratch/ss" "$win")"
+if [ -n "$problems" ]; then
+  echo "$problems"
+  echo "Starting the server here would break the RustDesk client's direct IP access on this computer, or stop hbbs. The RustDesk server did not start."; exit 1
 fi
 
 # 3. The backup's secret. Without the backup, a lost server key means every client must be set up again.
