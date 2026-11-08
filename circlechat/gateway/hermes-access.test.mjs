@@ -301,7 +301,7 @@ ${KNOWLEDGE_ENTRY}stt:
 
 // CircleChat's own server, as setup-agent.sh writes it: the token named, never written.
 const CIRCLECHAT = { command: "node", args: ["/opt/data/circlechat-mcp.mjs"], timeout: 30,
-  env: { CC_BOT_TOKEN: "${CC_BOT_TOKEN}", CC_API_BASE: "${CC_API_BASE}" }, include: ["task_comment", "update_task"] };
+  env: { CC_BOT_TOKEN: "${CC_BOT_TOKEN}", CC_API_BASE: "${CC_API_BASE}" }, include: ["task_comment", "update_task", "share_to_task"] };
 const CIRCLECHAT_ENTRY = `  circlechat:
     command: node
     args:
@@ -313,6 +313,7 @@ const CIRCLECHAT_ENTRY = `  circlechat:
       include:
         - task_comment
         - update_task
+        - share_to_task
     enabled: true
     timeout: 30
 `;
@@ -343,7 +344,7 @@ ${KNOWLEDGE_ENTRY}`;
 
 test("mcp-entry.mjs takes --env and --include before the server, and refuses a malformed option", () => {
   const entry = (...args) => spawnSync(process.execPath, [path.join(here, "../kit/mcp-entry.mjs"), ...args], { input: "model:\n  default: x\n", encoding: "utf8" });
-  const r = entry("--env", "CC_BOT_TOKEN=${CC_BOT_TOKEN}", "--env", "CC_API_BASE=${CC_API_BASE}", "--include", "task_comment", "--include", "update_task",
+  const r = entry("--env", "CC_BOT_TOKEN=${CC_BOT_TOKEN}", "--env", "CC_API_BASE=${CC_API_BASE}", "--include", "task_comment", "--include", "update_task", "--include", "share_to_task",
     "circlechat", "30", "node", "/opt/data/circlechat-mcp.mjs");
   assert.equal(r.status, 0, r.stderr);
   assert.equal(r.stdout, `model:\n  default: x\nmcp_servers:\n${CIRCLECHAT_ENTRY}`);

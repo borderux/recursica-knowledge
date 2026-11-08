@@ -24,13 +24,14 @@ KNOWLEDGE_MCP_TIMEOUT=30
 # CircleChat's own MCP server, which CircleChat puts in each agent's home when it installs the
 # agent. setup-agent.sh registers it for every agent but Loki, with only the tools below: each one
 # sends a single action to CircleChat's /agent-api/act, which runs the same checks as an action in
-# the agent's reply. task_comment comments on a task, and update_task moves a task.
+# the agent's reply. task_comment comments on a task, update_task moves a task, and share_to_task
+# attaches files under /workspace to a task (the CircleChat fork's server has the tool from fork PR #30).
 # shellcheck disable=SC2034
 CIRCLECHAT_MCP_NAME=circlechat
 # shellcheck disable=SC2034
 CIRCLECHAT_MCP_FILE=circlechat-mcp.mjs
 # shellcheck disable=SC2034
-CIRCLECHAT_MCP_TOOLS="task_comment update_task"
+CIRCLECHAT_MCP_TOOLS="task_comment update_task share_to_task"
 # shellcheck disable=SC2034
 CIRCLECHAT_MCP_TIMEOUT=30
 

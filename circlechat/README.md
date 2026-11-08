@@ -240,21 +240,23 @@ list names a server, such as `mcp-circlechat` after Re-equip with `CC_MCP_TOOLS=
 lists `mcp-recursica-knowledge` too. Without the listing, `hermes chat` never starts the knowledge
 server.
 
-**CircleChat's own MCP server gives every agent but Loki two tool calls: `task_comment`, to comment
-on a task, and `update_task`, to move a task.** CircleChat puts `circlechat-mcp.mjs` in each agent's
-home when it installs the agent. `setup-agent.sh` writes its `circlechat` entry in `mcp_servers`,
-through the same symlink check, and Hermes starts it inside the agent's container. The entry takes
-only those two tools (`CIRCLECHAT_MCP_TOOLS` in `kit/lib.sh`). Each sends one action to CircleChat's
-`/agent-api/act`, which runs the same executor and checks as an action in the agent's reply: the
-agent's scopes, the risk and approval gates, and the reply guard. So a tool call can do nothing the
-agent's actions cannot. Every other tool of the server stays off. `upload_file` in particular
-uploads any file in the container, `.env` included, and skips those checks; an agent attaches a
-file with a `share_to_task` or `share_files` action, which takes only files in `/workspace`. The
-server signs each call with the agent's own bot token. The entry names `${CC_BOT_TOKEN}`, and
-Hermes fills it in from the token CircleChat hands the agent's container on each turn, so no token
-is written in the home. The entry replaces the one CircleChat writes with `CC_MCP_TOOLS=on`, which
-has the token in its arguments and the read tools. A home without `circlechat-mcp.mjs` gets no
-entry, and `setup-agent.sh` says so.
+**CircleChat's own MCP server gives every agent but Loki three tool calls: `task_comment`, to
+comment on a task, `update_task`, to move a task, and `share_to_task`, to attach files to a task.**
+CircleChat puts `circlechat-mcp.mjs` in each agent's home when it installs the agent.
+`setup-agent.sh` writes its `circlechat` entry in `mcp_servers`, through the same symlink check, and
+Hermes starts it inside the agent's container. The entry takes only those three tools
+(`CIRCLECHAT_MCP_TOOLS` in `kit/lib.sh`). Each sends one action to CircleChat's `/agent-api/act`,
+which runs the same executor and checks as an action in the agent's reply: the agent's scopes, the
+risk and approval gates, and the reply guard. So a tool call can do nothing the agent's actions
+cannot. `share_to_task` attaches only a regular file under `/workspace`, at most 20 MB and never
+through a link; a file in the agent's home is refused. The CircleChat fork's server has the tool
+from its pull request #30 on; an older server simply offers no such tool. Every other tool of the
+server stays off. `upload_file` in particular uploads any file in the container, `.env` included,
+and skips those checks. The server signs each call with the agent's own bot token. The entry names
+`${CC_BOT_TOKEN}`, and Hermes fills it in from the token CircleChat hands the agent's container on
+each turn, so no token is written in the home. The entry replaces the one CircleChat writes with
+`CC_MCP_TOOLS=on`, which has the token in its arguments and the read tools. A home without
+`circlechat-mcp.mjs` gets no entry, and `setup-agent.sh` says so.
 
 **`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
 (`setup-agent.sh --sync`), with no sudo. Each hour it also gives each home back to the agent's

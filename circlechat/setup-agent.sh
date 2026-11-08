@@ -146,15 +146,17 @@ esac
 
 # CircleChat's own MCP server's entry in mcp_servers, for every agent but Loki, who has no tool
 # servers: the circlechat-mcp.mjs CircleChat put in the agent's home, run by Hermes inside the
-# agent's container. With it, commenting on a task and moving a task are tool calls the agent makes
-# mid-turn. The entry takes only the tools in CIRCLECHAT_MCP_TOOLS (kit/lib.sh), each of which sends
-# one action to /agent-api/act, the same executor and checks as an action in the agent's reply: the
-# agent's scopes, the risk and approval gates, and the reply guard. Every other tool stays off,
-# such as upload_file, which uploads any file in the container and skips those checks. The server
-# signs each call with the agent's own bot token: the entry names ${CC_BOT_TOKEN}, which Hermes
-# fills in from the token CircleChat hands the agent's container on each turn, so no token is
-# written in the home. An entry of the same name is replaced, such as the one CircleChat writes
-# with CC_MCP_TOOLS on, which has the token in its arguments.
+# agent's container. With it, commenting on a task, moving a task and attaching files to a task are
+# tool calls the agent makes mid-turn. The entry takes only the tools in CIRCLECHAT_MCP_TOOLS
+# (kit/lib.sh), each of which sends one action to /agent-api/act, the same executor and checks as an
+# action in the agent's reply: the agent's scopes, the risk and approval gates, and the reply guard.
+# share_to_task attaches only a regular file under /workspace, never through a link, at most 20 MB.
+# Every other tool stays off, such as upload_file, which uploads any file in the container, the
+# home's .env included, and skips those checks. The server signs each call with the agent's own bot
+# token: the entry names ${CC_BOT_TOKEN}, which Hermes fills in from the token CircleChat hands the
+# agent's container on each turn, so no token is written in the home. An entry of the same name is
+# replaced, such as the one CircleChat writes with CC_MCP_TOOLS on, which has the token in its
+# arguments.
 if [ "$HANDLE" != loki ]; then
   read_home "$H/$CIRCLECHAT_MCP_FILE"
   if [ -z "$TEXT" ]; then

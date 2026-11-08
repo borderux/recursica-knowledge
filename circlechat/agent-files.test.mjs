@@ -279,9 +279,9 @@ test("setup-agent.sh writes the knowledge server's entry for Betty and Barb, kee
   assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8").match(/mcp-recursica-knowledge/g).length, 1);
 });
 
-const CIRCLECHAT_ENTRY = /^ {2}circlechat:\n {4}command: node\n {4}args:\n {6}- "\/opt\/data\/circlechat-mcp\.mjs"\n {4}env:\n {6}CC_BOT_TOKEN: "\$\{CC_BOT_TOKEN\}"\n {6}CC_API_BASE: "\$\{CC_API_BASE\}"\n {4}tools:\n {6}include:\n {8}- task_comment\n {8}- update_task\n {4}enabled: true\n {4}timeout: 30$/m;
+const CIRCLECHAT_ENTRY = /^ {2}circlechat:\n {4}command: node\n {4}args:\n {6}- "\/opt\/data\/circlechat-mcp\.mjs"\n {4}env:\n {6}CC_BOT_TOKEN: "\$\{CC_BOT_TOKEN\}"\n {6}CC_API_BASE: "\$\{CC_API_BASE\}"\n {4}tools:\n {6}include:\n {8}- task_comment\n {8}- update_task\n {8}- share_to_task\n {4}enabled: true\n {4}timeout: 30$/m;
 
-test("setup-agent.sh registers CircleChat's own server from the agent's home, with the comment and task tools only and no token in the file, and never for Loki", () => {
+test("setup-agent.sh registers CircleChat's own server from the agent's home, with the comment, task and share tools only and no token in the file, and never for Loki", () => {
   const s = sandbox(["betty", "barb", "loki"]);
   fullSetup(s);
   s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
