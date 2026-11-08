@@ -495,6 +495,17 @@ test("Betty's CircleChat persona replies after a build with the preview address 
 });
 
 /**
+ * Hermes put CircleChat's tools behind its tool search, and Betty called delegate_task eight times
+ * to move a card. Her CircleChat persona names the two tools, and rules delegate_task out.
+ */
+test("Betty's CircleChat persona reports with task_comment and moves the card with update_task, never delegate_task", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /Report on a task with the `task_comment` tool, and move the task's card with the `update_task` tool\. Never use `delegate_task` for either/);
+});
+
+/**
  * Betty's persona used to ask "a few questions at a time". Every built Betty now asks exactly one
  * question per message and waits for the answer, keeps her six intake questions, asked one by one,
  * and never batches questions.

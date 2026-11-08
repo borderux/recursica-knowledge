@@ -105,6 +105,14 @@ function setBlock(lines, name, replacement) {
 // KNOWLEDGE_MCP_AGENTS, and CircleChat's own `circlechat` server (kit/lib.sh). An entry of the same
 // name is replaced, so the entry matches the kit, and every other server stays.
 //
+// With loaded, the server's tools are always in the tool list Hermes hands the model. Hermes 0.23
+// puts every MCP tool behind its tool_search bridge while tool search is on: the model sees only
+// tool_search, tool_describe and tool_call, and a tool it does not think to search for is never
+// called. In one turn an agent called delegate_task eight times to move its card and never found
+// update_task. Hermes has no setting that keeps one server's tools out of the bridge (an MCP tool
+// is always deferrable, tools/tool_search.py), so loaded turns tool search off for the agent, and
+// every tool of the agent is in the list: tools.tool_search.enabled is "off".
+//
 // Hermes reads MCP server names in a platform's toolset list as an allowlist: with no name listed,
 // the platform starts every enabled server; with one listed, only the listed servers. CircleChat adds
 // `mcp-circlechat` to platform_toolsets.cli when it registers its server, and `hermes chat` would
@@ -114,8 +122,8 @@ function setBlock(lines, name, replacement) {
 // own, and fills in each ${NAME} in a value from its own environment when it starts the server, so
 // a value such as "${CC_BOT_TOKEN}" never puts the token in the file. include lists the only tools
 // Hermes takes from the server (tools.include); with no list, Hermes takes every tool.
-//   setMcpServer(config, name, { command, args, timeout, env, include }) -> the new config text
-export function setMcpServer(config, name, { command, args, timeout, env = {}, include = [] }) {
+//   setMcpServer(config, name, { command, args, timeout, env, include, loaded }) -> the new config text
+export function setMcpServer(config, name, { command, args, timeout, env = {}, include = [], loaded = false }) {
   for (const k of Object.keys(env)) if (!/^[A-Z_][A-Z0-9_]*$/.test(k)) throw new Refused(`${k} is not an environment variable name.`);
   for (const t of include) if (!/^[a-z][a-z0-9_]*$/.test(t)) throw new Refused(`${t} is not an MCP tool name.`);
   const lines = config.replace(/\n+$/, "").split("\n");
@@ -147,7 +155,25 @@ export function setMcpServer(config, name, { command, args, timeout, env = {}, i
       lines.splice(cli.start, cli.end - cli.start, "  cli:", ...[...items, `mcp-${name}`].map((i) => `${pad}- ${i}`));
     }
   }
+  if (loaded) toolSearchOff(lines);
   return lines.join("\n") + "\n";
+}
+
+// tools.tool_search.enabled: "off", keeping every other setting in tools and in tool_search. A
+// tool_search written on one line, such as `tool_search: true`, becomes the block.
+function toolSearchOff(lines) {
+  const entry = ["  tool_search:", '    enabled: "off"'];
+  const t = block(lines, "tools");
+  if (!t) { lines.push("tools:", ...entry); return; }
+  const head = lines[t[0]].slice("tools:".length).trim();
+  if (head && head !== "{}") throw new Refused("config.yaml writes tools on one line. Rewrite tools as a block, then run setup-agent.sh again.");
+  if (head === "{}") { lines.splice(t[0], t[1] - t[0], "tools:", ...entry); return; }
+  const ts = children(lines, t, 2).find((c) => c.name === "tool_search");
+  if (!ts) { lines.splice(t[0] + 1, 0, ...entry); return; }
+  if (ts.inline) { lines.splice(ts.start, ts.end - ts.start, ...entry); return; }
+  const e = children(lines, [ts.start + 1, ts.end], 4).find((c) => c.name === "enabled");
+  if (e) lines.splice(e.start, e.end - e.start, entry[1]);
+  else lines.splice(ts.start + 1, 0, entry[1]);
 }
 
 // Sets `<key>: <value>` directly inside top-level block <name>, adding the block when missing.
