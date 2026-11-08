@@ -14,11 +14,16 @@
 #    take effect at the next WSL restart. The script never stops WSL.
 # 3. The old task Start-WSL-K3s-Ollama goes, but only once AgentClusterWSL runs and holds the
 #    distro open.
+# 4. With -RustDeskServer, on the computer that runs the cluster's RustDesk server in WSL:
+#    [experimental] hostAddressLoopback=true in the same .wslconfig, so the computer's own RustDesk
+#    client reaches the server by ID. The setting needs mirrored networking, WSL 2.5.8 or later and
+#    Windows 11 version 22H2 or later; on any other computer, the script stops before any change.
+#    The setting takes effect at the next WSL restart, like the idle settings.
 #
 # -Distro <name>: the distro to keep running. By default, the distro this script runs from.
 # -DryRun: prints what the script would do, and reads the current state on Windows. Nothing changes.
 #   The CI check (circlechat/ci/check-windows-scripts.ps1) runs the script this way.
-param([string]$Distro = "", [switch]$DryRun)
+param([string]$Distro = "", [switch]$RustDeskServer, [switch]$DryRun)
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wsl-boot-lib.ps1")
 $onWindows = $env:OS -eq "Windows_NT"
@@ -37,10 +42,14 @@ if ($onWindows) {
   $task = Get-ScheduledTask -TaskName $WslTaskName -ErrorAction SilentlyContinue
   if (Test-Path $wslconfig) { $configText = [System.IO.File]::ReadAllText($wslconfig) }
 }
-$newConfig = Get-WslconfigWithIdleSettings $configText
 $idleOk = Test-IdleSettingsSupported $wslVersion
+$windowsBuild = if ($onWindows) { [Environment]::OSVersion.Version.Build } else { 0 }
+# Off Windows, as in CI, the dry run shows the settings as if WSL had the settings.
+$newConfig = Get-WslconfigTarget $configText ($idleOk -or -not $onWindows) $RustDeskServer.IsPresent
+$loopbackProblems = if ($RustDeskServer -and $onWindows) { Get-HostLoopbackProblems $wslVersion $windowsBuild $configText } else { @() }
 
 if ($DryRun) {
+  Write-Host "switch RustDeskServer=$($RustDeskServer.IsPresent)"
   Write-Host "Distro: $(if ($Distro) { $Distro } else { 'unknown. Pass -Distro <name>.' })"
   Write-Host "Owner: $owner"
   if ($onWindows) {
@@ -52,9 +61,14 @@ if ($DryRun) {
   Write-Host "  no time limit; Task Scheduler restarts the task every minute if the task ends"
   if ($onWindows) { Write-Host "  now: $(if ($task) { "registered, $($task.State)" } else { 'not registered' })" }
   if ($onWindows -and -not $idleOk) {
-    Write-Host ".wslconfig: unchanged. The idle settings need WSL $MinIdleSettingsVersion or later. Update WSL with wsl --update."
-  } elseif ($newConfig -eq $configText) {
-    Write-Host ".wslconfig: already holds both idle settings."
+    Write-Host "Idle settings: none. They need WSL $MinIdleSettingsVersion or later. Update WSL with wsl --update."
+  }
+  if ($RustDeskServer) {
+    Write-Host "hostAddressLoopback: $(if ($loopbackProblems.Count) { 'the script would stop before any change:' } else { 'true, for the RustDesk server' })"
+    $loopbackProblems | ForEach-Object { Write-Host "  $_" }
+  }
+  if ($newConfig -eq $configText) {
+    Write-Host ".wslconfig: already holds each setting."
   } else {
     Write-Host ".wslconfig ($(if ($wslconfig) { $wslconfig } else { '%USERPROFILE%\.wslconfig' })) after the change, in effect at the next WSL restart:"
     $newConfig.TrimEnd() -split "\r?\n" | ForEach-Object { Write-Host "  $_" }
@@ -72,6 +86,7 @@ if (-not $Distro) { throw "No distro: the script does not run from a WSL path. P
 # A distro belongs to the account that registered the distro, and wsl.exe here lists this account's
 # distros.
 if ($distros -notcontains $Distro) { throw "$owner has no WSL distro named $Distro. Run the script as the distro's owner, or pass -Distro with one of: $($distros -join ', ')." }
+if ($loopbackProblems.Count) { throw "Nothing changed. $($loopbackProblems -join ' ')" }
 
 # 1. The keeper script, in a folder only administrators change. The task runs the script as the
 #    owner, so the owner may read the script, and no account but an administrator may change the
@@ -113,13 +128,18 @@ if ($oldTask) {
   Write-Host "Removed the old task $OldWslTaskName."
 }
 
-# 5. The idle settings. A backup of .wslconfig stays next to the file, once.
+# 5. .wslconfig: the idle settings, and on the RustDesk server's computer hostAddressLoopback. A
+#    backup of .wslconfig stays next to the file, once.
 if (-not $idleOk) {
-  Write-Host ".wslconfig unchanged: the idle settings need WSL $MinIdleSettingsVersion or later, and this computer has $wslVersion. Update WSL with wsl --update, then run this script again."
-} elseif ($newConfig -eq $configText) {
-  Write-Host ".wslconfig already holds both idle settings."
+  Write-Host "No idle settings: they need WSL $MinIdleSettingsVersion or later, and this computer has $wslVersion. Update WSL with wsl --update, then run this script again."
+}
+if ($newConfig -eq $configText) {
+  Write-Host ".wslconfig already holds each setting."
 } else {
   if ((Test-Path $wslconfig) -and -not (Test-Path "$wslconfig.agentcluster-backup")) { Copy-Item $wslconfig "$wslconfig.agentcluster-backup" }
   [System.IO.File]::WriteAllText($wslconfig, $newConfig)
-  Write-Host "Wrote vmIdleTimeout=-1 and instanceIdleTimeout=-1 to $wslconfig. They take effect at the next WSL restart; this script does not restart WSL."
+  $written = @()
+  if ($idleOk) { $written += "vmIdleTimeout=-1", "instanceIdleTimeout=-1" }
+  if ($RustDeskServer) { $written += "hostAddressLoopback=true" }
+  Write-Host "Wrote $($written -join ', ') to $wslconfig. The settings take effect at the next WSL restart; this script does not restart WSL."
 }
