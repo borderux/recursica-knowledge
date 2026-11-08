@@ -101,19 +101,28 @@ function setBlock(lines, name, replacement) {
   else if (replacement.length) lines.push(...replacement);
 }
 
-// One MCP server's entry in config.yaml's mcp_servers, such as the knowledge server's for an agent in
-// KNOWLEDGE_MCP_AGENTS (kit/lib.sh). An entry of the same name is replaced, so the entry matches the
-// kit. Every other server stays, such as CircleChat's own `circlechat` server, which CircleChat
-// registers with CC_MCP_TOOLS on.
+// One MCP server's entry in config.yaml's mcp_servers: the knowledge server's for an agent in
+// KNOWLEDGE_MCP_AGENTS, and CircleChat's own `circlechat` server (kit/lib.sh). An entry of the same
+// name is replaced, so the entry matches the kit, and every other server stays.
 //
 // Hermes reads MCP server names in a platform's toolset list as an allowlist: with no name listed,
 // the platform starts every enabled server; with one listed, only the listed servers. CircleChat adds
 // `mcp-circlechat` to platform_toolsets.cli when it registers its server, and `hermes chat` would
 // then never start this server. So when the cli list names a server, this server is listed too.
-//   setMcpServer(config, name, { command, args, timeout }) -> the new config text
-export function setMcpServer(config, name, { command, args, timeout }) {
+//
+// env sets the server's environment. Hermes starts a server with only a few safe variables of its
+// own, and fills in each ${NAME} in a value from its own environment when it starts the server, so
+// a value such as "${CC_BOT_TOKEN}" never puts the token in the file. include lists the only tools
+// Hermes takes from the server (tools.include); with no list, Hermes takes every tool.
+//   setMcpServer(config, name, { command, args, timeout, env, include }) -> the new config text
+export function setMcpServer(config, name, { command, args, timeout, env = {}, include = [] }) {
+  for (const k of Object.keys(env)) if (!/^[A-Z_][A-Z0-9_]*$/.test(k)) throw new Refused(`${k} is not an environment variable name.`);
+  for (const t of include) if (!/^[a-z][a-z0-9_]*$/.test(t)) throw new Refused(`${t} is not an MCP tool name.`);
   const lines = config.replace(/\n+$/, "").split("\n");
-  const entry = [`  ${name}:`, `    command: ${command}`, "    args:", ...args.map((a) => `      - ${JSON.stringify(a)}`), "    enabled: true", `    timeout: ${timeout}`];
+  const entry = [`  ${name}:`, `    command: ${command}`, "    args:", ...args.map((a) => `      - ${JSON.stringify(a)}`),
+    ...(Object.keys(env).length ? ["    env:", ...Object.entries(env).map(([k, v]) => `      ${k}: ${JSON.stringify(v)}`)] : []),
+    ...(include.length ? ["    tools:", "      include:", ...include.map((t) => `        - ${t}`)] : []),
+    "    enabled: true", `    timeout: ${timeout}`];
   const b = block(lines, "mcp_servers");
   const head = b ? lines[b[0]].slice("mcp_servers:".length).trim() : "";
   if (head && head !== "{}") throw new Refused("config.yaml writes mcp_servers on one line. Rewrite mcp_servers as a block, one server per key, then run setup-agent.sh again.");

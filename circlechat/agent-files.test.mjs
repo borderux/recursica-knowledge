@@ -279,6 +279,55 @@ test("setup-agent.sh writes the knowledge server's entry for Betty and Barb, kee
   assert.equal(fs.readFileSync(s.h("barb", "config.yaml"), "utf8").match(/mcp-recursica-knowledge/g).length, 1);
 });
 
+const CIRCLECHAT_ENTRY = /^ {2}circlechat:\n {4}command: node\n {4}args:\n {6}- "\/opt\/data\/circlechat-mcp\.mjs"\n {4}env:\n {6}CC_BOT_TOKEN: "\$\{CC_BOT_TOKEN\}"\n {6}CC_API_BASE: "\$\{CC_API_BASE\}"\n {4}tools:\n {6}include:\n {8}- task_comment\n {8}- update_task\n {8}- share_to_task\n {4}enabled: true\n {4}timeout: 30$/m;
+
+test("setup-agent.sh registers CircleChat's own server from the agent's home, with the comment, task and share tools only and no token in the file, and never for Loki", () => {
+  const s = sandbox(["betty", "barb", "loki"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  for (const a of ["betty", "barb", "loki"]) {
+    fs.writeFileSync(s.h(a, "config.yaml"), config);
+    fs.writeFileSync(s.h(a, "circlechat-mcp.mjs"), "CircleChat's MCP server\n");
+  }
+  // Barb, after CircleChat's Re-equip with CC_MCP_TOOLS on: CircleChat's entry, with the bot token
+  // in its arguments and the read tools, listed in the cli toolsets.
+  fs.writeFileSync(s.h("barb", "config.yaml"), `${config}platform_toolsets:\n  cli:\n    - hermes-cli\n    - mcp-circlechat\nmcp_servers:\n  circlechat:\n    command: node\n    args:\n      - /opt/data/circlechat-mcp.mjs\n      - bot-barb\n      - http://localhost:3300/api\n    enabled: true\n    timeout: 120\n    tools:\n      include:\n        - get_messages\n`);
+  for (const a of ["betty", "barb", "loki"]) {
+    const r = s.run("setup-agent.sh", a);
+    assert.equal(r.status, 0, `${a}: ${r.stdout}${r.stderr}`);
+    assert.doesNotMatch(r.stdout, /No circlechat-mcp\.mjs/, a);
+  }
+  for (const a of ["betty", "barb"]) {
+    const text = fs.readFileSync(s.h(a, "config.yaml"), "utf8");
+    assert.match(text, CIRCLECHAT_ENTRY, a);
+    assert.equal(text.match(/^ {2}circlechat:$/gm).length, 1, a);
+    assert.doesNotMatch(text, /bot-|get_messages|upload_file|timeout: 120/, `${a}: no token, and no other tool`);
+  }
+  assert.match(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), /^ {2}cli:\n {4}- hermes-cli\n {4}- mcp-circlechat\n(?! {4}- mcp-circlechat)/m, "listed once");
+  assert.doesNotMatch(fs.readFileSync(s.h("loki", "config.yaml"), "utf8"), /mcp_servers|circlechat/, "Loki has no tool servers");
+  // A second run writes the entry once.
+  assert.equal(s.run("setup-agent.sh", "betty").status, 0);
+  assert.equal(fs.readFileSync(s.h("betty", "config.yaml"), "utf8").match(/^ {2}circlechat:$/gm).length, 1);
+});
+
+test("setup-agent.sh says so when the agent's home has no circlechat-mcp.mjs, and stops at a symlinked one", () => {
+  const s = sandbox(["betty", "barb"]);
+  fullSetup(s);
+  s.put(path.join(s.kit, "portable/circlechat/agents/barb/SOUL.md"), "Persona of barb from the kit.\n");
+  for (const a of ["betty", "barb"]) fs.writeFileSync(s.h(a, "config.yaml"), config);
+  const r = s.run("setup-agent.sh", "betty");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /No circlechat-mcp\.mjs in betty's home, so betty has no CircleChat tools\./);
+  assert.doesNotMatch(fs.readFileSync(s.h("betty", "config.yaml"), "utf8"), /^ {2}circlechat:/m);
+  link(path.join(s.outside, "target.txt"), s.h("barb", "circlechat-mcp.mjs"));
+  const before = snapshot(s.outside);
+  const linked = s.run("setup-agent.sh", "barb");
+  assert.notEqual(linked.status, 0);
+  assert.match(linked.stdout + linked.stderr, /Refused: .*circlechat-mcp\.mjs is a symlink/);
+  assert.doesNotMatch(fs.readFileSync(s.h("barb", "config.yaml"), "utf8"), /^ {2}circlechat:/m);
+  assert.deepEqual(snapshot(s.outside), before);
+});
+
 // Hermes's own default config.yaml has a delegation block, with max_iterations and default_toolsets.
 const hermesDefault = `${config}delegation:\n  max_iterations: 50\n  default_toolsets:\n    - terminal\n    - file\n    - web\nplatform_toolsets:\n  cli:\n    - hermes-cli\n`;
 const BARB_LIMITS = /^delegation:\n {2}max_iterations: 50\n {2}default_toolsets:\n {4}- terminal\n {4}- file\n {4}- web\n {2}oneshot_max_children: 0\n {2}max_concurrent_children: 3\n/m;

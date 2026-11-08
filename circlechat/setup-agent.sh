@@ -144,6 +144,34 @@ case " $KNOWLEDGE_MCP_AGENTS " in *" $HANDLE "*)
   ;;
 esac
 
+# CircleChat's own MCP server's entry in mcp_servers, for every agent but Loki, who has no tool
+# servers: the circlechat-mcp.mjs CircleChat put in the agent's home, run by Hermes inside the
+# agent's container. With it, commenting on a task, moving a task and attaching files to a task are
+# tool calls the agent makes mid-turn. The entry takes only the tools in CIRCLECHAT_MCP_TOOLS
+# (kit/lib.sh), each of which sends one action to /agent-api/act, the same executor and checks as an
+# action in the agent's reply: the agent's scopes, the risk and approval gates, and the reply guard.
+# share_to_task attaches only a regular file under /workspace, never through a link, at most 20 MB.
+# Every other tool stays off, such as upload_file, which uploads any file in the container, the
+# home's .env included, and skips those checks. The server signs each call with the agent's own bot
+# token: the entry names ${CC_BOT_TOKEN}, which Hermes fills in from the token CircleChat hands the
+# agent's container on each turn, so no token is written in the home. An entry of the same name is
+# replaced, such as the one CircleChat writes with CC_MCP_TOOLS on, which has the token in its
+# arguments.
+if [ "$HANDLE" != loki ]; then
+  read_home "$H/$CIRCLECHAT_MCP_FILE"
+  if [ -z "$TEXT" ]; then
+    echo "No $CIRCLECHAT_MCP_FILE in $HANDLE's home, so $HANDLE has no CircleChat tools. CircleChat puts it there when it installs the agent: use Skills → Re-equip, then run setup-agent.sh $HANDLE again."
+  else
+    MCP_OPTS=()
+    for t in $CIRCLECHAT_MCP_TOOLS; do MCP_OPTS+=(--include "$t"); done
+    read_home "$H/config.yaml"
+    # shellcheck disable=SC2016 # Hermes fills in ${...}, never the shell
+    NEW="$(printf '%s' "$TEXT" | node "$HERE/kit/mcp-entry.mjs" --env 'CC_BOT_TOKEN=${CC_BOT_TOKEN}' --env 'CC_API_BASE=${CC_API_BASE}' "${MCP_OPTS[@]}" \
+      "$CIRCLECHAT_MCP_NAME" "$CIRCLECHAT_MCP_TIMEOUT" node "/opt/data/$CIRCLECHAT_MCP_FILE")" || exit 1
+    printf '%s\n' "$NEW" | put_home "$H/config.yaml"
+  fi
+fi
+
 # Barb's limits. Each default made a full review fail; agents/barb/runtime/hermes.md says which
 # and why, and holds the values (kit/barb-limits.mjs). Set on each run, inside the blocks Hermes's
 # own default config already has, and every other key stays. The new text is complete before the

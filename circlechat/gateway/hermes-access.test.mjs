@@ -299,6 +299,60 @@ ${KNOWLEDGE_ENTRY}stt:
   assert.doesNotMatch(out, /npx|timeout: 5/);
 });
 
+// CircleChat's own server, as setup-agent.sh writes it: the token named, never written.
+const CIRCLECHAT = { command: "node", args: ["/opt/data/circlechat-mcp.mjs"], timeout: 30,
+  env: { CC_BOT_TOKEN: "${CC_BOT_TOKEN}", CC_API_BASE: "${CC_API_BASE}" }, include: ["task_comment", "update_task", "share_to_task"] };
+const CIRCLECHAT_ENTRY = `  circlechat:
+    command: node
+    args:
+      - "/opt/data/circlechat-mcp.mjs"
+    env:
+      CC_BOT_TOKEN: "\${CC_BOT_TOKEN}"
+      CC_API_BASE: "\${CC_API_BASE}"
+    tools:
+      include:
+        - task_comment
+        - update_task
+        - share_to_task
+    enabled: true
+    timeout: 30
+`;
+
+test("setMcpServer writes a server's env and tool list, and replaces CircleChat's entry that holds the token in its arguments", () => {
+  const withToken = `mcp_servers:
+  circlechat:
+    command: node
+    args:
+      - /opt/data/circlechat-mcp.mjs
+      - bot-token-value
+      - http://localhost:3300/api
+    enabled: true
+    timeout: 120
+    tools:
+      include:
+        - get_messages
+        - search
+${KNOWLEDGE_ENTRY}`;
+  const out = setMcpServer(withToken, "circlechat", CIRCLECHAT);
+  assert.equal(out, `mcp_servers:\n${CIRCLECHAT_ENTRY}${KNOWLEDGE_ENTRY}`);
+  assert.doesNotMatch(out, /bot-token-value|get_messages|timeout: 120/);
+  assert.equal(setMcpServer(out, "circlechat", CIRCLECHAT), out, "a second run changes nothing");
+  // A name that could break the YAML is refused.
+  assert.throws(() => setMcpServer("", "circlechat", { ...CIRCLECHAT, env: { "A: b\n  x": "y" } }), /not an environment variable name/);
+  assert.throws(() => setMcpServer("", "circlechat", { ...CIRCLECHAT, include: ["upload_file\n        - x"] }), /not an MCP tool name/);
+});
+
+test("mcp-entry.mjs takes --env and --include before the server, and refuses a malformed option", () => {
+  const entry = (...args) => spawnSync(process.execPath, [path.join(here, "../kit/mcp-entry.mjs"), ...args], { input: "model:\n  default: x\n", encoding: "utf8" });
+  const r = entry("--env", "CC_BOT_TOKEN=${CC_BOT_TOKEN}", "--env", "CC_API_BASE=${CC_API_BASE}", "--include", "task_comment", "--include", "update_task", "--include", "share_to_task",
+    "circlechat", "30", "node", "/opt/data/circlechat-mcp.mjs");
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout, `model:\n  default: x\nmcp_servers:\n${CIRCLECHAT_ENTRY}`);
+  assert.equal(entry("--env", "NOVALUE", "circlechat", "30", "node").status, 2);
+  assert.equal(entry("--include").status, 2);
+  assert.equal(entry("--include", "Bad-Name", "circlechat", "30", "node").status, 1);
+});
+
 test("setMcpServer lists the server in the cli toolsets only when the list names an MCP server, which makes the list an allowlist", () => {
   // CircleChat's Re-equip, with CC_MCP_TOOLS on, lists its own server: Hermes then starts only the
   // listed servers for hermes chat.
