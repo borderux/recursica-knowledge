@@ -6,8 +6,42 @@
 #    recovery password once: save it in the password manager.
 # 2. Windows Firewall: refuse every incoming connection except Tailscale (remote access with
 #    RustDesk runs over Tailscale), the decoys, and WSL services reached over Tailscale.
+# RustDesk. Every address outside Tailscale and loopback, as ranges: a block rule takes no "all
+# except". Loopback stays out, because tailscale serve on Windows reaches the console in WSL at
+# 127.0.0.1, which mirrored networking shares.
+$notTailscale = @("0.0.0.0-100.63.255.255", "100.128.0.0-126.255.255.255", "128.0.0.0-255.255.255.255", "::2-fd7a:115c:a1df:ffff:ffff:ffff:ffff:ffff", "fd7a:115c:a1e1::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+if ($RustDeskServer) {
+  Get-NetFirewallRule -DisplayName "AgentGuard: RustDesk server*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+  New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" -Direction Inbound -Protocol TCP -LocalPort 21114-21117 -RemoteAddress $notTailscale -Action Block | Out-Null
+  New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server UDP, Tailscale only" -Direction Inbound -Protocol UDP -LocalPort 21116 -RemoteAddress $notTailscale -Action Block | Out-Null
+  Remove-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-*" -ErrorAction SilentlyContinue
+  New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-TCP" -DisplayName "AgentGuard: RustDesk server in WSL, TCP, Tailscale only" -Direction Inbound -VMCreatorId $wsl -Protocol TCP -LocalPorts 21114-21117 -RemoteAddresses $notTailscale -Action Block | Out-Null
+  New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-UDP" -DisplayName "AgentGuard: RustDesk server in WSL, UDP, Tailscale only" -Direction Inbound -VMCreatorId $wsl -Protocol UDP -LocalPorts 21116 -RemoteAddresses $notTailscale -Action Block | Out-Null
+}
+if ($BlockRustDeskDirect) {
+  Get-NetFirewallRule -DisplayName "AgentGuard: RustDesk direct*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
+  foreach ($p in "TCP", "UDP") {
+    New-NetFirewallRule -DisplayName "AgentGuard: RustDesk direct access, $p" -Direction Inbound -Protocol $p -LocalPort 21118-21119 -Action Block | Out-Null
+  }
+  Remove-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Direct-*" -ErrorAction SilentlyContinue
+  foreach ($p in "TCP", "UDP") {
+    New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Direct-$p" -DisplayName "AgentGuard: RustDesk direct access in WSL, $p" -Direction Inbound -VMCreatorId $wsl -Protocol $p -LocalPorts 21118-21119 -Action Block | Out-Null
+  }
+}
+
 # 3. Windows Update: quality updates wait 7 days, no new Windows version, install at 4 a.m.
 # 4. A task running as SYSTEM every minute applies the guard's requests from WSL.
+#
+# -RustDeskServer, on the computer that runs the cluster's RustDesk server in WSL: Windows Firewall
+#   and the Hyper-V firewall refuse RustDesk's server ports, TCP 21114 to 21117 and UDP 21116, from
+#   every address outside Tailscale. A block rule wins over every allow rule.
+# -BlockRustDeskDirect, once every computer uses the cluster's RustDesk server
+#   (remote_access.direct_ip false): both firewalls refuse RustDesk's direct-address ports, 21118
+#   and 21119, from everywhere.
+# A run without a switch leaves that switch's rules in place. Remove them by name:
+#   Get-NetFirewallRule -DisplayName "AgentGuard: RustDesk*" | Remove-NetFirewallRule
+#   Remove-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-*"
+param([switch]$RustDeskServer, [switch]$BlockRustDeskDirect)
 $ErrorActionPreference = "Stop"
 $base = "C:\ProgramData\AgentCluster"
 New-Item -ItemType Directory -Force -Path "$base\requests" | Out-Null

@@ -425,10 +425,30 @@ test("a deploy with restart makes the check's account as the owner, with no pass
   assert.match(bad.stdout, /the check's account is not ready/);
 });
 
+test("the RustDesk server's backup secret goes only to the computer that runs the server", () => {
+  const { home, conf } = setup();
+  const site = structuredClone(example);
+  site.nodes.push({ name: "machine-3", os: "linux", address: "100.64.0.7",
+    rustdesk: { image: `docker.io/rustdesk/rustdesk-server-pro@sha256:${"a".repeat(64)}`, console_host: "machine-3.example.ts.net" } });
+  fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(site));
+  const pw = "rustdesk-backup-0123456789abcdef";
+  let r = apply(conf, ["cluster", "machine-3", "false"], `RUSTDESK_RESTIC_PASSWORD=${pw}\n`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8"), `RUSTDESK_RESTIC_PASSWORD=${pw}\n`);
+  assert.ok(!r.stdout.includes(pw), "the secret is never printed");
+  // The control computer, which runs no RustDesk server, gets nothing.
+  fs.rmSync(path.join(home, ".recursica-node.env"));
+  r = apply(conf, ["cluster", control, "false"], `RUSTDESK_RESTIC_PASSWORD=${pw}\nJOBD_TOKEN=jt\n`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8"), /RUSTDESK/);
+  assert.doesNotMatch(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /RUSTDESK/);
+});
+
 test("every secret the deploy workflow passes is one the helper reads", () => {
   const yml = fs.readFileSync(path.join(here, "deploy-secrets.yml"), "utf8");
   const passed = [...yml.matchAll(/secrets\.([A-Z][A-Z0-9_]*)/g)].map((m) => m[1]);
   assert.ok(passed.includes("CC_CHECK_PASSWORD"), "the agent check's password is in the workflow's list");
+  assert.ok(passed.includes("RUSTDESK_RESTIC_PASSWORD"), "the RustDesk backup's secret is in the workflow's list");
   const known = new RegExp(/^KNOWN='(.*)'$/m.exec(fs.readFileSync(path.join(here, "apply-secrets.sh"), "utf8"))[1]);
   for (const name of passed) assert.ok(known.test(name), `${name} is passed by the workflow and ignored by the helper`);
 });

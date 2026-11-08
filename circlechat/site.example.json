@@ -49,7 +49,12 @@
     "data.repo: a private repo for Barb's Kev disagreement notes, such as your-org/recursica-kev-data.",
     "Each hour, new notes go to a new branch there, with a pull request for a person to review. Kev's",
     "training reads only the notes merged into main. Never the knowledge repo or a public repo: the push",
-    "checks the repo's visibility first. The job's token is KEV_DATA_GITHUB_PAT. Empty: no push."
+    "checks the repo's visibility first. The job's token is KEV_DATA_GITHUB_PAT. Empty: no push.",
+    "",
+    "nodes[].rustdesk: the cluster's RustDesk Server Pro, on one Linux or WSL computer whose address is",
+    "its Tailscale IPv4 address: image (pinned by digest), console_host (the computer's Tailscale name)",
+    "and backup_time. The secret RUSTDESK_RESTIC_PASSWORD encrypts its backup. remote_access.direct_ip",
+    "false: every firewall refuses RustDesk's direct-address ports. See circlechat/README.md, \"The RustDesk server\"."
   ],
   "site": {
     "public_host": "circlechat.example.ts.net",
