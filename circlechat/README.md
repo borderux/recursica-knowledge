@@ -172,6 +172,16 @@ WSL's source has both settings from 2.5.8, the first open-source release. The so
 
 The script starts the task at once. WSL is already running, so the task joins the running distro, and nothing restarts.
 
+**On the RustDesk server's computer, add `-RustDeskServer`.** The script then also writes `[experimental] hostAddressLoopback=true`, so the computer's own RustDesk client reaches the server by ID. "The server's own computer" under "The RustDesk server" explains why. The setting has three requirements. On a computer that misses one, the script stops before any change:
+
+| Needs                                    | Source                                                                             |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `networkingMode=mirrored` under `[wsl2]` | Microsoft's docs: the setting applies only to mirrored networking.                 |
+| Windows 11 version 22H2 or later         | Microsoft's docs.                                                                  |
+| WSL 2.5.8 or later                       | WSL's source, from 2.5.8, the first open-source release. The docs name no version. |
+
+Like the idle settings, `hostAddressLoopback` takes effect at the next WSL restart.
+
 ### Files in the workspace and the agents' homes
 
 **An agent's file tools write to its home and to the shared workspace.** The Hermes image lets
@@ -916,7 +926,7 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
    `image` must name the digest: the config check refuses a tag alone. Read the digest of the release to run from Docker Hub. A new release is a site.json change, after the release has been out for 7 days. `backup_time` is the nightly backup's time, 03:30 when unset. site.json also needs `backup.remote`.
 
 2. Add `RUSTDESK_RESTIC_PASSWORD` to the cluster's GitHub environment: a new random secret, used only for this backup. Run the "Deploy secrets" workflow for the computer. The secrets helper writes the secret to the computer's `~/.recursica-node.env` only. The computer then holds no key to the stack's other backups.
-3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`. To see the rules first, with no change, run the same command with `-DryRun`.
+3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`. To see the rules first, with no change, run the same command with `-DryRun`. Then run `install-wsl-boot.ps1 -RustDeskServer` the same way, as "WSL at boot on Windows" describes, and restart WSL at a planned time.
 4. `install-cluster.sh <computer>`, for the nftables rules.
 5. `setup-node.sh <computer>`. The setup runs `circlechat/rustdesk/setup-rustdesk.sh`, which stops before the server starts when WSL networking is not mirrored, when a guard is missing, when the node's address is not the computer's Tailscale address, or when the backup's secret is missing. The script then starts the server, checks the ports, runs `tailscale serve --bg --https=443 http://127.0.0.1:21114`, and checks that Funnel is off. The script checks that the console answers on `127.0.0.1:21114`, and only then installs the nightly backup and reports success. On Windows, `tailscale serve` may need an Administrator PowerShell; the setup prints the command.
 6. Add the access rules from `tailnet-policy.example.hujson` to the tailnet's policy file.
@@ -928,6 +938,8 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 12. Once every computer uses the server, set `"remote_access": { "direct_ip": false }` in site.json. Run `install-cluster.sh` on each computer, and `install-windows-guard.ps1 -BlockRustDeskDirect` on each Windows computer. Each firewall then refuses RustDesk's direct-address ports, 21118 and 21119, from everywhere.
 
 **The backup runs each night as root, from `circlechat/rustdesk/backup-rustdesk.sh`.** The containers pause for the copy, so the database is copied whole, and each connection stays open. restic encrypts the copy with `RUSTDESK_RESTIC_PASSWORD` and sends it to `<backup.remote>/<stack>-rustdesk`. The backup checks that the copy holds the server's key, `id_ed25519`, and posts in Slack when any step fails. A lost key means every client must be set up again.
+
+**The server's own computer needs `hostAddressLoopback` in WSL.** The computer's own RustDesk client runs on Windows, and reaches the server at the computer's Tailscale address. In mirrored networking, WSL holds the same address. So WSL keeps each reply from the server, and the reply never reaches Windows. The client shows online in the console, and a connection to the client by ID fails with "Failed to connect via rendezvous server". `hostAddressLoopback=true` sends that traffic through Windows and back, the way mirrored networking already sends `127.0.0.1`. Ports 21115 to 21117 stay on the Tailscale address only, and all three firewalls stay unchanged. A second address for the client, such as `127.0.0.1`, can't work. A client gives a controller the client's own relay address, and the controller dials that address.
 
 **To restore,** restore the newest snapshot with that password, and unpack `rustdesk.tgz` into the `rustdesk_data` volume before the server starts.
 

@@ -68,6 +68,52 @@ function Set-IniValue([string]$Text, [string]$Section, [string]$Key, [string]$Va
   return (($lines -join "`r`n") + "`r`n")
 }
 
+# One key's value in an INI file's text, such as .wslconfig, or "" when the section lacks the key.
+function Get-IniValue([string]$Text, [string]$Section, [string]$Key) {
+  $in = $false
+  foreach ($l in ($Text -split "\r?\n")) {
+    if ($l -match '^\s*\[([^\]]+)\]\s*$') { $in = ($Matches[1].Trim() -ieq $Section); continue }
+    if ($in -and $l -match '^\s*([^=;#\s]+)\s*=\s*(.*?)\s*$' -and $Matches[1] -ieq $Key) { return $Matches[2] }
+  }
+  return ""
+}
+
+# The RustDesk server's computer (-RustDeskServer): [experimental] hostAddressLoopback=true. In
+# mirrored networking, Windows then reaches WSL at the computer's own addresses, such as the
+# Tailscale address, and WSL's replies flow back through Windows. Without the setting, the
+# computer's own RustDesk client reaches the server in WSL at the computer's Tailscale address,
+# and the server's replies never reach the client. Microsoft's docs: mirrored networking only,
+# IPv4 only, Windows 11 version 22H2 or later. WSL's source has the setting from 2.5.8, the first
+# open-source release, with no older history.
+$HostLoopbackSetting = @{ Section = "experimental"; Key = "hostAddressLoopback"; Value = "true" }
+$MinHostLoopbackWslVersion = [version]"2.5.8"
+$MinHostLoopbackWindowsBuild = 22621
+
+# Each reason the setting can't work here. Empty when the setting can work.
+function Get-HostLoopbackProblems($WslVersion, [int]$WindowsBuild, [string]$ConfigText) {
+  $problems = @()
+  if (-not $WslVersion -or $WslVersion -lt $MinHostLoopbackWslVersion) {
+    $problems += "hostAddressLoopback needs WSL $MinHostLoopbackWslVersion or later, and this computer has $(if ($WslVersion) { $WslVersion } else { 'an unknown version' }). Update WSL with wsl --update."
+  }
+  if ($WindowsBuild -lt $MinHostLoopbackWindowsBuild) {
+    $problems += "hostAddressLoopback needs Windows 11 version 22H2 (build $MinHostLoopbackWindowsBuild) or later, and this computer has build $WindowsBuild."
+  }
+  if ((Get-IniValue $ConfigText "wsl2" "networkingMode") -ine "mirrored") {
+    $problems += "hostAddressLoopback works only with mirrored networking. Set networkingMode=mirrored under [wsl2] in .wslconfig first."
+  }
+  return , $problems
+}
+
+# .wslconfig's text after the script: the idle settings where WSL has the settings, and on the RustDesk
+# server's computer, hostAddressLoopback.
+# The parameter is not named IdleSettings: PowerShell's dynamic scope would hide $IdleSettings,
+# the list, from Get-WslconfigWithIdleSettings.
+function Get-WslconfigTarget([string]$Text, [bool]$WithIdleSettings, [bool]$RustDeskServer) {
+  if ($WithIdleSettings) { $Text = Get-WslconfigWithIdleSettings $Text }
+  if ($RustDeskServer) { $Text = Set-IniValue $Text $HostLoopbackSetting.Section $HostLoopbackSetting.Key $HostLoopbackSetting.Value }
+  return $Text
+}
+
 # .wslconfig's text with both idle settings.
 function Get-WslconfigWithIdleSettings([string]$Text) {
   foreach ($s in $IdleSettings) { $Text = Set-IniValue $Text $s.Section $s.Key $s.Value }
