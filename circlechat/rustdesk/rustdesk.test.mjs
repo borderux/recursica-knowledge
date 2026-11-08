@@ -89,7 +89,7 @@ test("the listener check wants each port on its one address, and nothing else on
 });
 
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", serve = true } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", serve = true, console = "303", wsl = false } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -102,6 +102,8 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   stub("tailscale", `case "$1" in ip) echo ${TS} ;; serve) [ "$2" = status ] && echo '${JSON.stringify(status)}' ;; esac; exit 0`);
   stub("ip", `printf '1: lo    inet 127.0.0.1/8 scope host lo\\n2: eth0    inet 192.168.1.30/24 scope global eth0\\n3: eth1    inet ${TS}/32 scope global eth1\\n'`);
   stub("ss", `cat <<'SS'\n${ss}\nSS`);
+  // The console's answer on 127.0.0.1:21114, as curl's -w '%{http_code}' prints the answer: 000 for none.
+  stub("curl", `case "$*" in *127.0.0.1:21114*) printf '%s' '${console}' ;; *) exit 7 ;; esac`);
   stub("docker", "exit 0");
   stub("sleep", "exit 0");
   // A port answers on an address only when the test says so.
@@ -113,7 +115,9 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   const r = render(withServer());
   fs.writeFileSync(path.join(out, "services", "machine-3.json"), JSON.stringify(r.services["machine-3"]));
   fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
-  fs.writeFileSync(path.join(home, "version"), "Linux version 6.8.0 (a plain Linux computer)\n");
+  fs.writeFileSync(path.join(home, "version"), wsl ? "Linux version 6.6.87.2-microsoft-standard-WSL2\n" : "Linux version 6.8.0 (a plain Linux computer)\n");
+  // In WSL: mirrored networking, and two AgentGuard RustDesk rules in each Windows firewall.
+  if (wsl) { stub("wslinfo", "echo mirrored"); stub("powershell.exe", "echo 2"); }
   const run = spawnSync("bash", [path.join(here, "setup-rustdesk.sh"), path.join(out, "services", "machine-3.json"), path.join(out, "tenant.env")], {
     env: { ...process.env, HOME: home, SECRETS: secrets, PROC_VERSION: path.join(home, "version"), SYSTEMD_UNIT_DIR: units, RUSTDESK_LISTEN_TRIES: "2", PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin` },
     encoding: "utf8",
@@ -155,6 +159,21 @@ test("the setup stops the server when a port listens on a wrong address or answe
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Port 21116 answers on 192\.168\.1\.30/);
   assert.match(r.calls(), /^docker compose -f \S+ stop$/m);
+});
+
+test("the setup reports success only once the console answers on 127.0.0.1:21114", () => {
+  let r = sandbox();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.calls(), /^curl -s -o \/dev\/null -w %\{http_code\} --max-time 5 http:\/\/127\.0\.0\.1:21114\/$/m);
+  r = sandbox({ console: "000" });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /The console does not answer on 127\.0\.0\.1:21114, so tailscale serve answers 502\./);
+  assert.doesNotMatch(r.stdout, /RustDesk server running/);
+  assert.ok(!fs.existsSync(path.join(r.units, "rustdesk-backup.service")));
+  // In WSL, the message names the cause and the fix.
+  r = sandbox({ console: "000", wsl: true });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /loopback traffic arrives on loopback0\. Run circlechat\/cluster\/install-cluster\.sh again/);
 });
 
 test("the setup stops when tailscale serve does not pass HTTPS 443 to the console", () => {

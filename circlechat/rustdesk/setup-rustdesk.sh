@@ -92,7 +92,21 @@ if [ -n "$problems" ]; then
   echo "Run in an Administrator PowerShell on Windows, or with sudo on Linux: tailscale serve --bg --https=$HTTPS_PORT http://127.0.0.1:21114. Then run this script again."; exit 1
 fi
 
-# 7. The nightly backup of the server's volume, as root.
+# 7. The console answers on 127.0.0.1:21114, where tailscale serve passes each request. Any HTTP
+#    status counts; no answer at all means a firewall or Docker drops the connection.
+code=000
+for _ in $(seq 1 "${RUSTDESK_LISTEN_TRIES:-15}"); do
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:21114/ || true)"
+  [ "${code:-000}" != 000 ] && break
+  sleep 2
+done
+if [ "${code:-000}" = 000 ]; then
+  echo "The console does not answer on 127.0.0.1:21114, so tailscale serve answers 502."
+  [ "$WSL" = true ] && echo "In WSL with mirrored networking, loopback traffic arrives on loopback0. Run circlechat/cluster/install-cluster.sh again, so the firewall rules accept loopback0, then run this script again."
+  exit 1
+fi
+
+# 8. The nightly backup of the server's volume, as root.
 UNIT_SETTINGS="/etc/agent-cluster.conf $SECRETS" install_unit rustdesk-backup \
   "set -a; . /etc/agent-cluster.conf; set +a; OWNER_HOME=$HOME STACK=$STACK_NAME BACKUP_REMOTE=$BACKUP_REMOTE $HERE/backup-rustdesk.sh" / root "*-*-* $BACKUP_AT"
 

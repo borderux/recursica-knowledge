@@ -16,6 +16,11 @@ table inet agentguard {
   chain input {
     type filter hook input priority -10; policy drop;
     iif lo accept
+    # WSL in mirrored networking mode sends 127.0.0.1 and ::1 through loopback0, by way of Windows'
+    # own loopback, so the computer's own loopback traffic arrives on loopback0, not on lo. Windows'
+    # loopback, such as tailscale serve, arrives there too. Only a loopback source passes.
+    iifname "loopback0" ip saddr 127.0.0.0/8 accept
+    iifname "loopback0" ip6 saddr ::1 accept
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept

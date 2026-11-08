@@ -6,6 +6,10 @@ table inet agentguard_lockdown {
   chain output {
     type filter hook output priority -10; policy drop;
     oif lo accept
+    # In WSL with mirrored networking, the computer's own loopback traffic leaves on loopback0
+    # (nft-base.nft). Only a loopback destination passes.
+    oifname "loopback0" ip daddr 127.0.0.0/8 accept
+    oifname "loopback0" ip6 daddr ::1 accept
     ct state established,related accept
     ip daddr { 100.64.0.0/10, 172.16.0.0/12 } accept
     ip6 daddr fd7a:115c:a1e0::/48 accept
