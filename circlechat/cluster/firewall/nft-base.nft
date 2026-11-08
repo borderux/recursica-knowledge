@@ -45,7 +45,7 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
-    tcp dport 21115-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
+    tcp dport 21114-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     udp dport 21116 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     ct state new ip saddr != { 100.64.0.0/10, 172.16.0.0/12, 127.0.0.0/8 } ip saddr != @allowed4 drop
   }

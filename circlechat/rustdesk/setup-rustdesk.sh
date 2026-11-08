@@ -4,13 +4,18 @@
 #
 #   ./circlechat/rustdesk/setup-rustdesk.sh <services/<node>.json> <tenant.env>
 #
+# hbbs and hbbr run in the host's network, which RustDesk's license needs, so each RustDesk port
+# listens on every address of the computer. Three firewalls refuse ports 21114 to 21117 from every
+# source except Tailscale and loopback: nftables, and in WSL Windows Firewall and the Hyper-V firewall.
+#
 # The script stops before the server starts, or right after, on any of these:
-# - In WSL, networking is not mirrored, or the Windows guard has no RustDesk rules yet.
-# - The firewall rules on this computer have no RustDesk rule yet (install-cluster.sh).
+# - In WSL, networking is not mirrored.
+# - One of the three firewalls lacks a RustDesk rule (install-cluster.sh, install-windows-guard.ps1).
 # - The node's address in site.json is not this computer's Tailscale address.
 # - The secret for the server's backup, RUSTDESK_RESTIC_PASSWORD, is not on this computer.
-# - A RustDesk port listens anywhere but its one address, or answers on another address.
+# - A RustDesk port does not listen, or hbbr runs as a public relay.
 # - tailscale serve does not pass HTTPS port 443 to the console, or Funnel serves the port.
+# - The console does not answer on 127.0.0.1:21114.
 set -euo pipefail
 SPEC="${1:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
 TENANT_ENV="${2:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
@@ -35,19 +40,29 @@ fi
 tsip="$(ts ip -4 2>/dev/null | head -1 | tr -d '\r' || true)"
 [ "$tsip" = "$ADDRESS" ] || { echo "This computer's Tailscale address is ${tsip:-unknown}, and site.json gives $ADDRESS. Correct the node's address in site.json."; exit 1; }
 ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -x "$ADDRESS" >/dev/null \
-  || { echo "$ADDRESS is not on any network interface here, so Docker cannot open RustDesk's ports on it. In WSL, networking must be mirrored."; exit 1; }
+  || { echo "$ADDRESS is not on any network interface here, so no client reaches the relay hbbs names, $ADDRESS:21117. In WSL, networking must be mirrored."; exit 1; }
 
-# 2. The guards: the firewall rule here, and on Windows the host and Hyper-V rules.
-sudo nft list chain inet agentguard forward 2>/dev/null | grep 'comment "rustdesk"' >/dev/null \
-  || { echo "The firewall rules have no RustDesk rule. Run circlechat/cluster/install-cluster.sh first."; exit 1; }
+# 2. The guards. In the host's network, each firewall must refuse ports 21114 to 21117 from every
+#    source except Tailscale and loopback. A rule that is missing, or that WSL cannot read, stops
+#    the setup before the server starts.
+# A reader that fails prints nothing, and the check then finds every rule missing. A check that
+# fails stops the script, before the server starts.
+nft_rules="$(sudo nft list chain inet agentguard input 2>/dev/null || true)"
+problems="$(printf '%s\n' "$nft_rules" | $RD guard-check nft)"
 if [ "$WSL" = true ]; then
-  n="$(powershell.exe -NoProfile -NonInteractive -Command "(Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' -ErrorAction SilentlyContinue | Measure-Object).Count" 2>/dev/null | tr -d '\r' || true)"
-  [ "${n:-0}" -ge 2 ] || { echo "Windows has no AgentGuard RustDesk rules. Run circlechat/cluster/windows/install-windows-guard.ps1 -RustDeskServer in an Administrator PowerShell, then run this script again."; exit 1; }
-  h="$(powershell.exe -NoProfile -NonInteractive -Command "(Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*' -ErrorAction SilentlyContinue | Measure-Object).Count" 2>/dev/null | tr -d '\r' || true)"
-  case "$h" in
-    ''|*[!0-9]*) echo "Could not read the Hyper-V firewall rules from WSL. Check in an Administrator PowerShell: Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*'" ;;
-    *) [ "$h" -ge 2 ] || { echo "The Hyper-V firewall has no AgentGuard RustDesk rules. Run install-windows-guard.ps1 -RustDeskServer in an Administrator PowerShell, then run this script again."; exit 1; } ;;
-  esac
+  # One line per rule: <protocol>|<local ports>|<action>|<enabled>|<direction>.
+  fw_rules="Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' -ErrorAction SilentlyContinue | ForEach-Object { \$f = \$_ | Get-NetFirewallPortFilter; '{0}|{1}|{2}|{3}|{4}' -f \$f.Protocol, (\$f.LocalPort -join ','), \$_.Action, \$_.Enabled, \$_.Direction }"
+  hv_rules="Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*' -ErrorAction SilentlyContinue | ForEach-Object { '{0}|{1}|{2}|{3}|{4}' -f \$_.Protocol, (\$_.LocalPorts -join ','), \$_.Action, \$_.Enabled, \$_.Direction }"
+  fw_rules="$(powershell.exe -NoProfile -NonInteractive -Command "$fw_rules" 2>/dev/null | tr -d '\r' || true)"
+  hv_rules="$(powershell.exe -NoProfile -NonInteractive -Command "$hv_rules" 2>/dev/null | tr -d '\r' || true)"
+  fw="$(printf '%s\n' "$fw_rules" | $RD guard-check windows)"
+  hv="$(printf '%s\n' "$hv_rules" | $RD guard-check hyperv)"
+  problems="$(printf '%s\n%s\n%s' "$problems" "$fw" "$hv" | sed '/^$/d')"
+fi
+if [ -n "$problems" ]; then
+  echo "$problems"
+  [ "$WSL" = true ] && echo "When the rules exist, WSL could not read the rules. Check in an Administrator PowerShell: Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*', and Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*'."
+  echo "The RustDesk server did not start."; exit 1
 fi
 
 # 3. The backup's secret. Without the backup, a lost server key means every client must be set up again.
@@ -62,10 +77,11 @@ $RD compose "$SPEC" > "$DIR/compose.json"
 docker compose -f "$DIR/compose.json" pull -q
 docker compose -f "$DIR/compose.json" up -d --remove-orphans
 
-# 5. The ports: each on its one address, and none answering on another address.
+# 5. The ports: each RustDesk port listens. In the host's network, the firewalls checked in step 2
+#    guard each port.
 problems=""
 for _ in $(seq 1 "${RUSTDESK_LISTEN_TRIES:-15}"); do
-  problems="$(ss -Hlntu | $RD listen-check "$ADDRESS")"
+  problems="$(ss -Hlntu | $RD listen-check)"
   [ -z "$problems" ] && break
   sleep 2
 done
@@ -74,15 +90,6 @@ if [ -n "$problems" ]; then
   docker compose -f "$DIR/compose.json" stop
   echo "Stopped the RustDesk server. Fix the problems above, then run this script again."; exit 1
 fi
-for a in $(ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1); do
-  case "$a" in "$ADDRESS"|127.*|172.1[6-9].*|172.2[0-9].*|172.3[01].*) continue ;; esac
-  for p in 21114 21115 21116 21117; do
-    if timeout 2 bash -c "</dev/tcp/$a/$p" 2>/dev/null; then
-      docker compose -f "$DIR/compose.json" stop
-      echo "Port $p answers on $a, an address outside Tailscale. Stopped the RustDesk server."; exit 1
-    fi
-  done
-done
 
 # 5b. The relay holds the server's key. Without the key, hbbr runs as a public relay that any client
 #     reaching port 21117 may use, and hbbr's log says so.
