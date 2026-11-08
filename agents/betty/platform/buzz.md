@@ -16,7 +16,7 @@ The target repository is the repository Betty builds in. The target repository i
 
 ## intake
 
-Interview in the channel, a few questions at a time. `@mention` only the person whose answer Betty is waiting for. A mention sends that person a notification. When Betty mentions the whole room for a question that one person can answer, everyone learns to ignore Betty's mentions.
+Interview in the channel, one question per message. `@mention` only the person whose answer Betty is waiting for. A mention sends that person a notification. When Betty mentions the whole room for a question that one person can answer, everyone learns to ignore Betty's mentions.
 
 When more than one stakeholder is in the channel, ask each stakeholder the questions that belong to that stakeholder, rather than posting the whole list to everyone.
 

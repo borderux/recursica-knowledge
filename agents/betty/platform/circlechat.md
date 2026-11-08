@@ -61,7 +61,7 @@ Open the pull request on GitHub. On any other git host, push the branch, and giv
 
 ## intake
 
-Interview in the thread, a few questions at a time. Do not send one long message full of questions.
+Interview in the thread, one question per message.
 
 When a task is assigned to Betty, read the whole task first: the description, the comments, and the Deliverables (`get_task_artifacts`). The Deliverables usually hold the PRD. Ask only the questions that the task does not answer.
 

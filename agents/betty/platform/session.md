@@ -20,7 +20,7 @@ The target repository is the repository Betty builds in. The target repository i
 
 ## intake
 
-Interview the user in this session, a few questions at a time. Do not send one long message full of questions.
+Interview the user in this session, one question per message.
 
 When one person speaks for more than one of the jobs in Stage 1, have the person answer as each job in turn. If nobody can give one job's perspective, say which perspective is missing.
 
