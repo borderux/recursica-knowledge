@@ -67,15 +67,20 @@ export function rustdeskSpec(site, n) {
 // The Compose file. Each server port opens on the Tailscale address only, and the console on
 // 127.0.0.1 only. hbbs is the ID server and the console; hbbr is the relay. Both keep their key,
 // database and license in one volume, mounted at /root.
+//   - hbbs makes the key on the server's first start. hbbr reads the key only when hbbr starts, and without
+//     the key runs as a public relay that any client may use. So hbbr starts after hbbs, and waits
+//     until /root/id_ed25519.pub exists, at every start, Compose's or Docker's.
+//   - hbbs names the relay, with -r, so hbbs gives each client the relay's address.
+export const RELAY_KEY_WAIT = "until [ -s /root/id_ed25519.pub ]; do sleep 1; done; exec hbbr";
 export function composeFile(spec) {
   const ip = spec.address;
   const common = { image: spec.image, restart: "unless-stopped", volumes: [`${VOLUME}:/root`], security_opt: ["no-new-privileges:true"] };
   return {
     name: "rustdesk",
     services: {
-      hbbs: { ...common, container_name: "rustdesk-hbbs", command: ["hbbs"], depends_on: ["hbbr"],
+      hbbs: { ...common, container_name: "rustdesk-hbbs", command: ["hbbs", "-r", `${ip}:${PORTS.relay}`],
         ports: [`127.0.0.1:${PORTS.console}:${PORTS.console}/tcp`, `${ip}:${PORTS.nat}:${PORTS.nat}/tcp`, `${ip}:${PORTS.id}:${PORTS.id}/tcp`, `${ip}:${PORTS.id}:${PORTS.id}/udp`] },
-      hbbr: { ...common, container_name: "rustdesk-hbbr", command: ["hbbr"],
+      hbbr: { ...common, container_name: "rustdesk-hbbr", depends_on: ["hbbs"], command: ["sh", "-c", RELAY_KEY_WAIT],
         ports: [`${ip}:${PORTS.relay}:${PORTS.relay}/tcp`] },
     },
     volumes: { [VOLUME]: { name: VOLUME } },

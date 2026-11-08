@@ -8,7 +8,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { validate, render } from "../kit/render.mjs";
 import { stackSite } from "../kit/stack-site.mjs";
-import { composeFile, listenProblems, rustdeskErrors, serveProblems } from "./rustdesk.mjs";
+import { RELAY_KEY_WAIT, composeFile, listenProblems, rustdeskErrors, serveProblems } from "./rustdesk.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
@@ -64,6 +64,29 @@ test("the Compose file opens the server's ports on the Tailscale address only, a
   assert.ok(!ports.some((p) => /2111[89]/.test(p)), "the web client's ports stay closed");
 });
 
+test("hbbr starts after hbbs and waits for the key, and hbbs names the relay on the Tailscale address", () => {
+  const c = composeFile(render(withServer()).services["machine-3"].rustdesk);
+  assert.deepEqual(c.services.hbbs.command, ["hbbs", "-r", `${TS}:21117`]);
+  assert.equal(c.services.hbbs.depends_on, undefined, "hbbs never waits for hbbr");
+  assert.deepEqual(c.services.hbbr.depends_on, ["hbbs"]);
+  assert.deepEqual(c.services.hbbr.command, ["sh", "-c", "until [ -s /root/id_ed25519.pub ]; do sleep 1; done; exec hbbr"]);
+});
+
+test("the relay's start waits until the key file exists, then runs hbbr", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "relay-key-"));
+  const bin = path.join(dir, "bin"), key = path.join(dir, "id_ed25519.pub"), ran = path.join(dir, "ran");
+  fs.mkdirSync(bin);
+  fs.writeFileSync(path.join(bin, "hbbr"), `#!/bin/sh\n[ -s "${key}" ] && echo "with the key" > "${ran}" || echo "without the key" > "${ran}"\n`, { mode: 0o755 });
+  // The same command, with the volume's /root in a scratch folder.
+  const wait = RELAY_KEY_WAIT.replace("/root/id_ed25519.pub", key);
+  const start = Date.now();
+  // The key appears after about a second, as when hbbs makes the key on the server's first start.
+  const r = spawnSync("sh", ["-c", `( sleep 1; echo key > "${key}" ) & ${wait}`], { env: { ...process.env, PATH: `${bin}:${process.env.PATH}` }, encoding: "utf8", timeout: 10_000 });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(Date.now() - start >= 900, "hbbr waited for the key");
+  assert.equal(fs.readFileSync(ran, "utf8").trim(), "with the key");
+});
+
 test("the serve check wants HTTPS 443 passed to the console, and refuses Funnel", () => {
   const ok = { Web: { "machine-3.example.ts.net:443": { Handlers: { "/": { Proxy: "http://127.0.0.1:21114" } } } } };
   assert.deepEqual(serveProblems(ok, 443, 21114), []);
@@ -89,7 +112,7 @@ test("the listener check wants each port on its one address, and nothing else on
 });
 
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", serve = true, console = "303", wsl = false } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -104,7 +127,8 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   stub("ss", `cat <<'SS'\n${ss}\nSS`);
   // The console's answer on 127.0.0.1:21114, as curl's -w '%{http_code}' prints the answer: 000 for none.
   stub("curl", `case "$*" in *127.0.0.1:21114*) printf '%s' '${console}' ;; *) exit 7 ;; esac`);
-  stub("docker", "exit 0");
+  // docker logs rustdesk-hbbr: the relay's start-up log, with or without the key.
+  stub("docker", `[ "$1 $2" = "logs rustdesk-hbbr" ] && { printf '%s\\n' ${JSON.stringify(relayLog)}; exit 0; }; exit 0`);
   stub("sleep", "exit 0");
   // A port answers on an address only when the test says so.
   stub("timeout", `case "$*" in *"${answersOn}"*) [ -n "${answersOn}" ] && exit 0 ;; esac; exit 1`);
@@ -159,6 +183,15 @@ test("the setup stops the server when a port listens on a wrong address or answe
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Port 21116 answers on 192\.168\.1\.30/);
   assert.match(r.calls(), /^docker compose -f \S+ stop$/m);
+});
+
+test("the setup stops the server when hbbr runs in public relay mode", () => {
+  const r = sandbox({ relayLog: "WARN WARNING: hbbr is running in PUBLIC RELAY MODE because no key could be loaded from KEY, id_ed25519, or id_ed25519.pub" });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /hbbr runs in public relay mode: hbbr found no key in the volume\. Stopped the RustDesk server\./);
+  assert.match(r.calls(), /^docker compose -f \S+ stop$/m);
+  assert.doesNotMatch(r.stdout, /RustDesk server running/);
+  assert.match(sandbox().calls(), /^docker logs rustdesk-hbbr$/m, "the setup reads the relay's log");
 });
 
 test("the setup reports success only once the console answers on 127.0.0.1:21114", () => {

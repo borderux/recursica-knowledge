@@ -882,7 +882,7 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 
 ### The RustDesk server
 
-**One computer can run RustDesk Server Pro for the whole cluster, reachable only over Tailscale.** People then sign in to RustDesk with Google, each with their own Google two-factor, and every session runs through the server's relay. The server is Pro's two programs, `hbbs` (the ID server and the web console) and `hbbr` (the relay), in Docker, from one image pinned by digest.
+**One computer can run RustDesk Server Pro for the whole cluster, reachable only over Tailscale.** People then sign in to RustDesk with Google, each with their own Google two-factor, and every session runs through the server's relay. The server is Pro's two programs, `hbbs` (the ID server and the web console) and `hbbr` (the relay), in Docker, from one image pinned by digest. Both keep the server's key in one volume. `hbbs` makes the key on the first start. `hbbr` starts only once the key exists. Without the key, `hbbr` runs as a public relay that any client may use. `setup-rustdesk.sh` stops the server when `hbbr`'s log says "PUBLIC RELAY MODE". `hbbs` names the relay, `<Tailscale address>:21117`, with `-r`, so each client gets the relay's address from `hbbs`.
 
 | Port            | What it is                   | Opens on                                                       |
 | --------------- | ---------------------------- | -------------------------------------------------------------- |
