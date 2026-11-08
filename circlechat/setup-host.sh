@@ -764,9 +764,9 @@ fi
 
 if grep -qi microsoft /proc/version 2>/dev/null; then
   echo
-  echo "This is WSL. WSL stops when no Windows program holds it open, which stops everything above."
-  echo "Keep it running from an Administrator PowerShell:"
-  echo "  schtasks /create /tn \"WSL keep-alive\" /sc onstart /ru SYSTEM /rl highest /tr \"wsl.exe -d ${WSL_DISTRO_NAME:-Ubuntu} -u $(id -un) --exec sleep infinity\""
+  echo "This is WSL. WSL starts only when someone signs in, and stops when idle, which stops everything above."
+  echo "To start WSL at boot and keep it running, run this once in an Administrator PowerShell, as this distro's owner:"
+  echo "  powershell -ExecutionPolicy Bypass -File \\\\wsl.localhost\\${WSL_DISTRO_NAME:-Ubuntu}$(printf '%s' "$HERE/cluster/windows/install-wsl-boot.ps1" | tr / '\\')"
 fi
 
 # CircleChat's address and the app preview's address. Caddy and the preview listen on 127.0.0.1

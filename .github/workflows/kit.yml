@@ -118,3 +118,6 @@ jobs:
       - name: Parse each script, and run each dry run
         shell: pwsh
         run: ./circlechat/ci/check-windows-scripts.ps1
+      - name: Test the WSL boot task's parts
+        shell: pwsh
+        run: ./circlechat/cluster/windows/wsl-boot.test.ps1

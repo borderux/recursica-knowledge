@@ -112,6 +112,7 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    `LOCAL_REDACTIONS=<path to the local-redactions.json file>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
    secrets in `~/.recursica-node.env`, and run `./circlechat/setup-node.sh <node name>`.
+   **On each Windows computer**, also run `install-wsl-boot.ps1` once, as "WSL at boot on Windows" describes.
 4. **CircleChat's address and the app preview's address:** `setup-host.sh` runs `tailscale serve` for both, as "Addresses on the tailnet" describes. With `site.proxy` set to `other`, point an HTTPS reverse proxy on the control computer at `127.0.0.1:<site.port>` and `127.0.0.1:<site.preview_port>`.
 5. For each agent: add the agent in the CircleChat UI (**Members → Add agent**: Hermes, provider
    custom (FreeLLMAPI), base URL `http://cc-gateway:4000/v1`, key `placeholder-key`, **Install + link**).
@@ -142,6 +143,34 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
 checkout, as "Files in the workspace and the agents' homes" describes. With `upgrade.auto`, the
 upgrade job does the same after each release instead.
+
+### WSL at boot on Windows
+
+**On Windows, WSL starts only when someone signs in.** After an unattended restart, such as a 4 a.m. update, the cluster's services in WSL stay down until someone signs in. WSL also shuts down when idle. Run `circlechat/cluster/windows/install-wsl-boot.ps1` once on each Windows computer, in an Administrator PowerShell, as the account that owns the WSL distro:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File \\wsl.localhost\<distro>\home\<you>\recursica-knowledge\circlechat\cluster\windows\install-wsl-boot.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File \\wsl.localhost\<distro>\home\<you>\recursica-knowledge\circlechat\cluster\windows\install-wsl-boot.ps1
+```
+
+`-DryRun` prints the task, the change to `.wslconfig` and the old task's removal, and changes nothing. The script finds the distro from the script's own path. Pass `-Distro <name>` for another distro.
+
+The script sets up the task, the idle settings and the removal of the old task:
+
+1. **The task `AgentClusterWSL`** starts at boot, before anyone signs in, as the distro's owner. The task's logon type is S4U ("Do not store password"), so Windows stores no password. The task runs `keep-wsl.ps1` from `C:\ProgramData\AgentCluster\wsl`. The script holds the distro open, and starts the distro again whenever the distro stops. Only an administrator can change the script, and the owner can change only the `logs` folder. Each start and stop goes to `logs\wsl-keeper.log`.
+2. **The idle settings** in the owner's `%UserProfile%\.wslconfig`, so WSL never shuts down when idle. A copy of the old file stays as `.wslconfig.agentcluster-backup`.
+3. **The old task `Start-WSL-K3s-Ollama`** goes, but only after `AgentClusterWSL` runs and holds the distro open. Until then, the old task stays.
+
+| Setting                            | What `-1` does                          | Needs                                                                     |
+| ---------------------------------- | --------------------------------------- | ------------------------------------------------------------------------- |
+| `[wsl2] vmIdleTimeout=-1`          | The WSL VM never shuts down when idle.  | WSL 2.5.8 or later, on Windows 11. Microsoft's docs name Windows 11 only. |
+| `[general] instanceIdleTimeout=-1` | Each distro never shuts down when idle. | WSL 2.5.8 or later.                                                       |
+
+WSL's source has both settings from 2.5.8, the first open-source release. The source has no older history, so the kit asks for 2.5.8. In both, a negative value sets no idle timer. With an older WSL, the script leaves `.wslconfig` alone and names the update: `wsl --update`.
+
+**The idle settings take effect at the next WSL restart.** WSL reads `.wslconfig` only when WSL starts, and the script never stops WSL. Until the next restart of Windows or of WSL, the task alone keeps the distro running.
+
+The script starts the task at once. WSL is already running, so the task joins the running distro, and nothing restarts.
 
 ### Files in the workspace and the agents' homes
 
@@ -1228,7 +1257,7 @@ smoke install runs the step against CircleChat's real database.
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".
 - **CircleChat's api, worker and bridge read the shared workspace, and never write it.** `setup-host.sh` writes `compose.workspace.yml`, which mounts `CC_SHARED_WORKSPACE_DIR` at `/workspace`, read-only, in all three. The api reads each file an agent attaches (`share_to_task`, `share_files`) there, and reads `BRIEF.md`, `knowledge/` and `projects/` for an agent's context. Agents write the workspace from their own containers. CircleChat's `project_note` action writes into `/workspace/projects` from the api, so it now fails with an error. CircleChat's `compose.agents.yml` names the mount only in a comment. An older kit added a read-write line to that file, and `setup-host.sh` removes the line.
-- **On WSL, keep WSL running.** It stops when no Windows program holds it open, taking every service with it. `setup-host.sh` prints the keep-alive task.
+- **On WSL, keep WSL running.** WSL stops when no Windows program holds WSL open, and every service stops with WSL. `install-wsl-boot.ps1` starts WSL at boot and keeps WSL running, as "WSL at boot on Windows" describes. A task that runs as SYSTEM can't do this: each distro belongs to the account that registered it.
 
 - **Use the UI's Install + link to create agents.** Never insert agent rows in Postgres or hand-write `bridge-config.json`. The bridge only reads `handle`, `token`, `hermesHome` from it; tokens come from the install.
 - **Never `rm -rf hermes-homes`.** Each agent's real setup lives in `hermes-homes/.hermes-<handle>/`.
