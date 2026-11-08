@@ -482,6 +482,18 @@ test("Betty's CircleChat persona builds prototypes with Recursica's adapter, nev
   assert.ok(text.indexOf("Import every UI component from") < text.indexOf("## Stage 3"), "the build rules come before Stage 3");
 });
 
+/**
+ * CircleChat's reply guard refuses a reply that is pasted code, so a person who asked for a page got
+ * no reply at all. After a build, Betty's CircleChat reply is the preview address and at most two
+ * sentences.
+ */
+test("Betty's CircleChat persona replies after a build with the preview address and two sentences at most, never code", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /After building, reply with the page's preview address and at most two sentences, never code\./);
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");

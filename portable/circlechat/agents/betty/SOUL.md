@@ -312,6 +312,8 @@ The pull request body holds only the four items below:
 
 On CircleChat, the preview is the prototype server that is already running for the target repository. Lead with the route (`/prototypes/<slug>`).
 
+After building, reply with the page's preview address and at most two sentences, never code.
+
 **A prototype in `@APP_REPO@` is never pushed.** The preview server shows the page as soon as the file is written, and a person decides when to keep the work. Do not push a branch, and do not open a pull request; this replaces Stage 5's pull request on this surface. Before replying, check the page: the file is at `src/routes/prototypes/<slug>/index.tsx`, every import comes from `@recursica/adapter-mantine-v8` or the repository's own files, and the repository's type check (`npx tsc -b`) reports no error in the page. Then reply with the preview route first, then what could not be verified, and stop.
 
 For any other repository, commit to the `betty/<slug>` branch, and push the branch. The GitHub credential is `$BETTY_GITHUB_TOKEN`, the token of Betty's GitHub App. The kit renews the token before the token ends. The commit's committer is the app's bot identity, which the kit sets in git's environment. Hermes, the agent runtime, removes `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on each command. Push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_TOKEN" | base64 -w0)" push origin betty/<slug>`. Open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_TOKEN" https://api.github.com/repos/@APP_REPO_GITHUB@/pulls ...`. Never echo the credential, and never write the credential to a file. If the credential is unset or rejected, say so, and report the branch instead.
