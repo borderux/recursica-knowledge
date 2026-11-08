@@ -113,3 +113,8 @@ jobs:
           $found = Invoke-ScriptAnalyzer -Path circlechat/cluster/windows -Recurse -Severity Error,Warning
           $found | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
           if ($found | Where-Object Severity -eq 'Error') { exit 1 }
+      # Each script parses, param() comes before any statement, and a script with -DryRun runs with
+      # each switch.
+      - name: Parse each script, and run each dry run
+        shell: pwsh
+        run: ./circlechat/ci/check-windows-scripts.ps1
