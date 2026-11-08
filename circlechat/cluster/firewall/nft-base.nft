@@ -2,8 +2,8 @@
 # Docker's internal networks and allowed sources. The decoy ports stay open, so an intruder on the
 # office network can touch the decoys. Loaded by install-cluster.sh, with @CANARY_PORTS@ and
 # @RUSTDESK_DIRECT@ filled in.
-# RustDesk's server ports, 21114 to 21117, take only Tailscale and the computer itself: not Docker's
-# internal networks, and not an allowed source. @RUSTDESK_DIRECT@ is empty, or a rule that refuses
+# RustDesk's TCP ports, 21114 to 21119, and UDP port 21116 take only Tailscale and the computer itself:
+# not Docker's internal networks, and not an allowed source. @RUSTDESK_DIRECT@ is empty, or a rule that refuses
 # RustDesk's direct-address ports, 21118 and 21119, from everywhere (remote_access.direct_ip false).
 table inet agentguard
 delete table inet agentguard
@@ -24,9 +24,9 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
-    tcp dport 21114-21117 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
+    tcp dport 21114-21119 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
     udp dport 21116 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"
-    tcp dport 21114-21117 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
+    tcp dport 21114-21119 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
     udp dport 21116 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
 @RUSTDESK_DIRECT@
     ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept
@@ -45,7 +45,7 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
-    tcp dport 21114-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
+    tcp dport 21114-21119 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     udp dport 21116 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     ct state new ip saddr != { 100.64.0.0/10, 172.16.0.0/12, 127.0.0.0/8 } ip saddr != @allowed4 drop
   }

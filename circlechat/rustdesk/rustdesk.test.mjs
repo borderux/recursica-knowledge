@@ -119,27 +119,29 @@ const nftInput = () => {
   return base.slice(start, base.indexOf("\n  }", start));
 };
 // The rules as setup-rustdesk.sh prints the rules from Windows: protocol|local ports|action|enabled|direction.
-const winRules = "TCP|21114-21117|Block|True|Inbound\nUDP|21116|Block|True|Inbound";
+const winRules = "TCP|21114-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound";
 
 test("the guard check finds the RustDesk rule in each of the three firewalls", () => {
   assert.deepEqual(guardProblems("nft", nftInput()), []);
   assert.equal(NFT_RULES.length, 4);
   assert.deepEqual(guardProblems("windows", winRules), []);
   assert.deepEqual(guardProblems("hyperv", winRules), []);
-  assert.deepEqual(guardProblems("hyperv", "6|21114-21117|Block|True|Inbound\n17|21116|Block|True|Inbound"), [], "the Hyper-V firewall may print a protocol number");
-  assert.deepEqual(guardProblems("windows", "TCP|21114,21115,21116-21117|Block|True|Inbound\nUDP|21116|Block|True|Inbound"), []);
+  assert.deepEqual(guardProblems("hyperv", "6|21114-21119|Block|True|Inbound\n17|21116|Block|True|Inbound"), [], "the Hyper-V firewall may print a protocol number");
+  assert.deepEqual(guardProblems("windows", "TCP|21114,21115,21116-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound"), []);
 });
 
-test("the guard check names each firewall that lacks port 21114, or any RustDesk rule", () => {
+test("the guard check names each firewall that lacks port 21114, port 21118 or 21119, or any RustDesk rule", () => {
   // The forward rule before this fix covered 21115 to 21117 only, and an input rule may lack 21114 too.
-  assert.match(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21117", "tcp dport 21115-21117")).join("\n"), /The nftables rules lack the RustDesk rule: tcp dport 21114-21117 ip saddr .*Run circlechat\/cluster\/install-cluster\.sh first/);
+  assert.match(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21115-21119")).join("\n"), /The nftables rules lack the RustDesk rule: tcp dport 21114-21119 ip saddr .*Run circlechat\/cluster\/install-cluster\.sh first/);
   assert.equal(guardProblems("nft", "").length, 4, "an unreadable chain lacks every rule");
+  assert.equal(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21114-21117")).length, 2, "the rules before the web client's ports");
   for (const [which, name] of [["windows", "Windows Firewall"], ["hyperv", "The Hyper-V firewall"]]) {
-    assert.match(guardProblems(which, winRules.replace("21114-21117", "21115-21117")).join("\n"), new RegExp(`^${name} lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\\. Run .*install-windows-guard\\.ps1 -RustDeskServer`));
+    assert.match(guardProblems(which, winRules.replace("21114-21119", "21115-21119")).join("\n"), new RegExp(`^${name} lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\\. Run .*install-windows-guard\\.ps1 -RustDeskServer`));
     assert.equal(guardProblems(which, "").length, 2, "no rules, or rules WSL could not read");
+    assert.match(guardProblems(which, winRules.replace("21114-21119", "21114-21117")).join("\n"), /block rule for TCP 21118, 21119\./, "the rules before the web client's ports");
     assert.match(guardProblems(which, winRules.replace("UDP|21116|Block|True", "UDP|21116|Block|False")).join("\n"), /UDP 21116/, "a turned-off rule guards nothing");
-    assert.match(guardProblems(which, winRules.replace("TCP|21114-21117|Block", "TCP|21114-21117|Allow")).join("\n"), /TCP 21114, 21115, 21116, 21117/, "an allow rule guards nothing");
-    assert.match(guardProblems(which, winRules.replace("TCP|21114-21117|Block|True|Inbound", "TCP|21114-21117|Block|True|Outbound")).join("\n"), /TCP 21114/);
+    assert.match(guardProblems(which, winRules.replace("TCP|21114-21119|Block", "TCP|21114-21119|Allow")).join("\n"), /TCP 21114, 21115, 21116, 21117, 21118, 21119/, "an allow rule guards nothing");
+    assert.match(guardProblems(which, winRules.replace("TCP|21114-21119|Block|True|Inbound", "TCP|21114-21119|Block|True|Outbound")).join("\n"), /TCP 21114/);
   }
 });
 
@@ -221,8 +223,9 @@ test("in WSL, the setup starts the server only when all three firewalls hold the
   assert.match(r.calls(), /^powershell\.exe .*Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-\*'/m);
   for (const [opts, said] of [
     [{ nftRule: false }, /The nftables rules lack the RustDesk rule/],
-    [{ windowsRules: winRules.replace("21114-21117", "21115-21117") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
-    [{ hypervRules: winRules.replace("21114-21117", "21115-21117") }, /The Hyper-V firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
+    [{ windowsRules: winRules.replace("21114-21119", "21115-21119") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
+    [{ hypervRules: winRules.replace("21114-21119", "21115-21119") }, /The Hyper-V firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
+    [{ windowsRules: winRules.replace("21114-21119", "21114-21117") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21118, 21119\./],
     [{ hypervRules: "" }, /The Hyper-V firewall lacks the RustDesk rule.*\n.*\n?.*WSL could not read the rules/],
     [{ windowsRules: "" }, /Windows Firewall lacks the RustDesk rule/],
   ]) {
@@ -286,7 +289,9 @@ test("the Windows and Hyper-V block rules cover every address but Tailscale's an
   for (const name of ["AgentGuard-RustDesk-Server-TCP", "AgentGuard-RustDesk-Server-UDP"]) {
     assert.match(ps, new RegExp(`New-NetFirewallHyperVRule -Name "${name}" .*-VMCreatorId \\$wsl .*-RemoteAddresses \\$notTailscale -Action Block`));
   }
-  assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" .*-LocalPort 21114-21117 -RemoteAddress \$notTailscale -Action Block/);
+  assert.match(ps, /New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-TCP" .*-Protocol TCP -LocalPorts 21114-21119 /);
+  assert.match(ps, /New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-UDP" .*-Protocol UDP -LocalPorts 21116 /);
+  assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" .*-LocalPort 21114-21119 -RemoteAddress \$notTailscale -Action Block/);
   assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server UDP, Tailscale only" .*-Protocol UDP -LocalPort 21116 -RemoteAddress \$notTailscale -Action Block/);
 });
 

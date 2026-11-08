@@ -5,8 +5,8 @@
 #   ./circlechat/rustdesk/setup-rustdesk.sh <services/<node>.json> <tenant.env>
 #
 # hbbs and hbbr run in the host's network, which RustDesk's license needs, so each RustDesk port
-# listens on every address of the computer. Three firewalls refuse ports 21114 to 21117 from every
-# source except Tailscale and loopback: nftables, and in WSL Windows Firewall and the Hyper-V firewall.
+# listens on every address of the computer. Three firewalls refuse TCP 21114 to 21119 and UDP 21116
+# from every source except Tailscale and loopback: nftables, and in WSL Windows Firewall and the Hyper-V firewall.
 #
 # The script stops before the server starts, or right after, on any of these:
 # - In WSL, networking is not mirrored.
@@ -42,8 +42,8 @@ tsip="$(ts ip -4 2>/dev/null | head -1 | tr -d '\r' || true)"
 ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -x "$ADDRESS" >/dev/null \
   || { echo "$ADDRESS is not on any network interface here, so no client reaches the relay hbbs names, $ADDRESS:21117. In WSL, networking must be mirrored."; exit 1; }
 
-# 2. The guards. In the host's network, each firewall must refuse ports 21114 to 21117 from every
-#    source except Tailscale and loopback. A rule that is missing, or that WSL cannot read, stops
+# 2. The guards. In the host's network, each firewall must refuse TCP 21114 to 21119 and UDP 21116
+#    from every source except Tailscale and loopback. A rule that is missing, or that WSL cannot read, stops
 #    the setup before the server starts.
 # A reader that fails prints nothing, and the check then finds every rule missing. A check that
 # fails stops the script, before the server starts.

@@ -6,10 +6,11 @@
 //   21115/tcp  the NAT type test
 //   21116/tcp+udp  ID registration (UDP) and the connection requests (TCP)
 //   21117/tcp  the relay
-// 21118 and 21119 serve RustDesk's web client.
+//   21118/tcp, 21119/tcp  RustDesk's web client, which hbbs and hbbr open
 // hbbs and hbbr run in the host's network, because a Pro license needs host networking. Each port
-// then listens on every address of the computer. Three firewalls refuse ports 21114 to 21117 from
-// every source except Tailscale and loopback: nftables, Windows Firewall and the Hyper-V firewall.
+// then listens on every address of the computer. Three firewalls refuse TCP 21114 to 21119 and UDP
+// 21116 from every source except Tailscale and loopback: nftables, Windows Firewall and the Hyper-V
+// firewall.
 //
 //   node rustdesk.mjs compose <services/<node>.json>       the Compose file, as JSON
 //   node rustdesk.mjs serve-check <https port> <local port> < tailscale serve status --json
@@ -20,6 +21,8 @@
 import fs from "node:fs";
 
 export const PORTS = { console: 21114, nat: 21115, id: 21116, relay: 21117 };
+// Every TCP port the firewalls guard: the server's ports and the web client's ports.
+export const GUARDED_TCP = [21114, 21115, 21116, 21117, 21118, 21119];
 export const SERVER_PORTS = [PORTS.nat, PORTS.id, PORTS.relay];
 export const VOLUME = "rustdesk_data";
 export const HTTPS_PORT = 443;
@@ -120,16 +123,16 @@ export function listenProblems(ssText) {
   });
 }
 
-// The firewall rules that refuse ports 21114 to 21117 from every source except Tailscale and
-// loopback. In the host's network, the firewalls are the only guard on each port. Each guard prints
+// The firewall rules that refuse TCP 21114 to 21119 and UDP 21116 from every source except Tailscale
+// and loopback. In the host's network, the firewalls are the only guard on each port. Each guard prints
 // one line per problem, and nothing when every rule is in place.
 //   nft: the input chain of the agentguard table, as nft list chain prints the chain.
 //   windows, hyperv: one line per AgentGuard RustDesk server rule, as setup-rustdesk.sh prints the
 //   rule: <protocol>|<local ports>|<action>|<enabled>|<direction>.
 export const NFT_RULES = [
-  `tcp dport ${PORTS.console}-${PORTS.relay} ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"`,
+  `tcp dport 21114-21119 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"`,
   `udp dport ${PORTS.id} ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"`,
-  `tcp dport ${PORTS.console}-${PORTS.relay} ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"`,
+  `tcp dport 21114-21119 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"`,
   `udp dport ${PORTS.id} ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"`,
 ];
 const GUARD_FIX = {
@@ -160,7 +163,7 @@ export function guardProblems(which, text) {
       if (!covered[p] || action?.toLowerCase() !== "block" || enabled?.toLowerCase() !== "true" || direction?.toLowerCase() !== "inbound") continue;
       for (const n of portsIn(ports)) covered[p].add(n);
     }
-    const tcp = [PORTS.console, ...SERVER_PORTS].filter((n) => !covered.tcp.has(n));
+    const tcp = GUARDED_TCP.filter((n) => !covered.tcp.has(n));
     if (tcp.length) missing.push(`an enabled inbound block rule for TCP ${tcp.join(", ")}`);
     if (!covered.udp.has(PORTS.id)) missing.push(`an enabled inbound block rule for UDP ${PORTS.id}`);
   }

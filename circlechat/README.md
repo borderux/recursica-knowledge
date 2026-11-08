@@ -902,14 +902,16 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 | 21115/tcp       | The NAT type test            | Tailscale and loopback                                                   |
 | 21116/tcp + udp | ID registration and requests | Tailscale and loopback                                                   |
 | 21117/tcp       | The relay                    | Tailscale and loopback                                                   |
-| 21118, 21119    | RustDesk's web client        | Nobody once `remote_access.direct_ip` is false                           |
+| 21118, 21119    | RustDesk's web client        | Tailscale and loopback. Nobody once `remote_access.direct_ip` is false   |
 
 **Run the server on Linux, or on Windows in WSL with mirrored networking.** On a Mac, Docker runs in Colima's VM. The VM's network holds no Tailscale address of the Mac, so the host's network in Colima is the wrong network. The config check refuses a `rustdesk` block on a Mac. In WSL with mirrored networking, WSL shares Windows' addresses, Tailscale's included.
 
-**Three firewalls refuse ports 21114 to 21117 from every source except Tailscale and loopback:**
+**Three firewalls refuse TCP 21114 to 21119 and UDP 21116 from every source except Tailscale and loopback:**
 
 - **nftables**, on Linux and in WSL: the input chain and the forward chain refuse the ports. No agent container and no allowed source reaches the server.
-- **Windows Firewall and the Hyper-V firewall**, on Windows: `install-windows-guard.ps1 -RustDeskServer` adds block rules for TCP 21114 to 21117 and UDP 21116. The rules block every address outside Tailscale and loopback. A block rule wins over every allow rule. Loopback stays open, because Tailscale on Windows reaches the console in WSL at `127.0.0.1`.
+- **Windows Firewall and the Hyper-V firewall**, on Windows: `install-windows-guard.ps1 -RustDeskServer` adds block rules for TCP 21114 to 21119 and UDP 21116. The rules block every address outside Tailscale and loopback. A block rule wins over every allow rule. Loopback stays open, because Tailscale on Windows reaches the console in WSL at `127.0.0.1`.
+
+**The rules cover the web client's ports, 21118 and 21119, too.** In the host's network, `hbbs` and `hbbr` open both ports on every address.
 
 **`setup-rustdesk.sh` starts the server only when each of the three firewalls holds the RustDesk rule.** The script reads each rule and checks the ports, the action and that the rule is on. A rule that WSL can't read counts as missing.
 
