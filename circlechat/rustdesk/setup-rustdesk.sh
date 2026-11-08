@@ -74,7 +74,9 @@ fi
 #     the setup too.
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
-sudo ss -Hlntp > "$scratch/ss" 2>/dev/null || true
+# The owner writes the file. sudo only lets ss name each listener's program.
+listeners_linux="$(sudo ss -Hlntp 2>/dev/null || true)"
+printf '%s\n' "$listeners_linux" > "$scratch/ss"
 win=-
 clients="$(cat "$HOME/.config/rustdesk/RustDesk2.toml" 2>/dev/null || true)"
 if [ "$WSL" = true ]; then
