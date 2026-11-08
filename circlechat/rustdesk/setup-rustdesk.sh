@@ -84,6 +84,20 @@ for a in $(ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1); do
   done
 done
 
+# 5b. The relay holds the server's key. Without the key, hbbr runs as a public relay that any client
+#     reaching port 21117 may use, and hbbr's log says so.
+public=""
+for _ in $(seq 1 "${RUSTDESK_LISTEN_TRIES:-15}"); do
+  relay_log="$(docker logs rustdesk-hbbr 2>&1 || true)"
+  if grep 'PUBLIC RELAY MODE' >/dev/null <<<"$relay_log"; then public=yes; break; fi
+  grep 'Listening on tcp' >/dev/null <<<"$relay_log" && break
+  sleep 2
+done
+if [ -n "$public" ]; then
+  docker compose -f "$DIR/compose.json" stop
+  echo "hbbr runs in public relay mode: hbbr found no key in the volume. Stopped the RustDesk server. Run this script again, which starts hbbr after hbbs has made the key."; exit 1
+fi
+
 # 6. The console's HTTPS address, tailnet only.
 ts serve --bg "--https=$HTTPS_PORT" "http://127.0.0.1:21114" >/dev/null 2>&1 || true
 problems="$(ts serve status --json 2>/dev/null | $RD serve-check "$HTTPS_PORT" 21114)"
