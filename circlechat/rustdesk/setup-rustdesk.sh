@@ -34,11 +34,11 @@ if [ "$WSL" = true ]; then
 fi
 tsip="$(ts ip -4 2>/dev/null | head -1 | tr -d '\r' || true)"
 [ "$tsip" = "$ADDRESS" ] || { echo "This computer's Tailscale address is ${tsip:-unknown}, and site.json gives $ADDRESS. Correct the node's address in site.json."; exit 1; }
-ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -qx "$ADDRESS" \
+ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -x "$ADDRESS" >/dev/null \
   || { echo "$ADDRESS is not on any network interface here, so Docker cannot open RustDesk's ports on it. In WSL, networking must be mirrored."; exit 1; }
 
 # 2. The guards: the firewall rule here, and on Windows the host and Hyper-V rules.
-sudo nft list chain inet agentguard forward 2>/dev/null | grep -q 'comment "rustdesk"' \
+sudo nft list chain inet agentguard forward 2>/dev/null | grep 'comment "rustdesk"' >/dev/null \
   || { echo "The firewall rules have no RustDesk rule. Run circlechat/cluster/install-cluster.sh first."; exit 1; }
 if [ "$WSL" = true ]; then
   n="$(powershell.exe -NoProfile -NonInteractive -Command "(Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' -ErrorAction SilentlyContinue | Measure-Object).Count" 2>/dev/null | tr -d '\r' || true)"

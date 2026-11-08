@@ -251,7 +251,7 @@ foreign_daemons() {
     [ -f "$f" ] || continue
     case "${f##*/}" in io.recursica.*) continue ;; esac
     { plutil -extract Program raw -o - "$f" 2>/dev/null; plutil -extract ProgramArguments json -o - "$f" 2>/dev/null; } \
-      | grep -qw -- "$1" && plutil -extract Label raw -o - "$f" 2>/dev/null
+      | grep -w -- "$1" >/dev/null && plutil -extract Label raw -o - "$f" 2>/dev/null
   done
   return 0
 }

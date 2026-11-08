@@ -61,7 +61,7 @@ lock_bridge_config "$CC_DIR/hermes-homes" || exit 1
 # so refuse if he has any.
 if [ "$SYNC" = false ] && [ "$HANDLE" = loki ]; then
   read_home "$H/config.yaml"
-  if printf '%s\n' "$TEXT" | grep -qE '^mcp_servers:'; then
+  if grep -qE '^mcp_servers:' <<<"$TEXT"; then
     echo "Loki's config.yaml has mcp_servers. On CircleChat he has no tool servers: each transcript is"
     echo "his reply, and one that reaches client data breaks the fence. Remove it, or set him up by hand."
     exit 1
@@ -100,13 +100,13 @@ if grep -q '@APP_REPO' "$SOUL" && [ -z "${APP_REPO:-}" ]; then
   echo "No app repo configured. Run setup-host.sh with a site.json first (repos.app_dir)."; exit 1
 fi
 PERSONA="$(sed -e "s|@APP_REPO_GITHUB@|${APP_REPO_GITHUB:-}|g" -e "s|@APP_REPO@|${APP_REPO:-}|g" "$SOUL")"
-if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
+if grep -qE '@[A-Z0-9_]+@' <<<"$PERSONA"; then
   echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
 fi
 # A symlinked SOUL.md is never read: the read refuses it, and the write below replaces the symlink.
 # The check runs in the agent's container, because the owner cannot see inside the agent's home.
 TEXT="$(sf read "$H" "$H/SOUL.md" 2>/dev/null && echo x)" || TEXT=x; TEXT="${TEXT%x}"
-if ! printf '%s\n' "$TEXT" | grep -qx "$MARK" && [ -n "$TEXT" ]; then
+if ! grep -qx "$MARK" <<<"$TEXT" && [ -n "$TEXT" ]; then
   printf '%s' "$TEXT" | put_home "$H/SOUL.md.premark.bak"
   BASE=""
 else
@@ -174,12 +174,12 @@ printf '%s\n' "$NEW" | put_home "$H/config.yaml"
 if [ "$HANDLE" = loki ]; then
   CTX="${LOKI_CONTEXT:-131072}"
   read_home "$H/config.yaml"
-  if ! printf '%s\n' "$TEXT" | grep -qE '^  context_length:'; then
+  if ! grep -qE '^  context_length:' <<<"$TEXT"; then
     printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^model:/ { print "  context_length: " c }' | put_home "$H/config.yaml"
     read_home "$H/config.yaml"
   fi
   # gateway_access wrote auxiliary.compression, so the size goes inside it.
-  if ! printf '%s\n' "$TEXT" | grep -qE '^    context_length:'; then
+  if ! grep -qE '^    context_length:' <<<"$TEXT"; then
     printf '%s' "$TEXT" | awk -v c="$CTX" '{ print } /^[^ ]/ { aux = ($0 == "auxiliary:") } aux && $0 == "  compression:" { print "    context_length: " c }' | put_home "$H/config.yaml"
   fi
   # The shared workspace keeps its own rules for now: the owner writes there, with sudo. The
@@ -199,7 +199,7 @@ set_secret() { # set_secret NAME VALUE
 # personal access token leaves the .env, and so does a GITHUB_TOKEN line: Hermes removes
 # GITHUB_TOKEN and GH_TOKEN from every shell Hermes starts.
 read_home "$H/.env"
-if printf '%s\n' "$TEXT" | grep -qE '^(GITHUB_TOKEN|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)='; then
+if grep -qE '^(GITHUB_TOKEN|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)=' <<<"$TEXT"; then
   { printf '%s\n' "$TEXT" | grep -vE -e '^(GITHUB_TOKEN|ALAN_GITHUB_PAT|BETTY_GITHUB_PAT|PORTER_GITHUB_PAT)=' -e '^$' || true; } | put_home "$H/.env"
 fi
 case "$HANDLE" in alan|betty|porter|otto)

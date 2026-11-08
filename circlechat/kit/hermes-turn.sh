@@ -41,7 +41,7 @@ esac
 . "$KIT/lib.sh"
 # The owner cannot see inside the agent's home, so the agent's account looks (as_agent). Hermes's
 # start-up would write a default config.yaml into a home CircleChat never installed.
-as_agent "$HOME_DIR" circlechat/kit/safe-files.mjs read "$HOME_DIR" "$HOME_DIR/config.yaml" < /dev/null 2>/dev/null | grep -q . ||
+as_agent "$HOME_DIR" circlechat/kit/safe-files.mjs read "$HOME_DIR" "$HOME_DIR/config.yaml" < /dev/null 2>/dev/null | grep . >/dev/null ||
   { echo "$NAME: no config.yaml in $HOME_DIR. Install the agent through CircleChat first."; exit 1; }
 # The bot token, from bridge-config.json, which root keeps with mode 600 (lock_bridge_config). The
 # file's text goes straight to node, which takes this agent's token and prints nothing else.
@@ -92,7 +92,7 @@ turn
 # "Details: ..." under a failed model request (cli.error in Hermes's locales/en.yaml), and
 # "Provider said: ..." after the retries of a provider that did not answer.
 failed="$(printf '%s\n' "$lines" | grep -E "^Hermes couldn't start the model connection|^Details: |^Provider said: " || true)"
-if [ "$status" = 0 ] && printf '%s\n' "$lines" | grep -q '^session_id: ' && [ -z "$failed" ]; then
+if [ "$status" = 0 ] && grep -q '^session_id: ' <<<"$lines" && [ -z "$failed" ]; then
   echo "$NAME: test turn answered."
   exit 0
 fi
