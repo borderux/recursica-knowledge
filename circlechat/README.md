@@ -861,7 +861,7 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
    `image` must name the digest: the config check refuses a tag alone. Read the digest of the release to run from Docker Hub. A new release is a site.json change, after the release has been out for 7 days. `backup_time` is the nightly backup's time, 03:30 when unset. site.json also needs `backup.remote`.
 
 2. Add `RUSTDESK_RESTIC_PASSWORD` to the cluster's GitHub environment: a new random secret, used only for this backup. Run the "Deploy secrets" workflow for the computer. The secrets helper writes the secret to the computer's `~/.recursica-node.env` only. The computer then holds no key to the stack's other backups.
-3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`.
+3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`. To see the rules first, with no change, run the same command with `-DryRun`.
 4. `install-cluster.sh <computer>`, for the nftables rules.
 5. `setup-node.sh <computer>`. The setup runs `circlechat/rustdesk/setup-rustdesk.sh`, which stops before the server starts when WSL networking is not mirrored, when a guard is missing, when the node's address is not the computer's Tailscale address, or when the backup's secret is missing. It then starts the server, checks the ports, runs `tailscale serve --bg --https=443 http://127.0.0.1:21114`, checks that Funnel is off, and installs the nightly backup. On Windows, `tailscale serve` may need an Administrator PowerShell; the setup prints the command.
 6. Add the access rules from `tailnet-policy.example.hujson` to the tailnet's policy file.
