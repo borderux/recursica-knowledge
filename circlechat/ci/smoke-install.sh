@@ -41,12 +41,12 @@ check "the model gateway answers" "$GW 'fetch(\"http://127.0.0.1:4000/health\").
 check "the model gateway refuses a request without a gateway key" "$GW 'fetch(\"http://127.0.0.1:4000/v1/chat/completions\", { method: \"POST\", body: \"{}\" }).then((r) => process.exit(r.status === 401 ? 0 : 1))'"
 check "the port for port jobs refuses every request without a task key" "$GW 'fetch(\"http://127.0.0.1:4001/health\").then((r) => process.exit(r.status === 401 ? 0 : 1))'"
 check "with the filter on, the gateway publishes no port on the computer" "[ -z \"\$(docker port cc-gateway)\" ]"
-check "the router signs in to the database with the read-only role, and docker inspect shows no database password" "sudo grep -q '^postgres://cc_gateway_read:' '$CC/gateway-state/db.url' && ! docker inspect cc-gateway | grep -q 'postgres://'"
+check "the router signs in to the database with the read-only role, and docker inspect shows no database password" "sudo grep -q '^postgres://cc_gateway_read:' '$CC/gateway-state/db.url' && ! docker inspect cc-gateway | grep 'postgres://' >/dev/null"
 check "the router's role can only read the columns it needs" "[ \"\$(cd '$CC' && docker compose exec -T postgres psql -U postgres -d circlechat -Atc \"select (select count(*) from information_schema.table_privileges where grantee = 'cc_gateway_read') || ' ' || (select count(*) from information_schema.column_privileges where grantee = 'cc_gateway_read' and privilege_type <> 'SELECT') || ' ' || (select rolsuper or rolcreaterole or rolcreatedb from pg_roles where rolname = 'cc_gateway_read')\")\" = '0 0 false' ]"
 check "the router's role reads CircleChat's tables and writes nothing" "$GW 'const pg = require(\"/app/node_modules/pg\"); const c = new pg.Client(require(\"fs\").readFileSync(\"/state/db.url\", \"utf8\").trim()); c.connect().then(() => c.query(\"select count(*) from agent_runs where status = \x27running\x27\")).then(() => c.query(\"update agents set name = name\")).then(() => process.exit(1), (e) => process.exit(e.code === \"25006\" ? 0 : 1))'"
 check "the cloud key left .env" "! grep -q '^ANTHROPIC_API_KEY=' '$CC/.env' && ! grep -q '^LITELLM_MASTER_KEY=' '$CC/.env'"
 check "the cloud key is in the gateway's secrets file, which only root reads" "sudo grep -q '^MODEL_KEY_DEFAULT=$KEY\$' '$CC/model-keys.env' && [ \"\$(sudo stat -c '%U %a' '$CC/model-keys.env')\" = 'root 600' ]"
-check "no container shows the cloud key in docker inspect" "! docker inspect \$(docker ps -q) | grep -q -- '$KEY'"
+check "no container shows the cloud key in docker inspect" "! docker inspect \$(docker ps -q) | grep -- '$KEY' >/dev/null"
 check "LiteLLM joins only the gateway's network" "[ \"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-litellm)\" = 'circlechat_models ' ]"
 check "the key check passes" "(cd '$CC' && docker compose exec -T postgres pg_dump -U postgres circlechat) | sudo \"\$(command -v node)\" '$KIT/circlechat/gateway/key-check.mjs' --secrets '$CC/model-keys.env' --stdin database '$CC/hermes-homes' >/dev/null"
 CURL="docker run --rm --network circlechat_agents curlimages/curl:8.10.1"
@@ -62,7 +62,7 @@ check "the filter allows GitHub" "[ \"\$($CURL -s -o /dev/null -w '%{http_connec
 check "the closed network has no way out but the filter" "! $CURL -s -m 10 -o /dev/null https://example.com"
 check "an agent container cannot look up outside names" "! docker run --rm --network circlechat_agents --dns 127.0.0.1 busybox:1.36 nslookup -timeout=3 example.com >/dev/null 2>&1"
 check "an agent container still finds the filter by name" "[ \"\$(docker run --rm --network circlechat_agents --dns 127.0.0.1 curlimages/curl:8.10.1 -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true)\" = 200 ]"
-check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -qx 2"
+check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
 check "the refusal is in the filter's log" "sudo grep -q 'example.com:443 403 TCP_DENIED' '$CC/egress-logs/access.log'"
 check "the file store has CircleChat's bucket" "(cd '$CC' && docker compose run --rm --no-deps -T -e MU=\"\$(sed -n 's/^MINIO_ROOT_USER=//p' .env | tail -1)\" -e MP=\"\$(sed -n 's/^MINIO_ROOT_PASSWORD=//p' .env | tail -1)\" --entrypoint /bin/sh minio-setup -c 'mc alias set local http://minio:9000 \"\$MU\" \"\$MP\" >/dev/null && mc ls local/circlechat >/dev/null')"
 check "CircleChat's default secrets are gone" "! grep -qE '^(SESSION_SECRET=change-me|MINIO_ROOT_PASSWORD=minioadmin$)' '$CC/.env'"
@@ -80,13 +80,13 @@ CHECK_PW="ci-check-$(openssl rand -hex 12)"
 check_role() { (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select string_agg(wm.role, ',') from workspace_members wm join users u on u.id = wm.user_id where u.email = 'agent-check@ci.example.com'"); }
 check_account() { CC_DIR="$CC" node "$KIT/circlechat/kit/check-account.mjs" "$@"; }
 check_login() { printf '{"email":"agent-check@ci.example.com","password":"%s"}' "$CHECK_PW" | curl -fsS -o /dev/null -c "$CC/check-cookies" -H 'content-type: application/json' --data-binary @- "$API/auth/login"; }
-check "the check's account is made as a member of the workspace, locked" "check_account | grep -q 'locked the account' && [ \"\$(check_role)\" = member ]"
+check "the check's account is made as a member of the workspace, locked" "check_account | grep 'locked the account' >/dev/null && [ \"\$(check_role)\" = member ]"
 check "the locked account does not sign in with the delivered password" "! check_login"
-check "the unlocked account signs in with the delivered password" "check_account unlock | grep -q 'unlocked the account' && check_login"
-check "locking again ends the session, and the password signs in nowhere" "check_account lock | grep -q 'ended 1 session' && ! curl -fsS -o /dev/null -b '$CC/check-cookies' '$API/me' && ! check_login"
+check "the unlocked account signs in with the delivered password" "check_account unlock | grep 'unlocked the account' >/dev/null && check_login"
+check "locking again ends the session, and the password signs in nowhere" "check_account lock | grep 'ended 1 session' >/dev/null && ! curl -fsS -o /dev/null -b '$CC/check-cookies' '$API/me' && ! check_login"
 rm -f "$CC/check-cookies"
 (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -qc "update workspace_members set role = 'admin' where user_id = (select id from users where email = 'agent-check@ci.example.com')")
-check "a rerun sets an admin check account back to member, and locked" "check_account | grep -q 'set the role from admin back to member' && [ \"\$(check_role)\" = member ] && ! check_login"
+check "a rerun sets an admin check account back to member, and locked" "check_account | grep 'set the role from admin back to member' >/dev/null && [ \"\$(check_role)\" = member ] && ! check_login"
 for u in cluster-agent opencanary; do check "service $u runs" "systemctl is-active --quiet $u"; done
 check "the decoy answers" "curl -s -m 5 -o /dev/null http://127.0.0.1:8088/ || nc -z 127.0.0.1 2222"
 [ "$fail" = 0 ] && echo "Smoke install passed." || { echo "Smoke install failed."; exit 1; }

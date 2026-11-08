@@ -39,7 +39,7 @@ SOCKET="$COLIMA_HOME/_lima/colima-$PROFILE/ssh.sock.1234567890123456"
 
 if [ "$OS" = Darwin ]; then
   IMAGE="$HOME/tenant-images/$CLIENT.sparsebundle"
-  mounted() { mount | grep -q " on $MOUNT (apfs"; }
+  mounted() { mount | grep " on $MOUNT (apfs" >/dev/null; }
   image_exists() { [ -e "$IMAGE" ]; }
   image_create() {
     mkdir -p "$HOME/tenant-images" "$MOUNT"; chmod 700 "$HOME/tenant-images"
@@ -67,7 +67,7 @@ check_mounts() {
   local conf="$COLIMA_HOME/$PROFILE/colima.yaml" locations
   [ -f "$conf" ] || return 0
   locations="$(sed -n 's/^ *- *location: *//p' "$conf" | tr -d "\"'")"
-  if [ -z "$locations" ] || printf '%s\n' "$locations" | grep -vqx -e "$MOUNT"; then
+  if [ -z "$locations" ] || grep -vqx -e "$MOUNT" <<<"$locations"; then
     echo "The Docker VM of $CLIENT mounts more than $MOUNT. Set mounts in $conf to $MOUNT only."
     exit 1
   fi

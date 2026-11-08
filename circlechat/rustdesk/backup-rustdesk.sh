@@ -37,14 +37,20 @@ trap cleanup EXIT
 for c in $CONTAINERS; do docker pause "$c" >/dev/null 2>&1 && paused="$paused $c"; done
 docker run --rm -v "$VOLUME:/data:ro" -v "$STAGE:/out" alpine:3.20 tar czf /out/rustdesk.tgz -C /data .
 docker unpause $paused >/dev/null 2>&1 || true; paused=""
-tar tzf "$STAGE/rustdesk.tgz" | grep -qx './id_ed25519' || { STEP="the volume holds no id_ed25519"; false; }
+# Each check reads the whole listing first. A grep -q at the end of a pipe stops reading at the
+# first match, the program before grep then fails on a closed pipe, and pipefail counts the found
+# file as a failure.
+STEP="archive listing"
+listing="$(tar tzf "$STAGE/rustdesk.tgz")"
+grep -qx './id_ed25519' <<<"$listing" || { STEP="the volume holds no id_ed25519"; false; }
 
 STEP="restic init"
 restic cat config >/dev/null 2>&1 || restic init
 STEP="restic backup"
 restic backup --tag rustdesk "$STAGE/rustdesk.tgz"
 STEP="restic check"
-restic ls latest | grep -q '/rustdesk.tgz$' || { STEP="the new snapshot has no rustdesk.tgz"; false; }
+snapshot="$(restic ls latest)"
+grep -q '/rustdesk.tgz$' <<<"$snapshot" || { STEP="the new snapshot has no rustdesk.tgz"; false; }
 STEP="restic forget"
 restic forget --tag rustdesk --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
 echo "Backup of the RustDesk server done."

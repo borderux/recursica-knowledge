@@ -709,7 +709,7 @@ install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && $
 # can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
 if [ -n "$BACKUP_REMOTE" ]; then
   for t in restic rclone; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
-  rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -qx "${BACKUP_REMOTE%%:*}:" \
+  rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -x "${BACKUP_REMOTE%%:*}:" >/dev/null \
     || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
   # Root reads Docker's settings from the owner's ~/.docker: on a Mac, Colima's Docker belongs to
   # the owner, and root has no settings of its own.

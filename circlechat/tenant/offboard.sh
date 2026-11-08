@@ -42,7 +42,7 @@ archive)
   restic restore latest --target "$SCRATCH" >/dev/null
   db="$(find "$SCRATCH" -name db.sql.gz | head -1)"
   ok=true
-  { [ -n "$db" ] && gzip -t "$db" && gzip -dc "$db" | grep -q "CREATE TABLE"; } || ok=false
+  { [ -n "$db" ] && gzip -t "$db" && gzip -dc "$db" | grep "CREATE TABLE" >/dev/null; } || ok=false
   [ -n "$(find "$SCRATCH" -name minio.tgz | head -1)" ] || ok=false
   [ -d "$(find "$SCRATCH" -type d -name hermes-homes | head -1)" ] || ok=false
   rm -rf "$SCRATCH"; unset RESTIC_PASSWORD

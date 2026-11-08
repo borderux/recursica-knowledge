@@ -37,7 +37,9 @@ restic restore latest --tag "$STACK" --target "$SCRATCH" >/dev/null || fail "res
 STEP="database dump"
 db="$(find "$SCRATCH" -name db.sql.gz | head -1)"
 [ -n "$db" ] && gzip -t "$db" || fail "the database dump is missing or damaged"
-gzip -dc "$db" | grep -q "CREATE TABLE" || fail "the database dump holds no tables"
+# grep reads the whole dump: a grep -q stops at the first match, gzip then fails on a closed pipe,
+# and pipefail counts the found table as a failure.
+gzip -dc "$db" | grep "CREATE TABLE" >/dev/null || fail "the database dump holds no tables"
 STEP="file store"
 store="$(find "$SCRATCH" -name minio.tgz | head -1)"
 [ -n "$store" ] && tar tzf "$store" >/dev/null || fail "the file store archive is missing or damaged"

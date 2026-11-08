@@ -99,7 +99,7 @@ if [ -n "$JOBS" ]; then
     # On the control computer, the jobs reach the gateway on the job network.
     if [ "$GATEWAY_URL" = http://cc-gateway:4000 ]; then
       docker network connect --alias cc-gateway "$JNET" "cc-gateway$SUFFIX" 2>/dev/null \
-        || docker network inspect -f '{{range .Containers}}{{.Name}} {{end}}' "$JNET" | grep -qw "cc-gateway$SUFFIX" \
+        || docker network inspect -f '{{range .Containers}}{{.Name}} {{end}}' "$JNET" | grep -w "cc-gateway$SUFFIX" >/dev/null \
         || { echo "Start the gateway first: run setup-host.sh on this computer, then rerun setup-node.sh."; exit 1; }
     fi
   fi

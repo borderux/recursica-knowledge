@@ -19,7 +19,7 @@ function setup({ restic = "ok", system, chown = "ok", dump = "ok", storage = fal
   fs.writeFileSync(path.join(cc, "kit-out", "tenant.env"), "TENANT=acme\nSUFFIX=-acme\nCOMPOSE_PROJECT_NAME=cc-acme\nDOCKER_CONTEXT=\nBACKUP_REMOTE=gd:backups\n");
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   stub("docker", `case "$1" in
-  compose) ${dump === "fail" ? "exit 1" : 'echo "CREATE TABLE messages (id int);"'} ;;
+  compose) ${dump === "fail" ? "exit 1" : dump === "big" ? 'echo "CREATE TABLE messages (id int);"; seq 1 200000 | sed "s/^/INSERT INTO messages VALUES (/"' : 'echo "CREATE TABLE messages (id int);"'} ;;
   run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; /out/*.tgz) name="\${a#/out/}" ;; esac; done; mkdir -p /tmp/e$$ && tar czf "$out/$name" -C /tmp/e$$ . ;;
   volume) [ "$2" = inspect ] && ${storage ? "exit 0" : "exit 1"} ;;
 esac`);
@@ -184,4 +184,17 @@ test("the restore test fails when the backup has neither the stored files nor th
   const r = run("restore-test.sh", env);
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /Test restore of stack acme failed .*: the stored files archive is missing/);
+});
+
+// A real database dump runs far past a pipe's buffer. A grep -q on gzip's output stops at the first
+// CREATE TABLE, gzip then fails on the closed pipe, and pipefail turned the found table into "the
+// database dump holds no tables".
+test("the restore test finds the tables in a dump far longer than a pipe's buffer", () => {
+  const { env } = setup({ dump: "big" });
+  const b = run("backup.sh", env);
+  assert.equal(b.status, 0, b.stdout + b.stderr);
+  const r = run("restore-test.sh", env);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout + r.stderr, /holds no tables/);
+  assert.match(r.stdout, /Test restore of stack acme passed/);
 });

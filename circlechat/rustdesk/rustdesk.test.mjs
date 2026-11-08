@@ -180,3 +180,52 @@ test("the Windows and Hyper-V block rules cover every address but Tailscale's an
   assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" .*-LocalPort 21114-21117 -RemoteAddress \$notTailscale -Action Block/);
   assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server UDP, Tailscale only" .*-Protocol UDP -LocalPort 21116 -RemoteAddress \$notTailscale -Action Block/);
 });
+
+// backup-rustdesk.sh, with stand-ins for docker and restic. Both listings run far past a pipe's
+// buffer, with the file the check looks for near the top. A check that pipes a listing into
+// grep -q stops reading at the match, the lister then fails on the closed pipe, and pipefail turns
+// the found file into "the volume holds no id_ed25519".
+function backupRun({ withKey = true } = {}) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-backup-"));
+  const bin = path.join(tmp, "bin"), data = path.join(tmp, "data"), log = path.join(tmp, "calls.log");
+  fs.mkdirSync(bin); fs.mkdirSync(data);
+  const names = [];
+  if (withKey) { fs.writeFileSync(path.join(data, "id_ed25519"), "key\n"); names.push("./id_ed25519"); }
+  // About 300 KB of file names after the key.
+  const long = "x".repeat(90);
+  fs.mkdirSync(path.join(data, "db"));
+  for (let i = 0; i < 3000; i++) { fs.writeFileSync(path.join(data, "db", `${long}-${i}`), ""); }
+  names.push("./db");
+  const fixture = path.join(tmp, "fixture.tgz");
+  const t = spawnSync("tar", ["czf", fixture, "-C", data, ...names]);
+  assert.equal(t.status, 0, String(t.stderr));
+  const stub = (name, body) => fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`, { mode: 0o755 });
+  stub("docker", `case "$1" in
+  run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; esac; done; cp ${fixture} "$out/rustdesk.tgz" ;;
+esac; exit 0`);
+  stub("restic", `case "$1" in
+  cat) exit 0 ;;
+  ls) echo "/var/tmp/stage/rustdesk.tgz"; seq 1 40000 | sed 's|^|/var/tmp/stage/other-file-|' ;;
+esac; exit 0`);
+  const secrets = path.join(tmp, "node.env");
+  fs.writeFileSync(secrets, "RUSTDESK_RESTIC_PASSWORD=pw\n");
+  const r = spawnSync("bash", [path.join(here, "backup-rustdesk.sh")], { encoding: "utf8",
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: "offsite:backups", SECRETS: secrets, KIT: "" } });
+  return { r, calls: fs.readFileSync(log, "utf8") };
+}
+
+test("the backup finds the key in a long archive listing, and the archive in a long snapshot listing", () => {
+  const { r, calls } = backupRun();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout + r.stderr, /write error|holds no id_ed25519|has no rustdesk\.tgz/);
+  assert.match(r.stdout, /Backup of the RustDesk server done\./);
+  assert.match(calls, /^restic backup --tag rustdesk /m);
+  assert.match(calls, /^restic forget --tag rustdesk /m);
+});
+
+test("the backup still stops when the volume holds no id_ed25519", () => {
+  const { r, calls } = backupRun({ withKey: false });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /at step: the volume holds no id_ed25519/);
+  assert.doesNotMatch(calls, /^restic backup /m);
+});

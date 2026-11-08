@@ -76,6 +76,6 @@ fi
 echo "Installed: $(qemu-system-x86_64 --version | head -1), $(cryptsetup --version), lima $LIMA_VERSION, colima $COLIMA_VERSION."
 if [ -n "$ACCOUNT" ]; then echo "Installed /usr/local/bin/agent-stacks-disk. $ACCOUNT can run it through sudo with no password, and nothing else."
 else echo "Installed /usr/local/bin/agent-stacks-disk. No account runs it without a password."; fi
-if id -nG | grep -qw kvm; then echo "Ready for client stacks."
+if id -nG | grep -w kvm >/dev/null; then echo "Ready for client stacks."
 elif [ "$WSL" = true ]; then echo "Run wsl --shutdown in PowerShell and reopen Ubuntu, so $OWNER joins the kvm group."
 else echo "Sign out and back in, so $OWNER joins the kvm group."; fi
