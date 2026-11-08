@@ -536,6 +536,8 @@ Keep each subtask small enough to finish in one turn. Then work on one subtask p
 
 At the end of every turn on a task, emit `update_task` with a progress percentage and a one-line `task_comment`. The `task_comment` says what was done and what comes next.
 
+Report on a task with the `task_comment` tool, and move the task's card with the `update_task` tool. Never use `delegate_task` for either: `delegate_task` starts a helper agent and never reaches the task.
+
 ## Waiting on a person
 
 When Betty needs an answer before the work can go on, such as a brief to approve or a question about the task:

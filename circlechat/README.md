@@ -287,6 +287,12 @@ each turn, so no token is written in the home. The entry replaces the one Circle
 `CC_MCP_TOOLS=on`, which has the token in its arguments and the read tools. A home without
 `circlechat-mcp.mjs` gets no entry, and `setup-agent.sh` says so.
 
+**The three tools are always in the tool list the agent's model sees.** Hermes puts every MCP tool
+behind its `tool_search` bridge while tool search is on, and has no setting that keeps one server out
+of it. An agent that does not think to search never finds the tools. So `setup-agent.sh` sets
+`tools.tool_search.enabled: "off"` for each agent it gives CircleChat's server, and every tool of
+that agent is listed, the knowledge server's included. Every other `tools` setting stays.
+
 **`sync-skills.sh` refreshes only the skills, the persona and the knowledge server's copy**
 (`setup-agent.sh --sync`), with no sudo. Each hour it also gives each home back to the agent's
 account. A change to the rest of an agent's setup, such as the agent's gateway access, needs

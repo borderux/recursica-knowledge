@@ -494,6 +494,17 @@ test("Betty's CircleChat persona replies after a build with the preview address 
   assert.match(text, /After building, reply with the page's preview address and at most two sentences, never code\./);
 });
 
+/**
+ * Hermes put CircleChat's tools behind its tool search, and Betty called delegate_task eight times
+ * to move a card. Her CircleChat persona names the two tools, and rules delegate_task out.
+ */
+test("Betty's CircleChat persona reports with task_comment and moves the card with update_task, never delegate_task", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /Report on a task with the `task_comment` tool, and move the task's card with the `update_task` tool\. Never use `delegate_task` for either/);
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");

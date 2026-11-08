@@ -372,3 +372,40 @@ test("setMcpServer lists the server in the cli toolsets only when the list names
 test("setMcpServer refuses mcp_servers written on one line, rather than lose a server", () => {
   assert.throws(() => setMcpServer("mcp_servers: {circlechat: {command: node}}\n", "recursica-knowledge", KNOWLEDGE), /writes mcp_servers on one line/);
 });
+
+// Hermes puts every MCP tool behind its tool_search bridge while tool search is on, and has no
+// setting that keeps one server out of it. An agent that never searched for update_task called
+// delegate_task eight times to move its card. With loaded, the agent's tools are always listed.
+const SEARCH_OFF = 'tools:\n  tool_search:\n    enabled: "off"\n';
+
+test("setMcpServer with loaded turns tool search off, so CircleChat's tools are always listed, and a second run changes nothing", () => {
+  const once = setMcpServer("model:\n  default: x\n", "circlechat", { ...CIRCLECHAT, loaded: true });
+  assert.equal(once, `model:\n  default: x\nmcp_servers:\n${CIRCLECHAT_ENTRY}${SEARCH_OFF}`);
+  assert.equal(setMcpServer(once, "circlechat", { ...CIRCLECHAT, loaded: true }), once);
+  // Without loaded, tool search is left as it is: the knowledge server's entry changes nothing else.
+  assert.doesNotMatch(setMcpServer("model:\n  default: x\n", "recursica-knowledge", KNOWLEDGE), /tool_search/);
+});
+
+test("setMcpServer with loaded keeps every other tools and tool_search setting, and replaces an enabled or a one-line tool_search", () => {
+  const on = 'tools:\n  tool_search:\n    enabled: auto\n    max_search_limit: 10\n  connectors:\n    enabled: true\nstt:\n  provider: local\n';
+  assert.equal(setMcpServer(on, "circlechat", { ...CIRCLECHAT, loaded: true }),
+    `tools:\n  tool_search:\n    enabled: "off"\n    max_search_limit: 10\n  connectors:\n    enabled: true\nstt:\n  provider: local\nmcp_servers:\n${CIRCLECHAT_ENTRY}`);
+  const noEnabled = "tools:\n  tool_search:\n    listing: off\n";
+  assert.match(setMcpServer(noEnabled, "circlechat", { ...CIRCLECHAT, loaded: true }), /^tools:\n {2}tool_search:\n {4}enabled: "off"\n {4}listing: off\n/);
+  const oneLine = "tools:\n  tool_search: true\n  connectors:\n    enabled: true\n";
+  assert.match(setMcpServer(oneLine, "circlechat", { ...CIRCLECHAT, loaded: true }), /^tools:\n {2}tool_search:\n {4}enabled: "off"\n {2}connectors:\n {4}enabled: true\n/);
+  const otherTools = "tools:\n  connectors:\n    enabled: true\n";
+  assert.match(setMcpServer(otherTools, "circlechat", { ...CIRCLECHAT, loaded: true }), /^tools:\n {2}tool_search:\n {4}enabled: "off"\n {2}connectors:\n/);
+  assert.match(setMcpServer("tools: {}\n", "circlechat", { ...CIRCLECHAT, loaded: true }), /^tools:\n {2}tool_search:\n {4}enabled: "off"\n/);
+  assert.throws(() => setMcpServer("tools: {tool_search: true}\n", "circlechat", { ...CIRCLECHAT, loaded: true }), /writes tools on one line/);
+});
+
+test("mcp-entry.mjs takes --loaded, and setup-agent.sh passes it for CircleChat's server only", () => {
+  const r = spawnSync(process.execPath, [path.join(here, "../kit/mcp-entry.mjs"), "--loaded", "--include", "task_comment", "circlechat", "30", "node", "/opt/data/circlechat-mcp.mjs"],
+    { input: "model:\n  default: x\n", encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(r.stdout.endsWith(SEARCH_OFF), r.stdout);
+  const setup = fs.readFileSync(path.join(here, "../setup-agent.sh"), "utf8");
+  assert.match(setup, /^ {4}MCP_OPTS=\(--loaded\)$/m);
+  assert.doesNotMatch(setup.match(/KNOWLEDGE_MCP_AGENTS[\s\S]*?esac/)[0], /--loaded/);
+});

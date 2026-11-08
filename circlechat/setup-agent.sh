@@ -157,12 +157,18 @@ esac
 # agent's container on each turn, so no token is written in the home. An entry of the same name is
 # replaced, such as the one CircleChat writes with CC_MCP_TOOLS on, which has the token in its
 # arguments.
+#
+# The three tools are always in the tool list the model sees. Hermes puts every MCP tool behind its
+# tool_search bridge while tool search is on, and an agent that does not think to search never finds
+# them: one called delegate_task eight times to move its card. Hermes has no setting that keeps one
+# server out of the bridge, so --loaded turns tool search off for the agent, and every tool of the
+# agent is listed (tools.tool_search.enabled: "off").
 if [ "$HANDLE" != loki ]; then
   read_home "$H/$CIRCLECHAT_MCP_FILE"
   if [ -z "$TEXT" ]; then
     echo "No $CIRCLECHAT_MCP_FILE in $HANDLE's home, so $HANDLE has no CircleChat tools. CircleChat puts it there when it installs the agent: use Skills → Re-equip, then run setup-agent.sh $HANDLE again."
   else
-    MCP_OPTS=()
+    MCP_OPTS=(--loaded)
     for t in $CIRCLECHAT_MCP_TOOLS; do MCP_OPTS+=(--include "$t"); done
     read_home "$H/config.yaml"
     # shellcheck disable=SC2016 # Hermes fills in ${...}, never the shell
