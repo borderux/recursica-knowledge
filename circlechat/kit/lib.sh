@@ -21,6 +21,19 @@ KNOWLEDGE_MCP_NAME=recursica-knowledge
 # shellcheck disable=SC2034
 KNOWLEDGE_MCP_TIMEOUT=30
 
+# CircleChat's own MCP server, which CircleChat puts in each agent's home when it installs the
+# agent. setup-agent.sh registers it for every agent but Loki, with only the tools below: each one
+# sends a single action to CircleChat's /agent-api/act, which runs the same checks as an action in
+# the agent's reply. task_comment comments on a task, and update_task moves a task.
+# shellcheck disable=SC2034
+CIRCLECHAT_MCP_NAME=circlechat
+# shellcheck disable=SC2034
+CIRCLECHAT_MCP_FILE=circlechat-mcp.mjs
+# shellcheck disable=SC2034
+CIRCLECHAT_MCP_TOOLS="task_comment update_task"
+# shellcheck disable=SC2034
+CIRCLECHAT_MCP_TIMEOUT=30
+
 # In-place sed that works with both GNU sed and BSD sed (macOS).
 sedi() { if sed --version >/dev/null 2>&1; then sed -i "$@"; else sed -i '' "$@"; fi; }
 sudo_sedi() { if sed --version >/dev/null 2>&1; then sudo sed -i "$@"; else sudo sed -i '' "$@"; fi; }

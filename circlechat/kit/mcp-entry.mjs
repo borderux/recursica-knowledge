@@ -2,21 +2,36 @@
 // One MCP server's entry in an agent's config.yaml (gateway/hermes-access.mjs setMcpServer). Reads
 // the config's text on stdin and prints the new text, so the caller reads and writes the file
 // through kit/safe-files.mjs, which never follows a symlink. setup-agent.sh runs this for the
-// knowledge server.
+// knowledge server and for CircleChat's own server.
 //
-//   node mcp-entry.mjs <server name> <timeout> <command> [arg ...] < config.yaml
+//   node mcp-entry.mjs [--env NAME=VALUE]... [--include TOOL]... <server name> <timeout> <command> [arg ...] < config.yaml
+//
+// --env sets one variable in the server's environment; a value such as ${CC_BOT_TOKEN} stays as
+// written, and Hermes fills it in when it starts the server. --include names one tool Hermes takes
+// from the server; with no --include, Hermes takes every tool.
 //
 // Exit: 0 with the new text, 1 when the config cannot take the entry, 2 on usage.
 import fs from "node:fs";
 import { setMcpServer } from "../gateway/hermes-access.mjs";
 
-const [name, timeout, command, ...args] = process.argv.slice(2);
+const USAGE = "usage: mcp-entry.mjs [--env NAME=VALUE]... [--include TOOL]... <server name> <timeout> <command> [arg ...] < config.yaml";
+const rest = process.argv.slice(2);
+const env = {}, include = [];
+while (rest[0] === "--env" || rest[0] === "--include") {
+  const [flag, value] = rest.splice(0, 2);
+  if (value === undefined) { console.error(USAGE); process.exit(2); }
+  if (flag === "--include") { include.push(value); continue; }
+  const eq = value.indexOf("=");
+  if (eq < 1) { console.error(USAGE); process.exit(2); }
+  env[value.slice(0, eq)] = value.slice(eq + 1);
+}
+const [name, timeout, command, ...args] = rest;
 if (!name || !/^\d+$/.test(timeout ?? "") || !command) {
-  console.error("usage: mcp-entry.mjs <server name> <timeout> <command> [arg ...] < config.yaml");
+  console.error(USAGE);
   process.exit(2);
 }
 try {
-  process.stdout.write(setMcpServer(fs.readFileSync(0, "utf8"), name, { command, args, timeout: Number(timeout) }));
+  process.stdout.write(setMcpServer(fs.readFileSync(0, "utf8"), name, { command, args, timeout: Number(timeout), env, include }));
 } catch (e) {
   console.error(e.message);
   process.exit(1);
