@@ -4,7 +4,7 @@ description: Rules for the Recursica time picker — when a time of day needs a 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Time picker
