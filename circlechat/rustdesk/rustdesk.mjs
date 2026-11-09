@@ -130,9 +130,12 @@ export function listenProblems(ssText) {
 // The firewall rules that refuse TCP 21114 to 21119 and UDP 21116 from every source except Tailscale
 // and loopback. In the host's network, the firewalls are the only guard on each port. Each guard prints
 // one line per problem, and nothing when every rule is in place.
-//   nft: the input chain of the agentguard table, as nft list chain prints the chain.
+//   nft: the input chain of the agentguard table, as nft list chain prints the chain. nft may print
+//   a set's members in another order, so each set compares as a set: { ::1, fd7a:115c:a1e0::/48 }
+//   matches { fd7a:115c:a1e0::/48, ::1 }.
 //   windows, hyperv: one line per AgentGuard RustDesk server rule, as setup-rustdesk.sh prints the
-//   rule: <protocol>|<local ports>|<action>|<enabled>|<direction>.
+//   rule: <protocol>|<local ports>|<action>|<enabled>|<direction>. The last line is "end". Without
+//   "end", the PowerShell command did not run to the end, and the guard counts as unreadable.
 export const NFT_RULES = [
   `tcp dport 21114-21119 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"`,
   `udp dport ${PORTS.id} ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop comment "rustdesk"`,
@@ -145,6 +148,15 @@ const GUARD_FIX = {
   hyperv: "Run circlechat/cluster/windows/install-windows-guard.ps1 -RustDeskServer in an Administrator PowerShell",
 };
 const GUARD_NAME = { nft: "The nftables rules", windows: "Windows Firewall", hyperv: "The Hyper-V firewall" };
+const READ_NAME = { nft: "the nftables rules", windows: "the Windows Firewall rules", hyperv: "the Hyper-V firewall rules" };
+const GUARD_READ = {
+  nft: "sudo nft list chain inet agentguard input",
+  windows: "Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' | Get-NetFirewallPortFilter",
+  hyperv: "Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*'",
+};
+// One nftables rule, with spaces collapsed and each set's members sorted.
+export const nftRuleKey = (line) => String(line).trim().replace(/\s+/g, " ")
+  .replace(/\{([^}]*)\}/g, (_, members) => `{ ${members.split(",").map((m) => m.trim()).filter(Boolean).sort().join(", ")} }`);
 const portsIn = (list) => String(list).split(",").map((x) => x.trim()).filter(Boolean).flatMap((r) => {
   const m = /^(\d+)(?:-(\d+))?$/.exec(r);
   if (!m) return [];
@@ -156,12 +168,15 @@ export function guardProblems(which, text) {
   const name = GUARD_NAME[which];
   if (!name) throw new Error(`unknown guard ${which}`);
   const missing = [];
+  const lines = String(text).split("\n").map((l) => l.trim()).filter(Boolean);
+  const unreadable = which === "nft" ? !lines.length : lines.at(-1) !== "end";
+  if (unreadable) return [`Could not read ${READ_NAME[which]}. Check with: ${GUARD_READ[which]}. ${GUARD_FIX[which]} when the rules are missing, then run this script again.`];
   if (which === "nft") {
-    const lines = new Set(String(text).split("\n").map((l) => l.trim().replace(/\s+/g, " ")));
-    for (const rule of NFT_RULES) if (!lines.has(rule)) missing.push(rule);
+    const keys = new Set(lines.map(nftRuleKey));
+    for (const rule of NFT_RULES) if (!keys.has(nftRuleKey(rule))) missing.push(rule);
   } else {
     const covered = { tcp: new Set(), udp: new Set() };
-    for (const line of String(text).split("\n")) {
+    for (const line of lines.slice(0, -1)) {
       const [proto, ports, action, enabled, direction] = line.trim().split("|").map((x) => (x ?? "").trim());
       const p = PROTO[proto] ?? proto?.toLowerCase();
       if (!covered[p] || action?.toLowerCase() !== "block" || enabled?.toLowerCase() !== "true" || direction?.toLowerCase() !== "inbound") continue;

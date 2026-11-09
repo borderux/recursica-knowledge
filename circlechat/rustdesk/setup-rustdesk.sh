@@ -45,16 +45,18 @@ ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | grep -x "$ADDRESS" >/dev/n
   || { echo "$ADDRESS is not on any network interface here, so no client reaches the relay hbbs names, $ADDRESS:21117. In WSL, networking must be mirrored."; exit 1; }
 
 # 2. The guards. In the host's network, each firewall must refuse TCP 21114 to 21119 and UDP 21116
-#    from every source except Tailscale and loopback. A rule that is missing, or that WSL cannot read, stops
-#    the setup before the server starts.
-# A reader that fails prints nothing, and the check then finds every rule missing. A check that
-# fails stops the script, before the server starts.
+#    from every source except Tailscale and loopback. A rule that is missing, or a firewall whose
+#    rules can't be read, stops the setup before the server starts. Each PowerShell command prints
+#    "end" last, so the check tells a failed read from a missing rule. Neither command needs admin
+#    rights. A check that fails stops the script, before the server starts.
 nft_rules="$(sudo nft list chain inet agentguard input 2>/dev/null || true)"
 problems="$(printf '%s\n' "$nft_rules" | $RD guard-check nft)"
 if [ "$WSL" = true ]; then
-  # One line per rule: <protocol>|<local ports>|<action>|<enabled>|<direction>.
-  fw_rules="Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' -ErrorAction SilentlyContinue | ForEach-Object { \$f = \$_ | Get-NetFirewallPortFilter; '{0}|{1}|{2}|{3}|{4}' -f \$f.Protocol, (\$f.LocalPort -join ','), \$_.Action, \$_.Enabled, \$_.Direction }"
-  hv_rules="Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*' -ErrorAction SilentlyContinue | ForEach-Object { '{0}|{1}|{2}|{3}|{4}' -f \$_.Protocol, (\$_.LocalPorts -join ','), \$_.Action, \$_.Enabled, \$_.Direction }"
+  # One line per rule: <protocol>|<local ports>|<action>|<enabled>|<direction>, then "end". Any
+  # error, such as a refused read, stops the command before "end". A name pattern with no match
+  # is no error.
+  fw_rules="\$ErrorActionPreference = 'Stop'; Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*' | ForEach-Object { \$f = \$_ | Get-NetFirewallPortFilter; '{0}|{1}|{2}|{3}|{4}' -f \$f.Protocol, (\$f.LocalPort -join ','), \$_.Action, \$_.Enabled, \$_.Direction }; 'end'"
+  hv_rules="\$ErrorActionPreference = 'Stop'; Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*' | ForEach-Object { '{0}|{1}|{2}|{3}|{4}' -f \$_.Protocol, (\$_.LocalPorts -join ','), \$_.Action, \$_.Enabled, \$_.Direction }; 'end'"
   fw_rules="$(powershell.exe -NoProfile -NonInteractive -Command "$fw_rules" 2>/dev/null | tr -d '\r' || true)"
   hv_rules="$(powershell.exe -NoProfile -NonInteractive -Command "$hv_rules" 2>/dev/null | tr -d '\r' || true)"
   fw="$(printf '%s\n' "$fw_rules" | $RD guard-check windows)"
@@ -63,7 +65,6 @@ if [ "$WSL" = true ]; then
 fi
 if [ -n "$problems" ]; then
   echo "$problems"
-  [ "$WSL" = true ] && echo "When the rules exist, WSL could not read the rules. Check in an Administrator PowerShell: Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server*', and Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-*'."
   echo "The RustDesk server did not start."; exit 1
 fi
 
