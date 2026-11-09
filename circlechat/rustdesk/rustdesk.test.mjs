@@ -8,7 +8,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { validate, render } from "../kit/render.mjs";
 import { stackSite } from "../kit/stack-site.mjs";
-import { RELAY_KEY_WAIT, composeFile, listenProblems, rustdeskErrors, serveProblems } from "./rustdesk.mjs";
+import { NFT_RULES, RELAY_KEY_WAIT, composeFile, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
@@ -30,9 +30,9 @@ test("a RustDesk server on Linux or WSL, at its Tailscale address, with a pinned
   assert.equal(render(withServer()).services["machine-1"].rustdesk, null);
 });
 
-test("the config check refuses a RustDesk server that would open beyond Tailscale or run unpinned", () => {
+test("the config check refuses a RustDesk server off Linux, off its Tailscale address, or unpinned", () => {
   const errs = (change) => rustdeskErrors(withServer(change)).join("\n");
-  assert.match(errs((s) => { node3(s).os = "macos"; return s; }), /Colima cannot publish UDP port 21116/);
+  assert.match(errs((s) => { node3(s).os = "macos"; return s; }), /On a Mac, Docker runs in Colima's VM/);
   assert.match(errs((s) => { node3(s).address = "192.168.1.30"; return s; }), /Tailscale IPv4 address/);
   assert.match(errs((s) => { node3(s).address = "100.128.0.1"; return s; }), /Tailscale IPv4 address/);
   assert.match(errs((s) => { node3(s).rustdesk.image = "docker.io/rustdesk/rustdesk-server-pro:latest"; return s; }), /pinned by digest/);
@@ -52,16 +52,16 @@ test("a client or demo stack never carries the cluster's RustDesk server", () =>
   assert.ok(s.nodes.every((n) => n.rustdesk === undefined));
 });
 
-test("the Compose file opens the server's ports on the Tailscale address only, and the console on 127.0.0.1", () => {
+test("the Compose file runs hbbs and hbbr in the host's network, which RustDesk's license needs", () => {
   const c = composeFile(render(withServer()).services["machine-3"].rustdesk);
-  const ports = Object.values(c.services).flatMap((s) => s.ports);
-  assert.deepEqual(ports.sort(), [`127.0.0.1:21114:21114/tcp`, `${TS}:21115:21115/tcp`, `${TS}:21116:21116/tcp`, `${TS}:21116:21116/udp`, `${TS}:21117:21117/tcp`].sort());
+  assert.deepEqual(Object.keys(c.services).sort(), ["hbbr", "hbbs"]);
   for (const s of Object.values(c.services)) {
+    assert.equal(s.network_mode, "host", "a container on Docker's own network is a new machine to the license server at each start");
+    assert.equal(s.ports, undefined, "the host's network publishes no ports");
     assert.equal(s.image, IMAGE);
     assert.deepEqual(s.volumes, ["rustdesk_data:/root"]);
-    assert.equal(s.network_mode, undefined, "never the host's network, where each port would open on every address");
+    assert.deepEqual(s.security_opt, ["no-new-privileges:true"]);
   }
-  assert.ok(!ports.some((p) => /2111[89]/.test(p)), "the web client's ports stay closed");
 });
 
 test("hbbr starts after hbbs and waits for the key, and hbbs names the relay on the Tailscale address", () => {
@@ -94,25 +94,96 @@ test("the serve check wants HTTPS 443 passed to the console, and refuses Funnel"
   assert.match(serveProblems({ ...ok, AllowFunnel: { "machine-3.example.ts.net:443": true } }, 443, 21114)[0], /Funnel serves/);
 });
 
+// In the host's network, hbbs and hbbr listen on every address.
 const goodSs = [
-  `tcp LISTEN 0 4096 127.0.0.1:21114 0.0.0.0:* users:(("docker-proxy",pid=1))`,
-  `tcp LISTEN 0 4096 ${TS}:21115 0.0.0.0:*`,
-  `tcp LISTEN 0 4096 ${TS}:21116 0.0.0.0:*`,
-  `udp UNCONN 0 0 ${TS}:21116 0.0.0.0:*`,
-  `tcp LISTEN 0 4096 ${TS}:21117 0.0.0.0:*`,
+  `tcp LISTEN 0 4096 *:21114 *:* users:(("hbbs",pid=1))`,
+  `tcp LISTEN 0 4096 0.0.0.0:21115 0.0.0.0:*`,
+  `tcp LISTEN 0 4096 [::]:21116 [::]:*`,
+  `udp UNCONN 0 0 [::]:21116 [::]:*`,
+  `tcp LISTEN 0 4096 [::]:21117 [::]:*`,
   `tcp LISTEN 0 4096 0.0.0.0:22 0.0.0.0:*`,
 ].join("\n");
 
-test("the listener check wants each port on its one address, and nothing else on RustDesk's ports", () => {
-  assert.deepEqual(listenProblems(goodSs, TS), []);
-  assert.match(listenProblems(goodSs.replace(`${TS}:21117`, "0.0.0.0:21117"), TS).join("\n"), /tcp port 21117 listens on 0.0.0.0/);
-  assert.match(listenProblems(goodSs + "\ntcp LISTEN 0 4096 [::]:21116 [::]:*", TS).join("\n"), /tcp port 21116 listens on ::/);
-  assert.match(listenProblems(goodSs + `\ntcp LISTEN 0 4096 ${TS}:21118 0.0.0.0:*`, TS).join("\n"), /21118 .*web client's ports stay closed/);
-  assert.match(listenProblems(goodSs.split("\n").filter((l) => !l.startsWith("udp")).join("\n"), TS).join("\n"), /nothing listens on .*udp port 21116.*userland-proxy/);
+test("the listener check wants each RustDesk port listening, on any address", () => {
+  assert.deepEqual(listenProblems(goodSs), []);
+  assert.deepEqual(listenProblems(goodSs.replace("*:21114", `${TS}:21114`)), []);
+  assert.match(listenProblems(goodSs.split("\n").filter((l) => !l.startsWith("udp")).join("\n")).join("\n"), /nothing listens on udp port 21116\. Read the server's log: docker logs rustdesk-hbbs/);
+  assert.match(listenProblems(goodSs.replace("[::]:21117", "[::]:21127")).join("\n"), /nothing listens on tcp port 21117\. .*rustdesk-hbbr/);
+  assert.match(listenProblems("").join("\n"), /tcp port 21114/);
+});
+
+// The input chain of the agentguard table, as nft list chain prints the chain after install-cluster.sh.
+const nftInput = () => {
+  const base = fs.readFileSync(path.join(here, "../cluster/firewall/nft-base.nft"), "utf8");
+  const start = base.indexOf("chain input {");
+  return base.slice(start, base.indexOf("\n  }", start));
+};
+// The rules as setup-rustdesk.sh prints the rules from Windows: protocol|local ports|action|enabled|direction.
+const winRules = "TCP|21114-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound";
+
+test("the guard check finds the RustDesk rule in each of the three firewalls", () => {
+  assert.deepEqual(guardProblems("nft", nftInput()), []);
+  assert.equal(NFT_RULES.length, 4);
+  assert.deepEqual(guardProblems("windows", winRules), []);
+  assert.deepEqual(guardProblems("hyperv", winRules), []);
+  assert.deepEqual(guardProblems("hyperv", "6|21114-21119|Block|True|Inbound\n17|21116|Block|True|Inbound"), [], "the Hyper-V firewall may print a protocol number");
+  assert.deepEqual(guardProblems("windows", "TCP|21114,21115,21116-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound"), []);
+});
+
+test("the guard check names each firewall that lacks port 21114, port 21118 or 21119, or any RustDesk rule", () => {
+  // The forward rule before this fix covered 21115 to 21117 only, and an input rule may lack 21114 too.
+  assert.match(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21115-21119")).join("\n"), /The nftables rules lack the RustDesk rule: tcp dport 21114-21119 ip saddr .*Run circlechat\/cluster\/install-cluster\.sh first/);
+  assert.equal(guardProblems("nft", "").length, 4, "an unreadable chain lacks every rule");
+  assert.equal(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21114-21117")).length, 2, "the rules before the web client's ports");
+  for (const [which, name] of [["windows", "Windows Firewall"], ["hyperv", "The Hyper-V firewall"]]) {
+    assert.match(guardProblems(which, winRules.replace("21114-21119", "21115-21119")).join("\n"), new RegExp(`^${name} lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\\. Run .*install-windows-guard\\.ps1 -RustDeskServer`));
+    assert.equal(guardProblems(which, "").length, 2, "no rules, or rules WSL could not read");
+    assert.match(guardProblems(which, winRules.replace("21114-21119", "21114-21117")).join("\n"), /block rule for TCP 21118, 21119\./, "the rules before the web client's ports");
+    assert.match(guardProblems(which, winRules.replace("UDP|21116|Block|True", "UDP|21116|Block|False")).join("\n"), /UDP 21116/, "a turned-off rule guards nothing");
+    assert.match(guardProblems(which, winRules.replace("TCP|21114-21119|Block", "TCP|21114-21119|Allow")).join("\n"), /TCP 21114, 21115, 21116, 21117, 21118, 21119/, "an allow rule guards nothing");
+    assert.match(guardProblems(which, winRules.replace("TCP|21114-21119|Block|True|Inbound", "TCP|21114-21119|Block|True|Outbound")).join("\n"), /TCP 21114/);
+  }
+});
+
+// The web client's ports, 21118 and 21119. In the host's network, hbbs and hbbr must open both ports,
+// and a RustDesk client's direct IP access uses 21118 by default.
+const q = (v) => `'${v}'`;
+const directOn = `[options]\ndirect-server = ${q("Y")}\n`;
+
+test("a client's direct IP access uses 21118 unless direct-access-port says otherwise", () => {
+  assert.deepEqual(directAccessPorts(""), []);
+  assert.deepEqual(directAccessPorts(`[options]\ndirect-server = ${q("N")}\n`), []);
+  assert.deepEqual(directAccessPorts(directOn), [21118]);
+  assert.deepEqual(directAccessPorts(`${directOn}direct-access-port = ${q("21200")}\n`), [21200]);
+  // Two settings files, the signed-in user's with direct access off and the service's with direct access on.
+  assert.deepEqual(directAccessPorts(`direct-server = ${q("N")}\n${directOn}`), [21118]);
+});
+
+test("the web port check passes free ports, and ports held by hbbs and hbbr", () => {
+  assert.deepEqual(webPortProblems({ ss: goodSs, windows: "end", clients: "" }), []);
+  const held = `LISTEN 0 4096 *:21118 *:* users:(("hbbs",pid=1,fd=9))\nLISTEN 0 4096 *:21119 *:* users:(("hbbr",pid=2,fd=9))`;
+  assert.deepEqual(webPortProblems({ ss: held, windows: "end" }), []);
+  assert.deepEqual(webPortProblems({ ss: goodSs, windows: null }), [], "outside WSL, Windows is not read");
+  assert.deepEqual(webPortProblems({ windows: "end", clients: `${directOn}direct-access-port = ${q("21200")}\n` }), [], "direct access on another port");
+});
+
+test("the web port check refuses each conflict that would break direct access or stop hbbs", () => {
+  const why = /hbbs needs port 21118 and hbbr needs port 21119, and neither program can move the port or turn the port off/;
+  let p = webPortProblems({ windows: "21118|rustdesk\nend" });
+  assert.match(p.join("\n"), /^rustdesk listens on TCP 21118 in Windows, and WSL shares the port\./);
+  assert.match(p.join("\n"), why);
+  p = webPortProblems({ windows: "end", clients: directOn });
+  assert.match(p.join("\n"), /^The RustDesk client on this computer has direct IP access on port 21118\..*the client's direct access would break$/);
+  p = webPortProblems({ ss: `LISTEN 0 4096 *:21118 *:* users:(("rustdesk",pid=3,fd=9))`, windows: null });
+  assert.match(p.join("\n"), /^rustdesk listens on TCP 21118 in Linux\./);
+  p = webPortProblems({ ss: `LISTEN 0 4096 *:21119 *:* users:(("hbbs",pid=1,fd=9))` });
+  assert.match(p.join("\n"), /^hbbs listens on TCP 21119 in Linux/, "only hbbr may hold 21119");
+  assert.match(webPortProblems({ windows: "" }).join("\n"), /^Could not read Windows' listeners on TCP 21118 and 21119\./);
+  assert.deepEqual(webPortProblems({ windows: "21118|wslrelay\nend" }), [], "WSL's own processes pass a WSL listener to Windows");
 });
 
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -121,7 +192,9 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   stub("uname", "echo Linux");
   stub("sudo", `exec "$@"`);
   stub("systemctl", "exit 0");
-  stub("nft", nftRule ? `echo '    meta l4proto { tcp, udp } th dport 21115-21117 ip saddr != 100.64.0.0/10 drop comment "rustdesk"'` : "exit 0");
+  const chain = path.join(home, "input.nft");
+  fs.writeFileSync(chain, nftRule ? nftInput() : "");
+  stub("nft", `[ "$*" = "list chain inet agentguard input" ] && cat "${chain}"; exit 0`);
   stub("tailscale", `case "$1" in ip) echo ${TS} ;; serve) [ "$2" = status ] && echo '${JSON.stringify(status)}' ;; esac; exit 0`);
   stub("ip", `printf '1: lo    inet 127.0.0.1/8 scope host lo\\n2: eth0    inet 192.168.1.30/24 scope global eth0\\n3: eth1    inet ${TS}/32 scope global eth1\\n'`);
   stub("ss", `cat <<'SS'\n${ss}\nSS`);
@@ -130,8 +203,7 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   // docker logs rustdesk-hbbr: the relay's start-up log, with or without the key.
   stub("docker", `[ "$1 $2" = "logs rustdesk-hbbr" ] && { printf '%s\\n' ${JSON.stringify(relayLog)}; exit 0; }; exit 0`);
   stub("sleep", "exit 0");
-  // A port answers on an address only when the test says so.
-  stub("timeout", `case "$*" in *"${answersOn}"*) [ -n "${answersOn}" ] && exit 0 ;; esac; exit 1`);
+  if (clientSettings) { fs.mkdirSync(path.join(home, ".config", "rustdesk"), { recursive: true }); fs.writeFileSync(path.join(home, ".config", "rustdesk", "RustDesk2.toml"), clientSettings); }
   const secrets = path.join(home, "node.env");
   fs.writeFileSync(secrets, secret ? "RUSTDESK_RESTIC_PASSWORD=p\n" : "JOBD_TOKEN=t\n");
   const out = path.join(home, "out");
@@ -140,8 +212,16 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, answersOn = "", s
   fs.writeFileSync(path.join(out, "services", "machine-3.json"), JSON.stringify(r.services["machine-3"]));
   fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
   fs.writeFileSync(path.join(home, "version"), wsl ? "Linux version 6.6.87.2-microsoft-standard-WSL2\n" : "Linux version 6.8.0 (a plain Linux computer)\n");
-  // In WSL: mirrored networking, and two AgentGuard RustDesk rules in each Windows firewall.
-  if (wsl) { stub("wslinfo", "echo mirrored"); stub("powershell.exe", "echo 2"); }
+  // In WSL: mirrored networking, and the AgentGuard RustDesk rules in each Windows firewall, as the
+  // setup's PowerShell command prints the rules, with Windows' line ends.
+  if (wsl) {
+    fs.writeFileSync(path.join(home, "fw.txt"), windowsRules.replaceAll("\n", "\r\n"));
+    fs.writeFileSync(path.join(home, "hv.txt"), hypervRules.replaceAll("\n", "\r\n"));
+    stub("wslinfo", "echo mirrored");
+    fs.writeFileSync(path.join(home, "listeners.txt"), windowsListeners.replaceAll("\n", "\r\n"));
+    fs.writeFileSync(path.join(home, "client.toml"), winClientSettings.replaceAll("\n", "\r\n"));
+    stub("powershell.exe", `case "$*" in *Get-NetFirewallHyperVRule*) cat "${home}/hv.txt" ;; *Get-NetFirewallRule*) cat "${home}/fw.txt" ;; *Get-NetTCPConnection*) cat "${home}/listeners.txt" ;; *RustDesk2.toml*) cat "${home}/client.toml" ;; esac`);
+  }
   const run = spawnSync("bash", [path.join(here, "setup-rustdesk.sh"), path.join(out, "services", "machine-3.json"), path.join(out, "tenant.env")], {
     env: { ...process.env, HOME: home, SECRETS: secrets, PROC_VERSION: path.join(home, "version"), SYSTEMD_UNIT_DIR: units, RUSTDESK_LISTEN_TRIES: "2", PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin` },
     encoding: "utf8",
@@ -153,7 +233,8 @@ test("the setup starts the server, checks it, gives the console its HTTPS addres
   const r = sandbox();
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const compose = JSON.parse(fs.readFileSync(path.join(r.home, ".recursica-rustdesk", "compose.json"), "utf8"));
-  assert.ok(compose.services.hbbs.ports.includes(`${TS}:21116:21116/udp`));
+  assert.equal(compose.services.hbbs.network_mode, "host");
+  assert.equal(compose.services.hbbr.network_mode, "host");
   assert.match(r.calls(), /^docker compose -f \S+compose\.json up -d --remove-orphans$/m);
   assert.match(r.calls(), /^tailscale serve --bg --https=443 http:\/\/127\.0\.0\.1:21114$/m);
   const unit = fs.readFileSync(path.join(r.units, "rustdesk-backup.service"), "utf8");
@@ -166,7 +247,8 @@ test("the setup starts the server, checks it, gives the console its HTTPS addres
 test("the setup starts nothing without the firewall rule or the backup's secret", () => {
   let r = sandbox({ nftRule: false });
   assert.equal(r.status, 1);
-  assert.match(r.stdout, /no RustDesk rule\. Run circlechat\/cluster\/install-cluster\.sh first/);
+  assert.match(r.stdout, /The nftables rules lack the RustDesk rule: .*Run circlechat\/cluster\/install-cluster\.sh first/);
+  assert.match(r.stdout, /The RustDesk server did not start\./);
   assert.doesNotMatch(r.calls(), /docker compose/);
   r = sandbox({ secret: false });
   assert.equal(r.status, 1);
@@ -174,15 +256,51 @@ test("the setup starts nothing without the firewall rule or the backup's secret"
   assert.doesNotMatch(r.calls(), /docker compose/);
 });
 
-test("the setup stops the server when a port listens on a wrong address or answers outside Tailscale", () => {
-  let r = sandbox({ ss: goodSs.replace(`${TS}:21115`, "0.0.0.0:21115") });
+test("in WSL, the setup starts the server only when all three firewalls hold the RustDesk rules", () => {
+  let r = sandbox({ wsl: true });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.calls(), /^powershell\.exe .*Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server\*'/m);
+  assert.match(r.calls(), /^powershell\.exe .*Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-\*'/m);
+  for (const [opts, said] of [
+    [{ nftRule: false }, /The nftables rules lack the RustDesk rule/],
+    [{ windowsRules: winRules.replace("21114-21119", "21115-21119") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
+    [{ hypervRules: winRules.replace("21114-21119", "21115-21119") }, /The Hyper-V firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
+    [{ windowsRules: winRules.replace("21114-21119", "21114-21117") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21118, 21119\./],
+    [{ hypervRules: "" }, /The Hyper-V firewall lacks the RustDesk rule.*\n.*\n?.*WSL could not read the rules/],
+    [{ windowsRules: "" }, /Windows Firewall lacks the RustDesk rule/],
+  ]) {
+    r = sandbox({ wsl: true, ...opts });
+    assert.equal(r.status, 1, JSON.stringify(opts));
+    assert.match(r.stdout, said);
+    assert.match(r.stdout, /The RustDesk server did not start\./);
+    assert.doesNotMatch(r.calls(), /docker compose/, `nothing starts: ${JSON.stringify(opts)}`);
+  }
+});
+
+test("the setup starts nothing when the web client's ports would break the client's direct access", () => {
+  for (const [opts, said] of [
+    [{ wsl: true, windowsListeners: "21118|rustdesk\nend" }, /rustdesk listens on TCP 21118 in Windows/],
+    [{ wsl: true, winClientSettings: directOn }, /The RustDesk client on this computer has direct IP access on port 21118/],
+    [{ wsl: true, windowsListeners: "" }, /Could not read Windows' listeners/],
+    [{ clientSettings: directOn }, /direct IP access on port 21118/],
+    [{ ss: `${goodSs}\nLISTEN 0 4096 0.0.0.0:21118 0.0.0.0:* users:(("rustdesk",pid=3,fd=9))` }, /rustdesk listens on TCP 21118 in Linux/],
+  ]) {
+    const r = sandbox(opts);
+    assert.equal(r.status, 1, JSON.stringify(opts));
+    assert.match(r.stdout, said);
+    assert.match(r.stdout, /would break the RustDesk client's direct IP access on this computer, or stop hbbs\. The RustDesk server did not start\./);
+    assert.doesNotMatch(r.calls(), /docker compose/, `nothing starts: ${JSON.stringify(opts)}`);
+  }
+  const r = sandbox({ wsl: true, winClientSettings: `${directOn}direct-access-port = ${q("21200")}\n` });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+});
+
+test("the setup stops the server when a RustDesk port does not listen", () => {
+  const r = sandbox({ ss: goodSs.split("\n").filter((l) => !l.includes(":21115")).join("\n") });
   assert.equal(r.status, 1);
-  assert.match(r.stdout, /tcp port 21115 listens on 0\.0\.0\.0/);
+  assert.match(r.stdout, /nothing listens on tcp port 21115/);
   assert.match(r.calls(), /^docker compose -f \S+ stop$/m);
-  r = sandbox({ answersOn: "192.168.1.30/21116" });
-  assert.equal(r.status, 1);
-  assert.match(r.stdout, /Port 21116 answers on 192\.168\.1\.30/);
-  assert.match(r.calls(), /^docker compose -f \S+ stop$/m);
+  assert.doesNotMatch(r.stdout, /RustDesk server running/);
 });
 
 test("the setup stops the server when hbbr runs in public relay mode", () => {
@@ -229,7 +347,9 @@ test("the Windows and Hyper-V block rules cover every address but Tailscale's an
   for (const name of ["AgentGuard-RustDesk-Server-TCP", "AgentGuard-RustDesk-Server-UDP"]) {
     assert.match(ps, new RegExp(`New-NetFirewallHyperVRule -Name "${name}" .*-VMCreatorId \\$wsl .*-RemoteAddresses \\$notTailscale -Action Block`));
   }
-  assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" .*-LocalPort 21114-21117 -RemoteAddress \$notTailscale -Action Block/);
+  assert.match(ps, /New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-TCP" .*-Protocol TCP -LocalPorts 21114-21119 /);
+  assert.match(ps, /New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-UDP" .*-Protocol UDP -LocalPorts 21116 /);
+  assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" .*-LocalPort 21114-21119 -RemoteAddress \$notTailscale -Action Block/);
   assert.match(ps, /New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server UDP, Tailscale only" .*-Protocol UDP -LocalPort 21116 -RemoteAddress \$notTailscale -Action Block/);
 });
 

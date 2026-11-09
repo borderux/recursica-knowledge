@@ -894,22 +894,36 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 
 **One computer can run RustDesk Server Pro for the whole cluster, reachable only over Tailscale.** People then sign in to RustDesk with Google, each with their own Google two-factor, and every session runs through the server's relay. The server is Pro's two programs, `hbbs` (the ID server and the web console) and `hbbr` (the relay), in Docker, from one image pinned by digest. Both keep the server's key in one volume. `hbbs` makes the key on the first start. `hbbr` starts only once the key exists. Without the key, `hbbr` runs as a public relay that any client may use. `setup-rustdesk.sh` stops the server when `hbbr`'s log says "PUBLIC RELAY MODE". `hbbs` names the relay, `<Tailscale address>:21117`, with `-r`, so each client gets the relay's address from `hbbs`.
 
-| Port            | What it is                   | Opens on                                                       |
-| --------------- | ---------------------------- | -------------------------------------------------------------- |
-| 21114/tcp       | The web console and its API  | `127.0.0.1` only. `tailscale serve` gives it HTTPS on port 443 |
-| 21115/tcp       | The NAT type test            | The computer's Tailscale address only                          |
-| 21116/tcp + udp | ID registration and requests | The computer's Tailscale address only                          |
-| 21117/tcp       | The relay                    | The computer's Tailscale address only                          |
-| 21118, 21119    | RustDesk's web client        | Nowhere: the kit never publishes them                          |
+**`hbbs` and `hbbr` run in the host's network, because RustDesk's license needs host networking.** On Docker's own network, each new container counts as a new machine. The kit recreates both containers at each new image or Compose change. The license then failed each time, and `hbbr`'s log said "License already in use by another machine". In the host's network, each RustDesk port listens on every address of the computer. The three firewalls below are the guard on each port.
 
-**Run the server on Linux, or on Windows in WSL with mirrored networking.** Port 21116 needs UDP. On a Mac, Docker runs in Colima's VM, which does not hold the Mac's Tailscale address, and `tailscale serve` carries no UDP, so the port would open on every address. The config check refuses a `rustdesk` block on a Mac. In WSL with mirrored networking, WSL shares Windows' addresses, Tailscale's included, so Docker opens each port on the Tailscale address alone. Mirrored networking passes a port to WSL only while a program in WSL listens on the port, so Docker's userland-proxy stays on, as Docker sets by default.
+| Port            | What it is                   | Who reaches the port                                                     |
+| --------------- | ---------------------------- | ------------------------------------------------------------------------ |
+| 21114/tcp       | The web console and its API  | Tailscale and loopback. `tailscale serve` gives the console HTTPS on 443 |
+| 21115/tcp       | The NAT type test            | Tailscale and loopback                                                   |
+| 21116/tcp + udp | ID registration and requests | Tailscale and loopback                                                   |
+| 21117/tcp       | The relay                    | Tailscale and loopback                                                   |
+| 21118, 21119    | RustDesk's web client        | Tailscale and loopback. Nobody once `remote_access.direct_ip` is false   |
 
-**Four guards keep the ports on the tailnet:**
+**Run the server on Linux, or on Windows in WSL with mirrored networking.** On a Mac, Docker runs in Colima's VM. The VM's network holds no Tailscale address of the Mac, so the host's network in Colima is the wrong network. The config check refuses a `rustdesk` block on a Mac. In WSL with mirrored networking, WSL shares Windows' addresses, Tailscale's included.
 
-- **Docker** opens each port on one address, as the table shows. The setup reads `ss` and stops the server when a RustDesk port listens anywhere else. It also stops the server when a port answers on any other address of the computer, such as the office address.
-- **nftables**, on Linux and in WSL: the server's ports take only Tailscale and the computer itself. Docker's internal networks and allowed sources are refused, so no agent container reaches the server.
-- **Windows Firewall and the Hyper-V firewall**, on Windows: `install-windows-guard.ps1 -RustDeskServer` adds block rules for TCP 21114 to 21117 and UDP 21116 from every address outside Tailscale and loopback. A block rule wins over every allow rule. Loopback stays open, because Tailscale on Windows reaches the console in WSL at `127.0.0.1`.
-- **Tailscale's access rules** decide which tailnet devices reach the ports. `circlechat/rustdesk/tailnet-policy.example.hujson` holds the rules to add to the tailnet's policy file. The kit never changes the policy file.
+**Three firewalls refuse TCP 21114 to 21119 and UDP 21116 from every source except Tailscale and loopback:**
+
+- **nftables**, on Linux and in WSL: the input chain and the forward chain refuse the ports. No agent container and no allowed source reaches the server.
+- **Windows Firewall and the Hyper-V firewall**, on Windows: `install-windows-guard.ps1 -RustDeskServer` adds block rules for TCP 21114 to 21119 and UDP 21116. The rules block every address outside Tailscale and loopback. A block rule wins over every allow rule. Loopback stays open, because Tailscale on Windows reaches the console in WSL at `127.0.0.1`.
+
+**The rules cover the web client's ports, 21118 and 21119, too.** In the host's network, `hbbs` and `hbbr` open both ports on every address.
+
+**The server's computer keeps 21118 and 21119 free for `hbbs` and `hbbr`.** `hbbs` opens its port plus 2, 21118, and `hbbr` opens its port plus 2, 21119. Neither program can move the port or turn the port off. Each program stops when the port is taken. A RustDesk client's direct IP access uses 21118 by default. WSL in mirrored networking shares each port with Windows. So the server and the computer's own client can't both use 21118. `setup-rustdesk.sh` refuses to start the server on any of these:
+
+- A program other than `hbbs` or `hbbr` listens on 21118 or 21119, in Linux or in Windows.
+- The computer's RustDesk client has direct IP access on 21118 or 21119. The script reads the client's `RustDesk2.toml`: the signed-in user's and the RustDesk service's.
+- WSL can't read Windows' listeners on the ports.
+
+A computer with direct IP access can still run the server. Set the client's `direct-access-port` to another port, such as 21120. Or turn off direct IP access on that client.
+
+**`setup-rustdesk.sh` starts the server only when each of the three firewalls holds the RustDesk rule.** The script reads each rule and checks the ports, the action and that the rule is on. A rule that WSL can't read counts as missing.
+
+**Tailscale's access rules decide which tailnet devices reach the ports.** `circlechat/rustdesk/tailnet-policy.example.hujson` holds the rules to add to the tailnet's policy file. The kit never changes the policy file.
 
 **Set it up in this order.** Each step's command runs on the server's computer, except the policy change.
 
@@ -928,18 +942,29 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 2. Add `RUSTDESK_RESTIC_PASSWORD` to the cluster's GitHub environment: a new random secret, used only for this backup. Run the "Deploy secrets" workflow for the computer. The secrets helper writes the secret to the computer's `~/.recursica-node.env` only. The computer then holds no key to the stack's other backups.
 3. On Windows, in an Administrator PowerShell: `install-windows-guard.ps1 -RustDeskServer`. To see the rules first, with no change, run the same command with `-DryRun`. Then run `install-wsl-boot.ps1 -RustDeskServer` the same way, as "WSL at boot on Windows" describes, and restart WSL at a planned time.
 4. `install-cluster.sh <computer>`, for the nftables rules.
-5. `setup-node.sh <computer>`. The setup runs `circlechat/rustdesk/setup-rustdesk.sh`, which stops before the server starts when WSL networking is not mirrored, when a guard is missing, when the node's address is not the computer's Tailscale address, or when the backup's secret is missing. The script then starts the server, checks the ports, runs `tailscale serve --bg --https=443 http://127.0.0.1:21114`, and checks that Funnel is off. The script checks that the console answers on `127.0.0.1:21114`, and only then installs the nightly backup and reports success. On Windows, `tailscale serve` may need an Administrator PowerShell; the setup prints the command.
+5. `setup-node.sh <computer>`. The setup runs `circlechat/rustdesk/setup-rustdesk.sh`, which stops before the server starts on any of these:
+
+   - WSL networking is not mirrored.
+   - A firewall lacks the RustDesk rule.
+   - The web client's ports, 21118 and 21119, would break the computer's direct IP access.
+   - The node's address is not the computer's Tailscale address.
+   - The backup's secret is missing.
+
+   The script then starts the server, checks that each port listens, runs `tailscale serve --bg --https=443 http://127.0.0.1:21114`, and checks that Funnel is off. The script checks that the console answers on `127.0.0.1:21114`, and only then installs the nightly backup and reports success. On Windows, `tailscale serve` may need an Administrator PowerShell; the setup prints the command.
+
 6. Add the access rules from `tailnet-policy.example.hujson` to the tailnet's policy file.
 7. Run the first backup, and check that it holds the key: `sudo systemctl start rustdesk-backup.service`.
 8. Open the console at `https://<console_host>` from an admin's device. Change the default admin password, and turn on two-factor sign-in for that account. Keep it as the one local account, for when Google sign-in fails.
-9. Enter the license in the console's settings. A Pro license is bound to the computer that activates it.
+9. Enter the license in the console's settings. A Pro license is bound to the machine that activates the license.
 10. Add Google as the OIDC provider in the console, with a Google OAuth client of type Internal. Use the redirect address the console shows. Internal limits sign-in to the Google Workspace's own accounts. Enforce 2-Step Verification in the Workspace's admin console, so every account has two-factor.
 11. Point every RustDesk client at the server. Use the console's strategy settings or a custom client: the ID server and the relay at the computer's Tailscale address, the API server at `https://<console_host>`, and the key from the console. Lock these settings on each client: "Direct IP access" off (`direct-server`), always relay (`force-always-relay`), and no changes on the device.
 12. Once every computer uses the server, set `"remote_access": { "direct_ip": false }` in site.json. Run `install-cluster.sh` on each computer, and `install-windows-guard.ps1 -BlockRustDeskDirect` on each Windows computer. Each firewall then refuses RustDesk's direct-address ports, 21118 and 21119, from everywhere.
 
 **The backup runs each night as root, from `circlechat/rustdesk/backup-rustdesk.sh`.** The containers pause for the copy, so the database is copied whole, and each connection stays open. restic encrypts the copy with `RUSTDESK_RESTIC_PASSWORD` and sends it to `<backup.remote>/<stack>-rustdesk`. The backup checks that the copy holds the server's key, `id_ed25519`, and posts in Slack when any step fails. A lost key means every client must be set up again.
 
-**The server's own computer needs `hostAddressLoopback` in WSL.** The computer's own RustDesk client runs on Windows, and reaches the server at the computer's Tailscale address. In mirrored networking, WSL holds the same address. So WSL keeps each reply from the server, and the reply never reaches Windows. The client shows online in the console, and a connection to the client by ID fails with "Failed to connect via rendezvous server". `hostAddressLoopback=true` sends that traffic through Windows and back, the way mirrored networking already sends `127.0.0.1`. Ports 21115 to 21117 stay on the Tailscale address only, and all three firewalls stay unchanged. A second address for the client, such as `127.0.0.1`, can't work. A client gives a controller the client's own relay address, and the controller dials that address.
+**The server's own computer needs `hostAddressLoopback` in WSL.** The computer's own RustDesk client runs on Windows, and reaches the server at the computer's Tailscale address. In mirrored networking, WSL holds the same address. So WSL keeps each reply from the server, and the reply never reaches Windows. The client shows online in the console, and a connection to the client by ID fails with "Failed to connect via rendezvous server". `hostAddressLoopback=true` sends that traffic through Windows and back, the way mirrored networking already sends `127.0.0.1`. The three firewalls stay unchanged. A second address for the client, such as `127.0.0.1`, can't work. A client gives a controller the client's own relay address, and the controller dials that address.
+
+**Move the license once to the server in the host's network.** A server that ran on Docker's own network holds the license for an old container. In RustDesk's license portal, move the license to the new server, then enter the license in the console again. After the move, a new container in the host's network keeps the license.
 
 **To restore,** restore the newest snapshot with that password, and unpack `rustdesk.tgz` into the `rustdesk_data` volume before the server starts.
 

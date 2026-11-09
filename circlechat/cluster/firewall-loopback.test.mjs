@@ -151,13 +151,19 @@ for (const directOff of [false, true]) {
     }
   });
 
-  test(`RustDesk's ports 21115 to 21117 stay Tailscale only, and the console refuses every network${label}`, () => {
-    for (const [dport, proto] of [[21115, "tcp"], [21116, "tcp"], [21116, "udp"], [21117, "tcp"]]) {
-      assert.equal(verdict(input, { iif: "eth0", saddr: "100.64.0.9", dport, proto }), "accept", `${proto} ${dport} from Tailscale`);
-      assert.equal(verdict(input, { iif: "eth0", saddr: "fd7a:115c:a1e0::9", dport, proto }), "accept", `${proto} ${dport} from Tailscale over IPv6`);
+  // hbbs and hbbr run in the host's network, so each port listens on every address, and the input
+  // chain is the guard: Tailscale and loopback pass, every other source is refused.
+  test(`RustDesk's ports, TCP 21114 to 21119 and UDP 21116, take only Tailscale and loopback${label}`, () => {
+    for (const [dport, proto] of [[21114, "tcp"], [21115, "tcp"], [21116, "tcp"], [21116, "udp"], [21117, "tcp"], [21118, "tcp"], [21119, "tcp"]]) {
+      // With direct access off, the direct-access rule refuses the web client's ports, 21118 and
+      // 21119, from Tailscale too.
+      const fromTailscale = directOff && dport >= 21118 ? "drop" : "accept";
+      assert.equal(verdict(input, { iif: "eth0", saddr: "100.64.0.9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale`);
+      assert.equal(verdict(input, { iif: "eth0", saddr: "fd7a:115c:a1e0::9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale over IPv6`);
       for (const saddr of ["192.168.1.20", "172.17.0.2", "8.8.8.8", "2001:db8::5"]) {
         assert.equal(verdict(input, { iif: "eth0", saddr, dport, proto }), "drop", `${proto} ${dport} from ${saddr}`);
       }
+      assert.equal(verdict(input, { iif: "lo", saddr: "127.0.0.1", dport, proto }), "accept", `${proto} ${dport} from loopback`);
     }
     for (const saddr of ["192.168.1.20", "172.17.0.2", "8.8.8.8"]) {
       assert.equal(verdict(input, { iif: "eth0", saddr, dport: 21114 }), "drop", `the console from ${saddr}`);

@@ -10,7 +10,7 @@
 # 4. A task running as SYSTEM every minute applies the guard's requests from WSL.
 #
 # -RustDeskServer, on the computer that runs the cluster's RustDesk server in WSL: Windows Firewall
-#   and the Hyper-V firewall refuse RustDesk's server ports, TCP 21114 to 21117 and UDP 21116, from
+#   and the Hyper-V firewall refuse RustDesk's ports, TCP 21114 to 21119 and UDP 21116, from
 #   every address outside Tailscale. A block rule wins over every allow rule.
 # -BlockRustDeskDirect, once every computer uses the cluster's RustDesk server
 #   (remote_access.direct_ip false): both firewalls refuse RustDesk's direct-address ports, 21118
@@ -84,10 +84,10 @@ New-NetFirewallHyperVRule -Name "AgentGuard-Decoys" -DisplayName "AgentGuard: de
 $notTailscale = @("0.0.0.0-100.63.255.255", "100.128.0.0-126.255.255.255", "128.0.0.0-255.255.255.255", "::2-fd7a:115c:a1df:ffff:ffff:ffff:ffff:ffff", "fd7a:115c:a1e1::-ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
 if ($RustDeskServer) {
   Get-NetFirewallRule -DisplayName "AgentGuard: RustDesk server*" -ErrorAction SilentlyContinue | Remove-NetFirewallRule
-  New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" -Direction Inbound -Protocol TCP -LocalPort 21114-21117 -RemoteAddress $notTailscale -Action Block | Out-Null
+  New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server TCP, Tailscale only" -Direction Inbound -Protocol TCP -LocalPort 21114-21119 -RemoteAddress $notTailscale -Action Block | Out-Null
   New-NetFirewallRule -DisplayName "AgentGuard: RustDesk server UDP, Tailscale only" -Direction Inbound -Protocol UDP -LocalPort 21116 -RemoteAddress $notTailscale -Action Block | Out-Null
   Remove-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-*" -ErrorAction SilentlyContinue
-  New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-TCP" -DisplayName "AgentGuard: RustDesk server in WSL, TCP, Tailscale only" -Direction Inbound -VMCreatorId $wsl -Protocol TCP -LocalPorts 21114-21117 -RemoteAddresses $notTailscale -Action Block | Out-Null
+  New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-TCP" -DisplayName "AgentGuard: RustDesk server in WSL, TCP, Tailscale only" -Direction Inbound -VMCreatorId $wsl -Protocol TCP -LocalPorts 21114-21119 -RemoteAddresses $notTailscale -Action Block | Out-Null
   New-NetFirewallHyperVRule -Name "AgentGuard-RustDesk-Server-UDP" -DisplayName "AgentGuard: RustDesk server in WSL, UDP, Tailscale only" -Direction Inbound -VMCreatorId $wsl -Protocol UDP -LocalPorts 21116 -RemoteAddresses $notTailscale -Action Block | Out-Null
 }
 if ($BlockRustDeskDirect) {
