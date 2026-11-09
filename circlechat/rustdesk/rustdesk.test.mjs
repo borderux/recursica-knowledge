@@ -8,7 +8,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { validate, render } from "../kit/render.mjs";
 import { stackSite } from "../kit/stack-site.mjs";
-import { NFT_RULES, RELAY_KEY_WAIT, composeFile, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
+import { NFT_RULES, RELAY_KEY_WAIT, nftRuleKey, composeFile, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
@@ -119,25 +119,33 @@ const nftInput = () => {
   return base.slice(start, base.indexOf("\n  }", start));
 };
 // The rules as setup-rustdesk.sh prints the rules from Windows: protocol|local ports|action|enabled|direction.
-const winRules = "TCP|21114-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound";
+// The last line, "end", says the PowerShell command ran to the end.
+const winRules = "TCP|21114-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound\nend";
+// The input chain as nft list chain prints the chain on a WSL computer: nft sorts the ip6 set's
+// members, ::1 first.
+const nftPrinted = () => nftInput().replaceAll("{ fd7a:115c:a1e0::/48, ::1 }", "{ ::1, fd7a:115c:a1e0::/48 }");
 
 test("the guard check finds the RustDesk rule in each of the three firewalls", () => {
   assert.deepEqual(guardProblems("nft", nftInput()), []);
   assert.equal(NFT_RULES.length, 4);
   assert.deepEqual(guardProblems("windows", winRules), []);
   assert.deepEqual(guardProblems("hyperv", winRules), []);
-  assert.deepEqual(guardProblems("hyperv", "6|21114-21119|Block|True|Inbound\n17|21116|Block|True|Inbound"), [], "the Hyper-V firewall may print a protocol number");
-  assert.deepEqual(guardProblems("windows", "TCP|21114,21115,21116-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound"), []);
+  assert.deepEqual(guardProblems("hyperv", "6|21114-21119|Block|True|Inbound\n17|21116|Block|True|Inbound\nend"), [], "the Hyper-V firewall may print a protocol number");
+  assert.deepEqual(guardProblems("windows", "TCP|21114,21115,21116-21119|Block|True|Inbound\nUDP|21116|Block|True|Inbound\nend"), []);
 });
 
 test("the guard check names each firewall that lacks port 21114, port 21118 or 21119, or any RustDesk rule", () => {
   // The forward rule before this fix covered 21115 to 21117 only, and an input rule may lack 21114 too.
   assert.match(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21115-21119")).join("\n"), /The nftables rules lack the RustDesk rule: tcp dport 21114-21119 ip saddr .*Run circlechat\/cluster\/install-cluster\.sh first/);
-  assert.equal(guardProblems("nft", "").length, 4, "an unreadable chain lacks every rule");
+  assert.deepEqual(guardProblems("nft", ""), ["Could not read the nftables rules. Check with: sudo nft list chain inet agentguard input. Run circlechat/cluster/install-cluster.sh first when the rules are missing, then run this script again."], "an unreadable chain");
   assert.equal(guardProblems("nft", nftInput().replaceAll("tcp dport 21114-21119", "tcp dport 21114-21117")).length, 2, "the rules before the web client's ports");
   for (const [which, name] of [["windows", "Windows Firewall"], ["hyperv", "The Hyper-V firewall"]]) {
     assert.match(guardProblems(which, winRules.replace("21114-21119", "21115-21119")).join("\n"), new RegExp(`^${name} lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\\. Run .*install-windows-guard\\.ps1 -RustDeskServer`));
-    assert.equal(guardProblems(which, "").length, 2, "no rules, or rules WSL could not read");
+    assert.match(guardProblems(which, "").join("\n"), /^Could not read the (Windows Firewall|Hyper-V firewall) rules\. Check with: Get-NetFirewall/, "no output at all: the read failed");
+    assert.equal(guardProblems(which, "").length, 1);
+    assert.match(guardProblems(which, winRules.replace("\nend", "")).join("\n"), /^Could not read /, "rules without end: the command stopped part way");
+    assert.equal(guardProblems(which, "end").length, 2, "the command ran, and found no rule");
+    assert.doesNotMatch(guardProblems(which, "end").join("\n"), /Could not read/);
     assert.match(guardProblems(which, winRules.replace("21114-21119", "21114-21117")).join("\n"), /block rule for TCP 21118, 21119\./, "the rules before the web client's ports");
     assert.match(guardProblems(which, winRules.replace("UDP|21116|Block|True", "UDP|21116|Block|False")).join("\n"), /UDP 21116/, "a turned-off rule guards nothing");
     assert.match(guardProblems(which, winRules.replace("TCP|21114-21119|Block", "TCP|21114-21119|Allow")).join("\n"), /TCP 21114, 21115, 21116, 21117, 21118, 21119/, "an allow rule guards nothing");
@@ -183,7 +191,7 @@ test("the web port check refuses each conflict that would break direct access or
 });
 
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, nftChain = null, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -193,7 +201,8 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, windowsRules = wi
   stub("sudo", `exec "$@"`);
   stub("systemctl", "exit 0");
   const chain = path.join(home, "input.nft");
-  fs.writeFileSync(chain, nftRule ? nftInput() : "");
+  // By default, the chain as nft prints the chain. nftRule false: a readable chain without the RustDesk rules.
+  fs.writeFileSync(chain, nftChain ?? (nftRule ? nftPrinted() : nftPrinted().split("\n").filter((l) => !l.includes('comment "rustdesk"')).join("\n")));
   stub("nft", `[ "$*" = "list chain inet agentguard input" ] && cat "${chain}"; exit 0`);
   stub("tailscale", `case "$1" in ip) echo ${TS} ;; serve) [ "$2" = status ] && echo '${JSON.stringify(status)}' ;; esac; exit 0`);
   stub("ip", `printf '1: lo    inet 127.0.0.1/8 scope host lo\\n2: eth0    inet 192.168.1.30/24 scope global eth0\\n3: eth1    inet ${TS}/32 scope global eth1\\n'`);
@@ -266,8 +275,11 @@ test("in WSL, the setup starts the server only when all three firewalls hold the
     [{ windowsRules: winRules.replace("21114-21119", "21115-21119") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
     [{ hypervRules: winRules.replace("21114-21119", "21115-21119") }, /The Hyper-V firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114\./],
     [{ windowsRules: winRules.replace("21114-21119", "21114-21117") }, /Windows Firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21118, 21119\./],
-    [{ hypervRules: "" }, /The Hyper-V firewall lacks the RustDesk rule.*\n.*\n?.*WSL could not read the rules/],
-    [{ windowsRules: "" }, /Windows Firewall lacks the RustDesk rule/],
+    [{ hypervRules: "" }, /^Could not read the Hyper-V firewall rules\. Check with: Get-NetFirewallHyperVRule/m],
+    [{ windowsRules: "" }, /^Could not read the Windows Firewall rules\. Check with: Get-NetFirewallRule/m],
+    [{ hypervRules: winRules.replace("\nend", "") }, /^Could not read the Hyper-V firewall rules/m],
+    [{ hypervRules: "end" }, /^The Hyper-V firewall lacks the RustDesk rule: an enabled inbound block rule for TCP 21114, 21115/m],
+    [{ nftChain: "" }, /^Could not read the nftables rules\. Check with: sudo nft list chain inet agentguard input/m],
   ]) {
     r = sandbox({ wsl: true, ...opts });
     assert.equal(r.status, 1, JSON.stringify(opts));
@@ -275,6 +287,48 @@ test("in WSL, the setup starts the server only when all three firewalls hold the
     assert.match(r.stdout, /The RustDesk server did not start\./);
     assert.doesNotMatch(r.calls(), /docker compose/, `nothing starts: ${JSON.stringify(opts)}`);
   }
+});
+
+test("the setup starts the server when nft prints a set's members in another order", () => {
+  // nft list chain prints { ::1, fd7a:115c:a1e0::/48 }, and the rule file says { fd7a:115c:a1e0::/48, ::1 }.
+  assert.match(nftPrinted(), /ip6 saddr != \{ ::1, fd7a:115c:a1e0::\/48 \} drop comment "rustdesk"/);
+  assert.deepEqual(guardProblems("nft", nftPrinted()), []);
+  assert.equal(nftRuleKey("tcp dport 21114-21119 ip saddr != { 127.0.0.0/8,   100.64.0.0/10 } drop"), "tcp dport 21114-21119 ip saddr != { 100.64.0.0/10, 127.0.0.0/8 } drop");
+  for (const wsl of [false, true]) {
+    const r = sandbox({ wsl });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.doesNotMatch(r.stdout, /lack|Could not read/);
+  }
+});
+
+test("the set comparison stays strict: a missing, extra or wrong member still fails", () => {
+  const ip6 = "{ ::1, fd7a:115c:a1e0::/48 }";
+  for (const set of ["{ ::1 }", "{ fd7a:115c:a1e0::/48 }", "{ ::1, fd7a:115c:a1e0::/48, 2001:db8::/32 }", "{ ::1, fd7a:115c:a1e0::/64 }"]) {
+    assert.equal(guardProblems("nft", nftPrinted().replaceAll(ip6, set)).length, 2, set);
+  }
+  assert.equal(guardProblems("nft", nftPrinted().replace("{ 100.64.0.0/10, 127.0.0.0/8 }", "{ 100.64.0.0/10, 127.0.0.0/8, 192.168.0.0/16 }")).length, 1);
+  assert.equal(guardProblems("nft", nftPrinted().replace(/ drop comment "rustdesk"/, ' accept comment "rustdesk"')).length, 1);
+});
+
+test("in WSL, a missing nftables rule never says that WSL could not read the Windows rules", () => {
+  // The old setup printed "WSL could not read the rules" after any problem, even when both Windows
+  // reads worked.
+  const r = sandbox({ wsl: true, nftRule: false });
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /The nftables rules lack the RustDesk rule/);
+  assert.doesNotMatch(r.stdout, /Could not read|could not read|Windows Firewall|Hyper-V/);
+});
+
+test("each Windows read needs no admin rights, prints end last, and stops before end on any error", () => {
+  const sh = fs.readFileSync(path.join(here, "setup-rustdesk.sh"), "utf8");
+  for (const [v, cmd] of [["fw_rules", "Get-NetFirewallRule -DisplayName 'AgentGuard: RustDesk server\\*'"], ["hv_rules", "Get-NetFirewallHyperVRule -Name 'AgentGuard-RustDesk-Server-\\*'"]]) {
+    const line = new RegExp(`^  ${v}="(.*)"$`, "m").exec(sh)?.[1];
+    assert.ok(line, v);
+    assert.match(line, new RegExp(`^\\\\\\$ErrorActionPreference = 'Stop'; ${cmd} \\|`));
+    assert.match(line, /; 'end'$/);
+    assert.doesNotMatch(line, /SilentlyContinue|RunAs|Start-Process/);
+  }
+  assert.doesNotMatch(sh, /WSL could not read the rules/);
 });
 
 test("the setup starts nothing when the web client's ports would break the client's direct access", () => {

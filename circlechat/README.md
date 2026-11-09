@@ -921,7 +921,7 @@ The firewall rules let RustDesk's port open only to Tailscale addresses. A RustD
 
 A computer with direct IP access can still run the server. Set the client's `direct-access-port` to another port, such as 21120. Or turn off direct IP access on that client.
 
-**`setup-rustdesk.sh` starts the server only when each of the three firewalls holds the RustDesk rule.** The script reads each rule and checks the ports, the action and that the rule is on. A rule that WSL can't read counts as missing.
+**`setup-rustdesk.sh` starts the server only when each of the three firewalls holds the RustDesk rule.** The script reads each rule and checks the ports, the action and that the rule is on. nftables may print a set's members in another order, so the script compares each set by the set's members. A firewall whose rules can't be read also stops the setup, with a message that names the firewall. Reading the Windows Firewall and Hyper-V firewall rules from WSL needs no admin rights.
 
 **Tailscale's access rules decide which tailnet devices reach the ports.** `circlechat/rustdesk/tailnet-policy.example.hujson` holds the rules to add to the tailnet's policy file. The kit never changes the policy file.
 
