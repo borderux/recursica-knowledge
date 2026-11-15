@@ -1,4 +1,4 @@
-// The 96-hour limit of a port job, and the hourly status of running ports in Slack.
+// The 96-hour limit of a port job, and the hourly status lines jobd sends to the cluster agent.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import http from "node:http";
@@ -38,15 +38,18 @@ fs.writeFileSync(path.join(jobs, "job-new22-bbbbbb", "stream.jsonl"), [
 
 const hooks = [], posts = [];
 const hook = http.createServer((q, s) => { let b = ""; q.on("data", (d) => (b += d)); q.on("end", () => { hooks.push(JSON.parse(b)); s.end("ok"); }); });
-const slack = http.createServer((q, s) => { let b = ""; q.on("data", (d) => (b += d)); q.on("end", () => { posts.push({ url: q.url, auth: q.headers.authorization, body: JSON.parse(b) }); s.setHeader("content-type", "application/json"); s.end('{"ok":true}'); }); });
+// The cluster agent stand-in, which takes each status line.
+const agent = http.createServer((q, s) => { let b = ""; q.on("data", (d) => (b += d)); q.on("end", () => { posts.push({ url: q.url, auth: q.headers.authorization, body: JSON.parse(b) }); s.setHeader("content-type", "application/json"); s.end('{"ok":true}'); }); });
+const tokenFile = path.join(tmp, "job-status.token");
+fs.writeFileSync(tokenFile, "status-token-123\n", { mode: 0o600 });
 await new Promise((r) => hook.listen(0, r));
-await new Promise((r) => slack.listen(0, r));
+await new Promise((r) => agent.listen(0, "127.0.0.1", r));
 const { proc: jobd } = await startJobd(path.join(here, "jobd.mjs"), { ...process.env,
   JOBD_TOKEN: "t", JOBD_SLOTS: "2", JOBD_DIR: jobs, JOBD_DOCKER: path.join(here, "fake-docker.sh"), FAKE_DOCKER_STATE: state,
   JOBD_ALLOWED_REPOS: REPO, JOBD_POLL_MS: "150", JOBD_NODE_NAME: "node-a", JOBD_STATUS_MS: "700",
   PORTER_HOOK_URL: `http://127.0.0.1:${hook.address().port}/hook`, PORTER_HOOK_SECRET: "s",
-  JOBD_SLACK_API: `http://127.0.0.1:${slack.address().port}/api`, SLACK_BOT_TOKEN: "xoxb-test", SLACK_CHANNEL_ID: "C0TEST", SLACK_ICON: ":desktop_computer:" });
-test.after(() => { jobd.kill(); hook.close(); slack.close(); });
+  JOBD_STATUS_URL: `http://127.0.0.1:${agent.address().port}/job-status`, JOBD_STATUS_TOKEN_FILE: tokenFile });
+test.after(() => { jobd.kill(); hook.close(); agent.close(); });
 await new Promise((r) => setTimeout(r, 1200));
 const meta = (id) => JSON.parse(fs.readFileSync(path.join(jobs, id, "meta.json"), "utf8"));
 
@@ -60,14 +63,13 @@ test("jobd stops a port job at the 96-hour limit, and the job's report says so",
   assert.equal(meta("job-new22-bbbbbb").status, "running", "a job under the limit keeps running");
 });
 
-test("jobd posts each running port's status in the cluster's channel, with the latest progress and no mention", () => {
+test("jobd sends one status line per running port to the cluster agent, with the status token and the latest progress", () => {
   assert.ok(posts.length >= 1);
   const p = posts.at(-1);
-  assert.equal(p.url, "/api/chat.postMessage");
-  assert.equal(p.auth, "Bearer xoxb-test");
-  assert.deepEqual([p.body.channel, p.body.username, p.body.icon_emoji], ["C0TEST", "node-a", ":desktop_computer:"]);
-  assert.equal(p.body.text, "Port jobs running on node-a: 1\n"
-    + "• job-new22-bbbbbb on node-a, v1.2.3 &lt;!channel&gt; beam: running for 5 h 0 min. Latest progress: Ran the adapter tests: 3 failures left &lt;@U123&gt;.");
+  assert.equal(p.url, "/job-status");
+  assert.equal(p.auth, "Bearer status-token-123");
+  // jobd sends the line as written. The cluster agent escapes the line (cluster/agent.test.mjs).
+  assert.deepEqual(p.body, { text: "Port job job-new22-bbbbbb on node-a, v1.2.3 <!channel> beam: running for 5 h 0 min. Latest progress: Ran the adapter tests: 3 failures left <@U123>." });
 });
 
 test("jobd posts nothing while no port runs", async () => {

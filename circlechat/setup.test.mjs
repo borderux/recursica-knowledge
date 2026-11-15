@@ -260,6 +260,24 @@ test("setup-node gives a client stack its own job runner, filter, job folder and
   assert.match(unit, node === "machine-1" ? /JOBD_GATEWAY_URL=http:\/\/cc-gateway:4000 / : /JOBD_GATEWAY_URL=http:\/\/100\.64\.0\.1:4000 /);
 });
 
+test("setup-node refuses a Slack token in the job runner's secrets file, for the cluster's stack and a client's", () => {
+  const plain = sandbox(example, { system: "Linux" });
+  fs.writeFileSync(path.join(plain.home, ".recursica-node.env"), "JOBD_TOKEN=t\nSLACK_BOT_TOKEN=xoxb-k\n");
+  const r = plain.run("setup-node.sh", "machine-1");
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /holds a Slack token\. Only the cluster agent holds the Slack token, in \/etc\/agent-cluster\.env/);
+  assert.equal(fs.existsSync(path.join(plain.units, "jobd.service")), false, "no job runner starts with the token");
+  const site = structuredClone(example);
+  Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+  site.site.cloud_models = { allowed: true, granted_by: "Person A", granted_on: "2026-10-20", payer: "client-byok" };
+  delete site.data;
+  const client = sandbox(site, { tenant: "acme", system: "Linux" });
+  fs.writeFileSync(path.join(client.home, "tenants/acme/node.env"), "JOBD_TOKEN=t\nSLACK_APP_TOKEN=xapp-k\n");
+  const c = client.run("setup-node.sh", site.nodes.find((n) => n.jobs).name);
+  assert.notEqual(c.status, 0);
+  assert.match(c.stdout, /holds a Slack token/);
+});
+
 test("setup-node refuses a cloud key in the job runner's secrets file", () => {
   const s = sandbox(example, { system: "Linux" });
   fs.writeFileSync(path.join(s.home, ".recursica-node.env"), "JOBD_TOKEN=t\nANTHROPIC_API_KEY=k\n");

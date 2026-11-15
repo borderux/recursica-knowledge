@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { makeChannel } from "./channel.mjs";
+import { makeChannel, plainText } from "./channel.mjs";
 import { buttonBlocks, localToUtc, nextAt, tzName } from "./actions.mjs";
 
 test("each message shows the sending computer's name and, when set, the computer's icon", async () => {
@@ -41,4 +41,22 @@ test("a date and time in the cluster's time zone become the right moment, on bot
   assert.equal(new Date(nextAt(4, 0, "Asia/Kolkata", Date.UTC(2026, 9, 20, 12))).toISOString(), "2026-10-20T22:30:00.000Z");
   const label = buttonBlocks("reboot", "x", "machine-1", "u1", "Europe/Berlin")[1].elements[0].text.text;
   assert.equal(label, `4 a.m. ${tzName("Europe/Berlin")}`);
+});
+
+test("plain text keeps the words, escapes Slack's markup, and makes one line of 500 characters at most", () => {
+  assert.equal(plainText("a <!channel> & <@U1>\tb\n\nc"), "a &lt;!channel&gt; &amp; &lt;@U1&gt; b c");
+  assert.equal(plainText("x".repeat(600)).length, 500);
+  assert.equal(plainText(undefined), "");
+});
+
+test("a plain post goes only to this computer's channels", async () => {
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => { calls.push(JSON.parse(opts.body)); return { json: async () => ({ ok: true }) }; };
+  try {
+    const chat = makeChannel({ SLACK_BOT_TOKEN: "xoxb", SLACK_CHANNEL_ID: "CCLUSTER" });
+    assert.equal((await chat.postPlain("COTHER", "hello")).ok, false);
+    assert.equal((await chat.postPlain(undefined, "*hi*")).ok, true);
+    assert.deepEqual([calls.length, calls[0].channel, calls[0].text, calls[0].mrkdwn], [1, "CCLUSTER", "*hi*", false]);
+  } finally { globalThis.fetch = realFetch; }
 });

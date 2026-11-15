@@ -22,7 +22,9 @@ and report. Each porter-adapter runs as a **job** on a **job runner** (`circlech
 - When the job ends, the job runner wakes Porter through the CircleChat workflow webhook.
 - A port job runs for 96 hours at most. The job runner then stops the job, and the job's report
   says so.
-- Every hour, the job runner posts each running port's status in the cluster's Slack channel.
+- Every hour, the job runner sends each running port's status line to the computer's cluster
+  agent. The cluster agent, which holds the Slack token, posts the line as plain text in the
+  cluster's Slack channel.
 - A check job tests the same path as a port job and touches no repository: one tiny model request,
   and the token service's confirmation that Porter may get a token. Porter or the drill,
   `circlechat/check-job.sh <node>`, starts a check job. `circlechat/README.md` describes both.
@@ -57,7 +59,6 @@ runner keeps each value, and no job gets any of them:
 | Variable | Holds |
 | --- | --- |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET` | The CircleChat workflow webhook that wakes Porter |
-| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID` | The cluster's Slack channel, for the hourly status of running ports |
 
 The job gets no GitHub token from the job runner. Porter's GitHub App covers the three target adapters only, with Contents and Pull requests, and **no merge rights**. Protect `main` on each target with a ruleset whose bypass list is empty. The job asks the stack's token service for a token for the job's repo, with the job's task key. The token lasts at most one hour, and the job asks for a new token after 45 minutes. Commits use the app's bot identity, `<app-slug>[bot]`, which keeps the pull requests reviewable by the whole team.
 

@@ -398,8 +398,7 @@ with room, best first by `jobs.priority`. `agents/porter/runtime/hermes.md` expl
    `setup-host.sh` when `porter.watch` is set) and every job runner use the same webhook.
 3. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
    `JOBD_TOKEN` (copied from the control machine's `.env`), `PORTER_HOOK_URL` and
-   `PORTER_HOOK_SECRET`. Add `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` for the hourly status of
-   running ports. The file holds no cloud key and no GitHub token. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
+   `PORTER_HOOK_SECRET`. The file holds no cloud key, no GitHub token and no Slack token. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
    it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`. On the
    control computer, run `setup-host.sh` first, so the gateway exists.
 4. Install Porter in the CircleChat UI, then `./circlechat/setup-agent.sh porter`.
@@ -461,7 +460,11 @@ A person can also ask Porter to check the job runners. Porter then sends a check
 
 ### The hourly status
 
-**Every hour, each job runner posts each running port's status in the cluster's Slack channel.** One message lists each running port: the job, the node, how long the job has run, and the job's latest progress. The latest progress is the newest text Claude Code wrote in the job. A job runner with no running port posts nothing. The post needs `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` in the node secrets file. No job gets either value.
+**Every hour, each job runner sends one status line per running port to the computer's cluster agent.** A line names the job, the node, the time the job has run, and the job's latest progress. The latest progress is the newest text Claude Code wrote in the job. A job runner with no running port sends nothing.
+
+**The cluster agent posts each line as plain text in the cluster's Slack channel.** The agent escapes Slack's markup, so a line never mentions anyone or shows a link. The agent also turns off Slack's formatting, so bold, italics and code show as typed.
+
+**Only the cluster agent holds the Slack token,** in `/etc/agent-cluster.env`, which only root reads. The job runner sends each line over loopback to `POST /job-status` on the agent's port, 7500 by default (`JOBD_STATUS_URL`). The job runner shows a status token, compared the way the agent compares `CLUSTER_TOKEN`. The cluster agent writes the status token to `~/.recursica-job-status.token`, mode 600. The status token only posts a status line, and opens no other route. `setup-node.sh` stops when the node secrets file holds a Slack token.
 
 ## Clients: one isolated stack each
 
@@ -624,7 +627,6 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
 | `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The task notifier and the stack's scripts, through the cluster's Slack app |
-| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`           | The node secrets file of each job runner                                                             | The job runner's hourly status of running ports                            |
 | `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | Barb's first pass with Kev                                                 |
 | `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Porter and each job runner                                                 |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |

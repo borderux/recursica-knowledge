@@ -25,9 +25,11 @@
 //           job never clones, pushes or opens a pull request. A check job takes no slot, and one
 //           check job runs at a time. Porter starts a check job, or an admin with check-job.sh.
 //
-// Every hour (JOBD_STATUS_MS), jobd posts each running port's status to the cluster's Slack
-// channel: the job, the node, how long the job has run and the job's latest progress. The post
-// needs SLACK_BOT_TOKEN and SLACK_CHANNEL_ID in the node's secrets file. No job gets either one.
+// Every hour (JOBD_STATUS_MS), jobd sends one status line per running port to this computer's
+// cluster agent, over loopback (JOBD_STATUS_URL): the job, the node, how long the job has run and
+// the job's latest progress. The cluster agent posts each line as plain text in the cluster's Slack
+// channel. jobd holds no Slack token: the cluster agent's status token (JOBD_STATUS_TOKEN_FILE,
+// written by the cluster agent) only posts a status line.
 //
 //   GET    /health                 { node, slots, running }
 //   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
@@ -67,10 +69,8 @@ const C = {
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
   maxHours: Number(env.JOBD_MAX_HOURS ?? 96),
   statusMs: Number(env.JOBD_STATUS_MS ?? 3_600_000),
-  slackToken: env.SLACK_BOT_TOKEN ?? "",
-  slackChannel: env.SLACK_CHANNEL_ID ?? "",
-  slackIcon: env.SLACK_ICON ?? "",
-  slackApi: env.JOBD_SLACK_API ?? "https://slack.com/api",
+  statusUrl: env.JOBD_STATUS_URL ?? "http://127.0.0.1:7500/job-status",
+  statusTokenFile: env.JOBD_STATUS_TOKEN_FILE ?? path.join(os.homedir(), ".recursica-job-status.token"),
 };
 const HOUR = 3_600_000;
 const IMAGE = env.JOBD_PORTER_IMAGE ?? "recursica/porter-job";
@@ -261,24 +261,26 @@ export function progressOf(id) {
 
 // "5 h 12 min", or "12 min" under an hour.
 export const duration = (ms) => { const min = Math.floor(ms / 60_000); return min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`; };
-// Slack reads <, > and & as markup, such as <!channel>. Job text never mentions anyone.
-const slackText = (t) => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-// One message for every running port on this node, or none when no port runs.
+// One status line per running port, sent to the cluster agent, which escapes and posts each line.
+// Returns the count of lines the cluster agent took.
 export async function postStatus(now = Date.now()) {
   const ports = runningPorts();
-  if (!ports.length || !C.slackToken || !C.slackChannel) return false;
-  const lines = ports.map((m) => `• ${m.id} on ${C.node}, ${slackText(m.label || m.repo)}: running for ${duration(now - Date.parse(m.first_started ?? m.started))}. Latest progress: ${slackText(progressOf(m.id) ?? "no progress yet")}`);
-  const text = `Port jobs running on ${C.node}: ${ports.length}\n${lines.join("\n")}`;
-  try {
-    const r = await fetch(`${C.slackApi}/chat.postMessage`, { method: "POST",
-      headers: { authorization: `Bearer ${C.slackToken}`, "content-type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ channel: C.slackChannel, text, username: C.node, ...(C.slackIcon ? { icon_emoji: C.slackIcon } : {}) }) });
-    const j = await r.json();
-    if (!j.ok) { console.error(`status post: Slack answered ${j.error ?? r.status}`); return false; }
-    console.log(`status posted for ${ports.length} running port job(s)`);
-    return true;
-  } catch (e) { console.error(`status post: ${e.message}`); return false; }
+  if (!ports.length) return 0;
+  let token = "";
+  try { token = fs.readFileSync(C.statusTokenFile, "utf8").trim(); } catch { /* the line below says so */ }
+  if (!token) { console.error(`status post: no token in ${C.statusTokenFile}. The cluster agent writes the token: rerun install-cluster.sh.`); return 0; }
+  let sent = 0;
+  for (const m of ports) {
+    const text = `Port job ${m.id} on ${C.node}, ${m.label || m.repo}: running for ${duration(now - Date.parse(m.first_started ?? m.started))}. Latest progress: ${progressOf(m.id) ?? "no progress yet"}`;
+    try {
+      const r = await fetch(C.statusUrl, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ text }) });
+      if (r.ok) sent++;
+      else console.error(`status post for ${m.id}: the cluster agent answered ${r.status}`);
+    } catch (e) { console.error(`status post for ${m.id}: ${e.message}`); }
+  }
+  if (sent) console.log(`status posted for ${sent} running port job(s)`);
+  return sent;
 }
 
 const send = (res, code, body, type = "application/json") => {
@@ -323,6 +325,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     srv.listen(C.port, host, () => console.log(`jobd ${C.node} on ${host}:${C.port}, ${C.slots} slot(s), ${C.memoryGb} GB each`));
   }
   setInterval(() => reap().catch((e) => console.error(e.message)), C.pollMs);
-  if (C.slackToken && C.slackChannel) setInterval(() => postStatus().catch((e) => console.error(e.message)), C.statusMs);
-  else console.log("No SLACK_BOT_TOKEN or SLACK_CHANNEL_ID: jobd posts no hourly status of running ports.");
+  setInterval(() => postStatus().catch((e) => console.error(e.message)), C.statusMs);
 }

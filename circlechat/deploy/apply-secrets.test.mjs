@@ -497,12 +497,16 @@ test("before the owner's Docker steps, the helper makes the two secrets of cloud
   }
 });
 
-test("a job runner's computer gets the cluster's Slack bot token and channel, for jobd's hourly status", () => {
+test("no secrets file a job runner reads holds a Slack token: the helper writes none, and removes an old one", () => {
   const { home, conf } = setup();
-  const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL_ID=C0TEST\nJOBD_TOKEN=jt\n");
+  fs.writeFileSync(path.join(home, ".recursica-node.env"), "SLACK_BOT_TOKEN=xoxb-old\nSLACK_CHANNEL_ID=C0OLD\nKEEP=1\n", { mode: 0o600 });
+  const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=xoxb-test\nSLACK_APP_TOKEN=xapp-test\nSLACK_CHANNEL_ID=C0TEST\nJOBD_TOKEN=jt\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  const nodeEnv = fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8");
-  assert.match(nodeEnv, /^SLACK_BOT_TOKEN=xoxb-test$/m);
-  assert.match(nodeEnv, /^SLACK_CHANNEL_ID=C0TEST$/m);
-  assert.equal(fs.statSync(path.join(home, ".recursica-node.env")).mode & 0o777, 0o600);
+  // The job runner reads the node secrets file (setup-node.sh) and the cluster agent's status token.
+  const read = [path.join(home, ".recursica-node.env"), path.join(home, ".recursica-job-status.token")].filter((f) => fs.existsSync(f));
+  for (const f of read) assert.doesNotMatch(fs.readFileSync(f, "utf8"), /xox[a-z]-|xapp-|SLACK_/, f);
+  assert.match(fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8"), /^JOBD_TOKEN=jt$/m);
+  assert.match(fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8"), /^KEEP=1$/m);
+  // The cluster agent's file keeps the token.
+  assert.match(fs.readFileSync(path.join(path.dirname(conf), "agent-cluster.env"), "utf8"), /^SLACK_BOT_TOKEN=xoxb-test$/m);
 });

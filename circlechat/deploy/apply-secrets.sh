@@ -266,11 +266,6 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
   for k in KEV_API_KEY JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }
   done
-  # jobd posts each running port's status every hour in the cluster's Slack channel. No job gets
-  # either value.
-  if [[ " $ROLES " == *" jobs "* ]]; then
-    for k in SLACK_BOT_TOKEN SLACK_CHANNEL_ID; do has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }; done
-  fi
   # The RustDesk server's backup secret, only on the computer that runs the server. The backup
   # reads it at each run, so nothing restarts for it.
   if [[ " $ROLES " == *" rustdesk "* ]] && has RUSTDESK_RESTIC_PASSWORD; then set_kv "$NODE_ENV" RUSTDESK_RESTIC_PASSWORD "$(val RUSTDESK_RESTIC_PASSWORD)"; fi
@@ -280,6 +275,9 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
   drop_kv "$NODE_ENV" ANTHROPIC_API_KEY
   # A port job gets Porter's token from the token service, with the job's task key.
   drop_kv "$NODE_ENV" PORTER_GITHUB_PAT
+  # Only the cluster agent holds the Slack token, in /etc/agent-cluster.env. jobd sends its status
+  # lines to the cluster agent, so the node secrets file holds no Slack value.
+  for k in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_CHANNEL_ID; do drop_kv "$NODE_ENV" "$k"; done
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 

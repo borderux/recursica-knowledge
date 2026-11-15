@@ -64,8 +64,9 @@ if node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], 
 fi
 # A job runner, when the node has a `jobs` block: builds the porter job image and runs jobd, which
 # starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN,
-# PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET, and SLACK_BOT_TOKEN and
-# SLACK_CHANNEL_ID for the hourly status of running ports) come from $SECRETS.
+# PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET) come from $SECRETS.
+# jobd sends each running port's hourly status line to this computer's cluster agent, which holds
+# the Slack token. $SECRETS holds no Slack token.
 # JOBD_TOKEN must match the one in the control machine's .env. A job holds no cloud key: the job
 # sends its model requests to the control computer's gateway, with the gateway key for its task.
 JOBS="$(node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1]));process.stdout.write(s.jobs?JSON.stringify(s.jobs):"")' "$SPEC")"
@@ -74,6 +75,9 @@ if [ -n "$JOBS" ]; then
   [ -f "$SECRETS" ] && grep -q '^JOBD_TOKEN=.' "$SECRETS" || { echo "$NODE runs jobs: put JOBD_TOKEN (from the control machine's .env) and the job secrets in $SECRETS first."; exit 1; }
   if grep -qE '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|XAI_API_KEY)=.' "$SECRETS"; then
     echo "$SECRETS holds a cloud key. Port jobs reach cloud models only through the gateway: remove the key from $SECRETS, then rerun."; exit 1
+  fi
+  if grep -qE '^(SLACK_BOT_TOKEN|SLACK_APP_TOKEN)=.' "$SECRETS"; then
+    echo "$SECRETS holds a Slack token. Only the cluster agent holds the Slack token, in /etc/agent-cluster.env: remove the token from $SECRETS, then rerun."; exit 1
   fi
   GATEWAY_URL="$(jget gateway_url)"
   ROOT="$(cd "$HERE/.." && pwd)"
