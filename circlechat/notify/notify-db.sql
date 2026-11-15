@@ -34,6 +34,7 @@ DECLARE
     ['conversations', 'id, kind, name'],
     ['messages', 'ts, member_id, body_md, mentions, deleted_at, conversation_id'],
     ['approvals', 'created_at, status, action, agent_id'],
+    ['turn_container_stops', 'container, agent_id, overdue_ms, stopped_at'],
     ['user_slack', 'user_id, slack_user_id, pending_slack_user_id, code_requested_at, code_sent_at, send_error']
   ];
   r text[];

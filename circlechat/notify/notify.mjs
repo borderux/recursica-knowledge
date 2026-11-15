@@ -19,7 +19,7 @@
 import fs from "node:fs";
 import pg from "pg";
 import { droppedNote } from "./drops.mjs";
-import { CODE_TTL_MS, activityEvent, approvalText, codeText, hashCode, newCode, newSalt, notesFor, parseEvents, parsePeople } from "./events.mjs";
+import { CODE_TTL_MS, activityEvent, approvalText, codeText, containerStopText, hashCode, newCode, newSalt, notesFor, parseEvents, parsePeople } from "./events.mjs";
 
 const DATABASE_URL = process.env.DATABASE_URL_FILE ? fs.readFileSync(process.env.DATABASE_URL_FILE, "utf8").trim() : process.env.DATABASE_URL;
 const { SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on", STACK_NAME = "" } = process.env;
@@ -40,7 +40,7 @@ let st = load();
 const now = new Date().toISOString();
 st.activity ??= now; st.comments ??= now; st.runs ??= now; st.staleAt ??= 0; st.staleSent ??= {};
 // The approvals and chat messages since this notifier first read the state, never older ones.
-st.approvals ??= now; st.messages ??= now;
+st.approvals ??= now; st.messages ??= now; st.stops ??= now;
 save(st); // so a restart picks up from here, not from whenever it restarts
 
 const link = (id, title) => CC_URL ? `<${CC_URL.replace(/\/$/, "")}/board?task=${id}|${title}>` : `*${title}*`;
@@ -280,8 +280,24 @@ async function listen() {
   } catch (e) { console.error(new Date().toISOString(), `slack_code listener: ${e.message}`); setTimeout(listen, 30_000); }
 }
 
+// Each turn container CircleChat's bridge stopped past its deadline (turn_container_stops). A
+// CircleChat without the table, from before the sweep, has nothing to post.
+async function containerStops() {
+  if (!on("container_stopped")) return;
+  const { rows: [t] } = await db.query(`select to_regclass('public.turn_container_stops') is not null as ok`);
+  if (!t?.ok) return;
+  const { rows } = await db.query(
+    `select s.stopped_at::text as t, s.container, s.overdue_ms, a.handle
+     from turn_container_stops s left join agents a on a.id=s.agent_id
+     where s.stopped_at > $1::timestamptz order by s.stopped_at limit 50`, [st.stops]);
+  for (const r of rows) {
+    await slack(containerStopText({ handle: r.handle, container: r.container, overdueMs: r.overdue_ms }), { safe: true });
+    st.stops = r.t; save(st);
+  }
+}
+
 async function tick() {
-  try { await refreshWho(); await sendCodes(); await activity(); await comments(); await runs(); await approvals(); await chatMentions(); await stale(); }
+  try { await refreshWho(); await sendCodes(); await activity(); await comments(); await runs(); await approvals(); await chatMentions(); await containerStops(); await stale(); }
   catch (e) { console.error(new Date().toISOString(), e.message); }
 }
 console.log("circlechat → slack notifier running");

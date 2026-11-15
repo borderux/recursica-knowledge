@@ -40,3 +40,14 @@ test("the notifier never logs or stores the code", () => {
   assert.match(bare, /codeText\(\{ code,/, "the code goes only into the DM");
   assert.doesNotMatch(fn, /\$\{code\}/, "no text holds the code");
 });
+
+test("the notifier reads turn_container_stops only through granted columns, and skips a CircleChat without the table", () => {
+  const reads = sql.match(/\['turn_container_stops', '([^']+)'\]/)[1].split(",").map((c) => c.trim());
+  assert.deepEqual(reads, ["container", "agent_id", "overdue_ms", "stopped_at"]);
+  const fn = code.slice(code.indexOf("async function containerStops"), code.indexOf("async function tick"));
+  for (const col of fn.matchAll(/\bs\.(\w+)/g)) assert.ok(reads.includes(col[1]), `${col[1]} is read but not granted`);
+  assert.match(fn, /to_regclass\('public\.turn_container_stops'\)/);
+  assert.match(fn, /if \(!on\("container_stopped"\)\) return;/);
+  assert.match(fn, /\{ safe: true \}/);
+  assert.match(code, /await containerStops\(\);/);
+});
