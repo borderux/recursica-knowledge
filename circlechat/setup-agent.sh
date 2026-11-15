@@ -31,7 +31,7 @@ MARK="<!-- recursica-circlechat -->"
 . "$HERE/kit/lib.sh"
 # Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
 KIT_OUT="$CC_DIR/kit-out"
-[ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
+load_env_file "$KIT_OUT/app.env" || true
 
 # Each read and write in the agent's home: kit/safe-files.mjs, as the agent's account (as_agent).
 # Only a write reads stdin.

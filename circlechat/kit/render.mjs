@@ -35,7 +35,7 @@ import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
-import { eventsLine, peopleLine, validateNotify } from "../notify/events.mjs";
+import { EMAIL, eventsLine, peopleLine, validateNotify } from "../notify/events.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -220,6 +220,19 @@ export const tokenPort = (site = {}) => (hasApps(site) ? site.site?.github_token
 export function filterPorts(site = {}) {
   const model = modelServerPorts(site);
   return [...new Set([...FILTER_PORTS, site.site?.gateway_port ?? 4000, tokenPort(site)])].filter((p) => p && !model.has(p));
+}
+
+// app.env, porter.env and tenant.env: one KEY=value line for each setting. The kit's shell scripts
+// read each file with kit/env-file.sh, which never runs a value. A value with a line break would
+// add a line of its own, so render refuses the value.
+export class EnvValueError extends Error {}
+export function envFile(lines) {
+  for (const l of lines) {
+    const key = l.slice(0, l.indexOf("="));
+    if (!/^[A-Z][A-Z0-9_]*$/.test(key)) throw new EnvValueError(`${key || l.slice(0, 40)} is not a setting name`);
+    if (/[\r\n\0]/.test(l)) throw new EnvValueError(`the value for ${key} holds a line break: remove the line break from site.json`);
+  }
+  return lines.join("\n") + "\n";
 }
 
 export function squidConf(site = {}) {
@@ -417,7 +430,7 @@ export function cloudApproverErrors(site) {
     if (typeof a !== "object" || a === null) { errs.push(`${where} must be an object with email and slack_user`); return; }
     const extra = Object.keys(a).filter((k) => !["email", "slack_user"].includes(k));
     if (extra.length) errs.push(`${where}: ${extra.join(", ")} is not a setting. Use email and slack_user`);
-    if (typeof a.email !== "string" || !/^[^\s@,=]+@[^\s@,=]+\.[^\s@,=]+$/.test(a.email)) errs.push(`${where}.email must be the person's CircleChat email`);
+    if (typeof a.email !== "string" || !EMAIL.test(a.email)) errs.push(`${where}.email must be the person's CircleChat email: letters, digits and . _ % + - only`);
     else if (emails.has(a.email.toLowerCase())) errs.push(`${where}.email ${a.email} is listed twice`);
     else emails.add(a.email.toLowerCase());
     if (typeof a.slack_user !== "string" || !/^[UW][A-Z0-9]{6,}$/.test(a.slack_user)) errs.push(`${where}.slack_user must be a Slack user ID, such as U0123ABCD`);
@@ -433,7 +446,6 @@ export function cloudApproverErrors(site) {
 // email is site.check_account, or agent-check@<site.public_host>. The account receives no mail, so
 // the address only has to be unique on the stack. The password is CC_CHECK_PASSWORD, in the
 // stack's GitHub environment.
-const EMAIL = /^[^\s@,=]+@[^\s@,=]+\.[^\s@,=]+$/;
 export function checkAccountEmail(site) {
   const set = site?.site?.check_account;
   if (set !== undefined) return String(set).toLowerCase();
@@ -708,7 +720,7 @@ export function render(site) {
     // Docker's bridge address on Linux.
     .map((n) => url(n.control && n.tailnet_address ? { ...n, address: n.tailnet_address } : n, n.jobs.port));
   const p = site.porter;
-  const porterEnv = p ? `PORTER_OWNER=${p.owner ?? ""}\nJOBD_ALLOWED_REPOS=${p.targets.join(",")}\n` : "";
+  const porterEnv = p ? envFile([`PORTER_OWNER=${p.owner ?? ""}`, `JOBD_ALLOWED_REPOS=${p.targets.join(",")}`]) : "";
   const watches = p ? [{ repo: p.watch, hook: "PORTER" }] : [];
   // Port jobs send their model requests to the control computer's gateway: on the control computer
   // through the job network, and from another computer over Tailscale.
@@ -729,12 +741,12 @@ export function render(site) {
     return j;
   };
   const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null, rustdesk: rustdeskSpec(site, n) }]));
-  const appEnv = `APP_REPO=${site.repos.app_dir}\nAPP_REPO_GITHUB=${site.repos.app_github}\n`;
+  const appEnv = envFile([`APP_REPO=${site.repos.app_dir}`, `APP_REPO_GITHUB=${site.repos.app_github}`]);
   // No tenant keeps the names a single-stack install has always used, so an existing install
   // keeps its containers, volumes and jobs.
   const st = site.site ?? {};
   const tenant = st.tenant ?? "";
-  const tenantEnv = [
+  const tenantEnv = envFile([
     `TENANT=${tenant}`,
     `STACK_NAME=${stackName(site)}`,
     `TENANT_KIND=${st.kind ?? "internal"}`,
@@ -774,7 +786,7 @@ export function render(site) {
     `CLOUD_APPROVERS=${(site.cloud_approvers ?? []).map((a) => a.email.toLowerCase()).join(",")}`,
     `CLOUD_APPROVER_SLACK=${(site.cloud_approvers ?? []).map((a) => `${a.email.toLowerCase()}=${a.slack_user}`).join(",")}`,
     `CONTROL_COMPUTER=${control?.name ?? ""}`,
-  ].join("\n") + "\n";
+  ]);
   const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":");
   const hosts = egressAllow(site);
   const ips = hosts.filter(isIp);
@@ -794,7 +806,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (errs.length) { console.error("site.json has problems:\n  - " + errs.join("\n  - ")); process.exit(1); }
   for (const note of placed.notes) console.log(note);
   const site = placed.site;
-  const r = render(site);
+  let r;
+  try { r = render(site); } catch (e) {
+    if (!(e instanceof EnvValueError)) throw e;
+    console.error(`site.json has problems:\n  - ${e.message}`); process.exit(1);
+  }
   fs.mkdirSync(path.join(out, "services"), { recursive: true });
   fs.writeFileSync(path.join(out, "litellm.yaml"), JSON.stringify(r.litellm, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "kev-engines.txt"), r.kev.join(",") + "\n");

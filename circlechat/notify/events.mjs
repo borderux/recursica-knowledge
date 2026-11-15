@@ -16,6 +16,10 @@ export const QUIET_DEFAULT = ["comment_mention", "approval_pending", "task_revie
 // The events that go as a DM to each mentioned person.
 export const DM_EVENTS = ["comment_mention", "chat_mention"];
 
+// A person's email address in site.json: letters, digits and . _ % + - only. kit/render.mjs checks
+// cloud_approvers with the same pattern.
+export const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+
 // The config check's messages for notify.events and notify.people.
 export function validateNotify(notify = {}) {
   const errs = [];
@@ -33,8 +37,7 @@ export function validateNotify(notify = {}) {
     if (typeof p !== "object" || p === null) { errs.push(`${where} must be an object with email and slack_user`); return; }
     const extra = Object.keys(p).filter((k) => !["email", "slack_user"].includes(k));
     if (extra.length) errs.push(`${where}: ${extra.join(", ")} is not a setting. Use email and slack_user`);
-    // Letters, digits and . _ % + - only: setup-host.sh reads the list from tenant.env, a shell file.
-    if (typeof p.email !== "string" || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(p.email)) errs.push(`${where}.email must be the person's CircleChat email address`);
+    if (typeof p.email !== "string" || !EMAIL.test(p.email)) errs.push(`${where}.email must be the person's CircleChat email address`);
     else if (seen.has(p.email.toLowerCase())) errs.push(`${where}.email: ${p.email} is on the list twice`);
     else seen.add(p.email.toLowerCase());
     if (typeof p.slack_user !== "string" || !/^[UW][A-Z0-9]{6,}$/.test(p.slack_user)) errs.push(`${where}.slack_user must be a Slack user ID, such as U0123ABCD`);

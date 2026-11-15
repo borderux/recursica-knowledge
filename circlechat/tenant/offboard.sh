@@ -21,7 +21,7 @@ export RCLONE_CONFIG="${RCLONE_CONFIG:-$HOME/.config/rclone/rclone.conf}"
 case "$CMD" in
 archive)
   [ -f "$CC_DIR/kit-out/tenant.env" ] || { echo "Stack $CLIENT is not open on this computer. Run the Unlock stack workflow first."; exit 1; }
-  . "$CC_DIR/kit-out/tenant.env"
+  load_env_file "$CC_DIR/kit-out/tenant.env"
   [ -n "$BACKUP_REMOTE" ] || { echo "site.json has no backup.remote."; exit 1; }
   [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
   export RESTIC_PASSWORD; RESTIC_PASSWORD="$(cat)"
@@ -64,7 +64,7 @@ remove)
   # A stack's model servers and Kev's model belong to the cluster's own stack, which keeps them.
   # Everything below carries the client's name, so nothing of the cluster's own stack goes.
   if [ -f "$CC_DIR/kit-out/tenant.env" ]; then
-    . "$CC_DIR/kit-out/tenant.env"
+    load_env_file "$CC_DIR/kit-out/tenant.env"
     [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
     (cd "$CC_DIR" && docker compose down -v --remove-orphans) || true
     docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-litellm-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true

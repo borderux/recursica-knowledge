@@ -23,8 +23,7 @@ SPEC="${1:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
 TENANT_ENV="${2:?usage: setup-rustdesk.sh <services/<node>.json> <tenant.env>}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../kit/lib.sh"
-# shellcheck source=/dev/null
-. "$TENANT_ENV"
+load_env_file "$TENANT_ENV"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
 RD="node $HERE/rustdesk.mjs"
 spec() { node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).rustdesk?.[process.argv[2]] ?? ""))' "$SPEC" "$1"; }

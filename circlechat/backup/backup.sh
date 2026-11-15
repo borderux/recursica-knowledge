@@ -17,7 +17,7 @@ WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 . "$(dirname "$0")/../kit/lib.sh"
 # Runs as root. The kit checkout must sit outside the agents' workspace.
 require_kit "$(dirname "$0")/../.." "${OWNER:-}" "$OWNER_HOME"
-. "$CC_DIR/kit-out/tenant.env"
+load_env_file "$CC_DIR/kit-out/tenant.env"
 [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
 # The stack's name: site.tenant, or site.stack_name for the cluster's own stack (kit/render.mjs).
 STACK="${STACK_NAME:-${TENANT:-$(node --input-type=module -e 'const { stackName } = await import(process.argv[2]); process.stdout.write(stackName(JSON.parse((await import("node:fs")).readFileSync(process.argv[1], "utf8"))));' "$CC_DIR/site.json" "$(dirname "$0")/../kit/render.mjs")}}"
