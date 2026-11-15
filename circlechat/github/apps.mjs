@@ -116,6 +116,26 @@ export async function mintToken({ app, pem, repos = app.repos, fetchFn = fetch, 
   return { token: j.token, expiresAt };
 }
 
+// Confirms, without making a token, that an agent may get a token for one repo: GitHub's answer for
+// the repo's installation, read with the app's JWT. Returns { ok, installation_id, permissions }
+// or { ok: false, step, detail }. GitHub answers 404 when the app is not installed on the repo.
+export async function checkInstallation({ app, pem, repo, fetchFn = fetch, api = "https://api.github.com", now = Date.now() }) {
+  const [owner, name] = repo.split("/");
+  let jwt;
+  try { jwt = appJwt(app.app_id, pem, now); } catch (e) { return { ok: false, step: "private_key", detail: `the private key does not sign: ${e.message}` }; }
+  const r = await fetchFn(`${api}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/installation`, {
+    headers: { authorization: `Bearer ${jwt}`, accept: "application/vnd.github+json", "user-agent": "recursica-token-service" },
+  });
+  if (r.status === 404) return { ok: false, step: "installation", detail: `the app is not installed on ${repo}` };
+  if (!r.ok) return { ok: false, step: "installation", detail: `GitHub answered ${r.status}` };
+  const j = await r.json();
+  if (String(j.id) !== String(app.installation_id)) return { ok: false, step: "installation", detail: `GitHub names installation ${j.id}, and site.json names ${app.installation_id}` };
+  const want = app.permissions ?? {};
+  const short = Object.entries(want).filter(([k, v]) => !(j.permissions?.[k] === v || (v === "read" && j.permissions?.[k] === "write")));
+  if (short.length) return { ok: false, step: "permissions", detail: `the installation lacks ${short.map(([k, v]) => `${k} ${v}`).join(", ")}` };
+  return { ok: true, installation_id: j.id, permissions: Object.fromEntries(Object.keys(want).map((k) => [k, j.permissions[k]])) };
+}
+
 // The app's bot identity for commits: <slug>[bot], with the bot's noreply email address.
 export async function botIdentity({ slug, token, fetchFn = fetch, api = "https://api.github.com" }) {
   const name = `${slug}[bot]`;

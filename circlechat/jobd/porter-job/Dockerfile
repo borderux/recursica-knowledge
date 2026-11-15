@@ -14,7 +14,9 @@ RUN apt-get update \
  && npm install -g @anthropic-ai/claude-code
 
 COPY portable/claude-code/agents/porter-adapter.md /porter/porter-adapter.md
-COPY circlechat/jobd/porter-job/run.sh /porter/run.sh
+# run.sh is a port job, and check.sh is the check job (jobd starts check.sh with --entrypoint).
+# task-key.mjs prints the job's task key and renews the key.
+COPY circlechat/jobd/porter-job/run.sh circlechat/jobd/porter-job/check.sh circlechat/jobd/porter-job/task-key.mjs /porter/
 
 # Claude Code refuses to skip its permission prompts as root, and a job has no one to answer them.
 USER pwuser

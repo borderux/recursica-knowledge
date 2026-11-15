@@ -10,8 +10,23 @@ cd /work || exit 1
 # task. The gateway picks the model from the task's "Cloud models" setting; the job holds no cloud key.
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 
+# The task key lasts 4 hours. task-key.mjs prints the current key, and asks the gateway for a new
+# key when the key has less than an hour left. The newest key stays in /work/task-key, where jobd
+# finds the key for a restart. Claude Code asks task-key.mjs for the key every 5 minutes
+# (apiKeyHelper), and a loop renews the key every 10 minutes, also while Claude Code waits on a
+# long command. Claude Code ignores apiKeyHelper while ANTHROPIC_AUTH_TOKEN is set.
+TASK_KEY=/porter/task-key.mjs
+JOB_TASK_KEY="$ANTHROPIC_AUTH_TOKEN" "$TASK_KEY" >/dev/null || { echo "Porter job: no task key" > "$PORTER_REPORT"; exit 1; }
+unset ANTHROPIC_AUTH_TOKEN
+mkdir -p "$HOME/.claude"
+printf '{"apiKeyHelper": "%s"}\n' "$TASK_KEY" > "$HOME/.claude/settings.json"
+export CLAUDE_CODE_API_KEY_HELPER_TTL_MS=300000
+( while sleep 600; do "$TASK_KEY" >/dev/null || true; done ) &
+RENEWER=$!
+trap 'kill "$RENEWER" 2>/dev/null' EXIT
+
 # GitHub: Porter's GitHub App token for the job's repo, from the stack's token service, with the
-# job's task key (GITHUB_TOKEN_URL, github/token-service.mjs). A token is valid for at most one
+# job's current task key (GITHUB_TOKEN_URL, github/token-service.mjs). A token is valid for at most one
 # hour, so each git and gh call asks for a fresh token once the token is 45 minutes old. Commits
 # use the app's bot identity. Without GITHUB_TOKEN_URL, the stack has no GitHub Apps, and the job
 # has no push access.
@@ -23,7 +38,7 @@ if [ -n "${GITHUB_TOKEN_URL:-}" ]; then
 set -euo pipefail
 f="$HOME/.cache/github-token.json"
 if [ ! -s "$f" ] || [ $(( $(date +%s) - $(stat -c %Y "$f") )) -ge 2700 ]; then
-  curl -fsS -X POST -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN" -H "content-type: application/json" \
+  curl -fsS -X POST -H "Authorization: Bearer $(/porter/task-key.mjs)" -H "content-type: application/json" \
     -d "$(jq -n --arg r "$TARGET_REPO" '{repo: $r}')" "$GITHUB_TOKEN_URL/token" > "$f.new"
   chmod 600 "$f.new"; mv -f "$f.new" "$f"
 fi
@@ -50,17 +65,22 @@ cd repo || exit 1
 # The built porter-adapter prompt, without its front matter (that is for Claude Code's agent list).
 PROMPT="$(awk 'BEGIN{f=0} /^---$/{f++; next} f>=2' /porter/porter-adapter.md)"
 
+# The stream holds each step as one JSON line. jobd posts the newest text from the stream as the
+# job's latest progress, every hour, in the cluster's Slack channel.
 claude -p "$(cat /work/package.md)" \
   --append-system-prompt "$PROMPT" \
   --model "${PORTER_MODEL:-sonnet}" \
   --dangerously-skip-permissions \
   --max-turns "${PORTER_MAX_TURNS:-400}" \
-  --output-format json > /work/result.json 2> /work/claude.log
+  --output-format stream-json --verbose > /work/stream.jsonl 2> /work/claude.log
 status=$?
+jq -c 'select(.type == "result")' /work/stream.jsonl 2>/dev/null | tail -n 1 > /work/result.json
 
 if [ ! -s "$PORTER_REPORT" ]; then
   # The porter-adapter writes the report itself; this is only for a run that ended without one.
-  { echo "Porter job ended without a report (exit $status)."; echo; jq -r '.result // empty' /work/result.json 2>/dev/null | tail -c 4000; } > "$PORTER_REPORT"
+  { echo "Porter job ended without a report (exit $status)."
+    [ -s /work/key-ended ] && echo "The gateway ended the job's task key: $(cat /work/key-ended)"
+    echo; jq -r '.result // empty' /work/result.json 2>/dev/null | tail -c 4000; } > "$PORTER_REPORT"
   [ "$status" -eq 0 ] && status=1
 fi
 exit "$status"

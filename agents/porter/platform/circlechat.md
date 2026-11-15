@@ -21,8 +21,9 @@ A CircleChat workflow wakes Porter with a webhook payload. The payload's `event`
 
 - `release`: the release watcher found a new Mantine adapter release. The payload holds `repo`, `tag` and `url`. Start a fan-out for the tag.
 - `porter_job_done`: one porter-adapter job ended. The payload holds `job`, `node`, `label` and `status`. Collect the job's report (step 4).
+- `check_job_done`: one check job ended. The payload holds `job`, `node`, `status` and `checks`. Report the check (see "Check the job runners" under collect).
 
-A person can also start a fan-out by mentioning Porter with a release tag.
+A person can also start a fan-out by mentioning Porter with a release tag. A person can also ask Porter to check the job runners.
 
 Each turn starts fresh. **The folder `/workspace/porter/<tag>/` is the only record of a fan-out:** the reference packages, `jobs.json` and the reports. Read the folder at the start of every turn on a fan-out.
 
@@ -37,7 +38,7 @@ Each porter-adapter runs as a job on the job runner, not inside Porter's turn. A
    curl -s -X POST "$CC_GATEWAY_URL/task-key" -H "authorization: Bearer $CC_GATEWAY_KEY" -H 'content-type: application/json' -d '{"task": "<subtask id>"}'
    ```
 
-   The answer holds `key`. Never post, print or save the key outside the package file.
+   The answer holds `key`. Never post, print or save the key outside the package file. A task key lasts 4 hours. The running job renews the key at the gateway, up to the job's limit of 96 hours. Porter never renews a key. A key ends when the key's task closes, so keep each adapter's subtask open until the job ends.
 3. Write each reference package to `/workspace/porter/<tag>/<adapter>.json` as `{"type": "porter", "repo": "<clone URL>", "label": "<tag> <adapter>", "package": "<the reference package, in Markdown>", "gateway_key": "<the subtask's key>"}`. Use the HTTPS clone URL.
 4. Send each package to a job runner. The job runners are listed best first, comma-separated, in `$PORTER_JOB_NODES`:
 
@@ -57,6 +58,22 @@ curl -sf "$NODE/jobs/<job id>/report" -H "authorization: Bearer $JOBD_TOKEN"
 ```
 
 Save the report to `/workspace/porter/<tag>/<adapter>-report.md`, update `jobs.json`, and mark the adapter's subtask done or blocked. When a job ends with status `failed` or with no report, fetch the last 200 lines of the job's log (`GET $NODE/jobs/<job id>/log?tail=200`) and record the failure as a blocker. Start a failed job again at most twice for the same failure.
+
+A job runner stops a port job after 96 hours. The job then ends with status `timed_out`, and the report says so. Record a timed-out job as a blocker, with the pull request link if the report has one.
+
+### Check the job runners
+
+A check job tests the whole path of a port job, and never touches a repository. The check job makes one tiny model request through the gateway. The token service then confirms that Porter may get a token for the repository. When a person asks Porter to check the job runners:
+
+1. Get a gateway key for the request's task, as dispatch step 2 says.
+2. Send one check job to each job runner in `$PORTER_JOB_NODES`, with the first repository in the job runners' list:
+
+   ```
+   curl -s -w '\n%{http_code}' -X POST "$NODE/jobs" -H "authorization: Bearer $JOBD_TOKEN" -H 'content-type: application/json' -d '{"type": "check", "repo": "<clone URL>", "label": "check <node>", "gateway_key": "<the key>"}'
+   ```
+
+   A check job takes no slot. A `429` answer with `check_running` means a check job already runs on that job runner: wait for the check job's `check_job_done`.
+3. When each `check_job_done` arrives, post one line per job runner as a `task_comment`. The line names the job runner, then pass or fail for `image`, `gateway` and `token`. Add the `detail` of each failed part.
 
 Between jobs, when nothing has changed, reply with `HEARTBEAT_OK` and nothing else.
 

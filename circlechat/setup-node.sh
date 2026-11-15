@@ -64,7 +64,8 @@ if node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], 
 fi
 # A job runner, when the node has a `jobs` block: builds the porter job image and runs jobd, which
 # starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN,
-# PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET) come from $SECRETS.
+# PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET, and SLACK_BOT_TOKEN and
+# SLACK_CHANNEL_ID for the hourly status of running ports) come from $SECRETS.
 # JOBD_TOKEN must match the one in the control machine's .env. A job holds no cloud key: the job
 # sends its model requests to the control computer's gateway, with the gateway key for its task.
 JOBS="$(node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1]));process.stdout.write(s.jobs?JSON.stringify(s.jobs):"")' "$SPEC")"

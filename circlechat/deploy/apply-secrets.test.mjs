@@ -496,3 +496,13 @@ test("before the owner's Docker steps, the helper makes the two secrets of cloud
     if (system === "Darwin") assert.ok(t.fake.calls().split("\n").includes(`chown -h ${me} ${path.join(dir, "approval-token")}`));
   }
 });
+
+test("a job runner's computer gets the cluster's Slack bot token and channel, for jobd's hourly status", () => {
+  const { home, conf } = setup();
+  const r = apply(conf, ["cluster", control, "false"], "SLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL_ID=C0TEST\nJOBD_TOKEN=jt\n");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const nodeEnv = fs.readFileSync(path.join(home, ".recursica-node.env"), "utf8");
+  assert.match(nodeEnv, /^SLACK_BOT_TOKEN=xoxb-test$/m);
+  assert.match(nodeEnv, /^SLACK_CHANNEL_ID=C0TEST$/m);
+  assert.equal(fs.statSync(path.join(home, ".recursica-node.env")).mode & 0o777, 0o600);
+});

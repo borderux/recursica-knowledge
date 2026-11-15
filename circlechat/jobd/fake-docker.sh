@@ -6,5 +6,6 @@ case "$1" in
        echo "running 0 false" > "$S/$name"; printf '%s\n' "$@" > "$S/$name.args"; echo "fakeid-$name" ;;
   inspect) n="${!#}"; [ -f "$S/$n" ] && cat "$S/$n" || { echo "no such" >&2; exit 1; } ;;
   logs) echo "log line for ${!#}" ;;
+  stop) n="${!#}"; [ -f "$S/$n" ] && echo "exited 143 false" > "$S/$n" ;;
   rm) rm -f "$S/${!#}" ;;
 esac

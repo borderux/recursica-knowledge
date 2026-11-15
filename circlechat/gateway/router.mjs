@@ -9,9 +9,14 @@
 //   GET  /v1/models          the routes the key's agent may use
 //   POST /v1/chat/completions, /v1/completions, /v1/messages
 //                            a model request (OpenAI or Anthropic format); "model" names a route
-//   POST /task-key           an agent key asks for a task key (port jobs): for { "task": "<id>" }, a
-//                            task the agent created or is assigned to; with no body, the task of
-//                            the agent's one running turn
+//   POST /task-key           an agent key asks for a task key (port jobs): for { "task": "<id>" }, an
+//                            open task the agent created or is assigned to; with no body, the task
+//                            of the agent's one running turn. Answers { key, task, id, expires_at,
+//                            limit_at }. The key lasts 4 hours (task_keys.hours in gateway.json).
+//   POST /task-key/renew     a running job's task key asks for a new key for the same task, with
+//                            the same id and the same job limit (96 hours after the first key,
+//                            task_keys.job_hours). Only an open task's key that has not ended or
+//                            been revoked renews. Same answer as POST /task-key.
 // Every other path gets 404, whatever the key: LiteLLM's own endpoints, such as key and model
 // management, stay out of reach.
 //
@@ -21,7 +26,9 @@
 //
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
-// request and first cluster answer) and notified.json. The spend log gets one line per request:
+// request and first cluster answer), notified.json, and the task key files keys.mjs names: the
+// keys the router made, the closed tasks and the revoked keys. Each minute, the router checks the
+// task of each live task key in CircleChat's database, and records each closed task. The spend log gets one line per request:
 // the time, the task, the agent, the key's name, the route, the server and the model that
 // answered, the status and the token counts. The log holds no prompt and no answer.
 import dns from "node:dns/promises";
@@ -31,10 +38,13 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { decide, settingFromRow } from "./policy.mjs";
-import { loadKeys, taskKey, taskSecret, verify } from "./keys.mjs";
+import { ENDED, JOB_HOURS, TASK_KEY_HOURS, checkKey, liveKeys, loadKeys, makeTaskKey, recordKey, startGrace, taskKeyState, taskSecret, taskStateReader, writeState } from "./keys.mjs";
 
 const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
 export const SETTING_CACHE_MS = MINUTE;
+// A drill key (keys.mjs drill) asks for at most this many tokens per request.
+export const DRILL_MAX_TOKENS = 32;
 // The only LiteLLM paths a key reaches.
 export const MODEL_PATHS = new Set(["/v1/chat/completions", "/v1/completions", "/v1/messages"]);
 
@@ -92,13 +102,15 @@ function jsonFile(file, fallback) {
 // createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, apiBase, now, allow, refreshAllow })
 //   db          { runTasks(handle) -> the task id of each of the agent's running turns (null for a
 //                 turn outside a task), onTask(handle, task) -> true when the agent created
-//                 or is assigned to the task, setting(task) -> row or null, botToken(handle) }
+//                 or is assigned to the task, taskOpen(task) -> false for a closed or deleted
+//                 task, setting(task) -> row or null, botToken(handle) }
 //   litellm     LiteLLM's base URL, such as http://cc-litellm:4000
 //   litellmKey  LiteLLM's master key. Only the router holds the master key, never an agent.
 //   allow    the address ranges allowed to use a key (allowedSources)
 //   refreshAllow  reads the address ranges again (allowedSources), for a network the container
 //                 joined after the gateway started
-export function createGateway({ config, db, litellm, litellmKey = "", stateDir, spendLog, apiBase, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000 }) {
+//   sweepMs     how often the router checks the tasks of live task keys; 0 for never (the tests)
+export function createGateway({ config, db, litellm, litellmKey = "", stateDir, spendLog, apiBase, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000, sweepMs = MINUTE, logError = console.error }) {
   // setup-host.sh starts the gateway on one network and connects the agents' network and the
   // models' network after the start. A source outside the ranges read so far makes the gateway
   // read its networks again, at most every 5 seconds, before it refuses the key.
@@ -113,6 +125,11 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   }
   fs.mkdirSync(stateDir, { recursive: true });
   const secret = taskSecret(stateDir);
+  const keyHours = config.task_keys?.hours ?? TASK_KEY_HOURS;
+  const jobHours = config.task_keys?.job_hours ?? JOB_HOURS;
+  // Keys from before the upgrade keep working for one key's time, so a running job can finish.
+  startGrace(stateDir, now(), keyHours);
+  const keyState = taskStateReader(stateDir, now);
   const clocks = jsonFile(path.join(stateDir, "clocks.json"), {});
   const notified = jsonFile(path.join(stateDir, "notified.json"), {});
   const settings = new Map();
@@ -125,6 +142,39 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     if (m !== keysAt) { keys = loadKeys(stateDir); keysAt = m; }
     return keys;
   };
+
+  // An open task: not done, cancelled, archived or deleted. Without the database's answer, such
+  // as before setup-host.sh grants the new columns, a task counts as open, and each key still
+  // ends at its end time. Stopping every running job for a missing grant would be worse.
+  let dbErrorAt = -Infinity;
+  async function taskOpen(task) {
+    if (!db.taskOpen) return true;
+    try { return await db.taskOpen(task); } catch (e) {
+      if (now() - dbErrorAt > HOUR) { dbErrorAt = now(); logError(`task-key sweep: ${e.message}`); }
+      return null;
+    }
+  }
+
+  // Records each closed task that a live task key names, and forgets a task that opened again.
+  async function sweep() {
+    const old = taskKeyState(stateDir).ended;
+    const ended = Object.fromEntries(Object.entries(old).filter(([, t]) => Date.parse(t) > now() - (jobHours + 24) * HOUR));
+    for (const task of new Set(liveKeys(stateDir, now()).map((k) => k.task))) {
+      const open = await taskOpen(task);
+      if (open === false) ended[task] ??= new Date(now()).toISOString();
+      else if (open === true) delete ended[task];
+    }
+    if (JSON.stringify(ended) !== JSON.stringify(old)) writeState(stateDir, ENDED, ended);
+  }
+  if (sweepMs > 0) setInterval(() => sweep().catch((e) => logError(`task-key sweep: ${e.message}`)), sweepMs).unref?.();
+
+  // A new task key, recorded, and the answer for POST /task-key and POST /task-key/renew.
+  function newKey(res, agent, task, opts) {
+    const made = makeTaskKey(secret, currentKeys(), agent, task, { now: now(), ttlMs: keyHours * HOUR, ...opts });
+    recordKey(stateDir, made, agent, now());
+    res.writeHead(200, { "content-type": "application/json" });
+    return res.end(JSON.stringify({ key: made.key, task, id: made.id, expires_at: new Date(made.expiresAt).toISOString(), limit_at: new Date(made.limitAt).toISOString() }));
+  }
 
   async function settingOf(task) {
     const hit = settings.get(task);
@@ -217,6 +267,11 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 50_000_000) return fail(res, 413, "too_large", "The request is too large."); }
     let body; try { body = JSON.parse(raw); } catch { return fail(res, 400, "bad_json", "The request body is not JSON."); }
+    const drill = who.kind === "drill";
+    if (drill) {
+      const most = body.max_tokens ?? body.max_completion_tokens;
+      if (!Number.isInteger(most) || most > DRILL_MAX_TOKENS) return fail(res, 403, "drill_limit", `A drill key asks for at most ${DRILL_MAX_TOKENS} tokens per request.`);
+    }
     const agent = config.agents?.[who.agent] ?? config.fallback;
     const routes = agent?.routes ?? [];
     let route = body.model;
@@ -238,11 +293,11 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
       const setting = t ? await settingOf(t) : { mode: "cluster_only" };
       // A clock starts only for a request the router can place in its task.
       let clock = t ? clocks.data[t] ?? null : null;
-      if (t && !unsure && !clock) { clock = clocks.data[t] = { firstRequestAt: now() }; clocks.save(); }
+      if (t && !unsure && !clock && !drill) { clock = clocks.data[t] = { firstRequestAt: now() }; clocks.save(); }
       options.push({ task: t, clock, d: decide({ task: t, setting, agent: view, clock, now: now() }) });
     }
     const { task, clock, d } = strictest(options);
-    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks } : {}) };
+    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks } : {}), ...(drill ? { drill: true } : {}), ...(req.headers["x-recursica-check"] ? { check: true } : {}) };
     const gone = new AbortController();
     res.on("close", () => { if (!res.writableEnded) gone.abort(); });
 
@@ -254,7 +309,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
 
     if (d.target === "fail") {
       const text = `The model gateway cannot run this task: ${d.reason}. Add a cluster model to the stack's site.json, or change the task's Cloud models setting.`;
-      await tellTask(task, who.agent, text);
+      if (!drill) await tellTask(task, who.agent, text);
       log({ ...entry, key: null, model: null, status: 409, reason: d.reason });
       return fail(res, 409, "no_cluster_model", text);
     }
@@ -301,8 +356,9 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
         return fail(res, 403, "outside_cluster", "A gateway key works only inside the cluster.");
       }
       const auth = String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "") || String(req.headers["x-api-key"] ?? "");
-      const who = verify(auth, currentKeys(), secret);
-      if (!who) return fail(res, 401, "invalid_key", "Unknown or revoked gateway key.");
+      const checked = checkKey(auth, currentKeys(), secret, keyState());
+      if (checked.error) return fail(res, 401, checked.error, checked.message);
+      const { who } = checked;
       if (jobsPort && !who.task) return fail(res, 401, "task_key_needed", "This port takes only a port job's task key.");
       if (pathname === "/health") { res.writeHead(200, { "content-type": "application/json" }); return res.end('{"ok":true}'); }
       if (req.method === "POST" && pathname === "/task-key") {
@@ -322,8 +378,16 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
           task = running[0] ?? null;
         }
         if (!task) return fail(res, 409, "no_task", `Agent ${who.agent} has no running task. Name the task: {"task": "<task id>"}.`);
-        res.writeHead(200, { "content-type": "application/json" });
-        return res.end(JSON.stringify({ key: taskKey(secret, currentKeys(), who.agent, task), task }));
+        if ((await taskOpen(task)) === false) return fail(res, 409, "task_closed", `Task ${task} is closed. A task key needs an open task.`);
+        return newKey(res, who.agent, task, { limitAt: now() + jobHours * HOUR });
+      }
+      if (req.method === "POST" && pathname === "/task-key/renew") {
+        if (!who.task) return fail(res, 403, "task_key_needed", "Send the task key to renew.");
+        if (who.kind === "drill") return fail(res, 403, "drill_key", "A drill key never renews.");
+        if (who.v !== 2) return fail(res, 403, "old_key", "A task key from before the gateway's upgrade never renews. Get a new task key.");
+        if ((await taskOpen(who.task)) === false) return fail(res, 401, "task_closed", `Task ${who.task} is closed, so the task's keys have ended.`);
+        if (now() >= who.limitAt - MINUTE) return fail(res, 403, "job_limit", `The job reached its limit of ${jobHours} hours, so the key never renews.`);
+        return newKey(res, who.agent, who.task, { limitAt: who.limitAt, id: who.id });
       }
       if (req.method === "GET" && pathname === "/v1/models") {
         const routes = (config.agents?.[who.agent] ?? config.fallback)?.routes ?? [];
@@ -339,6 +403,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   const handler = (req, res) => serve(req, res, false);
   // The handler for port 4001, the port for port jobs.
   handler.jobs = (req, res) => serve(req, res, true);
+  handler.sweep = sweep;
   return handler;
 }
 
@@ -376,6 +441,10 @@ export function pgDb(url, pg) {
         join members m on m.workspace_id = t.workspace_id and m.kind = 'agent'
         join agents a on a.id = m.ref_id and a.handle = $1
         where t.id = $2 and (t.created_by = m.id or exists (select 1 from task_assignees ta where ta.task_id = t.id and ta.member_id = m.id))`, [handle, task]));
+    },
+    async taskOpen(task) {
+      const row = await one("select status, archived from tasks where id = $1", [task]);
+      return Boolean(row && !row.archived && !["done", "cancelled"].includes(row.status));
     },
     async botToken(handle) { return (await one("select bot_token from agents where handle = $1 limit 1", [handle]))?.bot_token ?? null; },
   };

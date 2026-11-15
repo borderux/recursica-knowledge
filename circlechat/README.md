@@ -398,18 +398,70 @@ with room, best first by `jobs.priority`. `agents/porter/runtime/hermes.md` expl
    `setup-host.sh` when `porter.watch` is set) and every job runner use the same webhook.
 3. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
    `JOBD_TOKEN` (copied from the control machine's `.env`), `PORTER_HOOK_URL` and
-   `PORTER_HOOK_SECRET`. The file holds no cloud key and no GitHub token. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
+   `PORTER_HOOK_SECRET`. Add `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` for the hourly status of
+   running ports. The file holds no cloud key and no GitHub token. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
    it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`. On the
    control computer, run `setup-host.sh` first, so the gateway exists.
 4. Install Porter in the CircleChat UI, then `./circlechat/setup-agent.sh porter`.
 
-A job runner only runs the porter job type for the repositories in `porter.targets`, so a
-request cannot run an arbitrary command. The job's secrets reach the container by name, never on
+A job runner only runs two job types, a port and a check, for the repositories in
+`porter.targets`. A request therefore cannot run an arbitrary command. The job's secrets reach the container by name, never on
 a command line. Each job sends the job's model requests to the control computer's gateway, with
 the gateway key for the job's task. Porter gets that key from the gateway during a turn on the task. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
 keeps running.
 
 **A job runner listens on `127.0.0.1` and the computer's Tailscale addresses, never on the office network.** `setup-node.sh` reads the Tailscale addresses with `tailscale ip`. Without Tailscale, the job runner listens on `127.0.0.1` only, and other computers cannot reach the job runner. Porter reaches the control computer's job runner at the control computer's `tailnet_address`. On Linux, `host.docker.internal` is Docker's bridge address, where no job runner listens.
+
+### Task keys
+
+**A task key lasts 4 hours, and the running job renews the key.** Porter gets a task key from the gateway for each adapter's subtask. The port job renews the key at the gateway when the key has less than an hour left.
+
+- **Renewal keeps the same task, key id and job limit.** The gateway renews a key only while the key's task is open and the key has not ended or been revoked.
+- **A port job runs for 96 hours at most.** The job's first key sets the limit, and no renewal moves the limit. The job runner stops the job at the limit. The job ends as `timed_out`, and the job's report says so.
+- **A restart uses the newest key.** The job keeps the newest key in the job's folder. After a restart of the computer, the job runner starts the job again with that key.
+- **A key ends when the key's task closes.** Each minute, the gateway checks the task of each live key in CircleChat's database. A task that is done, cancelled, archived or deleted ends the task's keys.
+- **A key from before the upgrade works for 4 more hours.** The upgraded gateway sets that time when the gateway first starts.
+
+**An admin revokes one task's keys and leaves the agent's other keys working.** Run each command on the control computer, with sudo, because only root reads the gateway's state folder:
+
+```
+sudo node circlechat/gateway/keys.mjs tasks ~/circlechat/gateway-state            # the live keys: id, agent, task, end
+sudo node circlechat/gateway/keys.mjs revoke-task ~/circlechat/gateway-state <task id>
+sudo node circlechat/gateway/keys.mjs revoke-key ~/circlechat/gateway-state <key id>
+```
+
+`revoke-task` ends every key the task has so far. `revoke-key` ends one key, with every renewal of the key. `keys.mjs revoke <agent>` still ends the agent's key and all of the agent's task keys.
+
+### The check job and the drill
+
+**A check job tests the whole port-job path and never touches a repository.** The check job runs in the port job's image, on the port job's network. The check job has three parts:
+
+- **image:** Claude Code starts in the image.
+- **gateway:** one tiny model request reaches the gateway with the task key.
+- **token:** the token service confirms that the agent may get a token for the repository.
+
+The token service confirms with GitHub's read-only lookup of the app's installation on the repository. The service makes no token. A check job never clones, pushes or opens a pull request. A check job takes no slot, and one check job runs at a time on each job runner. The job runner logs one line per part, and Porter gets the result in a `check_job_done` webhook.
+
+**The drill runs one check job on one node, from the control computer.** Run the drill as the stack's owner, once for each node with a `jobs` block:
+
+```
+./circlechat/check-job.sh <node> [--repo <clone URL>] [--minutes <1-240>]
+```
+
+The drill asks for sudo once, to make a drill key. A drill key works only for a check job, asks for 32 tokens at most, and ends after 15 minutes. The drill revokes the key when the drill ends. The drill prints one line per part and exits 0 only when every part passes:
+
+```
+check-job node-a: jobd     PASS  201 job-mhz4k2-a1b2c3
+check-job node-a: image    PASS  Claude Code 2.1.325 (Claude Code)
+check-job node-a: gateway  PASS  200 in 1.8 s, model qwen3:32b
+check-job node-a: token    PASS  porter may get a token for acme/adapter-x (installation 51234567, contents write, pull_requests write)
+```
+
+A person can also ask Porter to check the job runners. Porter then sends a check job to each job runner and posts the results in the task.
+
+### The hourly status
+
+**Every hour, each job runner posts each running port's status in the cluster's Slack channel.** One message lists each running port: the job, the node, how long the job has run, and the job's latest progress. The latest progress is the newest text Claude Code wrote in the job. A job runner with no running port posts nothing. The post needs `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` in the node secrets file. No job gets either value.
 
 ## Clients: one isolated stack each
 
@@ -572,6 +624,7 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
 | `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The task notifier and the stack's scripts, through the cluster's Slack app |
+| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`           | The node secrets file of each job runner                                                             | The job runner's hourly status of running ports                            |
 | `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | Barb's first pass with Kev                                                 |
 | `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Porter and each job runner                                                 |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |

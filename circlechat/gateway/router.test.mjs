@@ -6,7 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { createGateway, inCidr, strictest } from "./router.mjs";
-import { issue, revoke } from "./keys.mjs";
+import crypto from "node:crypto";
+import { drillKey, issue, loadKeys, revoke, revokeKey, taskSecret } from "./keys.mjs";
 
 const listen = (handler) => new Promise((r) => { const s = http.createServer(handler); s.listen(0, "127.0.0.1", () => r(s)); });
 const base = (s) => `http://127.0.0.1:${s.address().port}`;
@@ -66,6 +67,8 @@ const db = {
   // One task id per running turn; a list stands for more than one running turn.
   async runTasks(h) { const t = this.tasks[h]; return Array.isArray(t) ? t : t == null ? [] : [t]; },
   async onTask(h, t) { return h === "porter" && t.startsWith("t-sub"); },
+  closed: new Set(),
+  async taskOpen(t) { return !this.closed.has(t); },
   async setting(t) { this.reads++; return this.settings[t] ?? null; },
   async botToken(h) { return `cc_bot_${h}`; },
 };
@@ -74,7 +77,8 @@ const spendLog = path.join(state, "spend.jsonl");
 let offset = 0;
 const now = () => Date.now() + offset;
 const keys = Object.fromEntries(["betty", "loki", "porter", "nolocal"].map((h) => [h, issue(state, h)]));
-const gw = await listen(createGateway({ config, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, apiBase: `${base(api)}/api`, now, retryMs: 20 }));
+const gwHandler = createGateway({ config, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, apiBase: `${base(api)}/api`, now, retryMs: 20, sweepMs: 0 });
+const gw = await listen(gwHandler);
 test.after(() => { gw.close(); litellm.close(); api.close(); });
 
 const ask = (key, model = "local-large", extra = {}) => fetch(`${base(gw)}/v1/chat/completions`, {
@@ -323,4 +327,102 @@ test("a network the gateway joins after it starts counts, and an outside address
   assert.equal(await ask(), 403);
   assert.equal(outsideReads, 2);
   outside.close();
+});
+
+const H = 3_600_000;
+const keyFor = async (task) => {
+  const r = await fetch(`${base(gw)}/task-key`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}`, "content-type": "application/json" }, body: JSON.stringify({ task }) });
+  return { status: r.status, ...(await r.json()) };
+};
+const renew = async (key) => { const r = await fetch(`${base(gw)}/task-key/renew`, { method: "POST", headers: { authorization: `Bearer ${key}` } }); return { status: r.status, ...(await r.json()) }; };
+const job = (key, extra = {}, headers = {}) => fetch(`${base(gw)}/v1/messages`, { method: "POST", headers: { "x-api-key": key, "content-type": "application/json", ...headers },
+  body: JSON.stringify({ model: "sonnet", max_tokens: 10, messages: [{ role: "user", content: "hi" }], ...extra }) });
+const errorOf = async (r) => [r.status, (await r.json()).error.type];
+
+test("a task key lasts 4 hours and names the job's 96-hour limit, and a closed task gets no key", async () => {
+  const k = await keyFor("t-sub-a");
+  assert.equal(k.status, 200);
+  assert.match(k.id, /^[0-9a-f]{16}$/);
+  assert.ok(Math.abs(Date.parse(k.expires_at) - (now() + 4 * H)) < 5000);
+  assert.ok(Math.abs(Date.parse(k.limit_at) - (now() + 96 * H)) < 5000);
+  db.closed.add("t-sub-shut");
+  const shut = await fetch(`${base(gw)}/task-key`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}`, "content-type": "application/json" }, body: JSON.stringify({ task: "t-sub-shut" }) });
+  assert.deepEqual(await errorOf(shut), [409, "task_closed"]);
+});
+
+test("a running job renews the key for the same task, with the same id and limit, and the old key ends on time", async () => {
+  try {
+    const first = await keyFor("t-sub-r");
+    offset = 3 * H;
+    const next = await renew(first.key);
+    assert.equal(next.status, 200);
+    assert.deepEqual([next.task, next.id, next.limit_at], ["t-sub-r", first.id, first.limit_at]);
+    assert.ok(Date.parse(next.expires_at) > Date.parse(first.expires_at));
+    offset = 5 * H;
+    assert.deepEqual(await errorOf(await job(first.key)), [401, "key_expired"]);
+    assert.equal((await job(next.key)).status, 200);
+    assert.equal((await lastLog()).task, "t-sub-r");
+    assert.deepEqual(await errorOf(await fetch(`${base(gw)}/task-key/renew`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}` } })), [403, "task_key_needed"]);
+  } finally { offset = 0; }
+});
+
+test("renewal stops at the job's 96-hour limit", async () => {
+  try {
+    let k = await keyFor("t-sub-l");
+    const limit = k.limit_at;
+    for (let h = 3.5; h <= 94.5; h += 3.5) { offset = h * H; k = await renew(k.key); assert.equal(k.status, 200, `renewal at ${h} hours`); }
+    assert.equal(k.expires_at, limit, "the last key ends at the job's limit");
+    offset = 96 * H - 30_000;
+    const last = await renew(k.key);
+    assert.deepEqual([last.status, last.error.type], [403, "job_limit"]);
+  } finally { offset = 0; }
+});
+
+test("a closed task's key stops renewing and, after the sweep, stops working", async () => {
+  const k = await keyFor("t-sub-c");
+  db.closed.add("t-sub-c");
+  const r = await renew(k.key);
+  assert.deepEqual([r.status, r.error.type], [401, "task_closed"]);
+  assert.equal((await job(k.key)).status, 200, "the key works until the sweep sees the closed task");
+  await gwHandler.sweep();
+  assert.deepEqual(await errorOf(await job(k.key)), [401, "task_closed"]);
+  db.closed.delete("t-sub-c");
+  await gwHandler.sweep();
+  assert.equal((await job(k.key)).status, 200, "a task that opens again works again");
+});
+
+test("an admin revokes one task key, and Porter's other keys keep working", async () => {
+  const a = await keyFor("t-sub-v1"), b = await keyFor("t-sub-v2");
+  revokeKey(state, a.id);
+  assert.deepEqual(await errorOf(await job(a.key)), [401, "key_revoked"]);
+  const r = await renew(a.key);
+  assert.deepEqual([r.status, r.error.type], [401, "key_revoked"]);
+  assert.equal((await job(b.key)).status, 200);
+  assert.equal((await ask(keys.porter)).status, 200, "Porter's agent key still works");
+});
+
+test("a drill key asks for a few tokens only, never renews, sets no clock and posts no task comment", async () => {
+  const d = drillKey(state, "porter", "node-a");
+  assert.deepEqual(await errorOf(await job(d.key, { max_tokens: 64 })), [403, "drill_limit"]);
+  assert.deepEqual(await errorOf(await job(d.key, { max_tokens: undefined })), [403, "drill_limit"]);
+  const before = comments.length;
+  assert.equal((await job(d.key, { max_tokens: 16 }, { "x-recursica-check": "1" })).status, 200);
+  const log = await lastLog();
+  assert.deepEqual([log.task, log.drill, log.check], [d.task, true, true]);
+  assert.equal((await clocks())[d.task], undefined);
+  assert.equal(comments.length, before);
+  const r = await renew(d.key);
+  assert.deepEqual([r.status, r.error.type], [403, "drill_key"]);
+});
+
+test("a task key from before the upgrade works during the grace time only, and never renews", async () => {
+  const payload = Buffer.from(JSON.stringify({ a: "porter", t: "t-sub-old" })).toString("base64url");
+  const v1 = `cct_${payload}.${crypto.createHmac("sha256", taskSecret(state)).update(`${payload}.${loadKeys(state).porter.sha256}`).digest("base64url")}`;
+  try {
+    assert.equal((await job(v1)).status, 200);
+    const r = await renew(v1);
+    assert.deepEqual([r.status, r.error.type], [403, "old_key"]);
+    offset = 4 * H + 1000;
+    assert.deepEqual(await errorOf(await job(v1)), [401, "key_expired"]);
+  } finally { offset = 0; }
 });
