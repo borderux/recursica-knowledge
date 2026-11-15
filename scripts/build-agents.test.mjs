@@ -533,6 +533,35 @@ test("every built Betty asks one question per message, and asks her six intake q
   }
 });
 
+/**
+ * Betty skipped each intake question the request already answered, so a detailed request got a
+ * prototype with no question at all. Every built Betty now asks at least one question before
+ * building a prototype and waits for the answer, unless the request says "no questions".
+ */
+test("every built Betty asks at least one question before building a prototype, unless the request says \"no questions\"", () => {
+  const built = [
+    ["buzz-agents", "agents", "betty", "SYSTEM_PROMPT.md"],
+    ["portable", "circlechat", "agents", "betty", "SOUL.md"],
+    ["portable", "claude-code", "agents", "betty.md"],
+    ["portable", "grok", "agents", "betty.md"],
+  ];
+  for (const parts of built) {
+    const file = parts.join("/");
+    const text = fs.readFileSync(path.join(repoRoot, ...parts), "utf8").replace(/\s+/g, " ");
+    assert.match(text, /\*\*Always ask at least one question before building a prototype, and wait for the answer\.\*\*/, file);
+    assert.match(text, /This holds even when the request answers all six questions below\./, file);
+    assert.match(text, /The only exception is a request that says "no questions"\./, file);
+    // The one-question-per-message rule still stands beside it.
+    assert.match(text, /\*\*Ask exactly one question in each message, and wait for the answer before asking the next one\.\*\*/, file);
+    // The rule comes before the six intake questions, whose skip rule it overrides.
+    assert.ok(
+      text.indexOf("Always ask at least one question before building a prototype") <
+        text.indexOf("skip each question the request already answers"),
+      `${file}: the rule comes before the intake skip rule`,
+    );
+  }
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
