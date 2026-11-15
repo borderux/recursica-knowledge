@@ -548,6 +548,10 @@ test("the Slack notifier shows the stack's name as the sender of each message", 
   const notifier = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-slack-notify "));
   assert.ok(notifier, r.stdout);
   assert.match(notifier, / -e STACK_NAME=ops /);
+  // The quiet default, and no person for a DM.
+  assert.match(notifier, / -e NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected /);
+  assert.match(notifier, / -e NOTIFY_PEOPLE= /);
+  assert.ok(fs.existsSync(path.join(s.cc, "notify", "events.mjs")), "the notifier's events file sits next to notify.mjs");
 });
 
 // Cloud-model requests in Slack (cluster/cloud-requests.mjs).

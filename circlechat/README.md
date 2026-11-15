@@ -983,7 +983,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 ### The Slack app
 
-1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope. Give the bot the `chat:write` and `chat:write.customize` scopes. The second scope lets each message name the computer or stack that sent it. Invite the bot to the cluster's channel, `SLACK_CHANNEL_ID`, and to each client's channel.
+1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope. Give the bot the `chat:write`, `chat:write.customize` and `im:write` scopes. `chat:write.customize` lets each message name the computer or stack that sent it. `im:write` lets the notifier send a DM to a mentioned person (see "Notifications"). Invite the bot to the cluster's channel, `SLACK_CHANNEL_ID`, and to each client's channel.
 2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
 3. Add the cluster's secrets to the GitHub environment of the cluster's own stack, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
@@ -1095,17 +1095,43 @@ Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0
 
 ## Notifications
 
-With `"notify": { "slack": true }`, `site.slack_channel_id` and `SLACK_BOT_TOKEN` set, the notifier posts to the stack's channel through the cluster's Slack app:
-task created, assigned, status changed and done; every comment, flagged **needs @person** when it
-mentions one; each agent reply CircleChat could not use (otherwise silent); and tasks blocked 24 h
-or in progress 12 h with no activity. It reads the database, so it misses nothing across restarts.
+**The notifier posts the CircleChat events that `notify.events` chooses.** The notifier needs `"notify": { "slack": true }`, `site.slack_channel_id` and `SLACK_BOT_TOKEN`. The notifier reads CircleChat's database every 30 seconds, so the notifier misses nothing across restarts. The cluster's own alerts, approvals and buttons don't depend on `notify.events`.
 
-**A reply CircleChat could not use** gets one message: the agent, a link to the conversation and the
-reason, such as `actions_block_visible`. CircleChat records each such reply in the run's
-`result_json` as `dropped`, with the conversation and the reason and never the reply's text, so the
-text never reaches Slack. With `notify.details` off, the default for a client stack, the message
-names no conversation, and the link reads "a conversation". A CircleChat that records no `dropped`
-yet gets the older message, made from the run's error.
+**A mention of a person goes as a DM, never to the stack's channel.** Each mentioned person on `notify.people` gets a DM from the Slack app. A mentioned person not on the list gets nothing, and the notifier's log names the person's handle, never the text. Every other event goes to the stack's channel.
+
+```json
+"notify": {
+  "slack": true,
+  "events": ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"],
+  "people": [{ "email": "person.a@acme.com", "slack_user": "U0123ABCD" }]
+}
+```
+
+- **`notify.events`** lists the events. Without `notify.events`, the stack gets the quiet default: the five events in the example. `"all"` sends every event, and `[]` sends none.
+- **`notify.people`** maps each person's CircleChat email to the person's Slack user ID. Find the ID in the person's Slack profile, under "Copy member ID".
+
+| Event               | Where   | The post                                                                                           | Default |
+| ------------------- | ------- | -------------------------------------------------------------------------------------------------- | ------- |
+| `task_created`      | Channel | 🆕 A person or an agent created a task                                                             | Off     |
+| `task_assigned`     | Channel | 👤 A person or an agent assigned someone to a task                                                 | Off     |
+| `task_unassigned`   | Channel | 👤 A person or an agent removed someone from a task                                                | Off     |
+| `task_review`       | Channel | 👀 A task moved to review, and waits for a person                                                  | On      |
+| `task_done`         | Channel | ✅ A task moved to done                                                                            | Off     |
+| `task_blocked`      | Channel | ⛔ A task moved to blocked                                                                         | Off     |
+| `task_status_other` | Channel | ▶️ 📥 🔁 A task moved to another status, such as in progress or backlog                            | Off     |
+| `task_progress_100` | Channel | 💯 A task reached 100%                                                                             | Off     |
+| `task_archived`     | Channel | 🗄️ A task was archived                                                                             | Off     |
+| `comment`           | Channel | 💬 Each task comment, up to 400 characters                                                         | Off     |
+| `comment_mention`   | DM      | ❓ A task comment that mentions the person, up to 400 characters                                   | On      |
+| `reply_dropped`     | Channel | ⚠️ An agent reply CircleChat could not post, with the reason and never the reply's text            | On      |
+| `task_stalled`      | Channel | ⏰ A task blocked for 24 hours, or in progress for 12 hours, with no activity. Once per stall      | Off     |
+| `post_rejected`     | Channel | ⚠️ An agent post CircleChat rejected, from a CircleChat that records no dropped replies yet        | On      |
+| `approval_pending`  | Channel | 🔐 An agent's action waits for a person's approval, with a link to the approvals page              | On      |
+| `chat_mention`      | DM      | ❓ A message in a channel that mentions the person, up to 400 characters. A DM never reaches Slack | Off     |
+
+**With `notify.details` off, the default for a client stack, Slack gets no task titles and no text.** Slack is an outside company. The channel gets one note at most every 10 minutes, which says only that CircleChat has new activity. A mention DM says only that the person was mentioned on a task or in a conversation. An approval note names no agent and no action.
+
+**A reply CircleChat could not use** gets one message: the agent, a link to the conversation and the reason, such as `actions_block_visible`. CircleChat records each such reply in the run's `result_json` as `dropped`, with the conversation and the reason and never the reply's text, so the text never reaches Slack. With `notify.details` off, the message names no conversation, and the link reads "a conversation".
 
 ## Privacy
 

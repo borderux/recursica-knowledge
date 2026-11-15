@@ -57,7 +57,7 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `github_apps`                                         | Each pushing agent's GitHub App: the app ID, installation ID, slug, repos and permissions (README, "GitHub access for agents")                   |
 | `site.github_token_port`                              | The GitHub token service's port, 4010 when unset, where port jobs on other computers get a push token                                            |
 | `porter`                                              | Porter's golden adapter and target adapters, only when the client ports adapters                                                                 |
-| `notify`                                              | Slack alerts for task changes                                                                                                                    |
+| `notify`                                              | `slack`, the CircleChat events in Slack (`events`) and the people who get a DM for a mention (`people`) (README, "Notifications")                |
 | `data`                                                | `repo`: a private repo for Kev's review data, and `github_app`: the push's GitHub App (README, "Kev's review data"); leave out for a client      |
 | `backup`                                              | The rclone remote and the time of the nightly backup                                                                                             |
 | `nodes[].rustdesk`                                    | The cluster's RustDesk server: its pinned image, the console's Tailscale name and the backup time (README, "The RustDesk server")                |
