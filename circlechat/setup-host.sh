@@ -84,9 +84,9 @@ fi
 KIT_OUT="$CC_DIR/kit-out"
 if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
-. "$KIT_OUT/app.env"
+load_env_file "$KIT_OUT/app.env"
 WANT_TENANT="${TENANT:-}"
-. "$KIT_OUT/tenant.env"
+load_env_file "$KIT_OUT/tenant.env"
 [ "$WANT_TENANT" = "$TENANT" ] || { echo "TENANT=${WANT_TENANT:-<none>} but $SITE has site.tenant ${TENANT:-<none>}. Run with the stack's own TENANT and site.json."; exit 1; }
 # The Mac's Colima and Ollama services (checked above). Ollama runs with the server's settings from
 # site.json, which the render above has checked.

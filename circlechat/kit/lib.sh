@@ -2,6 +2,9 @@
 # Shared helpers for the CircleChat kit. Sourced, never run. Works on Linux (GNU) and macOS (BSD).
 
 OS="$(uname -s)"   # Linux | Darwin
+# load_env_file: reads the rendered app.env, porter.env and tenant.env without running a value.
+# shellcheck source=circlechat/kit/env-file.sh
+. "$(dirname "${BASH_SOURCE[0]}")/env-file.sh"
 
 # The agents that get the Recursica knowledge MCP server, and where the server's copy sits inside an
 # agent's container. setup-agent.sh copies the server, the skills and the two scripts the server

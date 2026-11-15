@@ -683,3 +683,16 @@ test("on Linux, a missing mount source stops the setup before any container chan
   r = s.run("setup-host.sh", "--upgrade");
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
+
+test("setup-node.sh reads porter.env without running a value, whatever porter.owner holds", () => {
+  const site = structuredClone(example);
+  const s = sandbox(site, { system: "Linux" });
+  const ran = path.join(s.home, "ran");
+  // Balanced quotes: with the old ". porter.env", bash ran this value.
+  site.porter = { ...site.porter, owner: `acme$(touch ${ran});"q"'x'\`touch ${ran}\`` };
+  fs.writeFileSync(path.join(s.cc, "site.json"), JSON.stringify(site));
+  fs.writeFileSync(path.join(s.home, ".recursica-node.env"), "JOBD_TOKEN=t\n");
+  const r = s.run("setup-node.sh", site.nodes.find((n) => n.jobs).name);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(!fs.existsSync(ran), "a value in porter.env ran");
+});

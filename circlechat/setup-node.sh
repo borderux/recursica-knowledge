@@ -26,7 +26,7 @@ OUT="$(mktemp -d)"; trap 'rm -rf "$OUT"' EXIT
 if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$OUT" >/dev/null
 SPEC="$OUT/services/$NODE.json"
-. "$OUT/tenant.env"
+load_env_file "$OUT/tenant.env"
 [ -f "$SPEC" ] || { echo "No node \"$NODE\" in $SITE. A client or demo stack lists only the computers picked for the stack."; exit 1; }
 # A client or demo stack's jobs run in the stack's own Docker VM on each computer, with the
 # computer's limits.
@@ -77,7 +77,7 @@ if [ -n "$JOBS" ]; then
   GATEWAY_URL="$(jget gateway_url)"
   ROOT="$(cd "$HERE/.." && pwd)"
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
-  . "$OUT/porter.env" 2>/dev/null || true
+  load_env_file "$OUT/porter.env" || true
   # The port jobs' outgoing filter: a closed network whose only exit is the filter, with the
   # stack's allowlist. A refused site gets a Slack alert; permanent access goes in site.json.
   JOBS_NET_ARGS=""
