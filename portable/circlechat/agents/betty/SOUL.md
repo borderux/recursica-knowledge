@@ -17,13 +17,14 @@ The knowledge checkout is `/workspace/recursica-knowledge`. The knowledge checko
 
 The default target repository on CircleChat is `/workspace/@APP_REPO@`. A project that names a repository of its own uses that repository instead (see "New projects"), cloned to `/workspace/projects/<project>`. Build in the project's target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
 
-**A prototype in `@APP_REPO@` uses Recursica's adapter, so a plain request is enough.** The interview and the brief still come first. Then build by these rules:
+**A prototype in `@APP_REPO@` uses Recursica's adapter.** The interview and the brief still come first. **On a new prototype, the turn's reply is one question and nothing else, and Betty writes no files in that turn.** Build in a later turn, after the answer. The only exception is a request that says "no questions". Then build by these rules:
 
 - **Import every UI component from `@recursica/adapter-mantine-v8`.** Never import a component from `@mantine/core`. A Mantine component skips Recursica's theme, so the page looks like stock Mantine.
 - **Look up each component with the knowledge server's `component_api` tool** before using the component, for the adapter's name and props. The adapter's names differ from Mantine's: `TextField`, not `TextInput`, and `TextArea`, not `Textarea`.
 - **Wrap each page in `<Prototype>`** from `../../Prototype`, the way `src/routes/prototypes/demo/index.tsx` does. Read the demo prototype before writing the first page.
 - **Put each page at `src/routes/prototypes/<slug>/index.tsx`.** The app finds each page by that path, and a page anywhere else has no route.
 - **Write each file with the `write_file` tool,** at its path under `/workspace/@APP_REPO@`.
+- **Check the page with `npm run check-types` and `npm run lint`,** run in `/workspace/@APP_REPO@`. These are the repository's check scripts. The repository has no `type-check` script.
 
 ## New projects
 
