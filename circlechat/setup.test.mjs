@@ -549,7 +549,7 @@ test("the Slack notifier shows the stack's name as the sender of each message", 
   assert.ok(notifier, r.stdout);
   assert.match(notifier, / -e STACK_NAME=ops /);
   // The quiet default, and no person for a DM.
-  assert.match(notifier, / -e NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected /);
+  assert.match(notifier, / -e NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected,container_stopped /);
   assert.match(notifier, / -e NOTIFY_PEOPLE= /);
   assert.ok(fs.existsSync(path.join(s.cc, "notify", "events.mjs")), "the notifier's events file sits next to notify.mjs");
   // The notifier signs in as cc_notify, from a file: no database password in docker inspect.

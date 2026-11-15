@@ -601,7 +601,7 @@ test("cloud_approvers catches each mistake", () => {
 test("notify.events and notify.people reach tenant.env, and the config check refuses a wrong one", () => {
   // No notify.events: the quiet default. No notify.people: no DM.
   let r = render(example);
-  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected$/m);
+  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected,container_stopped$/m);
   assert.match(r.tenantEnv, /^NOTIFY_PEOPLE=$/m);
   const s = structuredClone(example);
   s.notify = { slack: true, events: ["approval_pending", "chat_mention"], people: [{ email: "Person.A@acme.com", slack_user: "U0AAAA001" }] };

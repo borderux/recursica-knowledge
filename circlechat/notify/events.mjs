@@ -12,10 +12,12 @@ export const EVENTS = [
   "task_created", "task_assigned", "task_unassigned", "task_review", "task_done", "task_blocked",
   "task_status_other", "task_progress_100", "task_archived", "comment", "comment_mention",
   "reply_dropped", "task_stalled", "post_rejected", "approval_pending", "chat_mention",
+  "container_stopped",
 ];
 // The events a stack gets without notify.events: a mention of a person, an approval, a task that
-// waits for a review, and an agent reply that never reached a person.
-export const QUIET_DEFAULT = ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"];
+// waits for a review, an agent reply that never reached a person, and a turn container stopped
+// past its deadline.
+export const QUIET_DEFAULT = ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected", "container_stopped"];
 // The events that go as a DM to each mentioned person.
 export const DM_EVENTS = ["comment_mention", "chat_mention"];
 
@@ -110,6 +112,17 @@ export function approvalText({ details, handle, action, ccUrl = "" }) {
   if (!details) return `🔐 An agent waits for approval in CircleChat.${where}`;
   const what = String(action ?? "").replace(/[<>&]/g, "").replace(/\s+/g, " ").slice(0, 200);
   return `🔐 @${handle} (agent) waits for approval: ${what}.${where}`;
+}
+
+// The channel note for a turn container the CircleChat bridge stopped because it ran past its
+// deadline plus the stop grace. CircleChat records each one in turn_container_stops. The note
+// names the agent and the container, never a task or a conversation, so it is the same with
+// details off.
+export function containerStopText({ handle, container, overdueMs }) {
+  const plain = (s) => String(s ?? "").replace(/[^a-z0-9_.-]/gi, "");
+  const min = Math.max(1, Math.round(Number(overdueMs) / 60_000) || 1);
+  const who = plain(handle) ? `@${plain(handle)}'s` : "An agent's";
+  return `🛑 ${who} turn container \`${plain(container)}\` was still running ${min} min past its deadline, so CircleChat stopped it.`;
 }
 
 // What one task comment or one chat message sends: the channel post (null for none) and the DMs.

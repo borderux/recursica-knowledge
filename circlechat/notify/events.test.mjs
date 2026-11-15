@@ -2,7 +2,7 @@
 // and each mention as a DM to each mentioned person on notify.people, never in the stack's channel.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CODE_TTL_MS, EVENTS, QUIET_DEFAULT, activityEvent, approvalText, codeText, eventsLine, hashCode, newCode, newSalt, notesFor, notifyWarnings, parseEvents, parsePeople, peopleLine, validateNotify } from "./events.mjs";
+import { CODE_TTL_MS, EVENTS, QUIET_DEFAULT, activityEvent, approvalText, codeText, containerStopText, eventsLine, hashCode, newCode, newSalt, notesFor, notifyWarnings, parseEvents, parsePeople, peopleLine, validateNotify } from "./events.mjs";
 
 const who = new Map([
   ["m-a", { kind: "user", handle: "person_a", email: "Person.A@acme.com" }],
@@ -12,15 +12,15 @@ const who = new Map([
 const people = parsePeople("person.a@acme.com=U0AAAA001");
 const task = (events, row, details = true) => notesFor({ source: "task", events: parseEvents(events), details, row, by: "@betty (agent)", place: "*Task*", who, people, ccUrl: "https://cc.acme.com" });
 
-test("the quiet default: a mention, an approval, a task in review and a lost agent reply", () => {
-  assert.deepEqual(QUIET_DEFAULT, ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"]);
+test("the quiet default: a mention, an approval, a task in review, a lost agent reply and a stopped turn container", () => {
+  assert.deepEqual(QUIET_DEFAULT, ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected", "container_stopped"]);
   assert.equal(eventsLine({}), QUIET_DEFAULT.join(","));
   assert.equal(eventsLine({ events: "all" }), EVENTS.join(","));
   assert.equal(eventsLine({ events: [] }), "");
   assert.deepEqual([...parseEvents(undefined)], QUIET_DEFAULT, "a setup that predates the setting gets the quiet default");
   assert.deepEqual([...parseEvents("")], [], "an empty list posts nothing");
   assert.ok(!parseEvents(undefined).has("chat_mention"));
-  assert.ok(EVENTS.every((e) => typeof e === "string") && new Set(EVENTS).size === 16);
+  assert.ok(EVENTS.every((e) => typeof e === "string") && new Set(EVENTS).size === 17);
 });
 
 test("each task change maps to one event, and a change the notifier never posts maps to none", () => {
@@ -126,4 +126,18 @@ test("notify.people gets a warning, never an error", () => {
   assert.match(notifyWarnings({ people }).join(), /notify.people is a fallback .* A verified ID wins/);
   assert.deepEqual(notifyWarnings({}), []);
   assert.deepEqual(notifyWarnings({ people: [] }), []);
+});
+
+// CircleChat's bridge stops a turn container still running past its deadline plus the stop grace,
+// and records it in turn_container_stops; the notifier posts each one to the stack's channel.
+test("a stopped turn container: the agent, the container and how far past its deadline, nothing else", () => {
+  assert.equal(
+    containerStopText({ handle: "designer", container: "cc-turn-designer-be0d6713", overdueMs: 20 * 60_000 }),
+    "🛑 @designer's turn container `cc-turn-designer-be0d6713` was still running 20 min past its deadline, so CircleChat stopped it.",
+  );
+  assert.match(containerStopText({ handle: null, container: "cc-turn-x-12345678", overdueMs: 0 }), /^🛑 An agent's turn container `cc-turn-x-12345678` was still running 1 min past/);
+  // Slack markup and backticks in a name never reach Slack.
+  const t = containerStopText({ handle: "<!channel>", container: "cc-turn-a`<b>-12345678", overdueMs: 90_000 });
+  assert.doesNotMatch(t, /[<>]|`[^`]*`[^`]*`[^`]*`/);
+  assert.match(t, /2 min past/);
 });

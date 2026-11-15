@@ -1106,11 +1106,11 @@ Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0
 ```json
 "notify": {
   "slack": true,
-  "events": ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"]
+  "events": ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected", "container_stopped"]
 }
 ```
 
-- **`notify.events`** lists the events. Without `notify.events`, the stack gets the quiet default: the five events in the example. `"all"` sends every event, and `[]` sends none.
+- **`notify.events`** lists the events. Without `notify.events`, the stack gets the quiet default: the six events in the example. `"all"` sends every event, and `[]` sends none.
 - **`notify.people`** maps a person's CircleChat email to the person's Slack user ID, as `[{ "email": "person.a@acme.com", "slack_user": "U0123ABCD" }]`. The list is a fallback during the switch to verified IDs: a verified ID wins. The config check prints a warning for the list, and a later kit release removes the list.
 
 **The notifier signs in to the database as `cc_notify`, never as the database's owner.** The role reads only the columns the notifier reads. The role writes only the code columns of CircleChat's `user_slack` table, never a Slack ID (`circlechat/notify/notify-db.sql`). The role's password stays in `$CC_DIR/notify-state`, with mode 600, outside the backup. The notifier reads the role's address from a file there, so `docker inspect` shows no database password.
@@ -1133,8 +1133,11 @@ Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0
 | `post_rejected`     | Channel | ⚠️ An agent post CircleChat rejected, from a CircleChat that records no dropped replies yet        | On      |
 | `approval_pending`  | Channel | 🔐 An agent's action waits for a person's approval, with a link to the approvals page              | On      |
 | `chat_mention`      | DM      | ❓ A message in a channel that mentions the person, up to 400 characters. A DM never reaches Slack | Off     |
+| `container_stopped` | Channel | 🛑 An agent's turn container CircleChat stopped because it ran past its deadline plus the grace    | On      |
 
 **With `notify.details` off, the default for a client stack, Slack gets no task titles and no text.** Slack is an outside company. The channel gets one note at most every 10 minutes, which says only that CircleChat has new activity. A mention DM says only that the person was mentioned on a task or in a conversation. An approval note names no agent and no action.
+
+**A turn container CircleChat stopped** gets one message: the agent, the container and how many minutes past its deadline. Every 5 minutes, CircleChat's bridge stops any agent turn container still running past its deadline plus the stop grace, and records it in CircleChat's `turn_container_stops` table. The bridge holds no Slack token: the notifier posts the record. The message names no task and no conversation, so it is the same with `notify.details` off. A stack whose `notify.events` lists its events gets it only when the list names `container_stopped`.
 
 **A reply CircleChat could not use** gets one message: the agent, a link to the conversation and the reason, such as `actions_block_visible`. CircleChat records each such reply in the run's `result_json` as `dropped`, with the conversation and the reason and never the reply's text, so the text never reaches Slack. With `notify.details` off, the message names no conversation, and the link reads "a conversation".
 
