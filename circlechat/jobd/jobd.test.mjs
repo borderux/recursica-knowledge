@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+
+import { startJobd } from "./test-jobd.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "jobd-"));
@@ -14,14 +15,12 @@ const TOKEN = "t0ken", SECRET = "s3cret", REPO = "https://github.com/acme/adapte
 const hooks = [];
 const hook = http.createServer((q, s) => { let b = ""; q.on("data", (d) => (b += d)); q.on("end", () => { hooks.push({ h: q.headers, b }); s.end("ok"); }); });
 await new Promise((r) => hook.listen(0, r));
-const PORT = 17400 + Math.floor(Math.random() * 500);
-const jobd = spawn(process.execPath, [path.join(here, "jobd.mjs")], { env: { ...process.env,
-  JOBD_PORT: String(PORT), JOBD_HOST: "127.0.0.1", JOBD_TOKEN: TOKEN, JOBD_SLOTS: "1", JOBD_DIR: path.join(tmp, "jobs"),
+const { proc: jobd, port: PORT } = await startJobd(path.join(here, "jobd.mjs"), { ...process.env,
+  JOBD_TOKEN: TOKEN, JOBD_SLOTS: "1", JOBD_DIR: path.join(tmp, "jobs"),
   JOBD_DOCKER: path.join(here, "fake-docker.sh"), FAKE_DOCKER_STATE: state, JOBD_ALLOWED_REPOS: REPO, JOBD_POLL_MS: "150",
   JOBD_NODE_NAME: "node-a", PORTER_HOOK_URL: `http://127.0.0.1:${hook.address().port}/hook`, PORTER_HOOK_SECRET: SECRET,
   JOBD_GATEWAY_URL: "http://cc-gateway:4000", ANTHROPIC_API_KEY: "never-reaches-a-job", PORTER_GITHUB_PAT: "retired-never-reaches-a-job",
-  JOBD_GITHUB_TOKEN_URL: "http://100.64.0.5:4010", PORTER_MODEL: "sonnet" }, stdio: "ignore" });
-await new Promise((r) => setTimeout(r, 400));
+  JOBD_GITHUB_TOKEN_URL: "http://100.64.0.5:4010", PORTER_MODEL: "sonnet" });
 const call = (method, p, body, auth = TOKEN) => fetch(`http://127.0.0.1:${PORT}${p}`, { method,
   headers: { authorization: `Bearer ${auth}`, "content-type": "application/json" }, body: body && JSON.stringify(body) });
 const pkg = { type: "porter", repo: REPO, label: "v1.2.3 mui-v7", package: "# Port the new prop", gateway_key: "cct_eyJhIjoicG9ydGVyIn0.c2lnbmF0dXJl" };
