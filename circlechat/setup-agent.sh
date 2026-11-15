@@ -191,6 +191,16 @@ if [ "$HANDLE" = barb ]; then
   node "$HERE/kit/barb-limits.mjs" timeout "$CC_DIR/.env"
 fi
 
+# Betty's tool loop hard stop. A CircleChat turn is a one-shot `hermes chat`, which Hermes treats as
+# attended, so a turn that repeats the same tool calls was only warned, never stopped: one wrote the
+# same page more than 70 times in an hour. agents/betty/runtime/hermes.md says why and holds the
+# values (kit/barb-limits.mjs config betty), set the same way as Barb's limits.
+if [ "$HANDLE" = betty ]; then
+  read_home "$H/config.yaml"
+  NEW="$(printf '%s' "$TEXT" | node "$HERE/kit/barb-limits.mjs" config betty)" || exit 1
+  printf '%s\n' "$NEW" | put_home "$H/config.yaml"
+fi
+
 # Every agent: no model-catalog refresh and no update checks (kit/hermes-lookups.mjs). On each turn
 # Hermes refreshed its model picker's lists from hermes-agent.nousresearch.com, openrouter.ai and
 # portal.nousresearch.com, which the outgoing filter refuses, and the model gateway picks each

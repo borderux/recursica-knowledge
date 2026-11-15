@@ -41,6 +41,8 @@ function sandbox(agents) {
   for (const s of ["checker", "feisty"]) put(path.join(kit, `agents/barb/subagents/${s}/SKILL.md`), `${s} from the kit\n`);
   // Barb's limits and HERMES_TIMEOUT come from the real hermes.md (kit/barb-limits.mjs).
   put(path.join(kit, "agents/barb/runtime/hermes.md"), fs.readFileSync(path.join(here, "../agents/barb/runtime/hermes.md"), "utf8"));
+  // Betty's tool loop hard stop comes from her real hermes.md too.
+  put(path.join(kit, "agents/betty/runtime/hermes.md"), fs.readFileSync(path.join(here, "../agents/betty/runtime/hermes.md"), "utf8"));
   put(path.join(kit, "tools/kev/index.mjs"), "kev from the kit\n");
   put(path.join(kit, "tools/knowledge-mcp/server.mjs"), "knowledge server from the kit\n");
   put(path.join(kit, "scripts/screen-skill-manifest.mjs"), "manifest from the kit\n");
@@ -460,6 +462,39 @@ test("setup-agent.sh barb takes a Kev key given on the command line over CircleC
   assert.equal(given.status, 0, given.stdout + given.stderr);
   assert.match(fs.readFileSync(s.h("barb", ".env"), "utf8"), /^KEV_ENGINE_KEY=given$/m);
   assert.ok(!(given.stdout + given.stderr).includes("given\n") && !(given.stdout + given.stderr).includes("from-env-file"));
+});
+
+// A CircleChat turn is a one-shot `hermes chat`, which Hermes treats as attended, so a turn that
+// repeated the same tool calls was only warned: one wrote the same page more than 70 times in an
+// hour while its container held Betty's home.
+test("setup-agent.sh betty turns on the tool loop hard stop at the top level, once, and keeps every other key", () => {
+  const s = sandbox(["betty"]);
+  fullSetup(s);
+  fs.writeFileSync(s.h("betty", "config.yaml"), hermesDefault);
+  const r = s.run("setup-agent.sh", "betty");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const cfg = fs.readFileSync(s.h("betty", "config.yaml"), "utf8");
+  assert.match(cfg, /^tool_loop_guardrails:\n {2}hard_stop_enabled: true\n {2}hard_stop_after:\n {4}exact_failure: 5\n {4}idempotent_no_progress: 5$/m);
+  assert.equal(cfg.match(/^tool_loop_guardrails:/gm).length, 1);
+  assert.match(cfg, /^delegation:\n {2}max_iterations: 50\n {2}default_toolsets:\n/m, "Hermes's own blocks stay");
+  assert.doesNotMatch(cfg, /oneshot_max_children|max_subagents/, "none of Barb's limits");
+  assert.match(r.stdout + r.stderr, /^Betty's config\.yaml: tool_loop_guardrails\.hard_stop_enabled: true \(added\)$/m);
+  assert.doesNotMatch(r.stdout + r.stderr, /HERMES_TIMEOUT/, "Betty's setup checks no timeout");
+  const again = s.run("setup-agent.sh", "betty");
+  assert.equal(again.status, 0, again.stdout + again.stderr);
+  assert.equal(fs.readFileSync(s.h("betty", "config.yaml"), "utf8"), cfg);
+  assert.doesNotMatch(again.stdout + again.stderr, /Betty's config\.yaml:/, "nothing changed");
+});
+
+test("setup-agent.sh betty refuses tool_loop_guardrails under agent:, where Hermes ignores it, and writes nothing", () => {
+  const s = sandbox(["betty"]);
+  fullSetup(s);
+  const wrong = `model:\n  default: x\nagent:\n  reasoning_effort: high\n  tool_loop_guardrails:\n    hard_stop_enabled: true\ncustom_providers: []\n`;
+  fs.writeFileSync(s.h("betty", "config.yaml"), wrong);
+  const r = s.run("setup-agent.sh", "betty");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /tool_loop_guardrails under another key, at line \d+, where Hermes ignores it/);
+  assert.doesNotMatch(fs.readFileSync(s.h("betty", "config.yaml"), "utf8"), /^tool_loop_guardrails:/m);
 });
 
 test("setup-agent.sh barb refuses tool_loop_guardrails under agent:, where Hermes ignores it, and writes nothing", () => {

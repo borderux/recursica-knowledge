@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// Barb's Hermes limits, from agents/barb/runtime/hermes.md, the one place the values are written.
-// setup-agent.sh barb runs this on each run, so the limits hold even though Hermes's own default
-// config.yaml already has a delegation block.
+// An agent's Hermes limits, from agents/<agent>/runtime/hermes.md, the one place the values are
+// written: Barb's (delegation limits, tool loop cap, timeout) and Betty's (tool loop hard stop).
+// setup-agent.sh runs this on each run for each agent with a hermes.md, so the limits hold even
+// though Hermes's own default config.yaml already has a delegation block.
 //
-//   node barb-limits.mjs config < config.yaml     prints the config with each limit set
+//   node barb-limits.mjs config [agent] < config.yaml   prints the config with each limit set;
+//                                                        the agent is barb unless named
 //   node barb-limits.mjs timeout <CircleChat .env>   prints "HERMES_TIMEOUT ok", or the value
 //                                                    HERMES_TIMEOUT should have; nothing else
 //
@@ -19,12 +21,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { setKeys } from "./yaml-keys.mjs";
 
-const SPEC = path.join(path.dirname(new URL(import.meta.url).pathname), "../../agents/barb/runtime/hermes.md");
+const KIT = path.join(path.dirname(new URL(import.meta.url).pathname), "../..");
+export const AGENTS = ["barb", "betty"];
+
+// The hermes.md that holds an agent's limits. BARB_HERMES_MD stands in for Barb's in tests.
+export function specFor(agent) {
+  if (!AGENTS.includes(agent)) throw new Error(`no Hermes limits for ${agent}: agents/<agent>/runtime/hermes.md is read for ${AGENTS.join(" and ")} only.`);
+  if (agent === "barb" && process.env.BARB_HERMES_MD) return process.env.BARB_HERMES_MD;
+  return path.join(KIT, "agents", agent, "runtime", "hermes.md");
+}
 
 // The limits in hermes.md's first ```yaml block: [["delegation", "oneshot_max_children"], "0"], ...
 export function limitsFrom(md) {
   const block = /```yaml\n([\s\S]*?)```/.exec(md);
-  if (!block) throw new Error("hermes.md has no yaml block with Barb's limits.");
+  if (!block) throw new Error("hermes.md has no yaml block with the agent's limits.");
   const out = [], stack = [];
   for (const raw of block[1].split("\n")) {
     const line = raw.replace(/\s+#.*$/, "");
@@ -65,19 +75,23 @@ export function timeoutLine(envText, want) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const [cmd, file] = process.argv.slice(2);
+  const [cmd, arg] = process.argv.slice(2);
   try {
-    const md = fs.readFileSync(process.env.BARB_HERMES_MD ?? SPEC, "utf8");
     if (cmd === "config") {
+      const agent = arg ?? "barb";
+      const md = fs.readFileSync(specFor(agent), "utf8");
+      const name = agent[0].toUpperCase() + agent.slice(1);
       const { text, notes } = setLimits(fs.readFileSync(0, "utf8"), limitsFrom(md));
-      for (const n of notes) console.error(`Barb's config.yaml: ${n}`);
+      for (const n of notes) console.error(`${name}'s config.yaml: ${n}`);
       process.stdout.write(text);
-    } else if (cmd === "timeout" && file) {
+    } else if (cmd === "timeout" && arg) {
+      const file = arg;
+      const md = fs.readFileSync(specFor("barb"), "utf8");
       let env = "";
       try { env = fs.readFileSync(file, "utf8"); } catch {}
       console.log(timeoutLine(env, timeoutFrom(md)));
     } else {
-      console.error("usage: barb-limits.mjs config < config.yaml | barb-limits.mjs timeout <.env>");
+      console.error("usage: barb-limits.mjs config [barb|betty] < config.yaml | barb-limits.mjs timeout <.env>");
       process.exit(2);
     }
   } catch (e) {
