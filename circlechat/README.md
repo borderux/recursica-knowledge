@@ -1097,18 +1097,23 @@ Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0
 
 **The notifier posts the CircleChat events that `notify.events` chooses.** The notifier needs `"notify": { "slack": true }`, `site.slack_channel_id` and `SLACK_BOT_TOKEN`. The notifier reads CircleChat's database every 30 seconds, so the notifier misses nothing across restarts. The cluster's own alerts, approvals and buttons don't depend on `notify.events`.
 
-**A mention of a person goes as a DM, never to the stack's channel.** Each mentioned person on `notify.people` gets a DM from the Slack app. A mentioned person not on the list gets nothing, and the notifier's log names the person's handle, never the text. Every other event goes to the stack's channel.
+**A mention of a person goes as a DM, never to the stack's channel.** Each mentioned person with a Slack ID gets a DM from the Slack app. A mentioned person with no Slack ID gets nothing, and the notifier's log names the person's handle, never the text. Every other event goes to the stack's channel.
+
+**Each person adds the person's own Slack ID in CircleChat.** After a sign-in, CircleChat asks once for the Slack member ID. The same field sits in Settings → Profile. A code arrives as a Slack DM, and the person types the code into CircleChat to prove the ID. Only a verified ID gets DMs. No agent can set or change a person's Slack ID. The fork's `docs/slack-dms.md` describes the check.
+
+**The notifier sends the codes, so CircleChat holds no Slack token.** For each request, the notifier makes a 6-digit code and writes only the code's salt and hash to CircleChat's database. The notifier then sends the code to the Slack ID as a DM. The code itself is never stored or logged. CircleChat sends the database notice `slack_code` with each request, so a code arrives within seconds.
 
 ```json
 "notify": {
   "slack": true,
-  "events": ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"],
-  "people": [{ "email": "person.a@acme.com", "slack_user": "U0123ABCD" }]
+  "events": ["comment_mention", "approval_pending", "task_review", "reply_dropped", "post_rejected"]
 }
 ```
 
 - **`notify.events`** lists the events. Without `notify.events`, the stack gets the quiet default: the five events in the example. `"all"` sends every event, and `[]` sends none.
-- **`notify.people`** maps each person's CircleChat email to the person's Slack user ID. Find the ID in the person's Slack profile, under "Copy member ID".
+- **`notify.people`** maps a person's CircleChat email to the person's Slack user ID, as `[{ "email": "person.a@acme.com", "slack_user": "U0123ABCD" }]`. The list is a fallback during the switch to verified IDs: a verified ID wins. The config check prints a warning for the list, and a later kit release removes the list.
+
+**The notifier signs in to the database as `cc_notify`, never as the database's owner.** The role reads only the columns the notifier reads. The role writes only the code columns of CircleChat's `user_slack` table, never a Slack ID (`circlechat/notify/notify-db.sql`). The role's password stays in `$CC_DIR/notify-state`, with mode 600, outside the backup. The notifier reads the role's address from a file there, so `docker inspect` shows no database password.
 
 | Event               | Where   | The post                                                                                           | Default |
 | ------------------- | ------- | -------------------------------------------------------------------------------------------------- | ------- |

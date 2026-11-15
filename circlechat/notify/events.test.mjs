@@ -2,7 +2,7 @@
 // and each mention as a DM to each mentioned person on notify.people, never in the stack's channel.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { EVENTS, QUIET_DEFAULT, activityEvent, approvalText, eventsLine, notesFor, parseEvents, parsePeople, peopleLine, validateNotify } from "./events.mjs";
+import { CODE_TTL_MS, EVENTS, QUIET_DEFAULT, activityEvent, approvalText, codeText, eventsLine, hashCode, newCode, newSalt, notesFor, notifyWarnings, parseEvents, parsePeople, peopleLine, validateNotify } from "./events.mjs";
 
 const who = new Map([
   ["m-a", { kind: "user", handle: "person_a", email: "Person.A@acme.com" }],
@@ -91,4 +91,39 @@ test("the config check names each wrong event and each wrong person", () => {
   assert.ok(errs.some((e) => /notify.people\[2\]: team is not a setting/.test(e)));
   assert.ok(validateNotify({ events: "some" }).some((e) => /notify.events must be "all" or a list/.test(e)));
   assert.equal(peopleLine({ people: [{ email: "Person.A@acme.com", slack_user: "U0AAAA001" }] }), "person.a@acme.com=U0AAAA001");
+});
+
+test("a Slack ID the person verified in CircleChat wins, and notify.people is the fallback", () => {
+  const withIds = new Map([
+    ["m-a", { kind: "user", handle: "person_a", email: "person.a@acme.com", slackUser: "U0VERIFY1" }],
+    ["m-b", { kind: "user", handle: "person_b", email: "person.b@acme.com", slackUser: null }],
+    ["m-c", { kind: "user", handle: "person_c", email: "person.c@acme.com", slackUser: null }],
+    ["m-bot", { kind: "agent", handle: "betty" }],
+  ]);
+  const list = parsePeople("person.a@acme.com=U0LISTED1,person.b@acme.com=U0LISTED2");
+  const n = notesFor({ source: "task", events: parseEvents("comment_mention"), details: true, row: { member_id: "m-bot", body_md: "Look", mentions: ["m-a", "m-b", "m-c"] }, by: "@betty (agent)", place: "*Task*", who: withIds, people: list });
+  assert.deepEqual(n.dms.map((d) => [d.handle, d.slackUser]), [["person_a", "U0VERIFY1"], ["person_b", "U0LISTED2"]]);
+  assert.deepEqual(n.skipped, ["person_c"], "a person with no verified ID and no list entry gets nothing");
+});
+
+test("the notifier's code hashes the same way as CircleChat's check", () => {
+  // The same value CircleChat's hashCode (api/src/lib/slack-link-rules.ts) gives for this salt and code.
+  assert.equal(hashCode("a1b2c3d4", "042917"), "496e194fc096b6b07cc214967744ead5d389c25a265958b482c4854391f1a7ca");
+  for (let i = 0; i < 200; i++) assert.match(newCode(), /^\d{6}$/);
+  assert.match(newSalt(), /^[0-9a-f]{32}$/);
+  assert.notEqual(newSalt(), newSalt());
+  assert.equal(CODE_TTL_MS, 600_000);
+});
+
+test("the code DM names the CircleChat account and address, and says to ignore a code nobody asked for", () => {
+  const text = codeText({ code: "042917", handle: "person_a", ccUrl: "https://cc.acme.com/" });
+  assert.equal(text, "Your CircleChat code is *042917*. The code links this Slack account to @person_a on https://cc.acme.com, and works for 10 minutes. If you didn't ask for a code, ignore this message.");
+});
+
+test("notify.people gets a warning, never an error", () => {
+  const people = [{ email: "person.a@acme.com", slack_user: "U0AAAA001" }];
+  assert.deepEqual(validateNotify({ people }), []);
+  assert.match(notifyWarnings({ people }).join(), /notify.people is a fallback .* A verified ID wins/);
+  assert.deepEqual(notifyWarnings({}), []);
+  assert.deepEqual(notifyWarnings({ people: [] }), []);
 });

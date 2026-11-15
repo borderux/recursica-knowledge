@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { checkAccountEmail, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { spawnSync } from "node:child_process";
+import { warnings, checkAccountEmail, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
@@ -613,4 +614,18 @@ test("notify.events and notify.people reach tenant.env, and the config check ref
   const errs = validate(s).join("\n");
   assert.match(errs, /notify.events: "everything" is not an event/);
   assert.match(errs, /notify.people\[0\].email must be the person's CircleChat email address/);
+});
+
+test("notify.people gets a warning during the switch to verified Slack IDs, and the setup goes on", () => {
+  const s = structuredClone(example);
+  s.notify = { slack: true, people: [{ email: "person.a@acme.com", slack_user: "U0AAAA001" }] };
+  assert.deepEqual(validate(s), []);
+  assert.match(warnings(s).join("\n"), /notify.people is a fallback/);
+  assert.deepEqual(warnings(example), []);
+  const dir = fs.mkdtempSync(new URL("file:///tmp/").pathname + "render-warn-");
+  fs.writeFileSync(`${dir}/site.json`, JSON.stringify(s));
+  const r = spawnSync(process.execPath, [new URL("./render.mjs", import.meta.url).pathname, `${dir}/site.json`, `${dir}/out`], { encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^Warning: notify.people is a fallback/m);
+  assert.ok(fs.existsSync(`${dir}/out/tenant.env`));
 });

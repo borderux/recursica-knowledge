@@ -450,6 +450,23 @@ gateway_db_role() {
   own_for_docker "$GW_STATE/db.url"
 }
 
+# The notifier's database role, cc_notify: it reads only the columns the notifier needs, and writes
+# only the code columns of CircleChat's Slack ID check (notify/notify-db.sql). The password stays in
+# an owner-only file in $CC_DIR/notify-state, outside the backup. The notifier reads the role's
+# address from a file there, so `docker inspect` shows no database password.
+notify_db_role() {
+  local dir="$CC_DIR/notify-state" pw
+  [ ! -L "$dir" ] || { echo "Refused: $dir is a symlink. Replace the symlink with a folder."; return 1; }
+  mkdir -p "$dir" && chmod 700 "$dir"
+  # A password the kit made is 48 hex digits. Anything else is replaced.
+  pw="$(cat "$dir/db-password" 2>/dev/null || true)"
+  if [ -L "$dir/db-password" ] || ! [[ "$pw" =~ ^[0-9a-f]{48}$ ]]; then
+    pw="$(openssl rand -hex 24)"; rm -f "$dir/db-password"; ( umask 077; printf '%s\n' "$pw" > "$dir/db-password" )
+  fi
+  { printf '\\set password %s\n' "$pw"; cat "$HERE/notify/notify-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null || return 1
+  rm -f "$dir/db.url"; ( umask 077; printf 'postgres://cc_notify:%s@postgres:5432/circlechat\n' "$pw" > "$dir/db.url" )
+}
+
 # On a Mac with Colima: tailscale serve passes site.gateway_port on the Tailscale address to the
 # router's port for port jobs, on 127.0.0.1. The other modes run without a sudo password, so they
 # try sudo only where sudo asks for nothing.
@@ -536,20 +553,25 @@ start_gateway_and_notifier() {
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then gateway_serve; fi
 
   # Slack notifier: the CircleChat events site.json's notify.events chooses, in the stack's channel,
-  # and a DM to each mentioned person on notify.people (circlechat/notify/events.mjs).
+  # and a DM to each mentioned person with a Slack ID: the ID the person verified in CircleChat, or
+  # else the ID on notify.people (circlechat/notify/events.mjs). The notifier also sends the codes of
+  # CircleChat's Slack ID check. The notifier signs in as cc_notify, never as the database's owner.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
   if [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
-    mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/drops.mjs" "$HERE/notify/events.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
-    PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
-    docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
-      -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
-      -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
-      -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
-      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e STACK_NAME="$STACK_NAME" \
-      -e NOTIFY_EVENTS="$NOTIFY_EVENTS" -e NOTIFY_PEOPLE="$NOTIFY_PEOPLE" \
-      -e CC_URL="https://$TS_HOST" \
-      "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
-    echo "Slack notifier running."
+    if notify_db_role; then
+      mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/drops.mjs" "$HERE/notify/events.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
+      docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
+        -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
+        -v "$CC_DIR/notify-state/db.url":/run/notify/db.url:ro -e DATABASE_URL_FILE=/run/notify/db.url \
+        -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
+        -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e STACK_NAME="$STACK_NAME" \
+        -e NOTIFY_EVENTS="$NOTIFY_EVENTS" -e NOTIFY_PEOPLE="$NOTIFY_PEOPLE" \
+        -e CC_URL="https://$TS_HOST" \
+        "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
+      echo "Slack notifier running."
+    else
+      echo "Slack notifier off: the notifier's database role could not be set up. Run this script again once CircleChat is up."
+    fi
   else
     echo "Slack notifier off (needs notify.slack and site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env)."
   fi
