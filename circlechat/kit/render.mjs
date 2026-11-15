@@ -34,7 +34,7 @@ import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
-import { DEFAULT_TOKEN_PORT, validateApps } from "../github/apps.mjs";
+import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -214,8 +214,8 @@ export function modelServerPorts(site = {}) {
   for (const n of site.nodes ?? []) for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) if (Number.isInteger(m.port)) out.add(m.port);
   return out;
 }
-// The GitHub token service's port (github/token-service.mjs), for a stack with a github_apps block.
-export const tokenPort = (site = {}) => (site.github_apps ? site.site?.github_token_port ?? DEFAULT_TOKEN_PORT : null);
+// The GitHub token service's port (github/token-service.mjs), for a stack with an agent's app or the Kev notes push's app.
+export const tokenPort = (site = {}) => (hasApps(site) ? site.site?.github_token_port ?? DEFAULT_TOKEN_PORT : null);
 export function filterPorts(site = {}) {
   const model = modelServerPorts(site);
   return [...new Set([...FILTER_PORTS, site.site?.gateway_port ?? 4000, tokenPort(site)])].filter((p) => p && !model.has(p));
@@ -359,7 +359,7 @@ function computersErrors(site, cluster) {
   const theirPorts = { port: cs.port ?? 8080, preview_port: cs.preview_port ?? 5173, gateway_port: cs.gateway_port ?? 4000 };
   for (const [k, v] of Object.entries(theirPorts)) if ((t[k] ?? theirPorts[k]) === v) errs.push(`site.${k} ${v} is the cluster's own stack's port. Give the stack another port`);
   // Two token services on one computer need two ports.
-  if (site.github_apps && cluster.github_apps && tokenPort(site) === tokenPort(cluster)) errs.push(`site.github_token_port ${tokenPort(site)} is the cluster's own stack's port. Give the stack another port`);
+  if (hasApps(site) && hasApps(cluster) && tokenPort(site) === tokenPort(cluster)) errs.push(`site.github_token_port ${tokenPort(site)} is the cluster's own stack's port. Give the stack another port`);
   return errs;
 }
 
@@ -461,8 +461,8 @@ export function validate(site, { cluster } = {}) {
   const ports = ["port", "preview_port", "gateway_port", "github_token_port"].map((k) => t[k]).filter((v) => v !== undefined);
   if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port, site.gateway_port and site.github_token_port must all differ");
   // Each agent's GitHub App (github/apps.mjs).
-  errs.push(...validateApps(site));
-  if (site.github_apps && [t.port ?? 8080, t.preview_port ?? 5173, t.gateway_port ?? 4000, (t.gateway_port ?? 4000) + 1].includes(tokenPort(site))) errs.push(`site.github_token_port (${tokenPort(site)}) must differ from the stack's other ports and from site.gateway_port + 1`);
+  errs.push(...validateApps(site), ...validateDataApp(site));
+  if (hasApps(site) && [t.port ?? 8080, t.preview_port ?? 5173, t.gateway_port ?? 4000, (t.gateway_port ?? 4000) + 1].includes(tokenPort(site))) errs.push(`site.github_token_port (${tokenPort(site)}) must differ from the stack's other ports and from site.gateway_port + 1`);
   // Alan opens pull requests only on the stack's own knowledge repo. A client stack that still uses
   // the public knowledge repo gives Alan no app, so no client detail reaches a public pull request.
   if (t.tenant && PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") && site.github_apps?.alan) errs.push("github_apps.alan: this client stack uses the public knowledge repo. Point repos.knowledge at the client's own fork first");
@@ -754,7 +754,7 @@ export function render(site) {
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
     `PUBLIC_KNOWLEDGE=${PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     // The GitHub token service: on with a github_apps block, and its port.
-    `GITHUB_APPS=${site.github_apps ? "on" : "off"}`,
+    `GITHUB_APPS=${hasApps(site) ? "on" : "off"}`,
     `GITHUB_TOKEN_PORT=${tokenPort(site) ?? ""}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
     // Port jobs on other computers reach the gateway at this address, over Tailscale.

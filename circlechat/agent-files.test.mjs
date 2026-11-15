@@ -531,7 +531,7 @@ test("the Kev data push never publishes a file a symlink in the workspace names"
   const log = path.join(s.root, "git.log");
   // A stand-in for git that records every call. The push itself is tested in kit/kev-data.test.mjs.
   fs.writeFileSync(path.join(s.bin, "git"), `#!/usr/bin/env bash\necho "git $*" >> "${log}"\nexit 0\n`, { mode: 0o755 });
-  const push = () => spawnSync("bash", [path.join(s.kit, "circlechat/kit/push-data.sh")], { env: { ...s.env, CC_DIR: s.cc, WS: s.ws, KEV_DATA_GITHUB_PAT: "ghp_test" }, encoding: "utf8", cwd: s.home });
+  const push = () => spawnSync("bash", [path.join(s.kit, "circlechat/kit/push-data.sh")], { env: { ...s.env, CC_DIR: s.cc, WS: s.ws, KEV_DATA_GITHUB_TOKEN: "ghp_test" }, encoding: "utf8", cwd: s.home });
   link(secret, path.join(s.ws, "reviews/kev-disagreements.md"));
   const r = push();
   assert.equal(r.status, 1, r.stdout + r.stderr);

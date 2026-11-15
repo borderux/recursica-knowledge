@@ -577,10 +577,9 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | The release watcher and each job runner                                    |
 | `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
 | `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                |
-| `KEV_DATA_GITHUB_PAT`                           | `kev-data.env` on the control computer                                                               | The Kev data jobs, and nothing else. See "Kev's review data"               |
 | `CC_CHECK_PASSWORD`                             | `agent-check.env` on the control computer, mode 600, owned by the owner                              | The agent check and its account, and nothing else. See "Checking an agent" |
 
-The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too.
+The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too. The Kev notes push's key is `APP_KEY_KEV_DATA`, written to `kev-data.pem` in the same folder.
 
 **Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
 
@@ -597,7 +596,7 @@ The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no 
 
 **Commits use the app's bot identity.** The bot's name is `<app-slug>[bot]`, with the bot's noreply email address. The token service sets git's author and committer in the agent's `.env`. A port job sets the same identity in git's settings. Betty still sets each commit's author to the person, so the bot is the committer.
 
-**A stack with no `github_apps` block keeps working, with no push access.** The setup installs no token service, and no agent gets a token.
+**A stack with no `github_apps` block keeps working, with no push access.** The setup installs no token service, and no agent gets a token. The Kev notes push has an app of the push's own, in `data.github_app` (see "Kev's review data"). With `data.github_app` alone, the token service makes only the push's token.
 
 ### Set up each app
 
@@ -1131,10 +1130,15 @@ Without `data.repo`, neither job runs. An earlier setting, `data.kev_disagreemen
 To turn on the jobs:
 
 1. Make a private repo with a first commit on `main`, such as a README.
-2. Make a fine-grained GitHub token for that repo only, with read and write access to contents and pull requests. Store the token as `KEV_DATA_GITHUB_PAT` in the stack's GitHub environment, and deploy the secrets (see "Secrets in GitHub").
-3. Set `data.repo` in `site.json`, and rerun `setup-host.sh`.
+2. Protect the repo's `main` branch with `bash circlechat/github/protect-repo.sh <owner>/<repo>`. The "Only admins merge" ruleset lets only a repo admin merge, so the push's app can never merge a pull request.
+3. Create the push's GitHub App. `node circlechat/github/manifest.mjs kev-data` prints the app's manifest and the steps. The app has Contents and Pull requests, both read and write, and Metadata read. Install the app on the notes repo only.
+4. Save the app's private key as `APP_KEY_KEV_DATA` in the stack's GitHub environment. Send the key to `gh secret set` on stdin, never on a command line or on screen. Then delete the downloaded key file with `shred`.
+5. Set `data.repo` and `data.github_app` in `site.json`. `data.github_app` holds the app's `app_id`, `installation_id` and `slug`.
+6. Deploy the secrets (see "Secrets in GitHub"), and rerun `setup-host.sh`.
 
-The secrets helper writes the token to `$CC_DIR/kev-data.env` only, with mode 600. No agent, container or other job reads that file. The jobs give the token to git in the environment, never on a command line or in the clone's settings.
+**The push's token covers only `data.repo`, and lasts at most one hour.** The token service (see "GitHub access for agents") makes the token, with Contents and Pull requests only. site.json can't add a permission. The service writes the token to `$CC_DIR/kev-data.env` as `KEV_DATA_GITHUB_TOKEN`, with mode 600, and renews the token 15 minutes before the token ends. No agent, container or other job reads that file. The jobs give the token to git in the environment, never on a command line or in the clone's settings. Each notes commit uses the app's bot identity, `<app-slug>[bot]`.
+
+An earlier setup used a personal access token, `KEV_DATA_GITHUB_PAT`. The secrets helper now removes the token from `kev-data.env`, and asks to delete the secret.
 
 ## The agents
 

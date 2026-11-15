@@ -100,33 +100,41 @@ test("refuses to write the cloud keys through a symlink, and writes nothing", ()
   assert.doesNotMatch(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /JOBD_TOKEN/);
 });
 
-test("the Kev data jobs' token goes to a file of its own, only with data.repo in site.json", () => {
+test("the Kev data jobs' old token is retired: never written, and removed from kev-data.env", () => {
   const { home, conf } = setup();
   const cc = path.join(home, "circlechat"), file = path.join(cc, "kev-data.env");
-  // No data.repo: the push is off, and the token is not written.
+  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ ...example, data: { repo: "acme/kev-data" } }));
+  fs.writeFileSync(file, "KEV_DATA_GITHUB_TOKEN=ghs_app\nKEV_DATA_GITHUB_PAT=ghp_old\n", { mode: 0o600 });
   let r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /KEV_DATA_GITHUB_PAT skipped: site.json sets no data.repo/);
-  assert.ok(!fs.existsSync(file));
-  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ ...example, data: { repo: "acme/kev-data" } }));
-  r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\n");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.equal(fs.readFileSync(file, "utf8"), "KEV_DATA_GITHUB_PAT=ghp_k\n");
-  assert.equal(fs.statSync(file).mode & 0o777, 0o600);
-  // Never in .env, which containers read, and never in an agent's home.
+  assert.match(r.stdout, /KEV_DATA_GITHUB_PAT is retired: the Kev notes push gets a token from the push's GitHub App/);
+  assert.equal(fs.readFileSync(file, "utf8"), "KEV_DATA_GITHUB_TOKEN=ghs_app\n", "the app's token stays");
+  // Never in .env, which containers read.
   assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /ghp_k/);
-  assert.ok(!fs.existsSync(path.join(cc, "hermes-homes", ".hermes-alan", ".env")));
-  assert.doesNotMatch(r.stdout, /no agent kev_data/);
-  // A symlink at the file: refused, and nothing written.
+  // A symlink at the file: the helper never writes through the symlink.
   fs.rmSync(file);
   const target = path.join(home, "elsewhere.txt");
-  fs.writeFileSync(target, "untouched\n");
+  fs.writeFileSync(target, "KEV_DATA_GITHUB_PAT=untouched\n");
   fs.symlinkSync(target, file);
-  r = apply(conf, ["cluster", control, "false"], "KEV_DATA_GITHUB_PAT=ghp_k\nJOBD_TOKEN=jt\n");
-  assert.notEqual(r.status, 0);
-  assert.match(r.stdout, /Refused: .*kev-data\.env is a symlink/);
-  assert.equal(fs.readFileSync(target, "utf8"), "untouched\n");
-  assert.doesNotMatch(fs.readFileSync(path.join(cc, ".env"), "utf8"), /JOBD_TOKEN/);
+  r = apply(conf, ["cluster", control, "false"], "JOBD_TOKEN=jt\n");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /KEV_DATA_GITHUB_PAT left in .*kev-data\.env: the file is a symlink/);
+  assert.equal(fs.readFileSync(target, "utf8"), "KEV_DATA_GITHUB_PAT=untouched\n");
+});
+
+test("the Kev notes push's private key goes to kev-data.pem, only with data.github_app and data.repo", () => {
+  const { home, conf } = setup();
+  const keys = path.join(home, "app-keys"), f = path.join(keys, "cluster", "kev-data.pem");
+  let r = apply(conf, ["cluster", control, "false"], `APP_KEY_KEV_DATA=${PEM}\n`, { AGENT_STACKS_APP_KEYS: keys });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /APP_KEY_KEV_DATA skipped: site.json's github_apps has no agent for the key, and data.github_app is not the key's app/);
+  assert.ok(!fs.existsSync(f));
+  fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify({ ...example, data: { repo: "acme/kev-data", github_app: { app_id: 3, installation_id: 30, slug: "acme-kev-data" } } }));
+  r = apply(conf, ["cluster", control, "false"], `APP_KEY_KEV_DATA=${PEM}\n`, { AGENT_STACKS_APP_KEYS: keys });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(fs.readFileSync(f, "utf8"), /^-----BEGIN RSA PRIVATE KEY-----\n/);
+  assert.equal(fs.statSync(f).mode & 0o777, 0o600);
+  assert.ok(!fs.existsSync(path.join(home, "circlechat", "kev-data.env")) || !/PRIVATE KEY/.test(fs.readFileSync(path.join(home, "circlechat", "kev-data.env"), "utf8")));
 });
 
 test("refuses a provider's own credential names, which used to land in .env", () => {

@@ -10,6 +10,9 @@
 //   - The agent's token reaches the agent through the existing secrets path: the agent's own .env
 //     in the agent's Hermes home, as <AGENT>_GITHUB_TOKEN. Git's author and committer go in the same
 //     .env: the app's bot identity, <app-slug>[bot], with the app's noreply email address.
+//   - The Kev notes push has an app of the push's own (site.json's data.github_app). The push's
+//     token covers only data.repo, and goes to $CC_DIR/kev-data.env as KEV_DATA_GITHUB_TOKEN, with
+//     the app's bot identity. The push's two jobs read that file (kit/kev-data-auth.sh).
 //   - A port job on another computer asks for a token over Tailscale:
 //       POST /token   Authorization: Bearer <the job's task key>   { "repo": "<owner/name>" }
 //     The task key must be a valid key from the stack's gateway (gateway/keys.mjs). The token covers
@@ -21,7 +24,7 @@ import fs from "node:fs";
 import http from "node:http";
 import net from "node:net";
 import path from "node:path";
-import { KEYS_ROOT, botIdentity, envLines, keyFile, mintToken, setLines } from "./apps.mjs";
+import { KEV_DATA, KEYS_ROOT, botIdentity, dataApp, envLines, keyFile, mintToken, setLines } from "./apps.mjs";
 import { loadKeys, taskSecret, verify } from "../gateway/keys.mjs";
 import { readFile, writeFile } from "../kit/safe-files.mjs";
 
@@ -43,7 +46,7 @@ export class TokenService {
   // site: the stack's site.json; homes: the stack's hermes-homes folder; gatewayState: the
   // gateway's state folder, for the task keys; fetchFn and api: GitHub's API, for the tests
   constructor({ site, stack, ccDir, keysRoot = KEYS_ROOT, fetchFn = fetch, api = "https://api.github.com", now = () => Date.now(), log = console.log }) {
-    Object.assign(this, { site, stack, keysRoot, fetchFn, api, now, log });
+    Object.assign(this, { site, stack, ccDir, keysRoot, fetchFn, api, now, log });
     this.homes = path.join(ccDir, "hermes-homes");
     this.gatewayState = path.join(ccDir, "gateway-state");
     this.tokens = {};       // agent -> { token, expiresAt }
@@ -59,7 +62,7 @@ export class TokenService {
   }
 
   async mint(agent, repos) {
-    const app = this.apps()[agent];
+    const app = agent === KEV_DATA ? dataApp(this.site) : this.apps()[agent];
     return mintToken({ app, pem: this.pem(agent), repos, fetchFn: this.fetchFn, api: this.api, now: this.now() });
   }
 
@@ -80,7 +83,32 @@ export class TokenService {
         done.push(agent);
       } catch (e) { this.log(`github token for ${agent}: ${e.message}`); }
     }
+    if (await this.tickData()) done.push(KEV_DATA);
     return done;
+  }
+
+  // The Kev notes push's token, renewed the same way, in $CC_DIR/kev-data.env. The stack's owner
+  // can change the stack's folder, so the write never follows a symlink. A new file goes to the
+  // folder's owner, who runs the push.
+  async tickData() {
+    const app = dataApp(this.site);
+    if (!app) return false;
+    const t = this.tokens[KEV_DATA];
+    if (t && t.expiresAt - this.now() > RENEW_BEFORE) return false;
+    const file = path.join(this.ccDir, "kev-data.env");
+    try {
+      const fresh = await this.mint(KEV_DATA);
+      this.who[KEV_DATA] ??= await botIdentity({ slug: app.slug, token: fresh.token, fetchFn: this.fetchFn, api: this.api });
+      const old = readFile(this.ccDir, file);
+      if (old === null) {
+        const fd = fs.openSync(file, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_NOFOLLOW, 0o600);
+        try { const { uid, gid } = fs.statSync(this.ccDir); fs.fchownSync(fd, uid, gid); } catch { /* not root: the file stays the service's */ } finally { fs.closeSync(fd); }
+      }
+      // envLines names the token KEV_DATA_GITHUB_TOKEN (apps.mjs tokenName).
+      writeFile(this.ccDir, file, setLines(old, envLines(KEV_DATA, fresh.token, this.who[KEV_DATA])), { mode: 0o600 });
+      this.tokens[KEV_DATA] = fresh;
+      return true;
+    } catch (e) { this.log(`github token for the Kev notes push: ${e.message}`); return false; }
   }
 
   // POST /token for a port job.
@@ -124,5 +152,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     srv.on("error", (e) => { console.error(`token service cannot listen on ${host}: ${e.message}`); process.exit(1); });
     srv.listen(Number(env.TOKEN_PORT ?? 4010), host);
   }
-  console.log(`github token service for stack ${env.STACK}: ${Object.keys(site.github_apps ?? {}).join(", ") || "no apps"}`);
+  const names = [...Object.keys(site.github_apps ?? {}), ...(dataApp(site) ? ["the Kev notes push"] : [])];
+  console.log(`github token service for stack ${env.STACK}: ${names.join(", ") || "no apps"}`);
 }

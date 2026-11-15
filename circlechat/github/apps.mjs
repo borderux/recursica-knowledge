@@ -20,7 +20,21 @@ export const PERMISSIONS = ["contents", "pull_requests", "issues"];
 // Each agent's permissions: Contents and Pull requests, plus Issues for Alan.
 export const DEFAULT_PERMISSIONS = (agent) => ({ contents: "write", pull_requests: "write", ...(agent === "alan" ? { issues: "write" } : {}) });
 // The retired personal access tokens.
-export const RETIRED = ["ALAN_GITHUB_PAT", "BETTY_GITHUB_PAT", "PORTER_GITHUB_PAT"];
+export const RETIRED = ["ALAN_GITHUB_PAT", "BETTY_GITHUB_PAT", "PORTER_GITHUB_PAT", "KEV_DATA_GITHUB_PAT"];
+
+// The Kev notes push (kit/push-data.sh) has a GitHub App of the push's own, in site.json's
+// data.github_app: { app_id, installation_id, slug }. The app's one repo is data.repo. The push
+// pushes a branch and opens a pull request, so the app has Contents and Pull requests. The
+// permissions are fixed here, so site.json can never add a permission.
+export const KEV_DATA = "kev-data";
+export const KEV_DATA_PERMISSIONS = { contents: "write", pull_requests: "write" };
+// The push's app, in the form mintToken takes, or null without data.github_app and data.repo.
+export function dataApp(site = {}) {
+  const a = site.data?.github_app, repo = site.data?.repo;
+  return a && repo ? { ...a, repos: [repo], permissions: KEV_DATA_PERMISSIONS } : null;
+}
+// True when the stack has an app: an agent's app, or the push's app. The token service runs only then.
+export const hasApps = (site = {}) => Boolean(site.github_apps || site.data?.github_app);
 // The root-owned folder for the apps' private keys, one folder per stack (the GitHub environment).
 export const KEYS_ROOT = "/var/lib/agent-stacks/github-apps";
 export const keyFile = (stack, agent, root = KEYS_ROOT) => path.join(root, stack, `${agent}.pem`);
@@ -43,6 +57,7 @@ export function validateApps(site) {
   for (const [agent, a] of Object.entries(apps)) {
     const at = `github_apps.${agent}`;
     if (!HANDLE.test(agent)) { errs.push(`${at}: "${agent}" is not an agent handle`); continue; }
+    if (agent === KEV_DATA) { errs.push(`${at}: "${KEV_DATA}" is the Kev notes push's app. Put the push's app in data.github_app`); continue; }
     if (!a || typeof a !== "object") { errs.push(`${at} must be an object`); continue; }
     for (const k of ["app_id", "installation_id"]) if (!Number.isInteger(a[k]) || a[k] < 1) errs.push(`${at}.${k} must be the app's number from GitHub`);
     if (!SLUG.test(a.slug ?? "")) errs.push(`${at}.slug must be the app's slug, the app's name in its GitHub address`);
@@ -58,6 +73,20 @@ export function validateApps(site) {
       for (const k of ["contents", "pull_requests"]) if (p[k] !== "write") errs.push(`${at}.permissions.${k} must be "write", so the agent can push and open pull requests`);
     }
   }
+  return errs;
+}
+
+// The config check's messages for data.github_app, the Kev notes push's app.
+export function validateDataApp(site) {
+  const a = site.data?.github_app;
+  if (a === undefined) return [];
+  const at = "data.github_app";
+  if (!a || typeof a !== "object" || Array.isArray(a)) return [`${at} must hold the app's app_id, installation_id and slug`];
+  const errs = [];
+  if (!site.data?.repo) errs.push(`${at} needs data.repo: the app's one repo is the private notes repo`);
+  for (const k of ["app_id", "installation_id"]) if (!Number.isInteger(a[k]) || a[k] < 1) errs.push(`${at}.${k} must be the app's number from GitHub`);
+  if (!SLUG.test(a.slug ?? "")) errs.push(`${at}.slug must be the app's slug, the app's name in its GitHub address`);
+  for (const k of Object.keys(a)) if (!["app_id", "installation_id", "slug"].includes(k)) errs.push(`${at}.${k}: the push's app takes only app_id, installation_id and slug. The repo is data.repo, and the kit sets the permissions`);
   return errs;
 }
 
@@ -115,11 +144,13 @@ export function setLines(text, values) {
 // A GitHub App manifest for one agent: the name, the permissions and no webhook. A person creates
 // the app from the organization's settings with the manifest's values (github/manifest.mjs).
 //   url: the app's homepage, such as the knowledge repo's address on GitHub
-export function manifest(agent, { prefix = "recursica", url, permissions = DEFAULT_PERMISSIONS(agent) } = {}) {
+export function manifest(agent, { prefix = "recursica", url, permissions = agent === KEV_DATA ? KEV_DATA_PERMISSIONS : DEFAULT_PERMISSIONS(agent) } = {}) {
   return {
     name: `${prefix}-${agent}`,
     url,
-    description: `The ${agent} agent's access to GitHub: pushes branches and opens pull requests.`,
+    description: agent === KEV_DATA
+      ? "The Kev notes push's access to GitHub: pushes a notes branch to the private notes repo and opens a pull request."
+      : `The ${agent} agent's access to GitHub: pushes branches and opens pull requests.`,
     public: false,
     // No hook_attributes and no events: the app has no webhook.
     default_permissions: { metadata: "read", ...permissions },

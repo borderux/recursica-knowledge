@@ -48,7 +48,7 @@ test("passes a private repo only, and refuses a public, internal, missing or kno
   await refused("acme/KB", { full_name: "acme/kb", private: true }, /is the knowledge repo/);
   // A repo renamed or moved to the knowledge repo's name.
   await refused("acme/old-name", { full_name: "acme/kb", private: true, visibility: "private" }, /is the knowledge repo/);
-  await refused("acme/kev-data", { private: true }, /no KEV_DATA_GITHUB_PAT/, "");
+  await refused("acme/kev-data", { private: true }, /no KEV_DATA_GITHUB_TOKEN/, "");
   await refused("https://github.com/acme/kev-data", { private: true }, /must be owner\/name/);
 });
 
@@ -82,6 +82,7 @@ case "$1" in
   clone) mkdir -p "\${@: -1}/.git" ;;
   rev-parse) case "$*" in *origin/main:*) exit 1 ;; *) echo 1111 ;; esac ;;
   hash-object) cat >/dev/null; echo 2222 ;;
+  commit) echo "commit by \$GIT_AUTHOR_NAME <\$GIT_AUTHOR_EMAIL>, committed by \$GIT_COMMITTER_NAME" >> "${gitLog}" ;;
   show) printf 'reviewed notes from main\\n' ;;
 esac
 exit 0
@@ -105,7 +106,7 @@ async function withApi(s, fn) {
   const p = spawn(process.execPath, [s.server], { stdio: ["ignore", "pipe", "inherit"] });
   const port = await new Promise((resolve) => p.stdout.once("data", (d) => resolve(String(d).trim())));
   const env = { ...process.env, PATH: `${s.bin}:${process.env.PATH}`, CC_DIR: s.cc, WS: s.ws, GITHUB_API: `http://127.0.0.1:${port}` };
-  for (const k of ["SITE", "KEV_DATA_GITHUB_PAT"]) delete env[k];
+  for (const k of ["SITE", "KEV_DATA_GITHUB_TOKEN"]) delete env[k];
   const run = (script) => new Promise((resolve) => {
     const c = spawn("bash", [path.join(here, script)], { env, cwd: s.root });
     let out = ""; c.stdout.on("data", (d) => (out += d)); c.stderr.on("data", (d) => (out += d));
@@ -119,8 +120,8 @@ test("the push refuses with no token, and refuses a public repo before any git s
   await withApi(s, async (run) => {
     let r = await run("push-data.sh");
     assert.equal(r.status, 1, r.out);
-    assert.match(r.out, /Refused: no KEV_DATA_GITHUB_PAT/);
-    fs.writeFileSync(path.join(s.cc, "kev-data.env"), "KEV_DATA_GITHUB_PAT=ghp_test\n");
+    assert.match(r.out, /Refused: no KEV_DATA_GITHUB_TOKEN/);
+    fs.writeFileSync(path.join(s.cc, "kev-data.env"), "KEV_DATA_GITHUB_TOKEN=ghp_test\n");
     r = await run("push-data.sh");
     assert.equal(r.status, 1, r.out);
     assert.match(r.out, /Refused: acme\/kev-data is public/);
@@ -131,7 +132,9 @@ test("the push refuses with no token, and refuses a public repo before any git s
 
 test("the push sends new notes to a new branch of the private repo, opens a pull request, and never pushes main", async () => {
   const s = sandbox();
-  fs.writeFileSync(path.join(s.cc, "kev-data.env"), "KEV_DATA_GITHUB_PAT=ghp_test\n");
+  // The token service's file: the app's token and the app's bot identity.
+  const bot = "acme-kev-data[bot]", mail = "61+acme-kev-data[bot]@users.noreply.github.com";
+  fs.writeFileSync(path.join(s.cc, "kev-data.env"), `KEV_DATA_GITHUB_TOKEN=ghp_test\nGIT_AUTHOR_NAME=${bot}\nGIT_AUTHOR_EMAIL=${mail}\nGIT_COMMITTER_NAME=${bot}\nGIT_COMMITTER_EMAIL=${mail}\n`);
   await withApi(s, async (run) => {
     const r = await run("push-data.sh");
     assert.equal(r.status, 0, r.out);
@@ -142,6 +145,7 @@ test("the push sends new notes to a new branch of the private repo, opens a pull
     assert.match(git, /^git push -q origin HEAD:refs\/heads\/kev-notes\/\d{8}-\d{6} AUTH=set$/m);
     assert.equal((git.match(/^git push/gm) ?? []).length, 1);
     assert.doesNotMatch(git, /ghp_test/, "the token never sits in a command line");
+    assert.ok(git.includes(`commit by ${bot} <${mail}>, committed by ${bot}`), "the notes commit uses the app's bot identity");
     // Two visibility checks: one before the clone, one right before the push.
     assert.equal((s.api().match(/^GET \/repos\/acme\/kev-data /gm) ?? []).length, 2);
     assert.match(s.api(), /^POST \/repos\/acme\/kev-data\/pulls /m);
@@ -166,7 +170,7 @@ test("the push stays off with no data.repo", async () => {
 
 test("Kev's nightly training reads the reviewed notes from the private repo's main branch only", async () => {
   const s = sandbox();
-  fs.writeFileSync(path.join(s.cc, "kev-data.env"), "KEV_DATA_GITHUB_PAT=ghp_test\n");
+  fs.writeFileSync(path.join(s.cc, "kev-data.env"), "KEV_DATA_GITHUB_TOKEN=ghp_test\n");
   await withApi(s, async (run) => {
     const r = await run("pull-kev-notes.sh");
     assert.equal(r.status, 0, r.out);
