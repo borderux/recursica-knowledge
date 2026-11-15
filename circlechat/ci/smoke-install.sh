@@ -58,10 +58,28 @@ check "an agent container reaches CircleChat's api directly" "[ \"\$($CURL -s -o
 check "the filter refuses a site that is not on the list" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://example.com || true)\" = 403 ]"
 check "the filter refuses a cloud model provider" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.anthropic.com || true)\" = 403 ]"
 check "an agent container reaches the gateway directly" "[ \"\$($CURL -s --noproxy '*' http://cc-gateway:4000/health || true)\" = '{\"ok\":true}' ]"
-check "the filter allows GitHub" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true)\" = 200 ]"
+# The filter's answer to a request for api.github.com from an agent container. The arguments go
+# to docker run, such as --dns 127.0.0.1.
+github_via_filter() { docker run --rm --network circlechat_agents "$@" curlimages/curl:8.10.1 -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true; }
+# A check that asks for api.github.com through the filter, up to 4 tries, 30 seconds apart. When
+# one name lookup fails, Squid keeps the failed lookup for 1 minute (negative_dns_ttl). Both GitHub
+# checks then fail together, and a rerun passes. The tries cover 90 seconds, longer than that
+# minute. Each failed try prints the filter's answer.
+github_check() {
+  local name="$1" code try; shift
+  for try in 1 2 3 4; do
+    code="$(github_via_filter "$@")"
+    [ "$code" = 200 ] && { echo "pass: $name"; return 0; }
+    echo "  $name: try $try of 4, the filter answered ${code:-nothing}"
+    [ "$try" = 4 ] || sleep 30
+  done
+  sudo grep -F 'api.github.com' "$CC/egress-logs/access.log" | tail -n 3 || true
+  echo "FAIL: $name"; fail=1
+}
+github_check "the filter allows GitHub"
 check "the closed network has no way out but the filter" "! $CURL -s -m 10 -o /dev/null https://example.com"
 check "an agent container cannot look up outside names" "! docker run --rm --network circlechat_agents --dns 127.0.0.1 busybox:1.36 nslookup -timeout=3 example.com >/dev/null 2>&1"
-check "an agent container still finds the filter by name" "[ \"\$(docker run --rm --network circlechat_agents --dns 127.0.0.1 curlimages/curl:8.10.1 -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true)\" = 200 ]"
+github_check "an agent container still finds the filter by name" --dns 127.0.0.1
 check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
 check "the refusal is in the filter's log" "sudo grep -q 'example.com:443 403 TCP_DENIED' '$CC/egress-logs/access.log'"
 check "the file store has CircleChat's bucket" "(cd '$CC' && docker compose run --rm --no-deps -T -e MU=\"\$(sed -n 's/^MINIO_ROOT_USER=//p' .env | tail -1)\" -e MP=\"\$(sed -n 's/^MINIO_ROOT_PASSWORD=//p' .env | tail -1)\" --entrypoint /bin/sh minio-setup -c 'mc alias set local http://minio:9000 \"\$MU\" \"\$MP\" >/dev/null && mc ls local/circlechat >/dev/null')"
