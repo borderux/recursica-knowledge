@@ -580,7 +580,7 @@ test("Betty's CircleChat persona asks first beside the build rules, and names th
   // Right next to the build rules: in the same paragraph, just before them.
   const at = text.indexOf(rule);
   const buildRules = text.indexOf("Then build by these rules:");
-  assert.ok(at > 0 && buildRules > at && buildRules - at < 300, "the rule sits just before the build rules");
+  assert.ok(at > 0 && buildRules > at && buildRules - at < 450, "the rule sits just before the build rules");
   assert.ok(buildRules < text.indexOf("**Import every UI component from `@recursica/adapter-mantine-v8`.**"));
   // The prototype repository's real check scripts, by name.
   assert.match(text, /\*\*Check the page with `npm run check-types` and `npm run lint`,\*\* run in `\/workspace\/@APP_REPO@`\./);
@@ -589,6 +589,24 @@ test("Betty's CircleChat persona asks first beside the build rules, and names th
   // The interview and the brief still come first, and the persona-wide rule is still there.
   assert.match(text, /The interview and the brief still come first\./);
   assert.match(text, /\*\*Always ask at least one question before building a prototype, and wait for the answer\.\*\*/);
+});
+
+/**
+ * On CircleChat, Betty's reply to a prototype request opened with "Now I'll examine the components
+ * available for building this pricing page." and held nothing else a person could read, so the
+ * reply check refused it as reasoning, and she asked nothing. The built SOUL.md now says to start
+ * the reply with the question itself, right after the ask-first rule.
+ */
+test("Betty's CircleChat persona starts her reply with the question itself, right after the ask-first rule", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  const rule = "**On a new prototype, the turn's reply is one question and nothing else, and Betty writes no files in that turn.**";
+  const line = "Start the reply with the question itself: no line about what Betty will do, check or read first.";
+  assert.ok(text.includes(line), "the question-first line");
+  assert.ok(text.includes(`${rule} ${line}`), "it follows the ask-first rule directly");
+  assert.ok(text.indexOf(line) < text.indexOf("Then build by these rules:"), "before the build rules");
+  assert.equal(text.split(line).length - 1, 1, "once");
 });
 
 test("Loki is built for CircleChat only", () => {
