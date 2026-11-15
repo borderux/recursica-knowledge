@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { limitsFrom, setLimits, timeoutFrom, timeoutLine } from "./barb-limits.mjs";
+import { limitsFrom, setLimits, specFor, timeoutFrom, timeoutLine } from "./barb-limits.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const md = fs.readFileSync(path.join(here, "../../agents/barb/runtime/hermes.md"), "utf8");
@@ -125,4 +125,59 @@ test("the command line: config on stdin, the timeout line alone, and the usage",
   assert.equal(cli(["timeout", env]).stdout, "HERMES_TIMEOUT ok\n");
   assert.equal(cli(["timeout", path.join(dir, "missing")]).stdout, "HERMES_TIMEOUT should be 4000 or more (agents/barb/runtime/hermes.md).\n");
   assert.equal(cli([]).status, 2);
+});
+
+// Betty's tool loop hard stop, from agents/betty/runtime/hermes.md. A CircleChat turn is a one-shot
+// `hermes chat`, which Hermes treats as attended, so a turn repeating the same tool calls was only
+// warned: one wrote the same page more than 70 times in an hour.
+const bettyMd = fs.readFileSync(path.join(here, "../../agents/betty/runtime/hermes.md"), "utf8");
+
+test("Betty's limits: the tool loop hard stop, at the top level, from her hermes.md", () => {
+  assert.deepEqual(limitsFrom(bettyMd), [
+    [["tool_loop_guardrails", "hard_stop_enabled"], "true"],
+    [["tool_loop_guardrails", "hard_stop_after", "exact_failure"], "5"],
+    [["tool_loop_guardrails", "hard_stop_after", "idempotent_no_progress"], "5"],
+  ]);
+  assert.match(bettyMd, /^```yaml\ntool_loop_guardrails: /m, "top level, never under agent:");
+  assert.doesNotMatch(bettyMd, /^HERMES_TIMEOUT=/m, "Betty's file sets no timeout");
+});
+
+test("Betty's limits go in a top-level tool_loop_guardrails block, and a second pass changes nothing", () => {
+  const { text, notes } = setLimits(hermesDefault, limitsFrom(bettyMd));
+  assert.match(text, /^tool_loop_guardrails:\n {2}hard_stop_enabled: true\n {2}hard_stop_after:\n {4}exact_failure: 5\n {4}idempotent_no_progress: 5$/m);
+  assert.equal(text.match(/^tool_loop_guardrails:/gm).length, 1);
+  assert.match(text, /^delegation:\n {2}max_iterations: 50\n/m, "every other key stays");
+  assert.deepEqual(notes, [
+    "tool_loop_guardrails.hard_stop_enabled: true (added)",
+    "tool_loop_guardrails.hard_stop_after.exact_failure: 5 (added)",
+    "tool_loop_guardrails.hard_stop_after.idempotent_no_progress: 5 (added)",
+  ]);
+  const again = setLimits(text, limitsFrom(bettyMd));
+  assert.equal(again.text, text);
+  assert.deepEqual(again.notes, []);
+});
+
+test("Betty's hard stop goes inside a tool_loop_guardrails block that is already there, keeping its keys", () => {
+  const existing = `${hermesDefault}tool_loop_guardrails:\n  warnings_enabled: true\n  hard_stop_enabled: false\n`;
+  const { text, notes } = setLimits(existing, limitsFrom(bettyMd));
+  assert.match(text, /^tool_loop_guardrails:\n {2}warnings_enabled: true\n {2}hard_stop_enabled: true\n/m);
+  assert.ok(notes.some((n) => /^tool_loop_guardrails\.hard_stop_enabled: .*true/.test(n)), notes.join("\n"));
+});
+
+test("specFor names each agent's hermes.md, and no other agent's", () => {
+  assert.match(specFor("betty"), /agents\/betty\/runtime\/hermes\.md$/);
+  assert.match(specFor("barb"), /agents\/barb\/runtime\/hermes\.md$/);
+  assert.throws(() => specFor("loki"), /no Hermes limits for loki/);
+});
+
+test("the command line: config betty sets Betty's limits and names her in each change", () => {
+  const r = cli(["config", "betty"], hermesDefault);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /^ {2}hard_stop_enabled: true$/m);
+  assert.match(r.stderr, /^Betty's config\.yaml: tool_loop_guardrails\.hard_stop_enabled: true \(added\)$/m);
+  assert.doesNotMatch(r.stdout, /oneshot_max_children/, "none of Barb's limits");
+  const bad = cli(["config", "betty"], "agent:\n  tool_loop_guardrails:\n    x: 1\n");
+  assert.equal(bad.status, 1);
+  assert.equal(bad.stdout, "", "a refusal prints no config, so the caller writes nothing");
+  assert.equal(cli(["config", "loki"], hermesDefault).status, 1);
 });

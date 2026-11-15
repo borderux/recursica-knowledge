@@ -1176,6 +1176,13 @@ writes nothing, when a block is written on one line or `tool_loop_guardrails` si
 key, where Hermes ignores it. It then checks `HERMES_TIMEOUT` in `$CC_DIR/.env` and prints only
 `HERMES_TIMEOUT ok`, or the value it should be.
 
+Betty's Hermes settings are in `agents/betty/runtime/hermes.md`, the same way. On each run,
+`setup-agent.sh betty` turns on the tool loop hard stop in her `config.yaml`
+(`kit/barb-limits.mjs config betty`): `tool_loop_guardrails.hard_stop_enabled: true`, and the two
+`hard_stop_after` counts, at the top level. A CircleChat turn is a one-shot `hermes chat`, which
+Hermes treats as attended, so without it a turn that repeats the same tool calls is only warned,
+never stopped. The same refusals apply.
+
 **Every agent's Hermes makes no model-catalog lookups and no update checks.** Hermes's gateway
 starts on each turn and, 30 seconds later, refreshes its model picker's lists from
 `hermes-agent.nousresearch.com`, `openrouter.ai` and `portal.nousresearch.com`. The outgoing
