@@ -552,6 +552,16 @@ test("the Slack notifier shows the stack's name as the sender of each message", 
   assert.match(notifier, / -e NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected /);
   assert.match(notifier, / -e NOTIFY_PEOPLE= /);
   assert.ok(fs.existsSync(path.join(s.cc, "notify", "events.mjs")), "the notifier's events file sits next to notify.mjs");
+  // The notifier signs in as cc_notify, from a file: no database password in docker inspect.
+  assert.doesNotMatch(notifier, /postgres:\/\/|DATABASE_URL=/);
+  assert.match(notifier, / -v [^ ]*\/notify-state\/db\.url:\/run\/notify\/db\.url:ro -e DATABASE_URL_FILE=\/run\/notify\/db\.url /);
+  const url = fs.readFileSync(path.join(s.cc, "notify-state", "db.url"), "utf8");
+  assert.match(url, /^postgres:\/\/cc_notify:[0-9a-f]{48}@postgres:5432\/circlechat\n$/);
+  assert.equal(fs.statSync(path.join(s.cc, "notify-state")).mode & 0o777, 0o700);
+  for (const f of ["db.url", "db-password"]) assert.equal(fs.statSync(path.join(s.cc, "notify-state", f)).mode & 0o777, 0o600, f);
+  // A rerun keeps the same password.
+  assert.equal(s.run("setup-host.sh", "--secrets-only").status, 0);
+  assert.equal(fs.readFileSync(path.join(s.cc, "notify-state", "db.url"), "utf8"), url);
 });
 
 // Cloud-model requests in Slack (cluster/cloud-requests.mjs).

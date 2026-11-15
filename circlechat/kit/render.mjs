@@ -35,7 +35,7 @@ import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
-import { EMAIL, eventsLine, peopleLine, validateNotify } from "../notify/events.mjs";
+import { EMAIL, eventsLine, notifyWarnings, peopleLine, validateNotify } from "../notify/events.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -234,6 +234,10 @@ export function envFile(lines) {
   }
   return lines.join("\n") + "\n";
 }
+
+// The config check's warnings: settings that still work, and that a later release removes. A
+// warning never stops the setup.
+export const warnings = (site = {}) => [...notifyWarnings(site.notify)];
 
 export function squidConf(site = {}) {
   return `# Written by circlechat/kit/render.mjs. Each stack's outgoing filter.
@@ -805,6 +809,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const errs = [...validate(given, { cluster }), ...placed.errs];
   if (errs.length) { console.error("site.json has problems:\n  - " + errs.join("\n  - ")); process.exit(1); }
   for (const note of placed.notes) console.log(note);
+  for (const w of warnings(given)) console.log(`Warning: ${w}`);
   const site = placed.site;
   let r;
   try { r = render(site); } catch (e) {

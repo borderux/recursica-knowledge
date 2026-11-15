@@ -2,7 +2,10 @@
 // (notify.events). No dependencies: kit/render.mjs checks site.json with this file too.
 //
 // Two events never go to the stack's channel: comment_mention and chat_mention. Each goes as a
-// Slack DM to each mentioned person on site.json's notify.people list, and to no one else.
+// Slack DM to each mentioned person with a Slack ID, and to no one else. A person's Slack ID is the
+// ID the person verified in CircleChat (Settings → Profile), or else the ID on site.json's
+// notify.people list, during the switch to verified IDs.
+import crypto from "node:crypto";
 
 // Each event name, in the order the README's table lists the events.
 export const EVENTS = [
@@ -74,15 +77,16 @@ export function activityEvent(kind, payload = {}) {
 }
 
 // The DMs for one mention. mentions: the member IDs the comment or message mentions. who: member
-// ID -> { kind, handle, email }. people: parsePeople's map. Returns the DMs to send, each with the
-// person's Slack user ID, and the handle of each mentioned person not on the list. The author never
-// gets a DM about the author's own mention.
+// ID -> { kind, handle, email, slackUser }, where slackUser is the ID the person verified in
+// CircleChat. people: parsePeople's map, from notify.people. A verified ID wins, and notify.people
+// is the fallback. Returns the DMs to send, each with the person's Slack user ID, and the handle of
+// each mentioned person with no Slack ID. The author never gets a DM about the author's own mention.
 export function mentionDms({ mentions = [], author, who, people }) {
   const dms = [], skipped = [];
   for (const id of new Set(mentions)) {
     const w = who.get(id);
     if (!w || w.kind !== "user" || id === author) continue;
-    const slackUser = people.get(String(w.email ?? "").toLowerCase());
+    const slackUser = w.slackUser || people.get(String(w.email ?? "").toLowerCase());
     if (slackUser) dms.push({ slackUser, handle: w.handle });
     else skipped.push(w.handle);
   }
@@ -123,4 +127,25 @@ export function notesFor({ source, events, details, row, by, place, who, people,
   const { dms, skipped } = mentionDms({ mentions: row.mentions, author: row.member_id, who, people });
   const text = mentionText({ where: source, details, by, place, body: row.body_md, ccUrl });
   return { channel, dms: dms.map((d) => ({ ...d, text })), skipped, event };
+}
+
+// The config check's warnings for site.json's notify block. A warning never stops the setup.
+export function notifyWarnings(notify = {}) {
+  return (notify.people ?? []).length
+    ? ["notify.people is a fallback during the switch to Slack IDs that each person verifies in CircleChat, under Settings → Profile. A verified ID wins. A later kit release removes notify.people."]
+    : [];
+}
+
+// The Slack ID check (CircleChat's docs/slack-dms.md). The notifier makes each code, and
+// CircleChat stores only the salt and the hash, SHA-256 of "<salt>:<code>" in hex.
+export const CODE_TTL_MS = 10 * 60_000;
+export const newCode = () => String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+export const newSalt = () => crypto.randomBytes(16).toString("hex");
+export const hashCode = (salt, code) => crypto.createHash("sha256").update(`${salt}:${code}`).digest("hex");
+
+// The DM with the code. The DM names the CircleChat account and address, so a person who never
+// asked for a code knows to ignore the DM.
+export function codeText({ code, handle, ccUrl = "" }) {
+  const where = ccUrl ? ` on ${String(ccUrl).replace(/\/$/, "")}` : "";
+  return `Your CircleChat code is *${code}*. The code links this Slack account to @${handle}${where}, and works for 10 minutes. If you didn't ask for a code, ignore this message.`;
 }

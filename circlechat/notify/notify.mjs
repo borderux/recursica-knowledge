@@ -9,15 +9,20 @@
 // a task that waits for a review, and an agent reply that never reached a person.
 //
 // A mention of a person (comment_mention, chat_mention) never goes to the stack's channel. Each goes
-// as a Slack DM to each mentioned person on site.json's notify.people list (NOTIFY_PEOPLE), and to
-// no one else. A mentioned person not on the list gets nothing. The log names the person's handle
-// and never the text.
+// as a Slack DM to each mentioned person with a Slack ID, and to no one else: the ID the person
+// verified in CircleChat, or else the ID on site.json's notify.people list (NOTIFY_PEOPLE). A
+// mentioned person with no Slack ID gets nothing. The log names the person's handle and never the
+// text.
+//
+// The notifier also sends the codes of CircleChat's Slack ID check (sendCodes). The notifier signs
+// in to the database as cc_notify (notify-db.sql), from the address in DATABASE_URL_FILE.
 import fs from "node:fs";
 import pg from "pg";
 import { droppedNote } from "./drops.mjs";
-import { activityEvent, approvalText, notesFor, parseEvents, parsePeople } from "./events.mjs";
+import { CODE_TTL_MS, activityEvent, approvalText, codeText, hashCode, newCode, newSalt, notesFor, parseEvents, parsePeople } from "./events.mjs";
 
-const { DATABASE_URL, SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on", STACK_NAME = "" } = process.env;
+const DATABASE_URL = process.env.DATABASE_URL_FILE ? fs.readFileSync(process.env.DATABASE_URL_FILE, "utf8").trim() : process.env.DATABASE_URL;
+const { SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on", STACK_NAME = "" } = process.env;
 const EVENTS = parseEvents(process.env.NOTIFY_EVENTS);
 const PEOPLE = parsePeople(process.env.NOTIFY_PEOPLE);
 const on = (event) => EVENTS.has(event);
@@ -27,7 +32,8 @@ const STALE_ACTIVE_H = Number(process.env.STALE_ACTIVE_HOURS ?? 12);
 const STATE = "/state/last.json";
 if (!DATABASE_URL || !SLACK_BOT_TOKEN || !SLACK_CHANNEL) { console.error("need DATABASE_URL, SLACK_BOT_TOKEN and SLACK_CHANNEL"); process.exit(1); }
 
-const db = new pg.Pool({ connectionString: DATABASE_URL });
+// At most 3 connections: the listener holds one. cc_notify allows 6, so a restart can overlap.
+const db = new pg.Pool({ connectionString: DATABASE_URL, max: 3 });
 const load = () => { try { return JSON.parse(fs.readFileSync(STATE, "utf8")); } catch { return {}; } };
 const save = (s) => fs.writeFileSync(STATE, JSON.stringify(s));
 let st = load();
@@ -80,13 +86,21 @@ async function send({ channel, dms, skipped, event }) {
   for (const d of dms) await dm(d.slackUser, d.text);
 }
 
-// member id → "@handle" (people) or "@handle (agent)", and each person's email for notify.people
-const WHO = `
-  select m.id, m.kind, coalesce(u.handle, a.handle) as handle, u.email
+// member id → "@handle" (people) or "@handle (agent)", each person's email for notify.people, and
+// the Slack ID the person verified in CircleChat. A CircleChat without the Slack ID check has no
+// user_slack table.
+let hasSlackIds = false;
+const who_ = (slack) => `
+  select m.id, m.kind, coalesce(u.handle, a.handle) as handle, u.email${slack ? ", s.slack_user_id as slack_user" : ""}
   from members m left join users u on m.kind='user' and u.id=m.ref_id
-  left join agents a on m.kind='agent' and a.id=m.ref_id`;
+  left join agents a on m.kind='agent' and a.id=m.ref_id${slack ? "\n  left join user_slack s on m.kind='user' and s.user_id=m.ref_id" : ""}`;
 let who = new Map();
-async function refreshWho() { who = new Map((await db.query(WHO)).rows.map((r) => [r.id, r])); }
+async function refreshWho() {
+  const { rows: [t] } = await db.query(`select to_regclass('public.user_slack') is not null as ok`);
+  if (t.ok !== hasSlackIds) console.log(new Date().toISOString(), t.ok ? "CircleChat has verified Slack IDs" : "CircleChat has no Slack ID check: mention DMs use notify.people only");
+  hasSlackIds = t.ok;
+  who = new Map((await db.query(who_(hasSlackIds))).rows.map((r) => [r.id, { ...r, slackUser: r.slack_user ?? null }]));
+}
 const name = (id) => { const w = who.get(id); return w ? `@${w.handle}${w.kind === "agent" ? " (agent)" : ""}` : "someone"; };
 
 async function activity() {
@@ -220,10 +234,57 @@ async function chatMentions() {
   }
 }
 
+// The codes of CircleChat's Slack ID check (CircleChat's docs/slack-dms.md). For each new request,
+// a new code: the salt and the hash go to the database, and the code goes to the pending ID as a
+// DM. The code itself is never stored or logged. A request older than 10 minutes gets no code.
+let sending = false;
+async function sendCodes() {
+  if (!hasSlackIds || sending) return;
+  sending = true;
+  try {
+    const { rows } = await db.query(
+      `select s.user_id, s.pending_slack_user_id, s.code_requested_at::text as requested, u.handle
+       from user_slack s join users u on u.id=s.user_id
+       where s.pending_slack_user_id is not null and s.code_requested_at > now() - interval '10 minutes'
+         and s.code_sent_at is null and s.send_error is null`);
+    for (const r of rows) {
+      if (!/^[UW][A-Z0-9]{6,19}$/.test(r.pending_slack_user_id)) continue;
+      const code = newCode(), salt = newSalt();
+      // Only while the request is unchanged: a newer request gets a new code.
+      const { rowCount } = await db.query(
+        `update user_slack set code_salt=$3, code_hash=$4, code_sent_at=now(), code_expires_at=now() + make_interval(secs => $5::int), code_attempts=0, updated_at=now()
+         where user_id=$1 and code_requested_at=$2::timestamptz and code_sent_at is null`,
+        [r.user_id, r.requested, salt, hashCode(salt, code), CODE_TTL_MS / 1000]);
+      if (!rowCount) continue;
+      try {
+        await dm(r.pending_slack_user_id, codeText({ code, handle: r.handle, ccUrl: CC_URL }));
+        console.log(new Date().toISOString(), `slack code sent for @${r.handle}`);
+      } catch (e) {
+        // Slack's error code, such as user_not_found, for CircleChat to show. The code stops working.
+        const error = String(e.message).replace(/^slack [a-z.]+: /, "").replace(/[^a-z0-9_]/gi, "").slice(0, 60) || "send_failed";
+        await db.query(`update user_slack set send_error=$2, code_salt=null, code_hash=null, updated_at=now() where user_id=$1 and code_requested_at=$3::timestamptz`, [r.user_id, error, r.requested]);
+        console.log(new Date().toISOString(), `slack code for @${r.handle} not sent: ${error}`);
+      }
+    }
+  } finally { sending = false; }
+}
+
+// CircleChat sends the notice "slack_code" with each request, so a code goes out within seconds.
+// The 30-second tick sends any code a missed notice left behind.
+async function listen() {
+  try {
+    const c = await db.connect();
+    c.on("notification", () => { sendCodes().catch((e) => console.error(new Date().toISOString(), e.message)); });
+    c.on("error", (e) => { console.error(new Date().toISOString(), `slack_code listener: ${e.message}`); c.release(true); setTimeout(listen, 30_000); });
+    await c.query("LISTEN slack_code");
+  } catch (e) { console.error(new Date().toISOString(), `slack_code listener: ${e.message}`); setTimeout(listen, 30_000); }
+}
+
 async function tick() {
-  try { await refreshWho(); await activity(); await comments(); await runs(); await approvals(); await chatMentions(); await stale(); }
+  try { await refreshWho(); await sendCodes(); await activity(); await comments(); await runs(); await approvals(); await chatMentions(); await stale(); }
   catch (e) { console.error(new Date().toISOString(), e.message); }
 }
 console.log("circlechat → slack notifier running");
 await tick();
+await listen();
 setInterval(tick, 30_000);
