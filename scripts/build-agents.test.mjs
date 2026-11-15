@@ -562,6 +562,35 @@ test("every built Betty asks at least one question before building a prototype, 
   }
 });
 
+/**
+ * On CircleChat, Betty was assigned a one-line prototype request and wrote the page two minutes
+ * into her turn, without a question. Her CircleChat fragment said "a plain request is enough"
+ * just before the build rules, and the ask-first rule sat far away in the middle of her persona.
+ * She also ran `npm run type-check`, a script the prototype repository does not have. The built
+ * SOUL.md now puts the ask-first rule beside the build rules and names the real check scripts.
+ */
+test("Betty's CircleChat persona asks first beside the build rules, and names the prototype repository's check scripts", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "circlechat", "agents", "betty", "SOUL.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.doesNotMatch(text, /a plain request is enough/);
+  const rule = "**On a new prototype, the turn's reply is one question and nothing else, and Betty writes no files in that turn.**";
+  assert.ok(text.includes(rule), "the ask-first rule");
+  assert.match(text, /Build in a later turn, after the answer\. The only exception is a request that says "no questions"\./);
+  // Right next to the build rules: in the same paragraph, just before them.
+  const at = text.indexOf(rule);
+  const buildRules = text.indexOf("Then build by these rules:");
+  assert.ok(at > 0 && buildRules > at && buildRules - at < 300, "the rule sits just before the build rules");
+  assert.ok(buildRules < text.indexOf("**Import every UI component from `@recursica/adapter-mantine-v8`.**"));
+  // The prototype repository's real check scripts, by name.
+  assert.match(text, /\*\*Check the page with `npm run check-types` and `npm run lint`,\*\* run in `\/workspace\/@APP_REPO@`\./);
+  assert.match(text, /The repository has no `type-check` script\./);
+  assert.doesNotMatch(text, /npm run type-check/);
+  // The interview and the brief still come first, and the persona-wide rule is still there.
+  assert.match(text, /The interview and the brief still come first\./);
+  assert.match(text, /\*\*Always ask at least one question before building a prototype, and wait for the answer\.\*\*/);
+});
+
 test("Loki is built for CircleChat only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
