@@ -15,8 +15,14 @@
 //     the app's bot identity. The push's two jobs read that file (kit/kev-data-auth.sh).
 //   - A port job on another computer asks for a token over Tailscale:
 //       POST /token   Authorization: Bearer <the job's task key>   { "repo": "<owner/name>" }
-//     The task key must be a valid key from the stack's gateway (gateway/keys.mjs). The token covers
-//     only the requested repo, which must be one of the task's agent's repos.
+//     The task key must be a valid key from the stack's gateway (gateway/keys.mjs): not expired,
+//     not revoked, and for an open task. The token covers only the requested repo, which must be
+//     one of the task's agent's repos. A drill key (check-job.sh) never gets a token.
+//   - A check job asks whether the job's agent may get a token, and the service makes no token:
+//       POST /check   Authorization: Bearer <the job's task key or a drill key>   { "repo": "<owner/name>" }
+//     The service checks the key, the agent's app, the repo, the private key, and the app's
+//     installation on the repo with GitHub's read-only installation lookup. The answer is
+//     { ok, agent, task, repo, checks: { key, app, repo_listed, private_key, installation, permissions } }.
 //
 // Settings, from the environment: CC_DIR (the stack's folder), STACK (the stack's GitHub
 // environment), TOKEN_HOSTS (the addresses to listen on), TOKEN_PORT.
@@ -24,8 +30,8 @@ import fs from "node:fs";
 import http from "node:http";
 import net from "node:net";
 import path from "node:path";
-import { KEV_DATA, KEYS_ROOT, botIdentity, dataApp, envLines, keyFile, mintToken, setLines } from "./apps.mjs";
-import { loadKeys, taskSecret, verify } from "../gateway/keys.mjs";
+import { KEV_DATA, KEYS_ROOT, botIdentity, checkInstallation, dataApp, envLines, keyFile, mintToken, setLines } from "./apps.mjs";
+import { checkKey, loadKeys, taskSecret, taskStateReader } from "../gateway/keys.mjs";
 import { readFile, writeFile } from "../kit/safe-files.mjs";
 
 const MINUTE = 60_000;
@@ -51,6 +57,7 @@ export class TokenService {
     this.gatewayState = path.join(ccDir, "gateway-state");
     this.tokens = {};       // agent -> { token, expiresAt }
     this.who = {};          // agent -> { name, email }
+    this.keyState = taskStateReader(this.gatewayState, now);
   }
   apps() { return this.site.github_apps ?? {}; }
 
@@ -111,29 +118,58 @@ export class TokenService {
     } catch (e) { this.log(`github token for the Kev notes push: ${e.message}`); return false; }
   }
 
-  // POST /token for a port job.
+  // POST /token for a port job, and POST /check for a check job.
   async handle(req, res) {
     const send = (code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
     try {
       if (!fromCluster(req.socket.remoteAddress)) return send(403, { error: "outside_cluster" });
-      if (req.method !== "POST" || new URL(req.url, "http://x").pathname !== "/token") return send(404, { error: "not_found" });
+      const route = new URL(req.url, "http://x").pathname;
+      if (req.method !== "POST" || !["/token", "/check"].includes(route)) return send(404, { error: "not_found" });
       const auth = String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
       // The gateway makes the secret that signs task keys. Without the secret, no task key is valid.
       if (!fs.existsSync(path.join(this.gatewayState, "task-key.secret"))) return send(503, { error: "no_gateway", detail: "The stack's gateway has not started yet." });
-      const who = verify(auth, loadKeys(this.gatewayState), taskSecret(this.gatewayState));
+      const checked = checkKey(auth, loadKeys(this.gatewayState), taskSecret(this.gatewayState), this.keyState());
+      if (checked.error && checked.error !== "invalid_key") return send(401, { error: checked.error, detail: checked.message });
+      const who = checked.who;
       if (!who?.task) return send(401, { error: "task_key_needed", detail: "Send the job's task key." });
-      const app = this.apps()[who.agent];
-      if (!app) return send(403, { error: "no_app", detail: `Agent ${who.agent} has no GitHub App in site.json.` });
       let raw = ""; for await (const c of req) { raw += c; if (raw.length > 10_000) return send(413, { error: "too_large" }); }
       let repo; try { repo = JSON.parse(raw || "{}").repo; } catch { return send(400, { error: "bad_json" }); }
       // A repo may come as a clone URL, such as https://github.com/owner/name.git.
       repo = String(repo ?? "").replace(/^https:\/\/github\.com\//, "").replace(/\.git$/, "");
+      if (route === "/check") return send(200, await this.check(who, repo));
+      if (who.kind === "drill") return send(403, { error: "drill_key", detail: "A drill key is for a check job, and never gets a token." });
+      const app = this.apps()[who.agent];
+      if (!app) return send(403, { error: "no_app", detail: `Agent ${who.agent} has no GitHub App in site.json.` });
       if (!app.repos.some((r) => r.toLowerCase() === repo.toLowerCase())) return send(403, { error: "repo_not_allowed", detail: `${repo} is not one of ${who.agent}'s repos.` });
       const t = await this.mint(who.agent, [repo]);
       this.who[who.agent] ??= await botIdentity({ slug: app.slug, token: t.token, fetchFn: this.fetchFn, api: this.api });
       this.log(`github token for a port job: agent ${who.agent}, task ${who.task}, repo ${repo}`);
       return send(200, { token: t.token, expires_at: new Date(t.expiresAt).toISOString(), ...this.who[who.agent] });
     } catch (e) { return send(500, { error: "internal", detail: e.message }); }
+  }
+
+  // Whether the key's agent may get a token for the repo, step by step, without making a token.
+  // Each step is true, or the reason the step failed; a step after a failed step is null.
+  async check(who, repo) {
+    const checks = { key: true, app: null, repo_listed: null, private_key: null, installation: null, permissions: null };
+    const done = (ok, extra = {}) => {
+      const failed = Object.entries(checks).find(([, v]) => typeof v === "string");
+      this.log(`github check for a port job: agent ${who.agent}, task ${who.task}, repo ${repo}: ${ok ? "pass" : `fail (${failed[0]}: ${failed[1]})`}`);
+      return { ok, agent: who.agent, task: who.task, repo, checks, ...extra };
+    };
+    const app = this.apps()[who.agent];
+    if (!app) { checks.app = `agent ${who.agent} has no GitHub App in site.json`; return done(false); }
+    checks.app = true;
+    if (!app.repos.some((r) => r.toLowerCase() === repo.toLowerCase())) { checks.repo_listed = `${repo} is not one of ${who.agent}'s repos`; return done(false); }
+    checks.repo_listed = true;
+    let pem;
+    try { pem = this.pem(who.agent); } catch (e) { checks.private_key = `the private key cannot be read: ${e.code ?? e.message}`; return done(false); }
+    const r = await checkInstallation({ app, pem, repo, fetchFn: this.fetchFn, api: this.api, now: this.now() });
+    if (r.ok) { Object.assign(checks, { private_key: true, installation: true, permissions: true }); return done(true, { installation_id: r.installation_id, permissions: r.permissions }); }
+    checks.private_key = r.step === "private_key" ? r.detail : true;
+    if (r.step !== "private_key") checks.installation = r.step === "installation" ? r.detail : true;
+    if (r.step === "permissions") checks.permissions = r.detail;
+    return done(false);
   }
 }
 

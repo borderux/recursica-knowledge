@@ -1,5 +1,7 @@
 // The cluster agent: one root service on each computer. It runs the intrusion guard every minute,
 // reads the decoys' log, carries out the actions the Slack app sends, and runs scheduled reboots.
+// It also posts the job runner's hourly status lines (POST /job-status) to the cluster's channel,
+// so the job runner holds no Slack token.
 //
 // Settings come from /etc/agent-cluster.env (root only), written by install-cluster.sh:
 //   COMPUTER, CLUSTER_TOKEN, AGENT_BIND (addresses to listen on), AGENT_PORT,
@@ -24,7 +26,45 @@ import { requireKit } from "./kit-check.mjs";
 import { TAG, approve } from "./release-gate.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network, cloud }) {
+// The job runner's token for POST /job-status. Root keeps the token in the agent's state folder,
+// and writes a copy for the owner, who runs the job runner: <owner home>/.recursica-job-status.token,
+// mode 600. The token only posts a plain-text line, so the copy holds no Slack token and no
+// CLUSTER_TOKEN. The write never follows a symlink in the owner's home.
+export const JOB_STATUS_TOKEN = ".recursica-job-status.token";
+export function jobStatusToken({ stateDir, ownerHome }) {
+  const root = path.join(stateDir, "job-status.token");
+  if (!fs.existsSync(root)) fs.writeFileSync(root, crypto.randomBytes(32).toString("hex"), { mode: 0o600, flag: "wx" });
+  const token = fs.readFileSync(root, "utf8").trim();
+  if (!ownerHome) return token;
+  const copy = path.join(ownerHome, JOB_STATUS_TOKEN);
+  let have = null;
+  try { const fd = fs.openSync(copy, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW); try { have = fs.readFileSync(fd, "utf8").trim(); } finally { fs.closeSync(fd); } } catch { /* missing, or a symlink */ }
+  if (have !== token) {
+    const tmp = `${copy}.${crypto.randomBytes(4).toString("hex")}.tmp`;
+    const fd = fs.openSync(tmp, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_NOFOLLOW, 0o600);
+    try {
+      const { uid, gid } = fs.statSync(ownerHome);
+      try { fs.fchownSync(fd, uid, gid); } catch { /* not root, as in the tests: the file stays the runner's */ }
+      fs.writeSync(fd, `${token}\n`);
+    } finally { fs.closeSync(fd); }
+    fs.renameSync(tmp, copy);
+  }
+  return token;
+}
+
+// A caller's bearer token, compared in constant time: the way the agent checks CLUSTER_TOKEN.
+function bearer(req, token) {
+  if (!token) return false;
+  const auth = Buffer.from(String(req.headers.authorization ?? "")), want = Buffer.from(`Bearer ${token}`);
+  return auth.length === want.length && crypto.timingSafeEqual(auth, want);
+}
+const loopback = (a = "") => ["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(a);
+// At most this many status lines a minute: a job runner sends one line per running port each hour.
+export const STATUS_LINES_PER_MINUTE = 30;
+
+//   statusToken  the job runner's token for POST /job-status (jobStatusToken())
+//   postPlain    posts one line as plain text in the cluster's channel (channel.mjs postPlain)
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network, cloud, statusToken = "", postPlain = null }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -90,12 +130,30 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
     }
   }
 
+  // POST /job-status { text }: one status line from this computer's job runner, over loopback with
+  // the status token. The line posts as plain text (channel.mjs plainText()).
+  let sentAt = [];
+  async function jobStatus(req, send) {
+    if (!loopback(req.socket.remoteAddress)) return send(403, { ok: false, message: "only this computer's job runner may post a status line" });
+    if (!bearer(req, statusToken)) return send(401, { ok: false, message: "unauthorized" });
+    if (req.method !== "POST") return send(404, { ok: false, message: "not found" });
+    let body = ""; for await (const c of req) { body += c; if (body.length > 4000) return send(413, { ok: false, message: "too large" }); }
+    let text; try { text = JSON.parse(body).text; } catch { return send(400, { ok: false, message: "bad json" }); }
+    if (typeof text !== "string" || !text.trim()) return send(400, { ok: false, message: "text needed" });
+    sentAt = sentAt.filter((t) => now() - t < 60_000);
+    if (sentAt.length >= STATUS_LINES_PER_MINUTE) return send(429, { ok: false, message: "too many status lines this minute" });
+    if (!postPlain) return send(503, { ok: false, message: "no Slack channel on this computer" });
+    sentAt.push(now());
+    const r = await postPlain(text);
+    return send(r?.ok ? 200 : 502, { ok: Boolean(r?.ok) });
+  }
+
   function server() {
     return http.createServer(async (req, res) => {
       const send = (code, body) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
-      const auth = req.headers.authorization ?? "";
-      const want = `Bearer ${env.CLUSTER_TOKEN}`;
-      if (auth.length !== want.length || !crypto.timingSafeEqual(Buffer.from(auth), Buffer.from(want))) return send(401, { ok: false, message: "unauthorized" });
+      // The status token works on /job-status only, and CLUSTER_TOKEN never works there.
+      if (req.url === "/job-status") { try { return await jobStatus(req, send); } catch (e) { return send(500, { ok: false, message: e.message }); } }
+      if (!bearer(req, env.CLUSTER_TOKEN)) return send(401, { ok: false, message: "unauthorized" });
       if (req.method === "GET" && req.url === "/status") return send(200, { ok: true, computer: env.COMPUTER, guard: { status: guard.state.status }, reboot: readReboot(), stacks: await stacks() });
       if (req.method !== "POST" || req.url !== "/action") return send(404, { ok: false, message: "not found" });
       let body = ""; for await (const c of req) { body += c; if (body.length > 10_000) return send(413, { ok: false, message: "too large" }); }
@@ -193,7 +251,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     stateFile: path.join(stateDir, "network.json"), read: () => readNetwork({ run, mac: IS_MAC, wsl: IS_WSL }) });
   // The answers to cloud-model requests, for each open stack on this computer (cloud-requests.mjs).
   const cloud = new CloudAnswers({ stacks: controlStacks, approversOf: stackApprovers, tokenOf: stackToken, call: apiCall });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network, cloud });
+  const statusToken = jobStatusToken({ stateDir, ownerHome: env.OWNER_HOME });
+  const postPlain = (text) => chat.postPlain(env.SLACK_CHANNEL_ID, text).catch((e) => { console.error(e.message); return { ok: false }; });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network, cloud, statusToken, postPlain });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());

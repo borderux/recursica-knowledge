@@ -275,6 +275,9 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
   drop_kv "$NODE_ENV" ANTHROPIC_API_KEY
   # A port job gets Porter's token from the token service, with the job's task key.
   drop_kv "$NODE_ENV" PORTER_GITHUB_PAT
+  # Only the cluster agent holds the Slack token, in /etc/agent-cluster.env. jobd sends its status
+  # lines to the cluster agent, so the node secrets file holds no Slack value.
+  for k in SLACK_BOT_TOKEN SLACK_APP_TOKEN SLACK_CHANNEL_ID; do drop_kv "$NODE_ENV" "$k"; done
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 

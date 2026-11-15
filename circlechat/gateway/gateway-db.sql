@@ -1,5 +1,6 @@
 -- The model gateway's database role. The router (router.mjs, pgDb) signs in to CircleChat's
 -- database as cc_gateway_read, which reads only the columns the router needs and writes nothing.
+-- The router reads a task's status and archived columns to end the task's keys when the task closes.
 -- setup-host.sh runs this file with psql as the database's owner, after CircleChat's migrations,
 -- and passes the role's password as the variable "password". A rerun sets the same grants again.
 \set ON_ERROR_STOP on
@@ -26,7 +27,7 @@ DECLARE
     ['agent_runs', 'agent_id, status, context_json'],
     ['agents', 'id, handle, bot_token'],
     ['members', 'id, workspace_id, kind, ref_id'],
-    ['tasks', 'id, workspace_id, created_by'],
+    ['tasks', 'id, workspace_id, created_by, status, archived'],
     ['task_assignees', 'task_id, member_id'],
     ['task_cloud_models', 'task_id, mode, max_start_wait_minutes, max_finish_minutes']
   ];

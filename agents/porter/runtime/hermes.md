@@ -20,6 +20,14 @@ and report. Each porter-adapter runs as a **job** on a **job runner** (`circlech
 - Inside the job, Claude Code runs with `portable/claude-code/agents/porter-adapter.md` as the
   system prompt, clones the target repository, ports the change and opens the pull request.
 - When the job ends, the job runner wakes Porter through the CircleChat workflow webhook.
+- A port job runs for 96 hours at most. The job runner then stops the job, and the job's report
+  says so.
+- Every hour, the job runner sends each running port's status line to the computer's cluster
+  agent. The cluster agent, which holds the Slack token, posts the line as plain text in the
+  cluster's Slack channel.
+- A check job tests the same path as a port job and touches no repository: one tiny model request,
+  and the token service's confirmation that Porter may get a token. Porter or the drill,
+  `circlechat/check-job.sh <node>`, starts a check job. `circlechat/README.md` describes both.
 
 ## What Porter needs in its environment
 
@@ -41,8 +49,12 @@ the job request. The job runner gives the job that key and the gateway's address
 job's folder, and deletes the file when the job ends. Claude Code in the job sends every model
 request to the gateway, and the subtask's "Cloud models" setting decides which model answers.
 
-The job runner reads these from `~/.recursica-node.env` on its machine and passes only these to
-the job:
+The task key lasts 4 hours. The job renews the key at the gateway before the key ends, for as long
+as the subtask is open, up to the job's limit of 96 hours. The job keeps the newest key in the
+job's folder, so a restart of the job uses the newest key.
+
+The job runner reads these from `~/.recursica-node.env` on the job runner's computer. The job
+runner keeps each value, and no job gets any of them:
 
 | Variable | Holds |
 | --- | --- |

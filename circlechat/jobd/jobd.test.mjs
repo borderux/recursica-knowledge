@@ -77,3 +77,44 @@ test("an out-of-memory job is reported as such", async () => {
   await new Promise((r) => setTimeout(r, 600));
   assert.equal((await (await call("GET", `/jobs/${running.id}`)).json()).status, "out_of_memory");
 });
+
+test("a check job takes no slot, runs one at a time, never gets a package, and reports each part", async () => {
+  const check = { type: "check", repo: REPO, label: "drill node-a", gateway_key: pkg.gateway_key };
+  assert.equal((await call("POST", "/jobs", { ...check, repo: "https://github.com/evil/x" })).status, 403, "the repo allowlist holds for a check");
+  const r = await call("POST", "/jobs", check);
+  assert.equal(r.status, 201, "a check job starts while the port slot is full");
+  const { id } = await r.json();
+  const second = await call("POST", "/jobs", check);
+  assert.equal(second.status, 429);
+  assert.equal((await second.json()).error, "check_running");
+  assert.equal(fs.existsSync(path.join(tmp, "jobs", id, "package.md")), false);
+  const args = fs.readFileSync(path.join(state, `${id}.args`), "utf8").split("\n");
+  assert.equal(args[args.indexOf("--entrypoint") + 1], "/porter/check.sh");
+  assert.equal(args[args.indexOf("--memory") + 1], "1g");
+  assert.ok(args.includes("--read-only"));
+  assert.ok(!args.some((a) => a.includes(pkg.gateway_key)), "no key on the command line");
+  const checks = { image: { ok: true, detail: "Claude Code 2.1.325" }, gateway: { ok: true, detail: "200 in 1.8 s" }, token: { ok: true, detail: "porter may get a token for acme/adapter-x" } };
+  fs.writeFileSync(path.join(tmp, "jobs", id, "check.json"), JSON.stringify(checks));
+  fs.writeFileSync(path.join(tmp, "jobs", id, "report.md"), "Check passed.");
+  const before = hooks.length;
+  fs.writeFileSync(path.join(state, id), "exited 0 false");
+  await new Promise((r) => setTimeout(r, 600));
+  const meta = await (await call("GET", `/jobs/${id}`)).json();
+  assert.deepEqual([meta.type, meta.status, meta.checks], ["check", "succeeded", checks]);
+  assert.equal(fs.existsSync(path.join(tmp, "jobs", id, "gateway.env")), false);
+  const done = JSON.parse(hooks.slice(before).find((h) => h.b.includes(id)).b);
+  assert.deepEqual(done, { event: "check_job_done", job: id, node: "node-a", label: "drill node-a", repo: REPO, status: "succeeded", checks });
+});
+
+test("a check job with a failed part fails, and a check job never restarts", async () => {
+  const r = await call("POST", "/jobs", { type: "check", repo: REPO, label: "drill", gateway_key: pkg.gateway_key });
+  const { id } = await r.json();
+  fs.writeFileSync(path.join(tmp, "jobs", id, "check.json"), JSON.stringify({ image: { ok: true }, gateway: { ok: false, detail: "401 key_expired" }, token: { ok: true } }));
+  fs.writeFileSync(path.join(state, id), "exited 1 false");
+  await new Promise((r) => setTimeout(r, 600));
+  assert.equal((await (await call("GET", `/jobs/${id}`)).json()).status, "failed");
+});
+
+test("the job folders are the computer owner's only", () => {
+  assert.equal(fs.statSync(path.join(tmp, "jobs")).mode & 0o777, 0o700);
+});

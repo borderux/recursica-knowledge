@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { makeAgent, readCanary } from "./agent.mjs";
+import { JOB_STATUS_TOKEN, STATUS_LINES_PER_MINUTE, jobStatusToken, makeAgent, readCanary } from "./agent.mjs";
+import { makeChannel } from "./channel.mjs";
 
 function setup(t0 = Date.UTC(2026, 9, 20, 15, 0)) {
   let t = t0;
@@ -83,4 +84,81 @@ test("Approve and Deny on a cloud-model request reach the cloud answers, with th
   assert.deepEqual(asked, [["acme|cmreq_abc123", "approve", "U0PAT0001"], ["acme|cmreq_abc123", "deny", "U0PAT0001"]]);
   const without = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir });
   assert.deepEqual(await without.act({ action: "cloud-approve", ref: "x" }), { ok: false, message: "no cloud-model requests on this computer" });
+});
+
+// The job runner's status lines: POST /job-status on the agent, posted through the real channel.
+async function statusAgent() {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "owner-"));
+  const statusToken = jobStatusToken({ stateDir, ownerHome: home });
+  const slack = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, opts) => {
+    if (!String(url).startsWith("https://slack.com/")) return realFetch(url, opts);
+    slack.push({ url, body: JSON.parse(opts.body) });
+    return { json: async () => ({ ok: true }) };
+  };
+  const chat = makeChannel({ SLACK_BOT_TOKEN: "xoxb-cluster", SLACK_CHANNEL_ID: "CCLUSTER", COMPUTER: "machine-1" });
+  const guard = { state: { status: "normal" }, tick: async () => {} };
+  const agent = makeAgent({ env: { COMPUTER: "machine-1", KIT: "/nonexistent", CLUSTER_TOKEN: "cluster-secret" }, platform: {}, guard, post: async () => {}, stateDir,
+    statusToken, postPlain: (text) => chat.postPlain("CCLUSTER", text) });
+  const srv = agent.server();
+  await new Promise((r) => srv.listen(0, "127.0.0.1", r));
+  const call = (p, token, body, method = "POST") => realFetch(`http://127.0.0.1:${srv.address().port}${p}`, { method, headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: body && JSON.stringify(body) });
+  return { stateDir, home, statusToken, slack, call, close: () => { srv.close(); globalThis.fetch = realFetch; } };
+}
+
+test("a status line with mentions or Slack formatting posts as plain text in the cluster's channel", async () => {
+  const a = await statusAgent();
+  try {
+    const line = "Port job job-1 on machine-2, v1.2.3 <!channel> beam: running for 5 h. Latest progress: *Fixed* `Button` <@U123> <https://evil.example|click> _now_ & ~done~ <!here>\nsecond line";
+    const r = await a.call("/job-status", a.statusToken, { text: line });
+    assert.equal(r.status, 200);
+    assert.equal(a.slack.length, 1);
+    const { url, body } = a.slack[0];
+    assert.equal(url, "https://slack.com/api/chat.postMessage");
+    assert.equal(body.channel, "CCLUSTER");
+    assert.equal(body.text, "Port job job-1 on machine-2, v1.2.3 &lt;!channel&gt; beam: running for 5 h. Latest progress: *Fixed* `Button` &lt;@U123&gt; &lt;https://evil.example|click&gt; _now_ &amp; ~done~ &lt;!here&gt; second line");
+    assert.doesNotMatch(body.text, /[<>]/, "no Slack markup survives: no mention, no link");
+    assert.deepEqual([body.mrkdwn, body.parse, body.link_names, body.unfurl_links, body.unfurl_media], [false, "none", false, false, false], "Slack shows *, _, ~ and ` as written");
+    assert.equal(body.blocks, undefined);
+  } finally { a.close(); }
+});
+
+test("only the status token posts a status line, and the status token opens nothing else", async () => {
+  const a = await statusAgent();
+  try {
+    assert.equal((await a.call("/job-status", "wrong", { text: "x" })).status, 401);
+    assert.equal((await a.call("/job-status", "cluster-secret", { text: "x" })).status, 401, "CLUSTER_TOKEN never posts a status line");
+    assert.equal((await a.call("/status", a.statusToken, null, "GET")).status, 401, "the status token never reads the agent's status");
+    assert.equal((await a.call("/action", a.statusToken, { action: "shut-down" })).status, 401, "the status token never runs an action");
+    assert.equal((await a.call("/job-status", a.statusToken, { text: "  " })).status, 400);
+    assert.equal(a.slack.length, 0);
+  } finally { a.close(); }
+});
+
+test("the agent takes 30 status lines a minute at most", async () => {
+  const a = await statusAgent();
+  try {
+    for (let i = 0; i < STATUS_LINES_PER_MINUTE; i++) assert.equal((await a.call("/job-status", a.statusToken, { text: `line ${i}` })).status, 200);
+    assert.equal((await a.call("/job-status", a.statusToken, { text: "one more" })).status, 429);
+    assert.equal(a.slack.length, STATUS_LINES_PER_MINUTE);
+  } finally { a.close(); }
+});
+
+test("the status token is root's, with one copy for the owner, and the copy never follows a symlink", () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "owner-"));
+  const outside = path.join(home, "..", `outside-${path.basename(home)}`);
+  fs.writeFileSync(outside, "keep\n");
+  fs.symlinkSync(outside, path.join(home, JOB_STATUS_TOKEN));
+  const token = jobStatusToken({ stateDir, ownerHome: home });
+  assert.match(token, /^[0-9a-f]{64}$/);
+  assert.equal(fs.readFileSync(outside, "utf8"), "keep\n", "the symlink's target is untouched");
+  const copy = path.join(home, JOB_STATUS_TOKEN);
+  assert.equal(fs.lstatSync(copy).isSymbolicLink(), false);
+  assert.equal(fs.readFileSync(copy, "utf8").trim(), token);
+  for (const f of [copy, path.join(stateDir, "job-status.token")]) assert.equal(fs.statSync(f).mode & 0o777, 0o600, f);
+  assert.equal(jobStatusToken({ stateDir, ownerHome: home }), token, "the token stays the same");
+  assert.doesNotMatch(fs.readFileSync(copy, "utf8"), /xox|SLACK|cluster/i);
 });

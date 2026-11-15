@@ -14,9 +14,28 @@
 // stack's token service (github/token-service.mjs), with the same task key. The job holds no
 // private key and no long-lived token.
 //
+// A task key lasts 4 hours. A running port job renews the key at the gateway and keeps the newest
+// key in task-key in the job's folder. A restart of the job uses that newest key. A port job runs
+// for JOBD_MAX_HOURS (96) at most: jobd then stops the job, and the job's report says so.
+//
+// Two job types:
+//   porter  a porter-adapter port (porter-job/run.sh), in one of the JOBD_SLOTS slots
+//   check   the check job (porter-job/check.sh): one tiny model request through the gateway, and
+//           the token service's confirmation that the agent may get a token for the repo. A check
+//           job never clones, pushes or opens a pull request. A check job takes no slot, and one
+//           check job runs at a time. Porter starts a check job, or an admin with check-job.sh.
+//
+// Every hour (JOBD_STATUS_MS), jobd sends one status line per running port to this computer's
+// cluster agent, over loopback (JOBD_STATUS_URL): the job, the node, how long the job has run and
+// the job's latest progress. The cluster agent posts each line as plain text in the cluster's Slack
+// channel. jobd holds no Slack token: the cluster agent's status token (JOBD_STATUS_TOKEN_FILE,
+// written by the cluster agent) only posts a status line.
+//
 //   GET    /health                 { node, slots, running }
 //   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
-//   GET    /jobs/:id               { id, label, repo, status, exit_code, oom }
+//                                  { type: "check", repo, label, gateway_key }  -> 201 { id } | 429 check_running
+//   GET    /jobs/:id               { id, type, label, repo, status, exit_code, oom, checks? }
+//                                  status: running, succeeded, failed, out_of_memory, timed_out or stopped
 //   GET    /jobs/:id/report        the job's report.md
 //   GET    /jobs/:id/log?tail=200  the job's output
 //   DELETE /jobs/:id               stop the job
@@ -48,10 +67,22 @@ const C = {
   hookUrl: env.PORTER_HOOK_URL ?? "",
   hookSecret: env.PORTER_HOOK_SECRET ?? "",
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
+  maxHours: Number(env.JOBD_MAX_HOURS ?? 96),
+  statusMs: Number(env.JOBD_STATUS_MS ?? 3_600_000),
+  statusUrl: env.JOBD_STATUS_URL ?? "http://127.0.0.1:7500/job-status",
+  statusTokenFile: env.JOBD_STATUS_TOKEN_FILE ?? path.join(os.homedir(), ".recursica-job-status.token"),
 };
-const TYPES = { porter: { image: env.JOBD_PORTER_IMAGE ?? "recursica/porter-job" } };
+const HOUR = 3_600_000;
+const IMAGE = env.JOBD_PORTER_IMAGE ?? "recursica/porter-job";
+// slot: the job takes one of the JOBD_SLOTS slots, and a restart starts the job again.
+const TYPES = {
+  porter: { image: IMAGE, package: true, slot: true },
+  check: { image: IMAGE, entrypoint: "/porter/check.sh", memoryGb: 1, readOnly: true },
+};
 if (!C.token) { console.error("JOBD_TOKEN is required"); process.exit(1); }
-fs.mkdirSync(C.dir, { recursive: true });
+// The job folders hold each job's task key. Only this computer's owner reads them.
+fs.mkdirSync(C.dir, { recursive: true, mode: 0o700 });
+fs.chmodSync(C.dir, 0o700);
 
 const run = (args) => new Promise((res) => execFile(C.docker, args, { maxBuffer: 16 << 20 }, (e, out, err) => res({ ok: !e, out: String(out), err: String(err) })));
 const ID = /^job-[0-9a-z-]{6,64}$/;
@@ -61,6 +92,24 @@ const readMeta = (id) => { try { return JSON.parse(fs.readFileSync(path.join(job
 const writeMeta = (m) => fs.writeFileSync(path.join(jobDir(m.id), "meta.json"), JSON.stringify(m, null, 2));
 const allJobs = () => fs.readdirSync(C.dir).filter((d) => ID.test(d)).map(readMeta).filter(Boolean);
 const running = () => allJobs().filter((m) => m.status === "running");
+const runningPorts = () => running().filter((m) => TYPES[m.type]?.slot);
+const readJson = (f) => { try { return JSON.parse(fs.readFileSync(f, "utf8")); } catch { return null; } };
+const gatewayEnv = (key) => `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`;
+const appendReport = (id, text) => {
+  const f = path.join(jobDir(id), "report.md");
+  fs.writeFileSync(f, fs.existsSync(f) && fs.statSync(f).size ? `${fs.readFileSync(f, "utf8").trimEnd()}\n\n${text}\n` : `${text}\n`);
+};
+
+// The newest task key a port job saved (task-key in the job's folder) goes in gateway.env, for a
+// restart of the job. Returns the key's end time, or null when the job saved no key.
+export function useNewestKey(id) {
+  let key = "";
+  try { key = fs.readFileSync(path.join(jobDir(id), "task-key"), "utf8").trim(); } catch { return null; }
+  if (!TASK_KEY.test(key)) return null;
+  fs.writeFileSync(path.join(jobDir(id), "gateway.env"), gatewayEnv(key), { mode: 0o600 });
+  try { return JSON.parse(Buffer.from(key.slice(4, key.indexOf(".")), "base64url").toString("utf8")).exp * 1000 || null; } catch { return null; }
+}
+const dropKeys = (id) => { for (const f of ["gateway.env", "task-key"]) fs.rmSync(path.join(jobDir(id), f), { force: true }); };
 
 function authorized(req) {
   const got = Buffer.from(String(req.headers.authorization ?? ""));
@@ -96,38 +145,55 @@ function networkArgs() {
   return ["--network", env.JOBD_NETWORK, "--dns", "127.0.0.1", ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"], direct) : [])];
 }
 
-function containerArgs(id, repo, image) {
-  return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
+function containerArgs(id, repo, typeName) {
+  const type = TYPES[typeName];
+  const gb = type.memoryGb ?? C.memoryGb;
+  return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${gb}g`, "--memory-swap", `${gb}g`,
     ...(C.cpus ? ["--cpus", C.cpus] : []),
+    ...(type.readOnly ? ["--read-only", "--tmpfs", "/tmp"] : []),
+    ...(type.entrypoint ? ["--entrypoint", type.entrypoint] : []),
     "-v", `${jobDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
     "--env-file", path.join(jobDir(id), "gateway.env"),
-    ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];
+    ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), type.image];
 }
 
 async function start(body) {
   const type = TYPES[body?.type];
   if (!type) return [400, { error: "unknown_job_type" }];
   if (!C.repos.has(body.repo)) return [403, { error: "repo_not_allowed", allowed: [...C.repos] }];
-  if (typeof body.package !== "string" || !body.package.trim() || body.package.length > 200_000) return [400, { error: "bad_package" }];
+  if (type.package && (typeof body.package !== "string" || !body.package.trim() || body.package.length > 200_000)) return [400, { error: "bad_package" }];
   if (!TASK_KEY.test(body.gateway_key ?? "")) return [400, { error: "gateway_key_required", detail: "Send the gateway key for the job's task (POST /task-key on the gateway)." }];
   if (!C.gateway) return [500, { error: "no_gateway", detail: "JOBD_GATEWAY_URL is not set. Rerun setup-node.sh." }];
-  if (running().length >= C.slots) return [429, { error: "full", slots: C.slots }];
+  if (type.slot && runningPorts().length >= C.slots) return [429, { error: "full", slots: C.slots }];
+  if (!type.slot && running().some((m) => m.type === body.type)) return [429, { error: "check_running", detail: "One check job runs at a time. Try again in a few minutes." }];
   const id = `job-${Date.now().toString(36)}-${crypto.randomBytes(3).toString("hex")}`;
   const dir = jobDir(id);
   fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
   fs.chmodSync(dir, 0o777);  // the container's user writes here
-  fs.writeFileSync(path.join(dir, "package.md"), body.package);
-  fs.writeFileSync(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`, { mode: 0o600 });
+  if (type.package) fs.writeFileSync(path.join(dir, "package.md"), body.package);
+  fs.writeFileSync(path.join(dir, "gateway.env"), gatewayEnv(body.gateway_key), { mode: 0o600 });
   const label = String(body.label ?? "").slice(0, 120);
-  const r = await run(containerArgs(id, body.repo, type.image));
+  const r = await run(containerArgs(id, body.repo, body.type));
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }
-  writeMeta({ id, type: body.type, repo: body.repo, label, status: "running", started: new Date().toISOString(), node: C.node });
-  console.log(`started ${id} ${label}`);
+  const started = new Date().toISOString();
+  writeMeta({ id, type: body.type, repo: body.repo, label, status: "running", started, first_started: started, node: C.node });
+  console.log(`started ${id} ${body.type === "porter" ? label : `${body.type} ${label}`}`.trimEnd());
   return [201, { id, node: C.node }];
 }
 
+// The check job's parts, in the order check.sh runs them.
+const CHECK_PARTS = ["image", "gateway", "token"];
+
 async function reap() {
   for (const m of running()) {
+    const type = TYPES[m.type];
+    // A port job runs for C.maxHours at most, counted from the job's first start.
+    if (type?.slot && !m.timed_out && Date.now() - Date.parse(m.first_started ?? m.started) >= C.maxHours * HOUR) {
+      m.timed_out = true;
+      writeMeta(m);
+      console.log(`stopping ${m.id}: the job reached the ${C.maxHours}-hour limit`);
+      await run(["stop", "-t", "30", m.id]);
+    }
     const r = await run(["inspect", "-f", "{{.State.Status}} {{.State.ExitCode}} {{.State.OOMKilled}}", m.id]);
     const [state, code, oom] = r.ok ? r.out.trim().split(" ") : ["missing", "-1", "false"];
     if (state === "running" || state === "created") continue;
@@ -136,25 +202,85 @@ async function reap() {
     await run(["rm", "-f", m.id]);
     const hasReport = fs.existsSync(path.join(jobDir(m.id), "report.md"));
     // A restart cut the job off: start the job again from the saved package, up to MAX_RESTARTS
-    // times, instead of reporting a failure the job never had.
-    const interrupted = !hasReport && oom !== "true" && Date.parse(m.started) < STARTED;
-    if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && TYPES[m.type]) {
-      const again = await run(containerArgs(m.id, m.repo, TYPES[m.type].image));
-      if (again.ok) {
-        m.restarts = (m.restarts ?? 0) + 1;
-        m.started = new Date().toISOString();
-        writeMeta(m);
-        console.log(`restarted ${m.id} after an interruption (restart ${m.restarts} of ${MAX_RESTARTS})`);
-        continue;
+    // times, instead of reporting a failure the job never had. The restart uses the newest key.
+    const interrupted = !hasReport && oom !== "true" && !m.timed_out && Date.parse(m.started) < STARTED;
+    if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && type?.slot) {
+      const ends = useNewestKey(m.id);
+      if (ends !== null && ends <= Date.now()) {
+        appendReport(m.id, "The job's task key ended while the job was stopped, so jobd did not start the job again. Send the job again with a new task key.");
+      } else {
+        const again = await run(containerArgs(m.id, m.repo, m.type));
+        if (again.ok) {
+          m.restarts = (m.restarts ?? 0) + 1;
+          m.started = new Date().toISOString();
+          writeMeta(m);
+          console.log(`restarted ${m.id} after an interruption (restart ${m.restarts} of ${MAX_RESTARTS})`);
+          continue;
+        }
       }
     }
-    fs.rmSync(path.join(jobDir(m.id), "gateway.env"), { force: true });
+    dropKeys(m.id);
     m.exit_code = Number(code); m.oom = oom === "true"; m.ended = new Date().toISOString();
-    m.status = m.oom ? "out_of_memory" : m.exit_code === 0 && hasReport ? "succeeded" : "failed";
+    if (m.timed_out) appendReport(m.id, `jobd stopped this job after ${C.maxHours} hours, the most a port job may run. The job's pull request, if the job opened one, holds the work so far.`);
+    if (m.type === "check") {
+      m.checks = readJson(path.join(jobDir(m.id), "check.json")) ?? {};
+      for (const part of CHECK_PARTS) {
+        const c = m.checks[part];
+        console.log(`check ${m.id} ${part} ${c?.ok ? "pass" : "fail"} (${c?.detail ?? "the check job wrote no result"})`);
+      }
+    }
+    const checksPass = m.type === "check" && CHECK_PARTS.every((p) => m.checks[p]?.ok);
+    m.status = m.oom ? "out_of_memory" : m.timed_out ? "timed_out"
+      : m.type === "check" ? (checksPass && m.exit_code === 0 ? "succeeded" : "failed")
+      : m.exit_code === 0 && hasReport ? "succeeded" : "failed";
     writeMeta(m);
     console.log(`ended ${m.id} ${m.status}`);
-    await notify({ event: "porter_job_done", job: m.id, node: C.node, label: m.label, repo: m.repo, status: m.status }, `${m.id}@${C.node}`);
+    const event = m.type === "check" ? "check_job_done" : "porter_job_done";
+    await notify({ event, job: m.id, node: C.node, label: m.label, repo: m.repo, status: m.status, ...(m.type === "check" ? { checks: m.checks } : {}) }, `${m.id}@${C.node}`);
   }
+}
+
+// The port job's latest progress: the newest text Claude Code wrote in the job's stream
+// (stream.jsonl in the job's folder), on one line, 200 characters at most. Null before the first.
+export function progressOf(id) {
+  let text = "";
+  try {
+    const f = path.join(jobDir(id), "stream.jsonl");
+    const size = fs.statSync(f).size, n = Math.min(size, 256 * 1024);
+    const fd = fs.openSync(f, "r");
+    try { const b = Buffer.alloc(n); fs.readSync(fd, b, 0, n, size - n); text = b.toString("utf8"); } finally { fs.closeSync(fd); }
+  } catch { return null; }
+  for (const line of text.split("\n").reverse()) {
+    let o; try { o = JSON.parse(line); } catch { continue; }
+    if (o?.type !== "assistant") continue;
+    const said = (o.message?.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join(" ").replace(/\s+/g, " ").trim();
+    if (said) return said.length > 200 ? `${said.slice(0, 199)}…` : said;
+  }
+  return null;
+}
+
+// "5 h 12 min", or "12 min" under an hour.
+export const duration = (ms) => { const min = Math.floor(ms / 60_000); return min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`; };
+
+// One status line per running port, sent to the cluster agent, which escapes and posts each line.
+// Returns the count of lines the cluster agent took.
+export async function postStatus(now = Date.now()) {
+  const ports = runningPorts();
+  if (!ports.length) return 0;
+  let token = "";
+  try { token = fs.readFileSync(C.statusTokenFile, "utf8").trim(); } catch { /* the line below says so */ }
+  if (!token) { console.error(`status post: no token in ${C.statusTokenFile}. The cluster agent writes the token: rerun install-cluster.sh.`); return 0; }
+  let sent = 0;
+  for (const m of ports) {
+    const text = `Port job ${m.id} on ${C.node}, ${m.label || m.repo}: running for ${duration(now - Date.parse(m.first_started ?? m.started))}. Latest progress: ${progressOf(m.id) ?? "no progress yet"}`;
+    try {
+      const r = await fetch(C.statusUrl, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ text }) });
+      if (r.ok) sent++;
+      else console.error(`status post for ${m.id}: the cluster agent answered ${r.status}`);
+    } catch (e) { console.error(`status post for ${m.id}: ${e.message}`); }
+  }
+  if (sent) console.log(`status posted for ${sent} running port job(s)`);
+  return sent;
 }
 
 const send = (res, code, body, type = "application/json") => {
@@ -176,7 +302,7 @@ export const handle = async (req, res) => {
     if (!m || !ID.test(m[1])) return send(res, 404, { error: "not_found" });
     const meta = readMeta(m[1]);
     if (!meta) return send(res, 404, { error: "not_found" });
-    if (req.method === "DELETE" && !m[2]) { await run(["rm", "-f", meta.id]); fs.rmSync(path.join(jobDir(meta.id), "gateway.env"), { force: true }); meta.status = "stopped"; writeMeta(meta); return send(res, 200, meta); }
+    if (req.method === "DELETE" && !m[2]) { await run(["rm", "-f", meta.id]); dropKeys(meta.id); meta.status = "stopped"; writeMeta(meta); return send(res, 200, meta); }
     if (!m[2]) return send(res, 200, meta);
     if (m[2] === "report") {
       const f = path.join(jobDir(meta.id), "report.md");
@@ -199,4 +325,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     srv.listen(C.port, host, () => console.log(`jobd ${C.node} on ${host}:${C.port}, ${C.slots} slot(s), ${C.memoryGb} GB each`));
   }
   setInterval(() => reap().catch((e) => console.error(e.message)), C.pollMs);
+  setInterval(() => postStatus().catch((e) => console.error(e.message)), C.statusMs);
 }
