@@ -746,11 +746,12 @@ else
   uninstall_unit "kev-notes-pull$SUFFIX" >/dev/null
 fi
 
-# Each agent's GitHub App, with github_apps in site.json. The token service runs as root on this
-# control computer, reads each app's private key from a root-owned file, and writes each agent's
-# token to the agent's own .env (circlechat/github/token-service.mjs). The service listens on
-# loopback and this computer's Tailscale address, for port jobs on other computers. Without
-# github_apps, no agent has push access.
+# Each agent's GitHub App, with github_apps in site.json, and the Kev notes push's app, with
+# data.github_app. The token service runs as root on this control computer, reads each app's private
+# key from a root-owned file, and writes each agent's token to the agent's own .env
+# (circlechat/github/token-service.mjs). The push's token goes to $CC_DIR/kev-data.env. The service
+# listens on loopback and this computer's Tailscale address, for port jobs on other computers.
+# Without an app, nothing has push access.
 if [ "$GITHUB_APPS" = on ]; then
   if [ -n "$TENANT" ]; then GH_ENV="client-$TENANT"; else GH_ENV="$STACK_NAME"; fi
   TOKEN_HOSTS="127.0.0.1"

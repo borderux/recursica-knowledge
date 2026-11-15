@@ -124,15 +124,20 @@ CLOUD="$("$NODE_BIN" -e '
   const local = ["client", "demo"].includes(s.site?.kind) && s.site?.cloud_models?.allowed !== true;
   console.log(local ? "local-only" : "allowed");
 ' "$SITE")"
-# Each agent that pushes to GitHub has a GitHub App now (circlechat/github/apps.mjs). The agents'
-# personal access tokens are retired: the helper writes none, and removes each one it finds.
+# Each agent that pushes to GitHub has a GitHub App now (circlechat/github/apps.mjs), and so does
+# the Kev notes push. The personal access tokens are retired: the helper writes none, and removes
+# each one it finds.
 RETIRED="ALAN_GITHUB_PAT BETTY_GITHUB_PAT PORTER_GITHUB_PAT"
 for k in $RETIRED; do has "$k" && echo "  $k is retired: each agent gets a token from the agent's GitHub App. Delete the secret from the GitHub environment."; done
-# The agents with a GitHub App in site.json. Alan's app on a client stack that uses the public
-# knowledge repo is refused by the config check, so no client detail reaches a public PR.
+has KEV_DATA_GITHUB_PAT && echo "  KEV_DATA_GITHUB_PAT is retired: the Kev notes push gets a token from the push's GitHub App (data.github_app). Delete the secret from the GitHub environment, and revoke the token on GitHub."
+# The apps in site.json: each agent's app, and kev-data for the Kev notes push's app. Alan's app on
+# a client stack that uses the public knowledge repo is refused by the config check, so no client
+# detail reaches a public PR.
 APP_AGENTS="$("$NODE_BIN" -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  process.stdout.write(Object.keys(s.github_apps ?? {}).filter((a) => /^[a-z0-9][a-z0-9._-]{0,39}$/.test(a)).join(" "));
+  const apps = Object.keys(s.github_apps ?? {}).filter((a) => /^[a-z0-9][a-z0-9._-]{0,39}$/.test(a) && a !== "kev-data");
+  if (s.data?.github_app && s.data?.repo) apps.push("kev-data");
+  process.stdout.write(apps.join(" "));
 ' "$SITE")"
 if [ "$CLOUD" = local-only ]; then
   for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|PORTER_ANTHROPIC_API_KEY|AWS_ACCESS_KEY_ID|VERTEXAI_PROJECT|AZURE_API_KEY|MODEL_KEY_*)
@@ -149,10 +154,6 @@ done
 # A hard link would do the same, and the helper also gives the file to the owner on a Mac.
 if [[ " $ROLES " == *" control "* ]] && { [ -L "$CC_DIR/model-keys.env" ] || [ -n "$(find "$CC_DIR/model-keys.env" -links +1 2>/dev/null)" ]; }; then
   echo "Refused: $CC_DIR/model-keys.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
-fi
-# The same for the Kev data jobs' token file.
-if [[ " $ROLES " == *" control "* ]] && has KEV_DATA_GITHUB_PAT && { [ -L "$CC_DIR/kev-data.env" ] || [ -n "$(find "$CC_DIR/kev-data.env" -links +1 2>/dev/null)" ]; }; then
-  echo "Refused: $CC_DIR/kev-data.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
 # The same for the agent check's password file.
 if [[ " $ROLES " == *" control "* ]] && has CC_CHECK_PASSWORD && { [ -L "$CC_DIR/agent-check.env" ] || [ -n "$(find "$CC_DIR/agent-check.env" -links +1 2>/dev/null)" ]; }; then
@@ -216,7 +217,7 @@ if [[ " $ROLES " == *" control "* ]]; then
     case "$k" in APP_KEY_*) ;; *) continue ;; esac
     # The secret's name for each agent: APP_KEY_<AGENT>, as github/apps.mjs keySecretName.
     match=""; for a in $APP_AGENTS; do [ "APP_KEY_$(printf '%s' "$a" | tr 'a-z.-' 'A-Z__')" = "$k" ] && match="$a"; done
-    [ -n "$match" ] || { echo "  $k skipped: site.json's github_apps has no agent for the key"; continue; }
+    [ -n "$match" ] || { echo "  $k skipped: site.json's github_apps has no agent for the key, and data.github_app is not the key's app"; continue; }
     pem="$(val "$k")"; pem="${pem//\\n/$'\n'}"
     while [ "${pem%$'\n'}" != "$pem" ]; do pem="${pem%$'\n'}"; done
     case "$pem" in "-----BEGIN "*"PRIVATE KEY-----"*"-----END "*"PRIVATE KEY-----") ;; *) echo "  $k skipped: the value is not a private key in PEM form"; continue ;; esac
@@ -225,15 +226,14 @@ if [[ " $ROLES " == *" control "* ]]; then
     tmp="$(mktemp "$APP_KEYS/.new.XXXXXX")"; printf '%s\n' "$pem" > "$tmp"; chmod 600 "$tmp"; mv -f "$tmp" "$APP_KEYS/$match.pem"
     echo "  $k -> $APP_KEYS/$match.pem"; WROTE_APPS=true
   done
-  # The Kev data jobs' own token (kit/push-data.sh) goes in a file of its own, which no agent and no
-  # container reads. Only a stack whose site.json names a private repo in data.repo gets the token.
-  if has KEV_DATA_GITHUB_PAT; then
-    KEV_ENV="$CC_DIR/kev-data.env"
-    if [ -z "$("$NODE_BIN" -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.data?.repo ?? "")' "$SITE")" ]; then
-      echo "  KEV_DATA_GITHUB_PAT skipped: site.json sets no data.repo, so the Kev data push is off"
-    else
-      set_kv "$KEV_ENV" KEV_DATA_GITHUB_PAT "$(val KEV_DATA_GITHUB_PAT)"; chmod 600 "$KEV_ENV"; "$CHOWN" -h "$OWNER" "$KEV_ENV"
-    fi
+  # The Kev data jobs' retired token leaves the jobs' file. The token service writes the app's token
+  # to the same file. The owner can replace the file with a symlink or a hard link, so the helper
+  # changes only a plain file.
+  KEV_ENV="$CC_DIR/kev-data.env"
+  if [ -L "$KEV_ENV" ] || [ -n "$(find "$KEV_ENV" -links +1 2>/dev/null)" ]; then
+    if grep -q '^KEV_DATA_GITHUB_PAT=' "$KEV_ENV" 2>/dev/null; then echo "  KEV_DATA_GITHUB_PAT left in $KEV_ENV: the file is a symlink or has a second hard link. Replace the file with a plain file."; fi
+  else
+    drop_kv "$KEV_ENV" KEV_DATA_GITHUB_PAT
   fi
   # The agent check's password (kit/check-account.mjs, kit/agent-check.mjs) goes in a file of its
   # own, which the owner reads and no agent and no container reads. The check signs in to

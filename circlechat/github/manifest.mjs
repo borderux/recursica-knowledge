@@ -5,12 +5,13 @@
 //   node circlechat/github/manifest.mjs [--prefix <name>] [--url <homepage>] [<agent>...]
 //
 // The agents default to every agent in site.json's github_apps block (SITE), or Alan, Betty and
-// Porter. Each app's name is <prefix>-<agent>, and the prefix defaults to "recursica". The homepage
+// Porter. "kev-data" prints the Kev notes push's app, and is a default when site.json sets
+// data.github_app. Each app's name is <prefix>-<agent>, and the prefix defaults to "recursica". The homepage
 // defaults to the GitHub address of this kit checkout.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { APP_AGENTS, DEFAULT_PERMISSIONS, keySecretName, manifest } from "./apps.mjs";
+import { APP_AGENTS, DEFAULT_PERMISSIONS, KEV_DATA, KEV_DATA_PERMISSIONS, keySecretName, manifest } from "./apps.mjs";
 
 const LABEL = { contents: "Contents", pull_requests: "Pull requests", issues: "Issues", metadata: "Metadata" };
 
@@ -28,7 +29,9 @@ export function steps(agent, m) {
     `4. Under Repository permissions, set ${perms.join(", ")}. Leave every other permission at No access.`,
     "5. Under \"Where can this GitHub App be installed?\", pick Only on this account. Create the app.",
     `6. Generate a private key. Save the key's text as the GitHub environment secret ${keySecretName(agent)}.`,
-    `7. Install the app on only the agent's repos. Put the app ID, the installation ID, the slug and the repos in site.json's github_apps.${agent}.`,
+    agent === KEV_DATA
+      ? "7. Install the app on the private notes repo only, data.repo in site.json. Put the app ID, the installation ID and the slug in site.json's data.github_app."
+      : `7. Install the app on only the agent's repos. Put the app ID, the installation ID, the slug and the repos in site.json's github_apps.${agent}.`,
     "",
   ].join("\n");
 }
@@ -49,8 +52,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const prefix = opt("--prefix") ?? "recursica", url = opt("--url") ?? homepage();
   let site = {}; try { site = JSON.parse(fs.readFileSync(process.env.SITE ?? "", "utf8")); } catch {}
   const agents = args.length ? args : Object.keys(site.github_apps ?? {}).length ? Object.keys(site.github_apps) : APP_AGENTS.filter((a) => a !== "otto");
+  if (!args.length && site.data?.github_app) agents.push(KEV_DATA);
   for (const agent of agents) {
-    const permissions = site.github_apps?.[agent]?.permissions ?? DEFAULT_PERMISSIONS(agent);
+    const permissions = agent === KEV_DATA ? KEV_DATA_PERMISSIONS : site.github_apps?.[agent]?.permissions ?? DEFAULT_PERMISSIONS(agent);
     process.stdout.write(steps(agent, manifest(agent, { prefix, url, permissions })) + "\n");
   }
 }

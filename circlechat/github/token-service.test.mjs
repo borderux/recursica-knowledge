@@ -90,3 +90,49 @@ test("the service takes requests from loopback and Tailscale only", () => {
   assert.equal(fromCluster("192.0.2.20"), false);
   assert.equal(fromCluster("198.51.100.5"), false);
 });
+
+test("the Kev notes push's token goes to kev-data.env, for data.repo only, with the app's bot identity", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "tokens-"));
+  const cc = path.join(root, "circlechat"), keysRoot = path.join(root, "keys");
+  fs.mkdirSync(cc); fs.mkdirSync(path.join(keysRoot, "cluster"), { recursive: true });
+  fs.writeFileSync(path.join(keysRoot, "cluster", "kev-data.pem"), pem, { mode: 0o600 });
+  let n = 0, t = NOW;
+  const minted = [];
+  const fetchFn = async (url, opts = {}) => {
+    if (url.includes("/access_tokens")) { minted.push({ url, body: JSON.parse(opts.body) }); n++; return { ok: true, json: async () => ({ token: `ghs_${n}`, expires_at: new Date(t + 3600_000).toISOString() }) }; }
+    if (url.includes("/users/")) return { ok: true, json: async () => ({ id: 61 }) };
+    return { ok: false, status: 404 };
+  };
+  const site = { data: { repo: "acme/kev-data", github_app: { app_id: 3, installation_id: 30, slug: "acme-kev-data" } } };
+  const svc = new TokenService({ site, stack: "cluster", ccDir: cc, keysRoot, fetchFn, now: () => t, log: () => {} });
+  const file = path.join(cc, "kev-data.env");
+  fs.writeFileSync(file, "KEEP=1\nKEV_DATA_GITHUB_PAT=old\n", { mode: 0o644 });
+  assert.deepEqual(await svc.tick(), ["kev-data"]);
+  assert.equal(minted[0].url, "https://api.github.com/app/installations/30/access_tokens");
+  assert.deepEqual(minted[0].body, { repositories: ["kev-data"], permissions: { contents: "write", pull_requests: "write" } });
+  const text = fs.readFileSync(file, "utf8");
+  assert.match(text, /^KEEP=1$/m);
+  assert.match(text, /^KEV_DATA_GITHUB_TOKEN=ghs_1$/m);
+  assert.match(text, /^GIT_AUTHOR_NAME=acme-kev-data\[bot\]$/m);
+  assert.match(text, /^GIT_COMMITTER_EMAIL=61\+acme-kev-data\[bot\]@users\.noreply\.github\.com$/m);
+  assert.doesNotMatch(text, /PRIVATE KEY/, "the push gets the token, never the key");
+  assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+  t += 40 * 60_000;
+  assert.deepEqual(await svc.tick(), [], "a token with more than 15 minutes left stays");
+  t += 10 * 60_000;
+  assert.deepEqual(await svc.tick(), ["kev-data"]);
+  assert.match(fs.readFileSync(file, "utf8"), /^KEV_DATA_GITHUB_TOKEN=ghs_2$/m);
+  // A missing file is made, mode 600.
+  fs.rmSync(file); t += 50 * 60_000;
+  assert.deepEqual(await svc.tick(), ["kev-data"]);
+  assert.equal(fs.statSync(file).mode & 0o777, 0o600);
+  // A symlink at the file: refused, and the file the symlink names stays unchanged.
+  const outside = path.join(root, "outside.txt");
+  fs.writeFileSync(outside, "outside\n");
+  fs.rmSync(file); fs.symlinkSync(outside, file); t += 50 * 60_000;
+  assert.deepEqual(await svc.tick(), []);
+  assert.equal(fs.readFileSync(outside, "utf8"), "outside\n");
+  // No data.repo: no token.
+  const off = new TokenService({ site: { data: { github_app: site.data.github_app } }, stack: "cluster", ccDir: cc, keysRoot, fetchFn, now: () => t, log: () => {} });
+  assert.deepEqual(await off.tick(), []);
+});

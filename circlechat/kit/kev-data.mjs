@@ -9,7 +9,8 @@
 //       Opens a pull request from the branch into main, for a person to review, and closes each
 //       older open pull request from a notes branch. Prints the new pull request's address.
 //
-// The token is KEV_DATA_GITHUB_PAT, the job's own, from the environment.
+// The token is KEV_DATA_GITHUB_TOKEN, from the Kev notes push's GitHub App, in the environment
+// (kev-data-auth.sh).
 const API = process.env.GITHUB_API ?? "https://api.github.com";
 export const NOTES_BRANCH_PREFIX = "kev-notes/";
 
@@ -28,7 +29,7 @@ function headers(token) {
 // Throws with the reason when the push must not happen.
 export async function checkRepo({ repo, knowledge, token, fetch = globalThis.fetch }) {
   if (!REPO_RE.test(repo ?? "")) throw new Error(`data.repo must be owner/name, such as acme/recursica-kev-data, not "${repo}"`);
-  if (!token) throw new Error("no KEV_DATA_GITHUB_PAT: deploy the job's token first (circlechat/README.md, \"Kev's review data\")");
+  if (!token) throw new Error("no KEV_DATA_GITHUB_TOKEN: set up the Kev notes push's GitHub App first (circlechat/README.md, \"Kev's review data\")");
   const kb = repoOf(knowledge);
   if (kb && repo.toLowerCase() === kb) throw new Error(`${repo} is the knowledge repo. Kev's review data goes to a private repo of its own`);
   const r = await fetch(`${API}/repos/${repo}`, { headers: headers(token) });
@@ -66,7 +67,7 @@ export async function openPull({ repo, branch, token, fetch = globalThis.fetch }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, repo, arg] = process.argv.slice(2);
-  const token = process.env.KEV_DATA_GITHUB_PAT ?? "";
+  const token = process.env.KEV_DATA_GITHUB_TOKEN ?? "";
   try {
     if (cmd === "check") await checkRepo({ repo, knowledge: arg, token });
     else if (cmd === "pr") console.log(await openPull({ repo, branch: arg, token }));

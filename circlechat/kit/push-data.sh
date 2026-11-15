@@ -5,8 +5,9 @@
 #
 # The notes name rules and file paths, and can quote the application's code. The job never pushes
 # to the knowledge repo or to any public repo: before each push, kev-data.mjs asks GitHub's API for
-# the repo's visibility and refuses anything but a private repo. The token is the job's own,
-# KEV_DATA_GITHUB_PAT, which the secrets helper writes to $CC_DIR/kev-data.env.
+# the repo's visibility and refuses anything but a private repo. The token comes from the push's
+# own GitHub App, which has Contents and Pull requests on data.repo only (kev-data-auth.sh). The
+# commit's author is the app's bot.
 set -euo pipefail
 CC_DIR="${CC_DIR:-$HOME/circlechat}"; WS="${WS:-$HOME/circlechat-workspace}"
 SITE="${SITE:-$CC_DIR/site.json}"
