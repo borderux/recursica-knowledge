@@ -596,3 +596,21 @@ test("cloud_approvers catches each mistake", () => {
   s.cloud_approvers = { email: "pat@example.com" };
   assert.match(validate(s).join("\n"), /cloud_approvers must be a list/);
 });
+
+test("notify.events and notify.people reach tenant.env, and the config check refuses a wrong one", () => {
+  // No notify.events: the quiet default. No notify.people: no DM.
+  let r = render(example);
+  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected$/m);
+  assert.match(r.tenantEnv, /^NOTIFY_PEOPLE=$/m);
+  const s = structuredClone(example);
+  s.notify = { slack: true, events: ["approval_pending", "chat_mention"], people: [{ email: "Person.A@acme.com", slack_user: "U0AAAA001" }] };
+  assert.deepEqual(validate(s), []);
+  r = render(s);
+  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=approval_pending,chat_mention$/m);
+  assert.match(r.tenantEnv, /^NOTIFY_PEOPLE=person\.a@acme\.com=U0AAAA001$/m);
+  s.notify.events = ["approval_pending", "everything"];
+  s.notify.people = [{ email: "$(id)@acme.com", slack_user: "U0AAAA001" }];
+  const errs = validate(s).join("\n");
+  assert.match(errs, /notify.events: "everything" is not an event/);
+  assert.match(errs, /notify.people\[0\].email must be the person's CircleChat email address/);
+});

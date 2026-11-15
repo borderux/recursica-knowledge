@@ -35,6 +35,7 @@ import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
+import { eventsLine, peopleLine, validateNotify } from "../notify/events.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -492,6 +493,7 @@ export function validate(site, { cluster } = {}) {
   if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
+  errs.push(...validateNotify(site.notify));
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
   if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push(`privacy.mask_pii applies to cloud model calls, and this ${kindWord(site)} stack has no recorded permission for cloud models`);
   if (site.egress !== undefined) {
@@ -752,6 +754,10 @@ export function render(site) {
     // Task details in Slack: on for the cluster's own stack and a demo; off for a client stack unless the client
     // allows details (notify.details), because Slack is an outside company.
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
+    // The CircleChat events the notifier posts (notify.events), and the people who get a DM for a
+    // mention (notify.people): email=Slack user ID (notify/events.mjs).
+    `NOTIFY_EVENTS=${eventsLine(site.notify)}`,
+    `NOTIFY_PEOPLE=${peopleLine(site.notify)}`,
     `PUBLIC_KNOWLEDGE=${PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     // The GitHub token service: on with a github_apps block, and its port.
     `GITHUB_APPS=${hasApps(site) ? "on" : "off"}`,
