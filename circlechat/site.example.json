@@ -26,6 +26,8 @@
     "site.tenant, site.kind, site.preview_port, site.gateway_port, site.docker_context: one stack per",
     "client on a shared computer. Leave them out for a single stack. A client or demo stack sets kind \"client\"",
     "or \"demo\", its own tenant name and ports, and its own Docker VM; see circlechat/README.md, \"Clients\".",
+    "site.gateway_local_port: the gateway's agents' port on 127.0.0.1, for a RecursicaChat 2.0 server on",
+    "the control computer. Only the cluster's own stack sets it; see circlechat/README.md, \"What reaches the gateway\".",
     "site.computers: the computers picked for a client or demo stack, [\"<computer>\"] or \"cluster\". The",
     "stack's site.json lists only those computers; circlechat/kit/stack-site.mjs writes it from this file.",
     "nodes[].limits: cpus, memory_gb and model_memory_gb for a picked computer, so a large computer acts",

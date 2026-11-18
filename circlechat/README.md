@@ -757,6 +757,14 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 
 With the outgoing filter off, the control computer's own agents use `site.gateway_port` on `127.0.0.1`.
 
+**`site.gateway_local_port` adds the agents' port on `127.0.0.1`, for a RecursicaChat 2.0 server on the control computer.** RecursicaChat 2.0 runs outside Docker and calls each agent's model through the server's model proxy, so the server, not the agent's container, reaches the gateway. With the setting, `setup-host.sh` publishes the router's port 4000 on `127.0.0.1:<site.gateway_local_port>`, with the outgoing filter on too, and never on another address.
+
+- **The port takes an agent's gateway key,** as port 4000 does inside Docker. The key reaches only the agent's routes in site.json, with the agent's cloud switch. Give the agent's key to RecursicaChat as a provider's key. No agent container holds the key.
+- **The router's address check admits the server.** A connection to a port Docker publishes reaches the router from the gateway address of the router's own Docker network, in Colima's VM or on Linux. That address is in the network's range, which the router allows (`allowedSources` in `gateway/router.mjs`). Every program on the computer can reach `127.0.0.1`, so the key, not the address, decides.
+- **Only the cluster's own stack sets the port.** The config check refuses the setting on a client or demo stack, and refuses a port another setting uses: `site.port`, `site.preview_port`, `site.gateway_port`, `site.gateway_port + 1`, `site.github_token_port`, the filter's ports, and each computer's model servers, job runner and Kev-engine. A new client or demo stack's ports avoid the setting's port.
+- **`setup-host.sh` stops when a check of the port fails.** The port must answer `/health` on `127.0.0.1`, answer 401 to a model request with no gateway key, and answer on no other address of the computer, Tailscale's included.
+- **Leave the setting out** for a stack with no RecursicaChat 2.0 server. With the filter on, the agents' port then stays inside Docker, as before.
+
 **The control computer's operating system decides how the port for port jobs reaches Tailscale.**
 
 | Control computer           | Docker publishes the port for port jobs on | Tailscale's port `site.gateway_port`                   |
@@ -1342,6 +1350,42 @@ right check when the agent refuses a request, asks twice, touches a task in revi
 long reply without a file. An account with the admin role stops the check.
 `circlechat/kit/check-account.test.mjs` runs the account step against stand-in tables, and the
 smoke install runs the step against CircleChat's real database.
+
+### Checking an agent on RecursicaChat 2.0
+
+`./circlechat/rc-check-agent.sh <handle>` checks one agent on a RecursicaChat 2.0 server, the same
+four ways, through the server's own API (`kit/rc-agent-check.mjs`). Run it by hand, as the owner, on
+the computer that runs the server. The check is the harness's: nothing of it runs inside the server.
+
+1. **A request that arrives during a running turn still gets answered.** The second request waits
+   in the agent's queue (`GET /api/agents/:id/activity`), and no turn fails.
+2. **A question gets asked once, then waits.** An open request gets at most one question, then
+   nothing more through a quiet window (`CHECK_QUIET`, 120 seconds). After the check's reply, the
+   agent acts. RecursicaChat 2.0 wakes an agent only for a message, a hand-off or a builder's
+   trigger, so the quiet window stands in for 1.x's heartbeats.
+3. **A settled task stays untouched.** A task in the chat, set to done, keeps its status and update
+   time through another turn of the agent.
+4. **A long reply arrives whole.** RecursicaChat 2.0 posts a long reply as one message, with no
+   file. The message must open with `CHECK_BANNER`'s lines when the setting is given (with `\n`
+   between lines), hold at least `CHECK_MIN_WORDS` words (1,500), and carry speaker lines whose
+   timestamps only move forward and end within `CHECK_MINUTES` (15). Nothing may follow the reply,
+   and the agent may make no tool call in the chat during the check.
+
+**The check signs in as its own account, a member or a builder.** Set `RC_CHECK_EMAIL` to the
+account. The server's CLI, run as root, gives the account a session of at most an hour and prints
+only the token. The wrapper pipes the token straight into the check: no argument, environment
+variable, file or output holds it. The check sends it as a Bearer header, never a cookie. On every
+way out, a failure or Ctrl-C included, the wrapper ends every session of the account with the CLI's
+`end-sessions`. The CLI refuses an owner or an admin.
+
+**The CLI runs with a Node the owner's account can run** (`RC_NODE`, the `node` on the owner's
+`PATH` by default), never the server's own Node, which only the server's account can run. The other
+settings: `RC_URL` (`http://127.0.0.1:3100`), `RC_APP` (`/opt/recursicachat/app`) and `RC_DATA`
+(`/opt/recursicachat/data`), plus the `CHECK_*` settings in `kit/rc-agent-check.mjs`.
+
+The check works in a throwaway chat with the agent. A member cannot archive a chat in RecursicaChat
+2.0, so at the end the agent leaves the chat and the chat's name ends in "(finished)".
+`CHECK_KEEP=1` leaves both. Each check is a real model turn, so a run can take tens of minutes.
 
 ## Hard-won lessons (read before debugging)
 
