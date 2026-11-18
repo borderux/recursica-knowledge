@@ -32,7 +32,9 @@
     "agent's instructions, model, autonomy, sandbox and monthly budget there, at setup and hourly.",
     "account is the sync's own builder account. agents.<handle>.recursicachat: the agent's model there,",
     "\"<provider id>:<model>\", and budget_usd, a monthly budget in US dollars. See circlechat/README.md,",
-    "\"Agents on RecursicaChat 2.0\".",
+    "\"Agents on RecursicaChat 2.0\". For example: \"recursicachat\": {\"account\": \"agent-sync@example.com\",",
+    "\"vault_key_file\": \"/etc/recursicachat/master.key\"}, and in agents.loki: \"recursicachat\": {\"model\":",
+    "\"cluster:local-small\", \"budget_usd\": 5}. Only the cluster's own stack sets either.",
     "site.computers: the computers picked for a client or demo stack, [\"<computer>\"] or \"cluster\". The",
     "stack's site.json lists only those computers; circlechat/kit/stack-site.mjs writes it from this file.",
     "nodes[].limits: cpus, memory_gb and model_memory_gb for a picked computer, so a large computer acts",
@@ -210,16 +212,11 @@
     },
     "loki": {
       "routes": ["local-small"],
-      "cloud": false,
-      "recursicachat": { "model": "cluster:local-small", "budget_usd": 5 }
+      "cloud": false
     },
     "barb": {
       "routes": ["machine-2/mlx/large-mlx"]
     }
-  },
-  "recursicachat": {
-    "account": "agent-sync@example.com",
-    "vault_key_file": "/etc/recursicachat/master.key"
   },
   "porter": {
     "owner": "your-circlechat-handle",

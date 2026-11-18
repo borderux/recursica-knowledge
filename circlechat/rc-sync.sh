@@ -33,7 +33,10 @@ else
 fi
 
 SETTINGS="$(as_owner "$KIT_NODE" "$HERE/kit/rc-sync.mjs" settings "$SITE")" || { echo "$SETTINGS"; exit 2; }
-{ IFS= read -r RC_ACCOUNT; IFS= read -r RC_URL; IFS= read -r RC_APP; IFS= read -r RC_DATA; IFS= read -r RC_VAULT_KEY_FILE; IFS= read -r RC_NODE; } <<<"$SETTINGS"
+# $( ) drops trailing empty lines, so a setting left out at the end reads as empty.
+RC_ACCOUNT="" RC_URL="" RC_APP="" RC_DATA="" RC_VAULT_KEY_FILE="" RC_NODE=""
+{ IFS= read -r RC_ACCOUNT || true; IFS= read -r RC_URL || true; IFS= read -r RC_APP || true
+  IFS= read -r RC_DATA || true; IFS= read -r RC_VAULT_KEY_FILE || true; IFS= read -r RC_NODE || true; } <<<"$SETTINGS"
 [ -n "$RC_ACCOUNT" ] || { echo "site.json has no recursicachat block: no RecursicaChat 2.0 server to sync."; exit 0; }
 RC_NODE="${RC_NODE:-$KIT_NODE}"
 export RC_ACCOUNT RC_URL RC_APP RC_DATA RC_VAULT_KEY_FILE RC_NODE

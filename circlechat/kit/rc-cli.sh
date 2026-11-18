@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # The server's CLI on a RecursicaChat 2.0 server, run as root. rc-check-agent.sh and rc-sync.sh
 # source this file. The CLI switches to the data folder's owner itself (cli.ts session).
 #
