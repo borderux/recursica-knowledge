@@ -28,6 +28,11 @@
     "or \"demo\", its own tenant name and ports, and its own Docker VM; see circlechat/README.md, \"Clients\".",
     "site.gateway_local_port: the gateway's agents' port on 127.0.0.1, for a RecursicaChat 2.0 server on",
     "the control computer. Only the cluster's own stack sets it; see circlechat/README.md, \"What reaches the gateway\".",
+    "recursicachat: the RecursicaChat 2.0 server on the control computer. circlechat/rc-sync.sh sets each",
+    "agent's instructions, model, autonomy, sandbox and monthly budget there, at setup and hourly.",
+    "account is the sync's own builder account. agents.<handle>.recursicachat: the agent's model there,",
+    "\"<provider id>:<model>\", and budget_usd, a monthly budget in US dollars. See circlechat/README.md,",
+    "\"Agents on RecursicaChat 2.0\".",
     "site.computers: the computers picked for a client or demo stack, [\"<computer>\"] or \"cluster\". The",
     "stack's site.json lists only those computers; circlechat/kit/stack-site.mjs writes it from this file.",
     "nodes[].limits: cpus, memory_gb and model_memory_gb for a picked computer, so a large computer acts",
@@ -205,11 +210,16 @@
     },
     "loki": {
       "routes": ["local-small"],
-      "cloud": false
+      "cloud": false,
+      "recursicachat": { "model": "cluster:local-small", "budget_usd": 5 }
     },
     "barb": {
       "routes": ["machine-2/mlx/large-mlx"]
     }
+  },
+  "recursicachat": {
+    "account": "agent-sync@example.com",
+    "vault_key_file": "/etc/recursicachat/master.key"
   },
   "porter": {
     "owner": "your-circlechat-handle",

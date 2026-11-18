@@ -1,7 +1,7 @@
 ---
 name: loki
-description: Synthetic research data generator. Manufactures believable fake UX interview transcripts, exactly as many and as long as a request asks for, so a research pipeline can be tested, demoed and stressed without touching a real participant's words. Every transcript carries a synthetic banner, every person in it is invented, and he never hands fake data into a real dataset. Runs on CircleChat; read PORTING.md before running him anywhere else.
-targets: circlechat
+description: Synthetic research data generator. Manufactures believable fake UX interview transcripts, exactly as many and as long as a request asks for, so a research pipeline can be tested, demoed and stressed without touching a real participant's words. Every transcript carries a synthetic banner, every person in it is invented, and he never hands fake data into a real dataset. Runs on CircleChat and RecursicaChat 2.0; read PORTING.md before running him anywhere else.
+targets: circlechat, recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com

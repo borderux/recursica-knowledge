@@ -491,6 +491,48 @@ export function gatewayLocalPortErrors(site = {}) {
   return hit ? [`site.gateway_local_port (${p}) is already ${hit[0]}. Give the gateway's local port another number`] : [];
 }
 
+// site.recursicachat: the RecursicaChat 2.0 server on the control computer, whose agents circlechat/
+// rc-sync.sh keeps in step with the kit (kit/rc-sync.mjs). The sync signs in as `account`, a builder
+// made only for the sync, with a short session from the server's CLI. agents.<handle>.recursicachat
+// holds what belongs to the stack: the model, as "<provider id>:<model>", and the monthly budget in
+// US dollars. Only the cluster's own stack sets either.
+export const RC_DEFAULTS = { url: "http://127.0.0.1:3100", app: "/opt/recursicachat/app", data: "/opt/recursicachat/data" };
+export function recursicachatErrors(site = {}) {
+  const errs = [];
+  const rc = site.recursicachat;
+  const synced = Object.entries(site.agents && typeof site.agents === "object" ? site.agents : {}).filter(([, a]) => a && typeof a === "object" && a.recursicachat !== undefined);
+  if (rc === undefined) {
+    if (synced.length) errs.push(`agents.${synced[0][0]}.recursicachat needs a recursicachat block: the server and the sync's account`);
+    return errs;
+  }
+  if (!rc || typeof rc !== "object" || Array.isArray(rc)) return ["recursicachat must be an object"];
+  if (site.site?.tenant !== undefined) errs.push("recursicachat is for the cluster's own stack only");
+  if (typeof rc.account !== "string" || !EMAIL.test(rc.account)) errs.push("recursicachat.account must be the email of the sync's own RecursicaChat account, a builder, such as agent-sync@example.com");
+  else if ((site.cloud_approvers ?? []).some((a) => String(a?.email ?? "").toLowerCase() === rc.account.toLowerCase())) errs.push("recursicachat.account must be an account made only for the sync, not a person's account");
+  if (rc.url !== undefined && !/^https?:\/\/[^\s/]+\/?$/.test(String(rc.url))) errs.push("recursicachat.url must be the server's address, such as http://127.0.0.1:3100");
+  for (const k of ["app", "data", "vault_key_file", "node"]) {
+    if (rc[k] !== undefined && (typeof rc[k] !== "string" || !/^\/\S+$/.test(rc[k]))) errs.push(`recursicachat.${k} must be an absolute path`);
+  }
+  const serverDir = String(rc.app ?? RC_DEFAULTS.app).replace(/\/[^/]*\/?$/, "");
+  if (typeof rc.node === "string" && serverDir && (rc.node + "/").startsWith(serverDir + "/")) errs.push(`recursicachat.node must be a Node outside the server's folder (${serverDir}), such as the owner's Node 24`);
+  for (const [h, a] of synced) {
+    const s = a.recursicachat;
+    const at = `agents.${h}.recursicachat`;
+    if (!s || typeof s !== "object" || Array.isArray(s)) { errs.push(`${at} must be an object`); continue; }
+    const m = /^([a-z0-9][a-z0-9_-]*):(\S+)$/i.exec(String(s.model ?? ""));
+    if (!m) errs.push(`${at}.model must be "<provider id>:<model>", such as cluster:local-large`);
+    // An agent with the cloud switch off takes one of the agent's own routes, through the gateway.
+    // Another model on the server could be a cloud provider the gateway never sees.
+    else if (a.cloud === false) {
+      const routes = Array.isArray(a.routes) ? a.routes : Object.keys(site.routes ?? {});
+      if (!routes.includes(m[2])) errs.push(`${at}.model: ${h}'s cloud switch is off, so the model must be one of ${h}'s routes (${routes.join(", ") || "none"}), not ${m[2]}`);
+    }
+    if (typeof s.budget_usd !== "number" || !(s.budget_usd > 0) || s.budget_usd > 100000) errs.push(`${at}.budget_usd must be the monthly budget in US dollars, more than 0`);
+    for (const k of Object.keys(s)) if (!["model", "budget_usd"].includes(k)) errs.push(`${at}.${k} is not a setting. autonomy and sandbox come from agents/${h}/runtime/recursicachat.json in the kit`);
+  }
+  return errs;
+}
+
 export function validate(site, { cluster } = {}) {
   const errs = [];
   const nodes = site.nodes ?? [];
@@ -516,6 +558,7 @@ export function validate(site, { cluster } = {}) {
     errs.push(`site.gateway_port + 1 (${jobsLocal}) is the gateway's port for port jobs on a Mac, and must differ from site.port and site.preview_port`);
   }
   errs.push(...gatewayLocalPortErrors(site));
+  errs.push(...recursicachatErrors(site));
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
   // The cluster's time zone for reboot times in Slack (cluster/actions.mjs), an IANA name.
   if (t.timezone !== undefined) { try { new Intl.DateTimeFormat("en-US", { timeZone: t.timezone }); } catch { errs.push(`site.timezone "${t.timezone}" must be a time zone name, such as Europe/Berlin`); } }
