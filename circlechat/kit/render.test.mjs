@@ -485,6 +485,29 @@ test("on a Mac control computer, site.gateway_port + 1 stays free for the gatewa
   assert.match(validate(s).join("\n"), /site\.gateway_port \+ 1 \(4001\) is the gateway's port for port jobs on a Mac/);
 });
 
+test("site.gateway_local_port: a free port on the cluster's own stack, in tenant.env; unset by default", () => {
+  assert.match(render(example).tenantEnv, /^GATEWAY_LOCAL_PORT=$/m);
+  const s = clone();
+  s.site.gateway_local_port = 4002;
+  assert.deepEqual(validate(s), []);
+  assert.match(render(s).tenantEnv, /^GATEWAY_LOCAL_PORT=4002$/m);
+});
+
+test("site.gateway_local_port is refused when it is not a port, clashes with another port, or is on a client or demo stack", () => {
+  const errs = (patch, edit) => { const s = clone(); Object.assign(s.site, patch); edit?.(s); return validate(s).join("\n"); };
+  for (const bad of ["4002", 4002.5, 80, 70000]) assert.match(errs({ gateway_local_port: bad }), /site\.gateway_local_port must be a port number from 1024 to 65535/, String(bad));
+  assert.match(errs({ gateway_local_port: example.site.port ?? 8080 }), /is already site\.port/);
+  assert.match(errs({ gateway_local_port: example.site.preview_port ?? 5173 }), /is already site\.preview_port/);
+  assert.match(errs({ gateway_local_port: 4000 }), /is already site\.gateway_port/);
+  assert.match(errs({ gateway_local_port: 4001 }), /is already site\.gateway_port \+ 1/);
+  assert.match(errs({ gateway_local_port: 4101, gateway_port: 4100 }), /is already site\.gateway_port \+ 1/);
+  assert.match(errs({ gateway_local_port: 7400 }), /is already a port of the outgoing filter/);
+  const modelPort = example.nodes.flatMap((n) => [...(n.servers ?? []), ...(n.models ?? [])]).find((m) => m.port >= 1024).port;
+  assert.match(errs({ gateway_local_port: modelPort }), /model server/);
+  assert.match(errs({ gateway_local_port: 7500 }, (s) => { s.nodes[0].jobs.port = 7500; }), /is already node \S+'s job runner/);
+  assert.match(errs({ gateway_local_port: 4002, tenant: "acme", kind: "demo" }), /for the cluster's own stack only/);
+});
+
 test("site.stack_name names the cluster's own stack, \"cluster\" by default; a client stack takes site.tenant", () => {
   assert.equal(clusterStackName(example), "cluster");
   assert.equal(githubEnvironment(example), "cluster");

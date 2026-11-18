@@ -76,7 +76,7 @@ function takenPorts(cluster, tenantsDir) {
   // 4010: the GitHub token service's port by default (github/apps.mjs).
   const taken = new Set([8080, 5173, 4000, 4010]);
   for (const s of sites) {
-    for (const k of ["port", "preview_port", "gateway_port", "github_token_port"]) if (s.site?.[k]) taken.add(s.site[k]);
+    for (const k of ["port", "preview_port", "gateway_port", "github_token_port", "gateway_local_port"]) if (s.site?.[k]) taken.add(s.site[k]);
     // On a Mac, the gateway's port for port jobs is 127.0.0.1:<gateway port + 1> (setup-host.sh).
     taken.add((s.site?.gateway_port ?? 4000) + 1);
     for (const n of s.nodes ?? []) {

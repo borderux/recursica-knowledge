@@ -144,3 +144,10 @@ test("at the keyboard, yes asks for the providers, who granted the permission an
   assert.equal(r.site.site.cloud_models.payer, "client-byok");
   assert.match(r.site.site.cloud_models.granted_on, /^\d{4}-\d{2}-\d{2}$/);
 });
+
+test("a new stack's ports avoid the cluster's site.gateway_local_port", () => {
+  const withLocal = structuredClone(cluster);
+  withLocal.site.gateway_local_port = 8180;
+  const s = stackSite(withLocal, { stack: "acme", kind: "client", computers: "machine-2", tenantsDir: tenantsDir() });
+  assert.equal(s.site.port, 8181);
+});

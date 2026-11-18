@@ -509,6 +509,26 @@ gateway_port_check() {
   echo "Gateway for port jobs: Tailscale port $GATEWAY_PORT only, and a task key is required."
 }
 
+# The check of site.gateway_local_port: the port answers /health on 127.0.0.1, refuses a request
+# with no gateway key, and answers on no other address of this computer, Tailscale's included.
+gateway_local_check() {
+  local code="" i a
+  for i in $(seq 45); do
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$GATEWAY_LOCAL_PORT/health" || true)"
+    [ "$code" = 200 ] && break
+    sleep 2
+  done
+  [ "$code" = 200 ] || { echo "The gateway's local port $GATEWAY_LOCAL_PORT answered ${code:-nothing} on 127.0.0.1, not 200."; exit 1; }
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 -X POST -H 'content-type: application/json' -d '{}' "http://127.0.0.1:$GATEWAY_LOCAL_PORT/v1/chat/completions" || true)"
+  [ "$code" = 401 ] || { echo "The gateway's local port $GATEWAY_LOCAL_PORT answered $code to a request with no gateway key, not 401. Stop cc-gateway$SUFFIX."; exit 1; }
+  # Every IPv4 address of the computer except 127.0.0.0/8.
+  for a in $( { ifconfig 2>/dev/null | awk '$1 == "inet" { print $2 }'; ip -4 -o addr show 2>/dev/null | awk '{ sub(/\/.*/, "", $4); print $4 }'; } | sort -u | grep -vE '^127\.'); do
+    code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "http://$a:$GATEWAY_LOCAL_PORT/health" || true)"
+    [ "${code:-000}" = 000 ] || { echo "The gateway's local port answers on $a:$GATEWAY_LOCAL_PORT, not only on 127.0.0.1. Stop cc-gateway$SUFFIX and find what publishes port $GATEWAY_LOCAL_PORT."; exit 1; }
+  done
+  echo "Gateway's local port: 127.0.0.1:$GATEWAY_LOCAL_PORT only, and an agent's gateway key is required."
+}
+
 start_gateway_and_notifier() {
   # The model gateway, in two containers.
   # LiteLLM (cc-litellm): one address for every cluster model, with fallbacks in route order, and
@@ -538,6 +558,10 @@ start_gateway_and_notifier() {
   cp "$HERE"/gateway/*.mjs "$HERE/gateway/package.json" "$CC_DIR/gateway-app/"
   local publish=()
   [ "$EGRESS" = on ] || publish+=(-p "127.0.0.1:$GATEWAY_PORT:4000")
+  # site.gateway_local_port: the agents' port, on 127.0.0.1 only, for a RecursicaChat 2.0 server on
+  # this computer, outside Docker. The router's address check admits it: the connection reaches the
+  # router from the gateway of the router's own Docker network. An agent's gateway key is needed.
+  [ -z "${GATEWAY_LOCAL_PORT:-}" ] || publish+=(-p "127.0.0.1:$GATEWAY_LOCAL_PORT:4000")
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then publish+=(-p "127.0.0.1:$JOBS_LOCAL_PORT:4001")
   elif [ -n "$TAILNET_ADDRESS" ]; then publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001"); fi
   # The router reads its networks when it starts, and allows a key from each one. So every network
@@ -551,6 +575,7 @@ start_gateway_and_notifier() {
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
   docker start "cc-gateway$SUFFIX" >/dev/null
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then gateway_serve; fi
+  [ -z "${GATEWAY_LOCAL_PORT:-}" ] || gateway_local_check
 
   # Slack notifier: the CircleChat events site.json's notify.events chooses, in the stack's channel,
   # and a DM to each mentioned person with a Slack ID: the ID the person verified in CircleChat, or
@@ -692,9 +717,9 @@ sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 
 # A port another stack already uses stops the setup here, before anything restarts.
 port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
-for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] && echo "$JOBS_LOCAL_PORT"); do
+for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] && echo "$JOBS_LOCAL_PORT") ${GATEWAY_LOCAL_PORT:-}; do
   o="$(port_owner "$p")"
-  [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
+  [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port, site.gateway_local_port)."; exit 1; }
 done
 
 # Stored files move from the old containers onto the storage volume before the containers are

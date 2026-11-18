@@ -371,6 +371,53 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
   }
 });
 
+// site.gateway_local_port: the gateway's agents' port on 127.0.0.1, for a RecursicaChat 2.0 server on
+// the control computer. health: what /health answers on 127.0.0.1; noKey: what a model request with no
+// gateway key gets; elsewhere: whether the port also answers on the office network.
+function localPortMac({ health = "200", noKey = "401", elsewhere = false } = {}) {
+  const site = structuredClone(example);
+  site.site.gateway_local_port = 4002;
+  const s = colimaMac({ site });
+  s.stub("curl", `case "$*" in *127.0.0.1:4001*) printf 401 ;; *127.0.0.1:4002/health*) printf ${health} ;; *127.0.0.1:4002/v1/*) printf ${noKey} ;; *192.168.1.20:4002*) ${elsewhere ? "printf 200" : "printf 000; exit 7"} ;; *) printf 000; exit 7 ;; esac`);
+  return s;
+}
+
+test("site.gateway_local_port publishes the gateway's agents' port on 127.0.0.1 only, with the filter on, and checks the port", () => {
+  const s = localPortMac();
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls();
+  const router = calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
+  assert.match(router, / -p 127\.0\.0\.1:4002:4000 /);
+  assert.deepEqual(router.match(/-p \S+:4000 /g), ["-p 127.0.0.1:4002:4000 "], "the agents' port is published once, on 127.0.0.1");
+  assert.doesNotMatch(router, /(100\.64\.0\.1|192\.168\.1\.20|0\.0\.0\.0):4002/);
+  assert.match(calls, /^curl .*http:\/\/127\.0\.0\.1:4002\/health$/m);
+  assert.match(calls, /^curl .*-X POST .*http:\/\/127\.0\.0\.1:4002\/v1\/chat\/completions$/m);
+  assert.match(calls, /^curl .*http:\/\/192\.168\.1\.20:4002\/health$/m, "the office network is checked");
+  assert.match(calls, /^curl .*http:\/\/100\.64\.0\.1:4002\/health$/m, "Tailscale's address is checked too");
+  assert.match(r.stdout, /Gateway's local port: 127\.0\.0\.1:4002 only, and an agent's gateway key is required/);
+});
+
+test("without site.gateway_local_port, the filter keeps the gateway's agents' port off the computer", () => {
+  const s = colimaMac();
+  assert.equal(s.run("setup-host.sh", "--secrets-only").status, 0);
+  const router = s.calls().split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
+  assert.doesNotMatch(router, /-p \S+:4000 /);
+  assert.doesNotMatch(s.calls(), /Gateway's local port/);
+});
+
+test("the setup stops when the gateway's local port is down, answers without a key, or answers on another address", () => {
+  const down = localPortMac({ health: "000" }).run("setup-host.sh", "--secrets-only");
+  assert.equal(down.status, 1, down.stdout + down.stderr);
+  assert.match(down.stdout, /local port 4002 answered 000 on 127\.0\.0\.1, not 200/);
+  const open = localPortMac({ noKey: "200" }).run("setup-host.sh", "--secrets-only");
+  assert.equal(open.status, 1, open.stdout + open.stderr);
+  assert.match(open.stdout, /answered 200 to a request with no gateway key, not 401/);
+  const wide = localPortMac({ elsewhere: true }).run("setup-host.sh", "--secrets-only");
+  assert.equal(wide.status, 1, wide.stdout + wide.stderr);
+  assert.match(wide.stdout, /answers on 192\.168\.1\.20:4002, not only on 127\.0\.0\.1/);
+});
+
 test("the hourly sync job runs sync-skills.sh as the owner, never as root, with no chown or git setting", () => {
   const me = os.userInfo().username;
   for (const [system, unit, user] of [["Darwin", "io.recursica.agents-sync.plist", `<key>UserName</key><string>${me}</string>`], ["Linux", "agents-sync.service", `User=${me}`]]) {

@@ -464,6 +464,33 @@ export function checkAccountErrors(site) {
   return [];
 }
 
+// site.gateway_local_port: the gateway's agents' port (4000), published on 127.0.0.1 of the control
+// computer for a RecursicaChat 2.0 server that runs on the computer itself, outside Docker. The port
+// takes only an agent's gateway key, as port 4000 does for the agents. Only the cluster's own stack
+// sets the port: a client or demo stack's agents run in that stack's own CircleChat.
+export function gatewayLocalPortErrors(site = {}) {
+  const t = site.site ?? {};
+  const p = t.gateway_local_port;
+  if (p === undefined) return [];
+  if (!(Number.isInteger(p) && p >= 1024 && p <= 65535)) return ["site.gateway_local_port must be a port number from 1024 to 65535"];
+  if (t.tenant !== undefined) return ["site.gateway_local_port is for the cluster's own stack only. A client or demo stack's agents use the stack's own CircleChat"];
+  const gw = t.gateway_port ?? 4000;
+  const used = [
+    ["site.port", t.port ?? 8080],
+    ["site.preview_port", t.preview_port ?? 5173],
+    ["site.gateway_port", gw],
+    ["site.gateway_port + 1, the gateway's port for port jobs on a Mac", gw + 1],
+    ["site.github_token_port", tokenPort(site)],
+    ...FILTER_PORTS.map((x) => ["a port of the outgoing filter", x]),
+  ];
+  for (const n of site.nodes ?? []) {
+    for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) used.push([`node ${n.name}'s model server`, m.port]);
+    used.push([`node ${n.name}'s job runner`, n.jobs?.port], [`node ${n.name}'s Kev-engine`, n.kev?.port]);
+  }
+  const hit = used.find(([, x]) => x === p);
+  return hit ? [`site.gateway_local_port (${p}) is already ${hit[0]}. Give the gateway's local port another number`] : [];
+}
+
 export function validate(site, { cluster } = {}) {
   const errs = [];
   const nodes = site.nodes ?? [];
@@ -488,6 +515,7 @@ export function validate(site, { cluster } = {}) {
   if ((site.nodes ?? []).find((n) => n.control)?.os === "macos" && [t.port ?? 8080, t.preview_port ?? 5173].includes(jobsLocal)) {
     errs.push(`site.gateway_port + 1 (${jobsLocal}) is the gateway's port for port jobs on a Mac, and must differ from site.port and site.preview_port`);
   }
+  errs.push(...gatewayLocalPortErrors(site));
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
   // The cluster's time zone for reboot times in Slack (cluster/actions.mjs), an IANA name.
   if (t.timezone !== undefined) { try { new Intl.DateTimeFormat("en-US", { timeZone: t.timezone }); } catch { errs.push(`site.timezone "${t.timezone}" must be a time zone name, such as Europe/Berlin`); } }
@@ -758,6 +786,7 @@ export function render(site) {
     `COMPOSE_PROJECT_NAME=${tenant ? `cc-${tenant}` : "circlechat"}`,
     `PREVIEW_PORT=${st.preview_port ?? 5173}`,
     `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
+    `GATEWAY_LOCAL_PORT=${st.gateway_local_port ?? ""}`,
     `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
     `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
     `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,
