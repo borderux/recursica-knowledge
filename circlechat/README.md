@@ -1391,15 +1391,15 @@ The check works in a throwaway chat with the agent. A member cannot archive a ch
 
 **`circlechat/rc-sync.sh` sets each agent's settings on the stack's RecursicaChat 2.0 server from the
 kit and site.json, through the server's API.** Nobody pastes an agent's instructions by hand. The
-sync sets five settings for each agent with `agents.<handle>.recursicachat` in site.json:
+sync sets five settings and a model key for each agent with `agents.<handle>.recursicachat` in site.json:
 
-| Setting        | Source                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------- |
-| Instructions   | `portable/recursicachat/agents/<handle>/INSTRUCTIONS.md`, built from `agents/<handle>/` |
-| Autonomy       | `agents/<handle>/runtime/recursicachat.json` in the kit                                 |
-| Sandbox        | `agents/<handle>/runtime/recursicachat.json` in the kit                                 |
-| Model          | `agents.<handle>.recursicachat.model` in site.json, as `<provider id>:<model>`          |
-| Monthly budget | `agents.<handle>.recursicachat.budget_usd` in site.json, in US dollars                  |
+| Setting        | Source                                                                                        |
+| -------------- | --------------------------------------------------------------------------------------------- |
+| Instructions   | `portable/recursicachat/agents/<handle>/INSTRUCTIONS.md`, built from `agents/<handle>/`       |
+| Autonomy       | `agents/<handle>/runtime/recursicachat.json` in the kit                                       |
+| Sandbox        | `agents/<handle>/runtime/recursicachat.json` in the kit                                       |
+| Model          | `gw-<handle>:<route>`, with the route from `agents.<handle>.recursicachat.model` in site.json |
+| Monthly budget | `agents.<handle>.recursicachat.budget_usd` in site.json, in US dollars                        |
 
 - **`setup-host.sh` runs the sync once, then installs the hourly job `rc-sync`.** The job runs as
   root, because only root may run the server's CLI. The sync itself runs as the owner.
@@ -1411,8 +1411,23 @@ sync sets five settings for each agent with `agents.<handle>.recursicachat` in s
   an admin's account: the server's CLI refuses both, and the sync refuses any role but builder. The
   CLI gives the account a session of 5 minutes and prints only the token. The token goes through a
   pipe into the sync, as a Bearer header. On every way out, the CLI ends every session of the account.
-- **With the cloud switch off, the model must be one of the agent's routes.** The config check refuses
-  another model, because a model outside the gateway could be a cloud provider's.
+- **The model is one of the agent's routes, through the agent's own gateway handle.** The config check
+  refuses another model, because a provider outside the gateway could be a cloud provider's.
+- **Each agent has a gateway handle of its own, `rc-<handle>`, never a 1.x agent's handle.** The
+  handle gets the routes and cloud switch of `agents.<handle>`. `setup-host.sh` issues keys only for
+  1.x Hermes homes, so a 1.x key never ends a RecursicaChat agent's key. The config check keeps
+  `rc-` names for RecursicaChat agents.
+- **The sync sets each agent's key itself, as root, before the builder's session.** The server's
+  provider for the agent is `gw-<handle>`, at `http://127.0.0.1:<site.gateway_local_port>/v1`. When the
+  provider's stored key is the key the gateway records for `rc-<handle>`, the sync only refreshes the
+  provider's address and models. Otherwise the sync issues a new key, checks that the gateway serves
+  the agent's model and nothing outside the agent's routes, and pipes the key into the server's CLI
+  (`kit/rc-gateway-key.mjs`, `cli.ts set-provider`). Nobody pastes, sees or copies a key: no argument,
+  environment variable, file, clipboard or output line holds the key. A key that fails the check is
+  revoked at once.
+- **Only the provider's own agent may use the provider.** The sync warns about any agent on the server
+  whose model names no provider, because the server then gives the agent the first provider of its
+  kind. The sync also warns about an agent whose model names another agent's `gw-` provider.
 - **`./circlechat/rc-sync.sh --check`** lists what would change, and changes nothing.
 
 The `recursicachat` block in site.json:
@@ -1430,6 +1445,12 @@ The `recursicachat` block in site.json:
 needs the vault key. With `vault_key_file`, root reads the file and hands the key to the CLI in
 `CIRCLECHAT_MASTER_KEY`, never in an argument (`kit/rc-cli.sh`). `rc-check-agent.sh` takes the same
 file as `RC_VAULT_KEY_FILE`.
+
+**A gateway key for a handle site.json does not list reaches no model.** The gateway fails closed: such
+a key gets no route and no cloud model, and the router refuses the key outright, whatever an older
+`gateway.json` holds. Before, the key got every route, with the cloud switch on. A 1.x Hermes home
+whose handle site.json does not list now stops `setup-host.sh` with a line that names the fix: add
+`agents.<handle>` to site.json, with the agent's routes and cloud switch.
 
 ## Hard-won lessons (read before debugging)
 

@@ -625,6 +625,8 @@ agents_to_gateway() {
   local h
   for h in "$CC_DIR"/hermes-homes/.hermes-*; do
     sudo test -f "$h/config.yaml" || continue
+    # rc-<handle> keys belong to the RecursicaChat 2.0 server's agents (rc-sync.sh), never to a home.
+    case "${h##*/.hermes-}" in rc-*) continue ;; esac
     gateway_access "${h##*/.hermes-}" "$h" || true
   done
 }
