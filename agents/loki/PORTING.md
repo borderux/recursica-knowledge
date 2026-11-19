@@ -16,7 +16,7 @@ prompt asks him not to let that happen. Only the configuration can stop it.
 and installed by `circlechat/setup-agent.sh loki`. `runtime/hermes.md` has his settings there.
 
 On CircleChat the fence is simple, because he holds nothing: no Drive, no database, no tool
-server. His reply is the transcript, and CircleChat saves a long reply as a file on the message
+server. His reply is the transcript on 1.x, and CircleChat saves a long reply as a file on the message
 or the task. `setup-agent.sh` refuses to set him up if his `config.yaml` has any `mcp_servers`,
 since a server that reaches client data is the one thing that would break that.
 
@@ -34,7 +34,7 @@ The fence on RecursicaChat 2.0 rests on four settings, each checked on the serve
 |---|---|
 | **No app and no tool server** | No app or MCP server is granted to Loki, or to every agent in the workspace. Check both on the server's settings pages after each change there. |
 | **The Docker sandbox** | `runtime/recursicachat.json`, set by the sync. Each turn runs in a container, never on the server itself. |
-| **Asks first** | Autonomy `ask`, set by the sync. Each action that is not a read waits for a person. |
+| **Asks first** | Autonomy `ask`, set by the sync. Each action that is not a read waits for a person. Loki delivers each transcript with `attach_files`, a server tool that needs no approval: the server writes the file, so Loki writes no file and runs no command in the container. |
 | **The model through the gateway only** | site.json's model must be one of Loki's routes, because Loki's cloud switch is off. Loki's gateway key reaches only those routes. |
 
 ## What he must never have

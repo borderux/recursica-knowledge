@@ -389,16 +389,22 @@ test("Loki's instructions are the same on every platform, and name no platform",
   assert.doesNotMatch(first, /CircleChat|RecursicaChat|Claude|OpenCode|Buzz|Hermes|reply\.md|share_to_task|actions block|Blocked sites/i);
 });
 
-test("Loki's instructions deliver each transcript as the reply, with no file step, and keep other replies short", () => {
+test("Loki's instructions deliver each transcript as an attached plain-text file, one per turn, with a one-line reply", () => {
   for (const [file, raw] of lokiBuilds()) {
     const text = raw.replace(/\s+/g, " ");
-    assert.match(text, /## The transcript is the reply/, file);
-    assert.match(text, /Write each transcript as the text of the reply\. The reply is the whole delivery\./, file);
-    assert.match(text, /Never call a tool to deliver a transcript, such as a file tool or a terminal\./, file);
-    assert.match(text, /\*\*One transcript per reply\.\*\*/, file);
-    assert.match(text, /A transcript is the one kind of reply Loki writes at full length\. Keep every other reply short\./, file);
-    assert.match(text, /When the request came with a task, mark the task ready for review after the task's last transcript\. Change no other task\./, file);
-    // PR #198's procedure is gone: no step tells Loki to write, check or attach a file.
+    assert.match(text, /## Each transcript is an attached file/, file);
+    assert.match(text, /Deliver each transcript as a file attached with the attach tool, never as the text of a reply\./, file);
+    assert.match(text, /Name each file from the title line\.\*\* .*end the name with `\.txt`, such as `seal-trainer-interview-1-of-3\.txt`/, file);
+    assert.match(text, /\*\*Attach each transcript once, as the file's text\.\*\*/, file);
+    assert.match(text, /Write the transcript as plain text\./, file);
+    assert.match(text, /Never write a transcript with a file tool or a terminal\./, file);
+    assert.match(text, /Never paste a transcript into a reply or a code block\./, file);
+    assert.match(text, /\*\*One transcript per turn\.\*\*/, file);
+    assert.match(text, /\*\*Zip a set on a task\.\*\* .*The zip holds every transcript file already attached to the task\./, file);
+    assert.match(text, /\*\*After attaching a file, reply in one line\*\* that names what is attached/, file);
+    assert.match(text, /A transcript is the one kind of text Loki writes at full length\. Keep every reply short\./, file);
+    assert.match(text, /mark the task ready for review after the task's last transcript, and after the zip when the set has one\. Change no other task\./, file);
+    // PR #198's procedure is gone: no step writes a file in the container, checks it or attaches it by action.
     assert.doesNotMatch(text, /Write the file with the `write_file` tool|Check that the file exists|"type":"share_to_task"|emit one `create_task` action|\/workspace\/loki|create_folder|list_files/, file);
   }
 });

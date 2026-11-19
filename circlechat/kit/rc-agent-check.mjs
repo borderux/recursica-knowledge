@@ -24,10 +24,11 @@
 //      member's check has no heartbeat to start: the quiet window stands in for one.
 //   3. A settled task stays untouched. A task in the chat, set to done, keeps its status and its
 //      update time through another turn of the agent in the same chat.
-//   4. A long reply arrives whole. One message from the agent holds the whole reply: the banner's
+//   4. A transcript arrives as an attached file. The agent attaches one .txt file (a formatted .md
+//      copy beside it is fine), and the check downloads the .txt with its own session: the banner's
 //      lines first when CHECK_BANNER is set, at least CHECK_MIN_WORDS words, and timestamps that only
-//      move forward and end within the asked length. Nothing follows the reply, and the agent makes
-//      no tool call in the chat during the check.
+//      move forward and end within the asked length. The agent's reply is one short line with no
+//      transcript in it, nothing follows the reply, and the agent calls no tool but attach_files.
 // One PASS, FAIL or SKIP line per check. Exit 1 on any FAIL, 2 on a usage or setup error.
 //
 // Settings, from the environment (seconds unless noted):
@@ -63,7 +64,7 @@ export const NAMES = {
   1: "a request during a running turn is answered",
   2: "a question is asked once, then waits",
   3: "a settled task stays untouched",
-  4: "a long reply arrives whole",
+  4: "a transcript arrives as an attached file",
 };
 
 const BUSY = new Set(["starting", "working", "waiting_approval"]);
@@ -96,7 +97,18 @@ export function apiClient({ base, token, fetchImpl = globalThis.fetch }) {
     }
     return data;
   }
+  // A file's bytes as text, such as an attached file from GET /api/files/:id.
+  async function download(path) {
+    const r = await fetchImpl(root + path, { headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(60_000) });
+    if (!r.ok) {
+      const err = new Error(`GET ${path.replace(/\?.*$/, "")} answered ${r.status}`);
+      err.status = r.status;
+      throw err;
+    }
+    return r.text();
+  }
   return {
+    download,
     get: (p) => call("GET", p),
     post: (p, b = {}) => call("POST", p, b),
     patch: (p, b) => call("PATCH", p, b),
@@ -255,22 +267,44 @@ export async function runChecks({ api, handle, opts = {}, log = () => {} }) {
       else record(3, "PASS", `the done task kept its status and update time through a turn and ${secs(o.quietMs)} s`);
     }
 
-    // 4. A long reply arrives whole.
+    // 4. A transcript arrives as an attached file.
     if (o.only.includes(4)) {
       await waitIdle();
-      const ask = await say(`@${handle} Write one made-up ${o.minutes}-minute interview transcript between a Researcher and one participant, about a made-up kitchen gadget, as your whole reply.`);
-      const reply = await waitFor(async () => (await posts(ask.ts))[0] ?? ((await failures(ask.ts))[0] ? { failed: true } : null), o.replyTimeoutMs, o.pollMs);
-      if (!reply) record(4, "FAIL", `no reply within ${secs(o.replyTimeoutMs)} s`);
-      else if (reply.failed) record(4, "FAIL", `the turn failed: "${shortText((await failures(ask.ts))[0].body, 100)}"`);
+      const ask = await say(`@${handle} Write one made-up ${o.minutes}-minute interview transcript between a Researcher and one participant, about a made-up kitchen gadget.`);
+      const hasFiles = (m) => Array.isArray(m.meta?.files) && m.meta.files.length > 0;
+      // the turn is over when the agent attached a file, or replied, or the turn failed
+      const first = await waitFor(async () => (await posts(ask.ts))[0] ?? ((await failures(ask.ts))[0] ? { failed: true } : null), o.replyTimeoutMs, o.pollMs);
+      if (!first) record(4, "FAIL", `no reply and no file within ${secs(o.replyTimeoutMs)} s`);
+      else if (first.failed) record(4, "FAIL", `the turn failed: "${shortText((await failures(ask.ts))[0].body, 100)}"`);
       else {
         await settle();
-        const after = await posts(reply.ts, { interim: true });
+        const all = await posts(ask.ts, { interim: true });
+        const withFiles = all.filter(hasFiles);
+        const replies = all.filter((m) => !hasFiles(m));
+        const files = withFiles.flatMap((m) => m.meta.files);
+        const txt = files.filter((f) => /\.txt$/i.test(f.name));
         const calls = ((await api.get(`/api/toollog?agent=${encodeURIComponent(agent.id)}`)).calls ?? []).filter((c) => c.chatId === chat.id && c.ts >= started);
-        const problems = transcriptProblems(reply.body, { banner: o.banner, minWords: o.minWords, minutes: o.minutes });
-        if (after.length) problems.push(`the agent posted ${plural(after.length, "more message")} after the reply`);
-        if (calls.length) problems.push(`the agent made ${plural(calls.length, "tool call")} during the check (${[...new Set(calls.map((c) => c.tool))].join(", ")})`);
+        const others = calls.filter((c) => c.tool !== "attach_files");
+        const problems = [];
+        let text = "";
+        if (!files.length) problems.push(`the agent attached no file${replies.length ? `, and replied with ${wordCount(replies[0].body)} words instead` : ""}`);
+        else if (txt.length !== 1) problems.push(`the agent attached ${plural(txt.length, ".txt file")}, not 1 (${files.map((f) => f.name).join(", ")})`);
+        else {
+          text = await api.download(`/api/files/${encodeURIComponent(txt[0].id)}`);
+          problems.push(...transcriptProblems(text, { banner: o.banner, minWords: o.minWords, minutes: o.minutes }).map((p) => `${txt[0].name}: ${p}`));
+        }
+        if (withFiles.length > 1) problems.push(`the files came in ${withFiles.length} messages, not 1`);
+        if (replies.length > 1) problems.push(`the agent posted ${replies.length} replies, not 1`);
+        for (const r of replies) {
+          const lines = String(r.body ?? "").split("\n").filter((l) => l.trim());
+          if (stamps(r.body).length) problems.push("the reply holds transcript lines");
+          else if (lines.length > 1 || wordCount(r.body) > 40) problems.push(`the reply is ${plural(lines.length, "line")} and ${wordCount(r.body)} words, not one short line`);
+        }
+        const last = all.at(-1);
+        if (last && hasFiles(last) && replies.length && replies.at(-1).ts < last.ts) problems.push("the agent replied before attaching the file");
+        if (others.length) problems.push(`the agent made ${plural(others.length, "tool call")} besides attach_files during the check (${[...new Set(others.map((c) => c.tool))].join(", ")})`);
         if (problems.length) record(4, "FAIL", problems.join("; "));
-        else record(4, "PASS", `one message of ${wordCount(reply.body)} words, ${plural(stamps(reply.body).length, "speaker line")}, nothing after it, and no tool call`);
+        else record(4, "PASS", `${txt[0].name}: ${wordCount(text)} words, ${plural(stamps(text).length, "speaker line")}, and a one-line reply`);
       }
     }
   } finally {

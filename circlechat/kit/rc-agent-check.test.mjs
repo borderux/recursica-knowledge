@@ -34,7 +34,7 @@ function standIn(faults = {}, { role = "member" } = {}) {
   let clock = 1_000;
   const now = () => (clock = Math.max(Date.now(), clock + 1));
   let seq = 0;
-  const s = { chats: new Map(), messages: [], tasks: new Map(), calls: [], queue: [], working: false, removed: [], renamed: [] };
+  const s = { chats: new Map(), messages: [], tasks: new Map(), calls: [], queue: [], working: false, removed: [], renamed: [], files: new Map(), downloads: [] };
   const msg = (chatId, authorType, authorId, body, kind = "text", meta = {}) => {
     const m = { id: `m_${++seq}`, chatId, authorType, authorId, kind, body, meta, ts: now() };
     s.messages.push(m);
@@ -67,7 +67,17 @@ function standIn(faults = {}, { role = "member" } = {}) {
       await sleep(TURN_MS);
       if (faults.toolCall) s.calls.push({ id: "tc_1", agentId: AGENT_ID, chatId: d.chatId, tool: "sandbox.execute", ts: now() });
       const opts = faults.short ? { turns: 6 } : faults.backwards ? { gap: -1 } : faults.tooLong ? { gap: 40 } : faults.noBanner ? { banner: null } : {};
-      reply(d.chatId, transcript(opts));
+      if (faults.noFile) { reply(d.chatId, transcript(opts)); return; }
+      // attach_files: one message holding the .txt and its formatted .md copy
+      s.calls.push({ id: `tc_${++seq}`, agentId: AGENT_ID, chatId: d.chatId, tool: "attach_files", ts: now() });
+      const names = faults.twoTxt ? ["gadget-interview-1-of-1.txt", "gadget-interview-1-of-1 (2).txt"] : ["gadget-interview-1-of-1.txt", "gadget-interview-1-of-1.md"];
+      const files = names.map((name) => {
+        const f = { id: `f_${++seq}`, name, size: 1 };
+        s.files.set(f.id, name.endsWith(".md") ? "# formatted copy" : transcript(opts));
+        return f;
+      });
+      msg(d.chatId, "agent", AGENT_ID, "Attached 2 files.", "text", { files });
+      reply(d.chatId, faults.longReply ? `Here it is.\n${transcript({ turns: 4 })}` : faults.wordyReply ? Array(60).fill("word").join(" ") : "Interview 1 of 1 is attached as gadget-interview-1-of-1.txt.");
       if (faults.after) setTimeout(() => reply(d.chatId, "Want another one?"), TURN_MS / 2);
       return;
     }
@@ -114,7 +124,15 @@ function standIn(faults = {}, { role = "member" } = {}) {
     ["GET", /^\/api\/tasks$/, () => ({ tasks: [...s.tasks.values()].map((t) => ({ ...t })) })],
     ["GET", /^\/api\/toollog$/, () => ({ calls: s.calls })],
   ];
-  const api = {};
+  const api = {
+    // GET /api/files/:id with the check's session: the file's bytes as text
+    download: async (p) => {
+      const fid = decodeURIComponent(/^\/api\/files\/([^/?]+)$/.exec(p)?.[1] ?? "");
+      s.downloads.push(fid);
+      if (!s.files.has(fid)) throw Object.assign(new Error(`GET ${p} answered 404`), { status: 404 });
+      return s.files.get(fid);
+    },
+  };
   for (const method of ["GET", "POST", "PATCH"]) {
     api[method.toLowerCase()] = async (p, b) => {
       const pathname = p.replace(/\?.*$/, "");
@@ -167,15 +185,27 @@ test("check 3 fails when the agent moves a done task, or changes it at all", asy
   assert.match((await run({ retouchesTask: true }, { only: [3] })).results[0].reason, /the done task was changed/);
 });
 
-test("check 4 fails on a short reply, timestamps that go back or run long, a missing banner, a later post, or a tool call", async () => {
+test("check 4 downloads the attached .txt with the check's session and checks the transcript in the file", async () => {
+  const { results, s } = await run({}, { only: [4] });
+  assert.equal(results[0].status, "PASS", results[0].reason);
+  assert.match(results[0].reason, /^gadget-interview-1-of-1\.txt: \d+ words, \d+ speaker lines, and a one-line reply$/);
+  assert.equal(s.downloads.length, 1, "the .txt only");
+  assert.ok(s.files.get(s.downloads[0]).includes("Researcher  00:00:05"));
+});
+
+test("check 4 fails on no file, a short or broken transcript in the file, a long reply, a later post, or another tool call", async () => {
   const reason = async (f) => (await run(f, { only: [4] })).results[0];
   for (const [fault, re] of [
-    ["short", /words, fewer than 400/],
+    ["noFile", /attached no file, and replied with \d+ words instead/],
+    ["twoTxt", /attached 2 \.txt files, not 1/],
+    ["short", /gadget-interview-1-of-1\.txt: .*words, fewer than 400/],
     ["backwards", /does not move forward/],
     ["tooLong", /past 15 minutes/],
     ["noBanner", /not the banner's/],
-    ["after", /posted 1 more message after the reply/],
-    ["toolCall", /made 1 tool call during the check \(sandbox\.execute\)/],
+    ["longReply", /the reply holds transcript lines/],
+    ["wordyReply", /the reply is 1 line and 60 words, not one short line/],
+    ["after", /posted 2 replies, not 1/],
+    ["toolCall", /made 1 tool call besides attach_files during the check \(sandbox\.execute\)/],
   ]) {
     const r = await reason({ [fault]: true });
     assert.equal(r.status, "FAIL", fault);
@@ -229,6 +259,10 @@ test("the client sends the token as a Bearer header and never as a cookie, and a
     assert.doesNotMatch(err.message, /tok_secret/);
     assert.equal(seen[0].authorization, "Bearer tok_secret_0123456789");
     assert.equal(seen[0].cookie, undefined);
+    const dl = await api.download("/api/files/f_1").catch((e) => e);
+    assert.equal(dl.message, "GET /api/files/f_1 answered 403");
+    assert.equal(seen.at(-1).authorization, "Bearer tok_secret_0123456789", "a download carries the session as a Bearer header too");
+    assert.equal(seen.at(-1).cookie, undefined);
   } finally {
     server.close();
   }
