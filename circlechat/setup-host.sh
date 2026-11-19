@@ -792,6 +792,14 @@ if [ -n "$(site_get recursicachat)" ]; then
 else
   uninstall_unit "rc-sync$SUFFIX" >/dev/null
 fi
+# A member session for each program outside the server that uses the server's API, from
+# recursicachat.sessions in site.json (rc-session.sh): a fresh 60-minute session in each program's
+# file every 45 minutes. A long-running job, as root, because only root may run the server's CLI.
+if [ "$(site_get recursicachat.sessions)" != "" ] && [ "$(site_get recursicachat.sessions)" != "[]" ]; then
+  install_unit "rc-session$SUFFIX" "$ENVS KIT_NODE=$(command -v node) $HERE/rc-session.sh" "$CC_DIR" root
+else
+  uninstall_unit "rc-session$SUFFIX" >/dev/null
+fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".

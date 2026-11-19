@@ -515,6 +515,33 @@ export function gatewayLocalPortErrors(site = {}) {
 // US dollars. On the server the agent's model is gw-<handle>:<route>, a provider of the agent's own
 // that holds the gateway key of rc-<handle>. Only the cluster's own stack sets either.
 export const RC_DEFAULTS = { url: "http://127.0.0.1:3100", app: "/opt/recursicachat/app", data: "/opt/recursicachat/data" };
+// recursicachat.sessions: a program outside the server that uses the server's API as a member account
+// gets that account's session in a file (circlechat/rc-session.sh). Each entry: the account's email,
+// the macOS account that runs the program, and the file. The server refuses a session for an owner
+// or an admin.
+const RC_SESSION_ACCOUNT = /^_?[a-z][a-z0-9_-]{0,31}$/;
+export function rcSessionErrors(rc) {
+  if (rc.sessions === undefined) return [];
+  if (!Array.isArray(rc.sessions)) return ["recursicachat.sessions must be a list"];
+  const errs = [];
+  const seen = new Set();
+  const serverDirs = [rc.app ?? RC_DEFAULTS.app, rc.data ?? RC_DEFAULTS.data].map((d) => String(d).replace(/\/+$/, "") + "/");
+  rc.sessions.forEach((s, i) => {
+    const at = `recursicachat.sessions[${i}]`;
+    if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
+    for (const k of Object.keys(s)) if (!["email", "account", "file"].includes(k)) errs.push(`${at}.${k} is not a setting: email, account and file`);
+    if (typeof s.email !== "string" || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s.email)) errs.push(`${at}.email must be the member account's email`);
+    if (typeof s.account !== "string" || !RC_SESSION_ACCOUNT.test(s.account) || s.account === "root") errs.push(`${at}.account must be the macOS or Linux account that runs the program, not root`);
+    if (typeof s.file !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(s.file) || s.file.includes("/../")) errs.push(`${at}.file must be an absolute path`);
+    else {
+      if (serverDirs.some((d) => s.file.startsWith(d))) errs.push(`${at}.file must be outside the server's folders`);
+      if (seen.has(s.file)) errs.push(`${at}.file is listed twice`);
+      seen.add(s.file);
+    }
+  });
+  return errs;
+}
+
 export function recursicachatErrors(site = {}) {
   const errs = [];
   const rc = site.recursicachat;
@@ -539,6 +566,7 @@ export function recursicachatErrors(site = {}) {
   const serverDir = String(rc.app ?? RC_DEFAULTS.app).replace(/\/[^/]*\/?$/, "");
   if (typeof rc.node === "string" && serverDir && (rc.node + "/").startsWith(serverDir + "/")) errs.push(`recursicachat.node must be a Node outside the server's folder (${serverDir}), such as the owner's Node 24`);
   if (synced.length && site.site?.gateway_local_port === undefined) errs.push("recursicachat needs site.gateway_local_port: the server reaches each agent's gateway handle there");
+  errs.push(...rcSessionErrors(rc));
   for (const [h, a] of synced) {
     const s = a.recursicachat;
     const at = `agents.${h}.recursicachat`;
