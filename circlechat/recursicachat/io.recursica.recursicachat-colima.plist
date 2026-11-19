@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The RecursicaChat 2.0 server's own Colima VM (profile recursicachat), as _recursicachat. Runs the kit's
+     colima-service.sh (a root-owned copy in /opt/recursicachat/bin), which stops the VM cleanly
+     when launchd stops this job. All Colima and lima state is under /opt/recursicachat/home. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>io.recursica.recursicachat-colima</string>
+  <key>UserName</key><string>_recursicachat</string>
+  <key>GroupName</key><string>_recursicachat</string>
+  <key>WorkingDirectory</key><string>/opt/recursicachat/home</string>
+  <key>ProgramArguments</key><array>
+    <string>/bin/bash</string>
+    <string>/opt/recursicachat/bin/colima-service.sh</string>
+    <string>recursicachat</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>HOME</key><string>/opt/recursicachat/home</string>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <!-- colima stop can take a minute, and launchd's default wait is 20 seconds -->
+  <key>ExitTimeOut</key><integer>150</integer>
+  <key>StandardOutPath</key><string>/opt/recursicachat/home/logs/colima.log</string>
+  <key>StandardErrorPath</key><string>/opt/recursicachat/home/logs/colima.log</string>
+</dict></plist>

@@ -1438,12 +1438,15 @@ sync sets five settings and a model key for each agent with `agents.<handle>.rec
 
 The `recursicachat` block in site.json:
 
-| Setting          | Default                   | What the setting sets                                                |
-| ---------------- | ------------------------- | -------------------------------------------------------------------- |
-| `app`            | `/opt/recursicachat/app`  | The server's app folder                                              |
-| `data`           | `/opt/recursicachat/data` | The server's data folder, `CIRCLECHAT_DATA`                          |
-| `vault_key_file` | none                      | The server's vault key, when the key sits outside the data folder    |
-| `node`           | the owner's `node`        | A Node 24 or newer for the server's CLI, outside the server's folder |
+| Setting            | Default                   | What the setting sets                                                |
+| ------------------ | ------------------------- | -------------------------------------------------------------------- |
+| `app`              | `/opt/recursicachat/app`  | The server's app folder                                              |
+| `data`             | `/opt/recursicachat/data` | The server's data folder, `CIRCLECHAT_DATA`                          |
+| `vault_key_file`   | none                      | The server's vault key, when the key sits outside the data folder    |
+| `node`             | the owner's `node`        | A Node 24 or newer for the server's CLI, outside the server's folder |
+| `public_url`       | none                      | The https address people open the app at, `CIRCLECHAT_PUBLIC_URL`    |
+| `google_client_id` | none                      | The Google client ID for sign-in. The secret stays in its own file   |
+| `google_domain`    | none                      | The domain whose accounts sign in with Google                        |
 
 **The vault key reaches the CLI only through root.** The CLI opens the server's database, which
 needs the vault key. With `vault_key_file`, root reads the file and hands the key to the CLI in
@@ -1455,6 +1458,33 @@ a key gets no route and no cloud model, and the router refuses the key outright,
 `gateway.json` holds. Before, the key got every route, with the cloud switch on. A 1.x Hermes home
 whose handle site.json does not list now stops `setup-host.sh` with a line that names the fix: add
 `agents.<handle>` to site.json, with the agent's routes and cloud switch.
+
+### The RecursicaChat 2.0 server's service, backup and restore test
+
+**`circlechat/recursicachat/` holds the server's own scripts and launchd jobs, for the control Mac.**
+This is the start of phase 5: the kit installs the server that rc-sync.sh already configures.
+
+| File                                                               | What it does                                                              |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `run.sh`, `io.recursica.recursicachat.plist`                       | Checks the setup, waits for Docker, starts the server as `_recursicachat` |
+| `io.recursica.recursicachat-colima.plist`                          | The server's own Colima VM, through `kit/colima-service.sh`               |
+| `backup.sh`, `io.recursica.recursicachat-backup.plist`             | The nightly backup, as root, at 03:30                                     |
+| `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist` | The monthly test restore, as root, on the 1st at 05:00                    |
+
+**Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
+`render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id` and
+`google_domain`) and from the installing account (its home folder, this kit and `$CC_DIR`). The
+installer then copies only the files that changed. It loads a changed backup or restore-test job at
+once. It never restarts the server or its VM: it prints the command for that. It never touches the
+data, the vault key, the Google secret or the restic password.
+
+**The backup leaves out each agent's engine settings.** The server writes them at every engine start
+(`server/src/agents/engines.ts`), with the agent's model proxy token in them: Hermes's `.env` and
+`config.yaml`, OpenClaw's `openclaw.json` and OpenCode's `opencode.json`. The token is a stand-in, not
+a provider key, and it lasts only while that engine runs. A restore loses nothing, because the next
+start writes the files again. The guard then checks what is left, unchanged: no file named like a
+key, and neither the vault key nor the restic password anywhere in the contents. The test restore
+fails if a backup holds any of those settings.
 
 ## Hard-won lessons (read before debugging)
 

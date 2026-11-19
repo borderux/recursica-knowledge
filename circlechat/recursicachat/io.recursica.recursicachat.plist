@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The RecursicaChat 2.0 server, as _recursicachat, on 127.0.0.1:3100. run.sh checks its setup,
+     waits up to 3 minutes for the server VM's Docker, and only then starts the server. If Docker
+     doesn't answer, run.sh exits and launchd tries again after ThrottleInterval. No secret is in
+     this file: run.sh reads the vault key from /etc/recursicachat/master.key. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>io.recursica.recursicachat</string>
+  <key>UserName</key><string>_recursicachat</string>
+  <key>GroupName</key><string>_recursicachat</string>
+  <key>WorkingDirectory</key><string>/</string>
+  <key>ProgramArguments</key><array>
+    <string>/opt/recursicachat/bin/run.sh</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>HOME</key><string>/opt/recursicachat/home</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <!-- the server shuts down cleanly on SIGTERM -->
+  <key>ExitTimeOut</key><integer>30</integer>
+  <key>StandardOutPath</key><string>/opt/recursicachat/home/logs/server.log</string>
+  <key>StandardErrorPath</key><string>/opt/recursicachat/home/logs/server.log</string>
+</dict></plist>
