@@ -13,6 +13,9 @@
 #   RC_NODE         the Node that runs the server's CLI: one the owner's account can run, such as
 #                   the owner's own (the node on PATH). Never the server's own Node, which only the
 #                   server's account can run.
+#   RC_VAULT_KEY_FILE  the server's vault key file, when the key sits outside the data folder, such
+#                   as /etc/recursicachat/master.key (kit/rc-cli.sh). Unset: the CLI reads
+#                   <data>/master.key.
 #   CHECK_*         the check's settings, in kit/rc-agent-check.mjs
 #
 # The session: the server's CLI, run as root, gives the account a session of at most an hour and
@@ -32,8 +35,9 @@ CHECK_NODE="${CHECK_NODE:-node}"
 case "$RC_NODE" in "$(dirname "$RC_APP")"/*) echo "RC_NODE is inside the server's folder. Use a Node the owner's account can run."; exit 2 ;; esac
 [ -n "$RC_NODE" ] && [ -x "$RC_NODE" ] || { echo "RC_NODE is not a Node this account can run. Set RC_NODE to one."; exit 2; }
 
-# The server's CLI, as root. It switches to the data folder's owner itself.
-cli() { ( cd / && sudo env CIRCLECHAT_DATA="$RC_DATA" "$RC_NODE" "$RC_APP/server/src/cli.ts" "$@" ); }
+# The server's CLI, as root (kit/rc-cli.sh). It switches to the data folder's owner itself.
+. "$HERE/kit/rc-cli.sh"
+cli() { rc_cli "$@"; }
 
 # Ended on every way out. A failure to end the sessions is said loudly and fails the run.
 ENDED=false

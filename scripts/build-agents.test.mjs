@@ -609,11 +609,12 @@ test("Betty's CircleChat persona starts her reply with the question itself, righ
   assert.equal(text.split(line).length - 1, 1, "once");
 });
 
-test("Loki is built for CircleChat only", () => {
+test("Loki is built for CircleChat and RecursicaChat 2.0 only", () => {
   assert.ok(!fs.existsSync(path.join(artifactDir, "loki.md")), "no claude-code artifact");
   assert.ok(!fs.existsSync(path.join(repoRoot, "buzz-agents", "agents", "loki")), "no Buzz agent");
   assert.match(
     fs.readFileSync(path.join(agentsDir, "loki", "SKILL.md"), "utf8"),
-    /^targets: circlechat$/m,
+    /^targets: circlechat, recursicachat$/m,
   );
+  assert.ok(fs.existsSync(path.join(repoRoot, "portable", "recursicachat", "agents", "loki", "INSTRUCTIONS.md")), "the RecursicaChat 2.0 instructions");
 });

@@ -20,6 +20,11 @@
  *                   per agent: only agents with a platform/circlechat.md are built for it, so
  *                   adding the target did not oblige every agent to grow a fragment at once.
  *
+ *   recursicachat → portable/recursicachat/agents/<name>/INSTRUCTIONS.md
+ *                   An agent's instructions on a RecursicaChat 2.0 server. circlechat/rc-sync.sh
+ *                   sets them through the server's API: nobody pastes them by hand. Optional per
+ *                   agent, like circlechat: only agents with a platform/recursicachat.md are built.
+ *
  *   claude-code   → portable/claude-code/agents/<name>.md
  *   opencode      → portable/opencode/agents/<name>.md
  *   grok          → portable/grok/agents/<name>.md
@@ -72,7 +77,7 @@ if (argv.includes("--help") || argv.includes("-h")) {
   --accept    allow the Buzz prompt to change (it is asserted identical by default)
   --help
 
-Targets: buzz, claude-code, opencode, grok, circlechat (optional per agent). See the header of this file for where each lands.`);
+Targets: buzz, claude-code, opencode, grok, circlechat and recursicachat (both optional per agent). See the header of this file for where each lands.`);
   process.exit(0);
 }
 
@@ -99,6 +104,9 @@ const TARGETS = {
     // CircleChat has no install step to swap tokens back in, so the values are fixed here. They
     // are paths inside the agent container, identical on every CircleChat install.
     values: { KNOWLEDGE_REPO_NAME: "recursica-knowledge", WORKSPACE_ROOT: "/workspace" } },
+  // RecursicaChat 2.0 sets no token either: the sync sends the file as it is, and refuses a file
+  // that still holds a token (circlechat/kit/rc-sync.mjs).
+  recursicachat: { fragments: "recursicachat.md", out: (n) => `portable/recursicachat/agents/${n}/INSTRUCTIONS.md`, frontmatter: false, optional: true },
 };
 
 /**

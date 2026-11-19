@@ -1,0 +1,7 @@
+{
+  "$comment": "Loki's settings on a RecursicaChat 2.0 server that belong to the agent, the same on every stack. circlechat/rc-sync.sh sets them through the server's API, with the instructions in portable/recursicachat/agents/loki/INSTRUCTIONS.md. The model and the monthly budget belong to the stack: agents.loki.recursicachat in the stack's site.json.",
+  "autonomy": "ask",
+  "$autonomyComment": "ask: Loki asks before each action that is not a read. Loki's work is a reply, so a question before an action means a request went outside that work.",
+  "sandbox": "docker",
+  "$sandboxComment": "docker: each turn runs in a container, never on the server itself."
+}

@@ -11,7 +11,7 @@ prompt asks him not to let that happen. Only the configuration can stop it.
 
 ## Where he runs
 
-**CircleChat is Loki's only target.** The prompt is
+**CircleChat was Loki's first target.** The prompt is
 `portable/circlechat/agents/loki/SOUL.md`, built from `SKILL.md` and `platform/circlechat.md`,
 and installed by `circlechat/setup-agent.sh loki`. `runtime/hermes.md` has his settings there.
 
@@ -19,6 +19,23 @@ On CircleChat the fence is simple, because he holds nothing: no Drive, no databa
 server. His reply is the transcript, and CircleChat saves a long reply as a file on the message
 or the task. `setup-agent.sh` refuses to set him up if his `config.yaml` has any `mcp_servers`,
 since a server that reaches client data is the one thing that would break that.
+
+## On RecursicaChat 2.0
+
+**RecursicaChat 2.0 is Loki's second target.** The instructions are
+`portable/recursicachat/agents/loki/INSTRUCTIONS.md`, built from `SKILL.md` and
+`platform/recursicachat.md`. `circlechat/rc-sync.sh` sets the instructions on the server through
+the server's API, with the autonomy and the sandbox in `runtime/recursicachat.json` and the model and
+monthly budget in the stack's site.json. Nobody pastes the instructions by hand.
+
+The fence on RecursicaChat 2.0 rests on four settings, each checked on the server, not in the prompt:
+
+| Setting | How the setting holds |
+|---|---|
+| **No app and no tool server** | No app or MCP server is granted to Loki, or to every agent in the workspace. Check both on the server's settings pages after each change there. |
+| **The Docker sandbox** | `runtime/recursicachat.json`, set by the sync. Each turn runs in a container, never on the server itself. |
+| **Asks first** | Autonomy `ask`, set by the sync. Each action that is not a read waits for a person. |
+| **The model through the gateway only** | site.json's model must be one of Loki's routes, because Loki's cloud switch is off. Loki's gateway key reaches only those routes. |
 
 ## What he must never have
 
@@ -79,7 +96,8 @@ process, never by asking the agent: a model will describe a fence it does not ha
 ## Why no other target
 
 This is not a judgment about Claude Code, opencode or Buzz. Loki's one guarantee is where his
-output can land, and on CircleChat that guarantee is proven and checked by `setup-agent.sh`.
+output can land. On CircleChat `setup-agent.sh` proves and checks that guarantee, and on
+RecursicaChat 2.0 the four settings above hold the guarantee.
 Nobody runs him anywhere else today, and an artifact for a surface whose boundary nobody has
 proven would hand somebody a synthetic-data agent with an unproven boundary. Add the target the
 day somebody proves the boundary holds there, and say in that PR how they proved it.
@@ -91,4 +109,4 @@ npm run agents:build:check   # report drift, write nothing
 npm run agents:build         # write
 ```
 
-Edit `agents/loki/SKILL.md` and `agents/loki/platform/circlechat.md`, never the artifact.
+Edit `agents/loki/SKILL.md` and the files in `agents/loki/platform/`, never the artifacts.

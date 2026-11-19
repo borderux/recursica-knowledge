@@ -779,6 +779,17 @@ else
   # As the owner, never as root: agents can change the workspace and their homes (sync-skills.sh).
   install_unit "agents-sync$SUFFIX" "$ENVS $HERE/sync-skills.sh" "$CC_DIR" "$(id -un)" hourly
 fi
+# The agents on the stack's RecursicaChat 2.0 server, with a recursicachat block in site.json: each
+# agent's instructions, model, autonomy, sandbox and monthly budget, from the kit and site.json
+# (rc-sync.sh). Now, then hourly. The job runs as root, because only root may run the server's CLI
+# for the sync's session. The sync itself runs as the owner. A failed sync leaves the setup going:
+# an agent not yet added on the server fails the sync until the agent is added.
+if [ -n "$(site_get recursicachat.account)" ]; then
+  CC_DIR="$CC_DIR" SITE="$SITE" "$HERE/rc-sync.sh" || echo "The RecursicaChat sync failed (the lines above say why). The hourly job tries again."
+  install_unit "rc-sync$SUFFIX" "$ENVS KIT_NODE=$(command -v node) $HERE/rc-sync.sh" "$CC_DIR" root hourly
+else
+  uninstall_unit "rc-sync$SUFFIX" >/dev/null
+fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".

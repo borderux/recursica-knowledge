@@ -1387,6 +1387,50 @@ The check works in a throwaway chat with the agent. A member cannot archive a ch
 2.0, so at the end the agent leaves the chat and the chat's name ends in "(finished)".
 `CHECK_KEEP=1` leaves both. Each check is a real model turn, so a run can take tens of minutes.
 
+### Agents on RecursicaChat 2.0
+
+**`circlechat/rc-sync.sh` sets each agent's settings on the stack's RecursicaChat 2.0 server from the
+kit and site.json, through the server's API.** Nobody pastes an agent's instructions by hand. The
+sync sets five settings for each agent with `agents.<handle>.recursicachat` in site.json:
+
+| Setting        | Source                                                                                  |
+| -------------- | --------------------------------------------------------------------------------------- |
+| Instructions   | `portable/recursicachat/agents/<handle>/INSTRUCTIONS.md`, built from `agents/<handle>/` |
+| Autonomy       | `agents/<handle>/runtime/recursicachat.json` in the kit                                 |
+| Sandbox        | `agents/<handle>/runtime/recursicachat.json` in the kit                                 |
+| Model          | `agents.<handle>.recursicachat.model` in site.json, as `<provider id>:<model>`          |
+| Monthly budget | `agents.<handle>.recursicachat.budget_usd` in site.json, in US dollars                  |
+
+- **`setup-host.sh` runs the sync once, then installs the hourly job `rc-sync`.** The job runs as
+  root, because only root may run the server's CLI. The sync itself runs as the owner.
+- **The sync sends only the settings that differ.** The server restarts an agent when the model or
+  the sandbox changes, so an hourly run with nothing to change restarts nothing.
+- **The sync never adds an agent.** Add the agent in RecursicaChat first, with the agent's handle
+  from site.json. Until then, the sync fails for that agent, and the other agents still sync.
+- **The sync signs in as its own account, a builder made only for the sync.** Never use an owner's or
+  an admin's account: the server's CLI refuses both, and the sync refuses any role but builder. The
+  CLI gives the account a session of 5 minutes and prints only the token. The token goes through a
+  pipe into the sync, as a Bearer header. On every way out, the CLI ends every session of the account.
+- **With the cloud switch off, the model must be one of the agent's routes.** The config check refuses
+  another model, because a model outside the gateway could be a cloud provider's.
+- **`./circlechat/rc-sync.sh --check`** lists what would change, and changes nothing.
+
+The `recursicachat` block in site.json:
+
+| Setting          | Default                   | What the setting sets                                                |
+| ---------------- | ------------------------- | -------------------------------------------------------------------- |
+| `account`        | none, required            | The sync's account: a builder, made only for the sync                |
+| `url`            | `http://127.0.0.1:3100`   | The server                                                           |
+| `app`            | `/opt/recursicachat/app`  | The server's app folder                                              |
+| `data`           | `/opt/recursicachat/data` | The server's data folder, `CIRCLECHAT_DATA`                          |
+| `vault_key_file` | none                      | The server's vault key, when the key sits outside the data folder    |
+| `node`           | the owner's `node`        | A Node 24 or newer for the server's CLI, outside the server's folder |
+
+**The vault key reaches the CLI only through root.** The CLI opens the server's database, which
+needs the vault key. With `vault_key_file`, root reads the file and hands the key to the CLI in
+`CIRCLECHAT_MASTER_KEY`, never in an argument (`kit/rc-cli.sh`). `rc-check-agent.sh` takes the same
+file as `RC_VAULT_KEY_FILE`.
+
 ## Hard-won lessons (read before debugging)
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".
