@@ -1405,21 +1405,25 @@ sync sets five settings and a model key for each agent with `agents.<handle>.rec
 
 - **`setup-host.sh` runs the sync once, then installs the hourly job `rc-sync`.** The job runs as
   root, because only root may run the server's CLI. The sync itself runs as the owner.
-- **The sync sends only the settings that differ.** The server restarts an agent when the model or
-  the sandbox changes, so an hourly run with nothing to change restarts nothing.
+- **Each agent is managed on the server.** The sync marks the agent managed (`cli.ts manage`), so
+  the server's API refuses changes to the five settings from every session, the owner's included,
+  and the web app shows them read-only, set by the repository. Change them in the kit or site.json.
+- **The sync writes through the server's root-only CLI, and signs in to nothing.** The five settings
+  go to `cli.ts agent-set` as JSON on stdin. The CLI sets only the settings that differ. The server
+  restarts an agent before its next turn when the model or the sandbox changed, so an hourly run with
+  nothing to change restarts nothing.
 - **The sync never adds an agent.** Add the agent in RecursicaChat first, with the agent's handle
   from site.json. Until then, the sync fails for that agent, and the other agents still sync.
-- **The sync signs in as its own account, a builder made only for the sync.** Never use an owner's or
-  an admin's account: the server's CLI refuses both, and the sync refuses any role but builder. The
-  CLI gives the account a session of 5 minutes and prints only the token. The token goes through a
-  pipe into the sync, as a Bearer header. On every way out, the CLI ends every session of the account.
+- **No account is needed.** Earlier kits signed in as a builder account made for the sync. The sync
+  no longer uses `recursicachat.account`, and says so while site.json still names the account: remove
+  the line, and remove the account in RecursicaChat.
 - **The model is one of the agent's routes, through the agent's own gateway handle.** The config check
   refuses another model, because a provider outside the gateway could be a cloud provider's.
 - **Each agent has a gateway handle of its own, `rc-<handle>`, never a 1.x agent's handle.** The
   handle gets the routes and cloud switch of `agents.<handle>`. `setup-host.sh` issues keys only for
   1.x Hermes homes, so a 1.x key never ends a RecursicaChat agent's key. The config check keeps
   `rc-` names for RecursicaChat agents.
-- **The sync sets each agent's key itself, as root, before the builder's session.** The server's
+- **The sync sets each agent's key itself, as root, before the settings.** The server's
   provider for the agent is `gw-<handle>`, at `http://127.0.0.1:<site.gateway_local_port>/v1`. When the
   provider's stored key is the key the gateway records for `rc-<handle>`, the sync only refreshes the
   provider's address and models. Otherwise the sync issues a new key, checks that the gateway serves
@@ -1436,8 +1440,6 @@ The `recursicachat` block in site.json:
 
 | Setting          | Default                   | What the setting sets                                                |
 | ---------------- | ------------------------- | -------------------------------------------------------------------- |
-| `account`        | none, required            | The sync's account: a builder, made only for the sync                |
-| `url`            | `http://127.0.0.1:3100`   | The server                                                           |
 | `app`            | `/opt/recursicachat/app`  | The server's app folder                                              |
 | `data`           | `/opt/recursicachat/data` | The server's data folder, `CIRCLECHAT_DATA`                          |
 | `vault_key_file` | none                      | The server's vault key, when the key sits outside the data folder    |

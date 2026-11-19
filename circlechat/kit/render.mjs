@@ -508,8 +508,9 @@ export function gatewayLocalPortErrors(site = {}) {
 }
 
 // site.recursicachat: the RecursicaChat 2.0 server on the control computer, whose agents circlechat/
-// rc-sync.sh keeps in step with the kit (kit/rc-sync.mjs). The sync signs in as `account`, a builder
-// made only for the sync, with a short session from the server's CLI. agents.<handle>.recursicachat
+// rc-sync.sh keeps in step with the kit (kit/rc-sync.mjs), through the server's root-only CLI. The sync
+// signs in to nothing: `account`, the builder account earlier kits signed in as, is no longer used, and
+// rc-sync.sh says so while site.json still names it. agents.<handle>.recursicachat
 // holds what belongs to the stack: the model, one of the agent's routes, and the monthly budget in
 // US dollars. On the server the agent's model is gw-<handle>:<route>, a provider of the agent's own
 // that holds the gateway key of rc-<handle>. Only the cluster's own stack sets either.
@@ -526,13 +527,11 @@ export function recursicachatErrors(site = {}) {
     for (const h of Array.isArray(k?.agents) ? k.agents : []) if (String(h).startsWith(RC_PREFIX)) errs.push(`model_keys.${name}.agents: ${h} starts with ${RC_PREFIX}, which belongs to the RecursicaChat 2.0 server's agents. Name the agent itself`);
   }
   if (rc === undefined) {
-    if (synced.length) errs.push(`agents.${synced[0][0]}.recursicachat needs a recursicachat block: the server and the sync's account`);
+    if (synced.length) errs.push(`agents.${synced[0][0]}.recursicachat needs a recursicachat block: the server's folders and the vault key file`);
     return errs;
   }
   if (!rc || typeof rc !== "object" || Array.isArray(rc)) return ["recursicachat must be an object"];
   if (site.site?.tenant !== undefined) errs.push("recursicachat is for the cluster's own stack only");
-  if (typeof rc.account !== "string" || !EMAIL.test(rc.account)) errs.push("recursicachat.account must be the email of the sync's own RecursicaChat account, a builder, such as agent-sync@example.com");
-  else if ((site.cloud_approvers ?? []).some((a) => String(a?.email ?? "").toLowerCase() === rc.account.toLowerCase())) errs.push("recursicachat.account must be an account made only for the sync, not a person's account");
   if (rc.url !== undefined && !/^https?:\/\/[^\s/]+\/?$/.test(String(rc.url))) errs.push("recursicachat.url must be the server's address, such as http://127.0.0.1:3100");
   for (const k of ["app", "data", "vault_key_file", "node"]) {
     if (rc[k] !== undefined && (typeof rc[k] !== "string" || !/^\/\S+$/.test(rc[k]))) errs.push(`recursicachat.${k} must be an absolute path`);
