@@ -783,10 +783,10 @@ else
 fi
 # The agents on the stack's RecursicaChat 2.0 server, with a recursicachat block in site.json: each
 # agent's instructions, model, autonomy, sandbox and monthly budget, from the kit and site.json
-# (rc-sync.sh). Now, then hourly. The job runs as root, because only root may run the server's CLI
-# for the sync's session. The sync itself runs as the owner. A failed sync leaves the setup going:
-# an agent not yet added on the server fails the sync until the agent is added.
-if [ -n "$(site_get recursicachat.account)" ]; then
+# (rc-sync.sh), through the server's root-only CLI. Now, then hourly. The job runs as root, because
+# only root may run the server's CLI. The kit's own steps run as the owner. A failed sync leaves the
+# setup going: an agent not yet added on the server fails the sync until the agent is added.
+if [ -n "$(site_get recursicachat)" ]; then
   CC_DIR="$CC_DIR" SITE="$SITE" "$HERE/rc-sync.sh" || echo "The RecursicaChat sync failed (the lines above say why). The hourly job tries again."
   install_unit "rc-sync$SUFFIX" "$ENVS KIT_NODE=$(command -v node) $HERE/rc-sync.sh" "$CC_DIR" root hourly
 else
