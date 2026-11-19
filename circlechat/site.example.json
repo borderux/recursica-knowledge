@@ -36,6 +36,8 @@
     "\"vault_key_file\": \"/etc/recursicachat/master.key\"}, and in agents.loki: \"recursicachat\": {\"model\":",
     "\"local-small\", \"budget_usd\": 5}: the model is one of the agent's routes, through the gateway",
     "handle rc-loki and the provider gw-loki, which rc-sync.sh sets. Only the cluster's own stack sets either.",
+    "recursicachat.public_url, google_client_id and google_domain: the server's https address and its",
+    "Google sign-in, which circlechat/recursicachat/install.sh renders into the server's run.sh.",
     "site.computers: the computers picked for a client or demo stack, [\"<computer>\"] or \"cluster\". The",
     "stack's site.json lists only those computers; circlechat/kit/stack-site.mjs writes it from this file.",
     "nodes[].limits: cpus, memory_gb and model_memory_gb for a picked computer, so a large computer acts",
