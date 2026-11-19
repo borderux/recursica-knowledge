@@ -1486,6 +1486,31 @@ start writes the files again. The guard then checks what is left, unchanged: no 
 key, and neither the vault key nor the restic password anywhere in the contents. The test restore
 fails if a backup holds any of those settings.
 
+### A session for a program outside the server
+
+**A program that uses the RecursicaChat 2.0 server's API from outside gets a member session from
+`circlechat/rc-session.sh`, never a password or an admin account.** The server has no API token for a
+program. Its root-only CLI makes a session for a member account, at most 60 minutes long, and
+refuses one for an owner or an admin. List each program in site.json:
+
+```json
+"recursicachat": {
+  "sessions": [{ "email": "program@example.com", "account": "_program", "file": "/opt/program/run/session" }]
+}
+```
+
+- **`setup-host.sh` installs the job `rc-session`, as root.** Every 45 minutes it makes a 60-minute
+  session for each entry, so the file always holds a session that works.
+- **The file belongs to the entry's account, mode 400, in a folder that belongs to root.** The job
+  refuses a folder the program's account or anyone else could change, so root never writes through a
+  link. The token goes from the CLI straight into a new file that then takes the old file's place in
+  one step. No argument, variable or output line holds it.
+- **A failure keeps the old file**, says why in the job's log, and the job tries again after a
+  minute. The server refuses a session for an owner, an admin or a deactivated account.
+- **The program reads the file again when the server answers 401**, and sends the token as
+  `Authorization: Bearer <token>`, with no cookie.
+- `rc-session.sh --once` makes each session once and stops.
+
 ## Hard-won lessons (read before debugging)
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".

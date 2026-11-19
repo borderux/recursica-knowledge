@@ -47,6 +47,11 @@ export function wrapperSettings(site) {
   return [rc.app ?? RC_DEFAULTS.app, rc.data ?? RC_DEFAULTS.data, rc.vault_key_file ?? "", rc.node ?? "", port ? `http://127.0.0.1:${port}/v1` : "", rc.account !== undefined ? "account" : ""].map(String);
 }
 
+// Each member session circlechat/rc-session.sh keeps fresh: the email, the account and the file.
+export function rcSessions(site) {
+  return (site.recursicachat?.sessions ?? []).map((s) => [s.email, s.account, s.file]);
+}
+
 // What the root step needs for each agent: the handle, the gateway handle, the provider, the model
 // (a route) and every route the agent's key may use.
 export function rootAgents(site) {
@@ -111,6 +116,10 @@ export async function main(argv = process.argv.slice(2), { stdin = process.stdin
       out(wrapperSettings(readSite(file)).join("\n") + "\n");
       return 0;
     }
+    if (cmd === "sessions") {
+      for (const row of rcSessions(readSite(file))) out(row.join("\t") + "\n");
+      return 0;
+    }
     if (cmd === "agents") {
       for (const row of rootAgents(readSite(file))) out(row.join("\t") + "\n");
       return 0;
@@ -130,7 +139,7 @@ export async function main(argv = process.argv.slice(2), { stdin = process.stdin
       for (const w of warnings(await readAll(stdin))) out(w + "\n");
       return 0;
     }
-    throw new SetupError("usage: rc-sync.mjs settings <site.json> | agents <site.json> | want <site.json> <handle> | warn <site.json> < models");
+    throw new SetupError("usage: rc-sync.mjs settings <site.json> | sessions <site.json> | agents <site.json> | want <site.json> <handle> | warn <site.json> < models");
   } catch (e) {
     log(e instanceof SetupError ? e.message : `The sync stopped: ${e.message}`);
     return 2;
