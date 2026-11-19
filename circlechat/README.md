@@ -1365,11 +1365,13 @@ the computer that runs the server. The check is the harness's: nothing of it run
    trigger, so the quiet window stands in for 1.x's heartbeats.
 3. **A settled task stays untouched.** A task in the chat, set to done, keeps its status and update
    time through another turn of the agent.
-4. **A long reply arrives whole.** RecursicaChat 2.0 posts a long reply as one message, with no
-   file. The message must open with `CHECK_BANNER`'s lines when the setting is given (with `\n`
-   between lines), hold at least `CHECK_MIN_WORDS` words (1,500), and carry speaker lines whose
-   timestamps only move forward and end within `CHECK_MINUTES` (15). Nothing may follow the reply,
-   and the agent may make no tool call in the chat during the check.
+4. **A transcript arrives as an attached file.** The agent attaches one `.txt` file with
+   `attach_files`, and a formatted `.md` copy beside the `.txt` is fine. The check downloads the
+   `.txt` with its own session. The file must open with `CHECK_BANNER`'s lines when the setting is
+   given (with `\n` between lines), hold at least `CHECK_MIN_WORDS` words (1,500), and carry speaker
+   lines whose timestamps only move forward and end within `CHECK_MINUTES` (15). The agent's reply is
+   one short line with no transcript in it. Nothing may follow the reply, and the agent may call no
+   tool but `attach_files` in the chat during the check.
 
 **The check signs in as its own account, a member or a builder.** Set `RC_CHECK_EMAIL` to the
 account. The server's CLI, run as root, gives the account a session of at most an hour and prints
