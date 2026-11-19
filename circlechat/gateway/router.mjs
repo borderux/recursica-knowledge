@@ -217,8 +217,11 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 50_000_000) return fail(res, 413, "too_large", "The request is too large."); }
     let body; try { body = JSON.parse(raw); } catch { return fail(res, 400, "bad_json", "The request body is not JSON."); }
-    const agent = config.agents?.[who.agent] ?? config.fallback;
-    const routes = agent?.routes ?? [];
+    // A key for a handle site.json does not list gets no route and no cloud model: the gateway fails
+    // closed, whatever an older gateway.json says about a fallback.
+    const agent = config.agents?.[who.agent];
+    if (!agent) return fail(res, 403, "unknown_agent", `Agent ${who.agent} is not in site.json's agents, so the agent's key reaches no model.`);
+    const routes = agent.routes ?? [];
     let route = body.model;
     if (!routes.includes(route)) {
       if (config.routes?.[route] || String(route).startsWith("key/")) return fail(res, 403, "route_not_allowed", `Agent ${who.agent} may use ${routes.join(", ") || "no route"}, not ${route}.`);
@@ -326,7 +329,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
         return res.end(JSON.stringify({ key: taskKey(secret, currentKeys(), who.agent, task), task }));
       }
       if (req.method === "GET" && pathname === "/v1/models") {
-        const routes = (config.agents?.[who.agent] ?? config.fallback)?.routes ?? [];
+        const routes = config.agents?.[who.agent]?.routes ?? [];
         res.writeHead(200, { "content-type": "application/json" });
         return res.end(JSON.stringify({ object: "list", data: routes.map((id) => ({ id, object: "model", owned_by: "cluster" })) }));
       }

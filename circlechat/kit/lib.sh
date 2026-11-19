@@ -454,7 +454,10 @@ uninstall_unit() {
 gateway_access() {
   local handle="$1" home="$2" kit route url
   kit="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-  route="$(node -e 'const g = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); const a = g.agents?.[process.argv[2]] ?? g.fallback; process.stdout.write(a?.routes?.[0] ?? "")' "$KIT_OUT/gateway.json" "$handle")"
+  # A handle site.json does not list gets no route: the gateway fails closed (gateway/router.mjs).
+  case "$handle" in rc-*) echo "$handle: handles starting with rc- belong to the RecursicaChat 2.0 server's agents, never to a Hermes home."; return 1 ;; esac
+  route="$(node -e 'const g = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); const a = g.agents?.[process.argv[2]]; process.stdout.write(a ? a.routes?.[0] ?? "" : "-")' "$KIT_OUT/gateway.json" "$handle")"
+  [ "$route" != - ] || { echo "$handle is not in site.json's agents, so the gateway gives $handle's key no model. Add agents.$handle to site.json, with its routes and cloud switch."; return 1; }
   [ -n "$route" ] || { echo "$handle: site.json has no route, so $handle has no model to ask for. Add a route."; return 1; }
   if grep -q '^EGRESS=on' "$KIT_OUT/tenant.env"; then url=http://cc-gateway:4000/v1
   else url="http://localhost:$(sed -n 's/^GATEWAY_PORT=//p' "$KIT_OUT/tenant.env")/v1"; fi

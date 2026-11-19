@@ -36,11 +36,24 @@ test("the gateway gets each agent's routes, cloud switch and key", () => {
   assert.deepEqual(g.agents.loki, { routes: ["local-small"], cloud: false, key: "default" });
   assert.deepEqual(g.agents.porter, { routes: ["local-large", "local-small"], cloud: true, key: "porter" });
   assert.deepEqual(g.agents.barb.key, "acme-grok");
-  assert.deepEqual(g.fallback, { routes: ["local-large", "local-small"], cloud: true, key: "default" });
+  assert.deepEqual(g.fallback, { routes: [], cloud: false, key: null }, "a handle site.json does not list gets no route and no cloud model");
   assert.deepEqual(g.keys["acme-grok"], { model: "key/acme-grok", provider: "xai" });
   assert.deepEqual(g.routes["local-large"], { local: true });
   assert.deepEqual(g.routes["machine-2/mlx/large-mlx"], { local: true }, "an agent may name one cluster model as a route");
   assert.deepEqual(g.nodes, ["machine-2.example.ts.net"]);
+});
+
+test("each agent on the RecursicaChat 2.0 server gets a gateway handle of its own, rc-<handle>, with the agent's routes and cloud switch", () => {
+  const s = clone();
+  s.site.gateway_local_port = 4005;
+  s.recursicachat = { account: "agent-sync@example.com" };
+  s.agents.loki.recursicachat = { model: "local-small", budget_usd: 5 };
+  assert.deepEqual(validate(s), []);
+  const g = render(s).gateway;
+  assert.deepEqual(g.agents["rc-loki"], g.agents.loki, "the same routes, cloud switch and key as the agent");
+  assert.deepEqual(g.agents["rc-loki"].routes, ["local-small"]);
+  assert.equal(g.agents["rc-loki"].cloud, false);
+  assert.equal(g.agents["rc-betty"], undefined, "only agents with a recursicachat block");
 });
 
 test("a stack with no model_keys block keeps working: its cloud route model becomes the default key", () => {
@@ -52,7 +65,7 @@ test("a stack with no model_keys block keeps working: its cloud route model beco
   assert.deepEqual(r.litellm.model_list.find((m) => m.model_name === "key/default").litellm_params, { model: "anthropic/claude-sonnet-5-5", api_key: "file:MODEL_KEY_DEFAULT" });
   assert.deepEqual(r.litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/ollama/small-local"], "the cloud model is no fallback");
   assert.equal(r.gateway.agents.betty.key, "default");
-  assert.equal(r.gateway.fallback.key, "default");
+  assert.equal(r.gateway.fallback.key, null, "the fallback holds no key");
   s.routes["local-small"].push("xai/grok-4");
   assert.match(validate(s).join("\n"), /more than one cloud model/);
 });

@@ -235,7 +235,13 @@ test("an unknown or revoked key gets nothing, and revoking one agent leaves the 
   assert.equal((await ask("ccg_" + "1".repeat(48))).status, 401);
   assert.equal((await ask("sk-ant-anything")).status, 401);
   const extra = issue(state, "alan");
-  assert.equal((await ask(extra)).status, 200, "the fallback serves an agent site.json does not list");
+  const refused = await ask(extra);
+  assert.equal(refused.status, 403, "a key for a handle site.json does not list reaches no model");
+  assert.equal((await refused.json()).error.type, "unknown_agent");
+  assert.equal((await ask(extra, "claude-sonnet-5-5")).status, 403, "nor a cloud model, whatever the old fallback in gateway.json says");
+  const models = await fetch(`${base(gw)}/v1/models`, { headers: { authorization: `Bearer ${extra}` } });
+  assert.equal(models.status, 200);
+  assert.deepEqual((await models.json()).data, [], "the handle is offered no route");
   revoke(state, "alan");
   assert.equal((await ask(extra)).status, 401);
   assert.equal((await ask(keys.betty)).status, 200);

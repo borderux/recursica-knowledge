@@ -171,19 +171,35 @@ export function agentKey(keys, handle) {
 
 // What the gateway needs to know about each agent: the routes the agent's key may use (all routes
 // unless site.agents lists some), the agent's cloud switch (on unless site.agents turns it off),
-// and the agent's cloud key. An agent site.json never names gets the fallback.
+// and the agent's cloud key. A handle site.json never names gets nothing: the fallback has no route
+// and no cloud model, and the router refuses the handle outright.
+//
+// Each agent on the RecursicaChat 2.0 server (agents.<handle>.recursicachat) gets a gateway handle of
+// its own, rc-<handle>, with the agent's routes and cloud switch. The server's key and a 1.x agent's
+// key never share a handle, so issuing one never ends the other (kit/rc-gateway-key.mjs).
+// The agents on the RecursicaChat 2.0 server, and the gateway handle and provider each one gets.
+export const RC_PREFIX = "rc-";
+export const rcHandle = (h) => `${RC_PREFIX}${h}`;
+export const rcProvider = (h) => `gw-${h}`;
+export function rcAgents(site) {
+  return Object.entries(site.agents && typeof site.agents === "object" ? site.agents : {})
+    .filter(([, a]) => a && typeof a === "object" && a.recursicachat !== undefined).map(([h]) => h);
+}
+
 export function gatewayConfig(site) {
   const keys = modelKeys(site);
   const cluster = clusterModels(site);
   const local = (b) => cluster.has(b);
   const all = Object.keys(site.routes ?? {});
   const handles = new Set([...Object.keys(site.agents ?? {}), ...Object.values(keys).flatMap((k) => k.agents)]);
-  const agents = Object.fromEntries([...handles].sort().map((h) => [h, {
-    routes: site.agents?.[h]?.routes ?? all, cloud: site.agents?.[h]?.cloud !== false, key: agentKey(keys, h),
-  }]));
+  const entry = (h) => ({ routes: site.agents?.[h]?.routes ?? all, cloud: site.agents?.[h]?.cloud !== false, key: agentKey(keys, h) });
+  const agents = Object.fromEntries([
+    ...[...handles].map((h) => [h, entry(h)]),
+    ...rcAgents(site).map((h) => [rcHandle(h), entry(h)]),
+  ].sort(([a], [b]) => a.localeCompare(b)));
   return {
     agents,
-    fallback: { routes: all, cloud: true, key: keys.default ? "default" : null },
+    fallback: { routes: [], cloud: false, key: null },
     keys: Object.fromEntries(Object.entries(keys).map(([name, k]) => [name, { model: `key/${name}`, provider: k.provider }])),
     // Each route, and each cluster model, which an agent may also name as a route of its own.
     routes: Object.fromEntries([
@@ -494,13 +510,21 @@ export function gatewayLocalPortErrors(site = {}) {
 // site.recursicachat: the RecursicaChat 2.0 server on the control computer, whose agents circlechat/
 // rc-sync.sh keeps in step with the kit (kit/rc-sync.mjs). The sync signs in as `account`, a builder
 // made only for the sync, with a short session from the server's CLI. agents.<handle>.recursicachat
-// holds what belongs to the stack: the model, as "<provider id>:<model>", and the monthly budget in
-// US dollars. Only the cluster's own stack sets either.
+// holds what belongs to the stack: the model, one of the agent's routes, and the monthly budget in
+// US dollars. On the server the agent's model is gw-<handle>:<route>, a provider of the agent's own
+// that holds the gateway key of rc-<handle>. Only the cluster's own stack sets either.
 export const RC_DEFAULTS = { url: "http://127.0.0.1:3100", app: "/opt/recursicachat/app", data: "/opt/recursicachat/data" };
 export function recursicachatErrors(site = {}) {
   const errs = [];
   const rc = site.recursicachat;
   const synced = Object.entries(site.agents && typeof site.agents === "object" ? site.agents : {}).filter(([, a]) => a && typeof a === "object" && a.recursicachat !== undefined);
+  // rc-<handle> belongs to an agent on the RecursicaChat 2.0 server, never to a 1.x agent.
+  for (const h of Object.keys(site.agents && typeof site.agents === "object" ? site.agents : {})) {
+    if (h.startsWith(RC_PREFIX)) errs.push(`agents.${h}: handles starting with ${RC_PREFIX} belong to the RecursicaChat 2.0 server's agents. Rename the agent`);
+  }
+  for (const [name, k] of Object.entries(site.model_keys ?? {})) {
+    for (const h of Array.isArray(k?.agents) ? k.agents : []) if (String(h).startsWith(RC_PREFIX)) errs.push(`model_keys.${name}.agents: ${h} starts with ${RC_PREFIX}, which belongs to the RecursicaChat 2.0 server's agents. Name the agent itself`);
+  }
   if (rc === undefined) {
     if (synced.length) errs.push(`agents.${synced[0][0]}.recursicachat needs a recursicachat block: the server and the sync's account`);
     return errs;
@@ -515,18 +539,16 @@ export function recursicachatErrors(site = {}) {
   }
   const serverDir = String(rc.app ?? RC_DEFAULTS.app).replace(/\/[^/]*\/?$/, "");
   if (typeof rc.node === "string" && serverDir && (rc.node + "/").startsWith(serverDir + "/")) errs.push(`recursicachat.node must be a Node outside the server's folder (${serverDir}), such as the owner's Node 24`);
+  if (synced.length && site.site?.gateway_local_port === undefined) errs.push("recursicachat needs site.gateway_local_port: the server reaches each agent's gateway handle there");
   for (const [h, a] of synced) {
     const s = a.recursicachat;
     const at = `agents.${h}.recursicachat`;
+    if (!/^[a-z0-9][a-z0-9_-]{0,36}$/.test(h)) errs.push(`${at}: the handle ${h} must be lowercase letters, digits, - and _, at most 37 characters, for the gateway handle ${rcHandle(h)} and the provider ${rcProvider(h)}`);
     if (!s || typeof s !== "object" || Array.isArray(s)) { errs.push(`${at} must be an object`); continue; }
-    const m = /^([a-z0-9][a-z0-9_-]*):(\S+)$/i.exec(String(s.model ?? ""));
-    if (!m) errs.push(`${at}.model must be "<provider id>:<model>", such as cluster:local-large`);
-    // An agent with the cloud switch off takes one of the agent's own routes, through the gateway.
-    // Another model on the server could be a cloud provider the gateway never sees.
-    else if (a.cloud === false) {
-      const routes = Array.isArray(a.routes) ? a.routes : Object.keys(site.routes ?? {});
-      if (!routes.includes(m[2])) errs.push(`${at}.model: ${h}'s cloud switch is off, so the model must be one of ${h}'s routes (${routes.join(", ") || "none"}), not ${m[2]}`);
-    }
+    // The model is one of the agent's own routes, through the agent's own gateway handle. A provider
+    // outside the gateway could be a cloud provider the gateway never sees.
+    const routes = Array.isArray(a.routes) ? a.routes : Object.keys(site.routes ?? {});
+    if (typeof s.model !== "string" || !routes.includes(s.model)) errs.push(`${at}.model must be one of ${h}'s routes (${routes.join(", ") || "none"}), such as ${routes[0] ?? "local-large"}. The sync sets ${rcProvider(h)}:<route> on the server`);
     if (typeof s.budget_usd !== "number" || !(s.budget_usd > 0) || s.budget_usd > 100000) errs.push(`${at}.budget_usd must be the monthly budget in US dollars, more than 0`);
     for (const k of Object.keys(s)) if (!["model", "budget_usd"].includes(k)) errs.push(`${at}.${k} is not a setting. autonomy and sandbox come from agents/${h}/runtime/recursicachat.json in the kit`);
   }
