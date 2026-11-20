@@ -47,6 +47,12 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      # checks.yml runs this test on Linux. rc-clear runs only on a Mac, as root, so the same test
+      # also runs here, with the bash, find and tar that macOS ships.
+      - name: rc-clear, with macOS's own bash, find and tar
+        run: node --test circlechat/recursicachat/rc-clear.test.mjs
       - name: The pf rules parse
         run: |
           # @RUSTDESK_DIRECT@ both ways install-cluster.sh fills it: empty, and the direct-address rule.

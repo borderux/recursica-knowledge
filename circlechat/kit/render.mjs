@@ -545,7 +545,12 @@ export function rcSessionErrors(rc) {
 // recursicachat.services: a program that drives agents on the server through a service account
 // (circlechat/rc-service.sh). Each entry: the service's name, the agents it drives, the macOS account
 // that runs the program, and the file that holds its token. An agent has at most one service.
+// Two optional settings are for sudo rc-clear alone (recursicachat/rc-clear.sh): job, the program's
+// launchd job, which rc-clear stops and starts, and state, the folder that holds only the program's
+// state, which rc-clear copies aside and clears. All four of an entry's name, job, account and state
+// land in rc-clear.sh, a root script, so each shape allows no space, quote, colon or dollar sign.
 const RC_SERVICE_NAME = /^[a-z][a-z0-9-]{1,39}$/;
+const RC_SERVICE_JOB = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 export function rcServiceErrors(rc) {
   if (rc.services === undefined) return [];
   if (!Array.isArray(rc.services)) return ["recursicachat.services must be a list"];
@@ -557,7 +562,16 @@ export function rcServiceErrors(rc) {
   rc.services.forEach((s, i) => {
     const at = `recursicachat.services[${i}]`;
     if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
-    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account and file`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job and state`);
+    if (s.job !== undefined) {
+      if (typeof s.job !== "string" || !RC_SERVICE_JOB.test(s.job)) errs.push(`${at}.job must be the program's launchd job, such as io.example.program`);
+      else if (s.job.startsWith("io.recursica.recursicachat")) errs.push(`${at}.job must be the program's launchd job, not one of the server's own`);
+    }
+    if (s.state !== undefined) {
+      if (typeof s.state !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(s.state) || s.state.split("/").includes("..")) errs.push(`${at}.state must be the absolute path of the folder that holds only the program's state`);
+      else if (serverDirs.some((d) => `${s.state.replace(/\/+$/, "")}/`.startsWith(d))) errs.push(`${at}.state must be outside the server's folders`);
+      if (s.job === undefined) errs.push(`${at}.state needs job, the launchd job rc-clear stops before the state is cleared`);
+    }
     if (typeof s.name !== "string" || !RC_SERVICE_NAME.test(s.name)) errs.push(`${at}.name must be 2 to 40 of a-z, 0-9 and -, starting with a letter`);
     else if (names.has(s.name)) errs.push(`${at}.name ${s.name} is listed twice`);
     else names.add(s.name);

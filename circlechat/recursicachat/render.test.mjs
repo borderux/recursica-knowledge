@@ -5,7 +5,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { render, values, fill, TEMPLATES } from "./render.mjs";
+import { render, values, fill, programs, TEMPLATES } from "./render.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SITE = {
@@ -20,7 +20,7 @@ const DIRS = { ownerHome: "/Users/owner", kit: "/Users/owner/kit/circlechat", cc
 
 test("every template renders with no token left", () => {
   const files = render(SITE, DIRS);
-  for (const name of [...TEMPLATES, "colima-service.sh", "build-pdftext.sh"]) {
+  for (const name of [...TEMPLATES, "colima-service.sh", "build-pdftext.sh", "rc-clear.mjs"]) {
     assert.ok(files[name], name);
     assert.doesNotMatch(files[name], /@[A-Z_]+@/, name);
   }
@@ -35,6 +35,39 @@ test("every template renders with no token left", () => {
     assert.match(files[name], /^CC_DIR=\/Users\/owner\/circlechat$/m, name);
   }
   assert.match(files["rc-deploy.sh"], /^BUILD_NODE=\/opt\/node\/v24\.0\.0\/bin\/node$/m, "rc-deploy builds with the owner's Node");
+  assert.match(files["rc-clear.sh"], /^PROGRAMS=""$/m, "no service has a job: rc-clear stops and starts the server alone");
+  assert.equal(files["rc-clear.mjs"], readFileSync(join(here, "rc-clear.mjs"), "utf8"), "copied as it is");
+});
+
+test("rc-clear gets each service that has a job: its name, job, account and state folder", () => {
+  const services = [
+    { name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token", job: "io.example.program", state: "/opt/program/home/state" },
+    { name: "no-state", agents: ["writer"], account: "_other", file: "/opt/other/run/token", job: "io.example.other" },
+    { name: "no-job", agents: ["researcher"], account: "_third", file: "/opt/third/run/token" },
+  ];
+  const site = { recursicachat: { ...SITE.recursicachat, services } };
+  const line = "example-service:io.example.program:_program:/opt/program/home/state no-state:io.example.other:_other:";
+  assert.deepEqual(programs(site), { value: line, errs: [] });
+  assert.ok(render(site, DIRS)["rc-clear.sh"].split("\n").includes(`PROGRAMS="${line}"`));
+
+  // The kit's site check holds each shape: nothing that fails it reaches the root script.
+  const bad = [
+    [{ job: "io.example.program; id" }, "job must be"],
+    [{ job: "io.recursica.recursicachat-backup" }, "not one of the server's own"],
+    [{ name: "two words" }, "name must be"],
+    [{ account: "$(id)" }, "account must be"],
+    [{ state: "relative/state" }, "state must be"],
+    [{ state: "/opt/my program" }, "state must be"],
+    [{ state: "/opt/program/state", job: undefined }, "state needs job"],
+    [{ shell: "/bin/sh" }, "shell is not a setting"],
+  ];
+  for (const [change, why] of bad) {
+    const entry = { ...services[0], ...change };
+    const { value, errs } = programs({ recursicachat: { services: [entry] } });
+    assert.equal(value, "", JSON.stringify(change));
+    assert.ok(errs.some((e) => e.includes(why)), `${JSON.stringify(change)}: ${errs.join(" | ")}`);
+    assert.throws(() => render({ recursicachat: { ...SITE.recursicachat, services: [entry] } }, DIRS), JSON.stringify(change));
+  }
 });
 
 test("the colima service is the kit's own script, not a second copy", () => {

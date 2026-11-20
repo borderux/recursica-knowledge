@@ -1464,18 +1464,19 @@ whose handle site.json does not list now stops `setup-host.sh` with a line that 
 **`circlechat/recursicachat/` holds the server's own scripts and launchd jobs, for the control Mac.**
 This is the start of phase 5: the kit installs the server that rc-sync.sh already configures.
 
-| File                                                               | What it does                                                              |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `run.sh`, `io.recursica.recursicachat.plist`                       | Checks the setup, waits for Docker, starts the server as `_recursicachat` |
-| `io.recursica.recursicachat-colima.plist`                          | The server's own Colima VM, through `kit/colima-service.sh`               |
-| `backup.sh`, `io.recursica.recursicachat-backup.plist`             | The nightly backup, as root, at 03:30                                     |
-| `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist` | The monthly test restore, as root, on the 1st at 05:00                    |
-| `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`               | Puts the latest commit of the server's branch into service                |
-| `build-pdftext.sh`                                                 | Builds the PDF text reader's image for people's uploads, and records its ID |
+| File                                                                   | What it does                                                                |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `run.sh`, `io.recursica.recursicachat.plist`                           | Checks the setup, waits for Docker, starts the server as `_recursicachat`   |
+| `io.recursica.recursicachat-colima.plist`                              | The server's own Colima VM, through `kit/colima-service.sh`                 |
+| `backup.sh`, `io.recursica.recursicachat-backup.plist`                 | The nightly backup, as root, at 03:30                                       |
+| `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist`     | The monthly test restore, as root, on the 1st at 05:00                      |
+| `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`                   | Puts the latest commit of the server's branch into service                  |
+| `rc-clear.sh` with `rc-clear.mjs`, linked as `/usr/local/bin/rc-clear` | Empties the server's work, and keeps a copy of what it removes              |
+| `build-pdftext.sh`                                                     | Builds the PDF text reader's image for people's uploads, and records its ID |
 
 **Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
 `render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id`,
-`google_domain` and `node`) and from the installing account (its home folder, this kit and `$CC_DIR`). The
+`google_domain`, `node` and `services`) and from the installing account (its home folder, this kit and `$CC_DIR`). The
 installer then copies only the files that changed. It loads a changed backup or restore-test job at
 once. It never restarts the server or its VM: it prints the command for that. It never touches the
 data, the vault key, the Google secret or the restic password.
@@ -1521,6 +1522,43 @@ one back on any failure.** It prints one summary line; each step's output goes t
 
 A failure after the server stopped moves the new copy to `app.bad`, puts `app.prev` back, starts it and
 checks `/healthz`. It makes no backup first: run the backup job before it when the data matters.
+
+**`sudo rc-clear` empties the server's work, for a fresh start while agents are built.** It prints one
+summary line, with the counts of what stays and the path of the copy. Each step's output goes to
+`/var/log/recursicachat/rc-clear.log`.
+
+- **The work:** every chat with its members and read marks, messages, tasks and plans, files and the
+  text read from them, deliveries, service requests, approvals, engine sessions and chat memories.
+- **What stays:** people and their profiles, agents, the vault, apps and access, service accounts, the
+  tool log and the cost totals. `rc-clear.mjs` lists every table. No table is dropped.
+
+1. **Check, before anything changes.** `rc-clear` refuses when a trigger, a bridge or a chat grant
+   points at a chat, because each would then point at a deleted chat. It also refuses when the
+   database has a table `rc-clear.mjs` does not list. A newer server made that table, and
+   `rc-clear.mjs` must first list the table as work or as kept.
+2. **Stop** each program that drives an agent, then the server.
+3. **Copy** the database, the stored files and each program's state to `/var/root/rc-work-<time>/`, a
+   folder only root opens. Then delete the copies older than 7 days.
+4. **Delete the work's rows**, children first, in one transaction. The transaction checks that every
+   kept table has the rows it had, and undoes itself otherwise.
+5. **Remove** the stored files, and clear each program's state.
+6. **Start** the server, wait for `/healthz`, then start each program.
+
+A failure before step 4 ends deletes no work: the server and the programs start again. A failure
+after step 4 is in the summary line, with the copy's path.
+
+**The programs come from `recursicachat.services` in site.json.** `rc-clear` stops and starts each
+entry's `job`, and copies and clears each entry's `state` folder. An entry with no `job` keeps
+running, with its state. Run `install.sh` again after a change to either setting.
+
+**To put a copy back,** stop the programs and the server. Then, from the copy's folder:
+
+- Copy `circlechat.db` over the server's database, owned by `_recursicachat`. Remove the `-wal` and
+  `-shm` files beside the database.
+- Copy `files/` into the data folder.
+- Copy each `state-<name>/` into that program's state folder.
+
+Then start the server and the programs.
 
 ### A session for a program outside the server
 
@@ -1578,6 +1616,10 @@ without the program. List each program in site.json:
 - **An agent has at most one service.** To hand an agent back to the people who use it, take it out
   of the entry and run the script again. Revoking the service's token on the server (`cli.ts
   service-revoke`) also stops the service driving its agents.
+- **An entry may also name the program's `job` and `state`, for `sudo rc-clear` only.** `job` is the
+  program's launchd job, such as `"job": "io.example.program"`. `state` is the folder that holds only
+  the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's
+  account. `rc-clear` deletes everything in that folder, after copying it aside.
 
 ## Hard-won lessons (read before debugging)
 

@@ -28,6 +28,22 @@ test("recursicachat.services: a name, its agents, a non-root account and a file 
   bad({ file: "relative/token" }, /absolute path/);
   bad({ file: "/opt/recursicachat/data/token" }, /outside the server's folders/);
   bad({ extra: 1 }, /extra is not a setting/);
+  // job and state, for sudo rc-clear: the program's launchd job, and its state folder
+  assert.deepEqual(rcServiceErrors({ services: [{ ...ENTRY, job: "io.example.program", state: "/opt/program/home/state" }] }), []);
+  assert.deepEqual(rcServiceErrors({ services: [{ ...ENTRY, job: "io.example.program" }] }), [], "a program may keep no state");
+  bad({ job: "io.example.program; id" }, /job must be the program's launchd job/);
+  bad({ job: "two words" }, /job must be the program's launchd job/);
+  bad({ job: "a:b" }, /job must be the program's launchd job/);
+  bad({ job: 7 }, /job must be the program's launchd job/);
+  bad({ job: "io.recursica.recursicachat" }, /not one of the server's own/);
+  bad({ job: "io.recursica.recursicachat-backup" }, /not one of the server's own/);
+  bad({ job: "io.example.program", state: "relative/state" }, /state must be the absolute path/);
+  bad({ job: "io.example.program", state: "/opt/program/../../etc" }, /state must be the absolute path/);
+  bad({ job: "io.example.program", state: "/opt/my program" }, /state must be the absolute path/);
+  bad({ job: "io.example.program", state: "/opt/program/$(id)" }, /state must be the absolute path/);
+  bad({ job: "io.example.program", state: "/opt/recursicachat/data" }, /state must be outside the server's folders/);
+  bad({ job: "io.example.program", state: "/opt/recursicachat/data/files/" }, /state must be outside the server's folders/);
+  bad({ state: "/opt/program/home/state" }, /state needs job/);
   assert.match(rcServiceErrors({ services: {} })[0], /must be a list/);
   const two = rcServiceErrors({ services: [ENTRY, { ...ENTRY, name: "other-service", file: "/opt/other/run/token" }] });
   assert.ok(two.some((e) => /already driven by example-service/.test(e)), "an agent has at most one service");

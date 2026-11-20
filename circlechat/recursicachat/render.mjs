@@ -8,13 +8,15 @@
 //   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh
 //   CC_DIR            the stack's folder                          backup.sh, restore-test.sh
 //   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
+//   PROGRAMS          site.json recursicachat.services            rc-clear.sh: each entry with a "job"
 //
-// Every value is checked against a strict shape, because it lands unquoted in a root script.
+// Every value is checked against a strict shape, because it lands in a root script.
 //
 //   node render.mjs --site <site.json> --out <dir> --owner-home <dir> --kit <dir> --cc-dir <dir>
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { rcServiceErrors } from "../kit/render.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -23,13 +25,19 @@ export const TEMPLATES = [
   "backup.sh",
   "restore-test.sh",
   "rc-deploy.sh",
+  "rc-clear.sh",
   "io.recursica.recursicachat.plist",
   "io.recursica.recursicachat-colima.plist",
   "io.recursica.recursicachat-backup.plist",
   "io.recursica.recursicachat-restore-test.plist",
 ];
-// Copied as they are: the kit's own Colima service script, and the PDF text reader's build.
-export const COPIED = { "colima-service.sh": join(here, "..", "kit", "colima-service.sh"), "build-pdftext.sh": join(here, "build-pdftext.sh") };
+// Copied as they are: the kit's own Colima service script, the PDF text reader's build, and
+// rc-clear's database work.
+export const COPIED = {
+  "colima-service.sh": join(here, "..", "kit", "colima-service.sh"),
+  "build-pdftext.sh": join(here, "build-pdftext.sh"),
+  "rc-clear.mjs": join(here, "rc-clear.mjs"),
+};
 
 const PATH = /^\/[A-Za-z0-9._/-]+$/;
 const SHAPES = {
@@ -41,6 +49,25 @@ const SHAPES = {
   CC_DIR: [PATH, "the stack's folder must be an absolute path"],
   BUILD_NODE: [PATH, "recursicachat.node must be the owner's Node 24, such as /opt/node/v24.22.3/bin/node: rc-deploy builds the server with it"],
 };
+
+/**
+ * rc-clear's programs, from recursicachat.services: "<name>:<launchd job>:<account>:<state folder>"
+ * for each entry with a "job", with a space between two. An entry with no "job" is left out:
+ * rc-clear cannot stop a program whose job it does not know. The kit's site check (kit/render.mjs)
+ * holds each setting's shape.
+ */
+export function programs(site) {
+  const rc = site?.recursicachat ?? {};
+  const errs = rcServiceErrors(rc);
+  if (errs.length) return { value: "", errs };
+  const value = (rc.services ?? [])
+    .filter((s) => s.job !== undefined)
+    .map((s) => `${s.name}:${s.job}:${s.account}:${s.state ?? ""}`)
+    .join(" ");
+  // The value lands inside double quotes in a root script.
+  if (!/^[A-Za-z0-9._/: -]*$/.test(value)) return { value: "", errs: ["recursicachat.services: a name, job, account or state holds a character rc-clear.sh does not take"] };
+  return { value, errs: [] };
+}
 
 /** The token values, or the list of what is wrong. */
 export function values(site, { ownerHome, kit, ccDir }) {
@@ -56,6 +83,9 @@ export function values(site, { ownerHome, kit, ccDir }) {
   };
   const errs = [];
   for (const [k, [shape, msg]] of Object.entries(SHAPES)) if (typeof v[k] !== "string" || !shape.test(v[k])) errs.push(msg);
+  const p = programs(site);
+  v.PROGRAMS = p.value;
+  errs.push(...p.errs);
   return { values: v, errs };
 }
 
