@@ -13,6 +13,7 @@ const SITE = {
     google_client_id: "123456-abc123.apps.googleusercontent.com",
     google_domain: "example.com",
     public_url: "https://chat.example.ts.net/",
+    node: "/opt/node/v24.0.0/bin/node",
   },
 };
 const DIRS = { ownerHome: "/Users/owner", kit: "/Users/owner/kit/circlechat", ccDir: "/Users/owner/circlechat" };
@@ -33,6 +34,7 @@ test("every template renders with no token left", () => {
     assert.match(files[name], /^KIT=\/Users\/owner\/kit\/circlechat$/m, name);
     assert.match(files[name], /^CC_DIR=\/Users\/owner\/circlechat$/m, name);
   }
+  assert.match(files["rc-deploy.sh"], /^BUILD_NODE=\/opt\/node\/v24\.0\.0\/bin\/node$/m, "rc-deploy builds with the owner's Node");
 });
 
 test("the colima service is the kit's own script, not a second copy", () => {
@@ -46,6 +48,8 @@ test("a missing or badly shaped value is refused", () => {
     [{ ...SITE.recursicachat, google_domain: "example.com evil" }, "google_domain"],
     [{ ...SITE.recursicachat, public_url: "http://chat.example.ts.net" }, "public_url"],
     [{ ...SITE.recursicachat, public_url: "https://chat.example.ts.net/$(id)" }, "public_url"],
+    [{ ...SITE.recursicachat, node: undefined }, "recursicachat.node"],
+    [{ ...SITE.recursicachat, node: "node; id" }, "recursicachat.node"],
   ];
   for (const [rc, key] of bad) {
     const { errs } = values({ recursicachat: rc }, DIRS);

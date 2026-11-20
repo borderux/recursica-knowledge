@@ -7,6 +7,7 @@
 //   OWNER_HOME        the owner's home folder                     backup.sh, restore-test.sh
 //   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh
 //   CC_DIR            the stack's folder                          backup.sh, restore-test.sh
+//   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
 //
 // Every value is checked against a strict shape, because it lands unquoted in a root script.
 //
@@ -21,6 +22,7 @@ export const TEMPLATES = [
   "run.sh",
   "backup.sh",
   "restore-test.sh",
+  "rc-deploy.sh",
   "io.recursica.recursicachat.plist",
   "io.recursica.recursicachat-colima.plist",
   "io.recursica.recursicachat-backup.plist",
@@ -37,6 +39,7 @@ const SHAPES = {
   OWNER_HOME: [PATH, "the owner's home folder must be an absolute path"],
   KIT: [PATH, "the kit's folder must be an absolute path"],
   CC_DIR: [PATH, "the stack's folder must be an absolute path"],
+  BUILD_NODE: [PATH, "recursicachat.node must be the owner's Node 24, such as /opt/node/v24.22.3/bin/node: rc-deploy builds the server with it"],
 };
 
 /** The token values, or the list of what is wrong. */
@@ -49,6 +52,7 @@ export function values(site, { ownerHome, kit, ccDir }) {
     OWNER_HOME: ownerHome,
     KIT: kit,
     CC_DIR: ccDir,
+    BUILD_NODE: rc.node,
   };
   const errs = [];
   for (const [k, [shape, msg]] of Object.entries(SHAPES)) if (typeof v[k] !== "string" || !shape.test(v[k])) errs.push(msg);

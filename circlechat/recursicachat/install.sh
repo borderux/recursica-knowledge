@@ -8,7 +8,8 @@
 # sudo CC_DIR=/path circlechat/recursicachat/install.sh.
 #
 # render.mjs fills each template with values from site.json. Then this script installs:
-#   /opt/recursicachat/bin/   run.sh, backup.sh, restore-test.sh, colima-service.sh   root:wheel 755
+#   /opt/recursicachat/bin/   run.sh, backup.sh, restore-test.sh, colima-service.sh,  root:wheel 755
+#                             rc-deploy.sh, linked as /usr/local/bin/rc-deploy
 #   /Library/LaunchDaemons/   the four io.recursica.recursicachat*.plist             root:wheel 644
 # It changes only the files whose text changed. A changed backup or restore-test job is loaded
 # again at once. A changed server or Colima job is not restarted: the script prints the command,
@@ -50,11 +51,19 @@ mkdir -p "$BIN" && chown root:wheel "$BIN" && chmod 755 "$BIN"
 mkdir -p /var/log/recursicachat && chown root:wheel /var/log/recursicachat && chmod 700 /var/log/recursicachat
 
 same() { [ -f "$2" ] && cmp -s "$1" "$2"; }
-for f in run.sh backup.sh restore-test.sh colima-service.sh; do
+for f in run.sh backup.sh restore-test.sh colima-service.sh rc-deploy.sh; do
   if same "$OUT/$f" "$BIN/$f"; then echo "$f is unchanged"; continue; fi
   install -m 755 -o root -g wheel "$OUT/$f" "$BIN/$f"
   echo "$f installed"
 done
+# sudo rc-deploy: a link in /usr/local/bin, only when only root can change that folder, so the name
+# sudo runs always leads to the root-owned script.
+LINK=/usr/local/bin/rc-deploy
+if [ "$(stat -f '%Su' /usr/local/bin 2>/dev/null)" = root ] && [ $((8#$(stat -f '%Lp' /usr/local/bin) & 8#022)) = 0 ]; then
+  if [ "$(readlink "$LINK" 2>/dev/null)" != "$BIN/rc-deploy.sh" ]; then ln -sfn "$BIN/rc-deploy.sh" "$LINK" && echo "linked $LINK"; fi
+else
+  echo "/usr/local/bin is missing or others can change it: run rc-deploy as sudo $BIN/rc-deploy.sh"
+fi
 
 for f in "$OUT"/*.plist; do
   name="$(basename "$f")" label="$(basename "$f" .plist)" dest="$DAEMONS/$(basename "$f")"

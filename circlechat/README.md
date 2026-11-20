@@ -1470,10 +1470,11 @@ This is the start of phase 5: the kit installs the server that rc-sync.sh alread
 | `io.recursica.recursicachat-colima.plist`                          | The server's own Colima VM, through `kit/colima-service.sh`               |
 | `backup.sh`, `io.recursica.recursicachat-backup.plist`             | The nightly backup, as root, at 03:30                                     |
 | `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist` | The monthly test restore, as root, on the 1st at 05:00                    |
+| `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`               | Puts the latest commit of the server's branch into service                |
 
 **Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
-`render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id` and
-`google_domain`) and from the installing account (its home folder, this kit and `$CC_DIR`). The
+`render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id`,
+`google_domain` and `node`) and from the installing account (its home folder, this kit and `$CC_DIR`). The
 installer then copies only the files that changed. It loads a changed backup or restore-test job at
 once. It never restarts the server or its VM: it prints the command for that. It never touches the
 data, the vault key, the Google secret or the restic password.
@@ -1485,6 +1486,24 @@ a provider key, and it lasts only while that engine runs. A restore loses nothin
 start writes the files again. The guard then checks what is left, unchanged: no file named like a
 key, and neither the vault key nor the restic password anywhere in the contents. The test restore
 fails if a backup holds any of those settings.
+
+**`sudo rc-deploy` puts the latest commit of the server's branch into service, and puts the previous
+one back on any failure.** It prints one summary line; each step's output goes to
+`/var/log/recursicachat/rc-deploy.log`.
+
+1. **Build, as the owner, never as root.** It clones the branch and repository the running app's
+   `REVISION` names, and builds with the owner's Node (`recursicachat.node`): `npm ci --ignore-scripts`,
+   so no dependency's install script runs, both type checks, the web build, and `npm prune --omit=dev`.
+   The stage gets a new `REVISION` and a SHA-256 manifest of every file. The branch's tests ran in
+   its pull requests' checks. The same commit as the running one changes nothing.
+2. **Swap.** It stops the server, keeps the running app as `app.prev`, and copies the stage in,
+   root-owned, with no write for the group or others.
+3. **Check** the copy file by file against the manifest.
+4. **Start and check.** `/healthz` must answer `ok` within 3 minutes, and the new start must print the
+   same sign-in and tools lines as the last start did.
+
+A failure after the server stopped moves the new copy to `app.bad`, puts `app.prev` back, starts it and
+checks `/healthz`. It makes no backup first: run the backup job before it when the data matters.
 
 ### A session for a program outside the server
 
