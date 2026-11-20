@@ -8,8 +8,9 @@
 //   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh
 //   CC_DIR            the stack's folder                          backup.sh, restore-test.sh
 //   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
+//   PROGRAMS          site.json recursicachat.services            rc-clear.sh: each entry with a "job"
 //
-// Every value is checked against a strict shape, because it lands unquoted in a root script.
+// Every value is checked against a strict shape, because it lands in a root script.
 //
 //   node render.mjs --site <site.json> --out <dir> --owner-home <dir> --kit <dir> --cc-dir <dir>
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -23,13 +24,19 @@ export const TEMPLATES = [
   "backup.sh",
   "restore-test.sh",
   "rc-deploy.sh",
+  "rc-clear.sh",
   "io.recursica.recursicachat.plist",
   "io.recursica.recursicachat-colima.plist",
   "io.recursica.recursicachat-backup.plist",
   "io.recursica.recursicachat-restore-test.plist",
 ];
-// Copied as they are: the kit's own Colima service script, and the PDF text reader's build.
-export const COPIED = { "colima-service.sh": join(here, "..", "kit", "colima-service.sh"), "build-pdftext.sh": join(here, "build-pdftext.sh") };
+// Copied as they are: the kit's own Colima service script, the PDF text reader's build, and
+// rc-clear's database work.
+export const COPIED = {
+  "colima-service.sh": join(here, "..", "kit", "colima-service.sh"),
+  "build-pdftext.sh": join(here, "build-pdftext.sh"),
+  "rc-clear.mjs": join(here, "rc-clear.mjs"),
+};
 
 const PATH = /^\/[A-Za-z0-9._/-]+$/;
 const SHAPES = {
@@ -41,6 +48,38 @@ const SHAPES = {
   CC_DIR: [PATH, "the stack's folder must be an absolute path"],
   BUILD_NODE: [PATH, "recursicachat.node must be the owner's Node 24, such as /opt/node/v24.22.3/bin/node: rc-deploy builds the server with it"],
 };
+
+const WORD = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const ACCOUNT = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+
+/**
+ * rc-clear's programs, from recursicachat.services: "<name>:<launchd job>:<account>:<state folder>"
+ * for each entry with a "job", with a space between two. An entry with no "job" is left out:
+ * rc-clear cannot stop a program whose job it does not know.
+ */
+export function programs(site) {
+  const services = site?.recursicachat?.services ?? [];
+  if (!Array.isArray(services)) return { value: "", errs: ["recursicachat.services must be a list"] };
+  const errs = [];
+  const out = [];
+  for (const s of services) {
+    const who = `recursicachat.services, ${typeof s?.name === "string" ? s.name : "an entry with no name"}`;
+    if (s?.job === undefined) {
+      if (s?.state !== undefined) errs.push(`${who}: "state" needs "job", the launchd job rc-clear stops before the state is cleared`);
+      continue;
+    }
+    const bad = [];
+    if (typeof s.name !== "string" || !WORD.test(s.name)) bad.push(`"name" must be letters, digits, dots, dashes and underscores`);
+    if (typeof s.job !== "string" || !WORD.test(s.job)) bad.push(`"job" must be the program's launchd job, such as io.example.program`);
+    else if (s.job.startsWith("io.recursica.recursicachat")) bad.push(`"job" must be the program's launchd job, not one of the server's own`);
+    if (typeof s.account !== "string" || !ACCOUNT.test(s.account)) bad.push(`"account" must be the account the program runs as, such as _program`);
+    if (s.state !== undefined && (typeof s.state !== "string" || !PATH.test(s.state) || s.state.split("/").includes("..")))
+      bad.push(`"state" must be the absolute path of the folder that holds only the program's state, such as /opt/program/home/state`);
+    for (const b of bad) errs.push(`${who}: ${b}`);
+    if (!bad.length) out.push(`${s.name}:${s.job}:${s.account}:${s.state ?? ""}`);
+  }
+  return { value: out.join(" "), errs };
+}
 
 /** The token values, or the list of what is wrong. */
 export function values(site, { ownerHome, kit, ccDir }) {
@@ -56,6 +95,9 @@ export function values(site, { ownerHome, kit, ccDir }) {
   };
   const errs = [];
   for (const [k, [shape, msg]] of Object.entries(SHAPES)) if (typeof v[k] !== "string" || !shape.test(v[k])) errs.push(msg);
+  const p = programs(site);
+  v.PROGRAMS = p.value;
+  errs.push(...p.errs);
   return { values: v, errs };
 }
 
