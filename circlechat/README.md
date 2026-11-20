@@ -979,7 +979,7 @@ A computer with direct IP access can still run the server. Set the client's `dir
 
 ### Lockdown
 
-An incoming connection that no rule allows, or a touch on a decoy, starts a lockdown:
+An incoming connection that no rule allows, or a touch on a decoy, starts a lockdown. A connection is incoming when a listener holds the computer's side of it: the same port, on the same address or on every address. The port alone is not enough. An outgoing connection's temporary port can equal the port a listener holds on another address, such as Tailscale's listener on the tailnet address. The lockdown runs these steps:
 
 1. The computer seals first: each client stack's disk image closes, and each secrets file becomes unreadable.
 2. For 10 minutes, tcpdump records the source's packets. A snapshot records the connections, programs, signed-in users and sign-in logs, and a lookup records the source's network owner and country.
