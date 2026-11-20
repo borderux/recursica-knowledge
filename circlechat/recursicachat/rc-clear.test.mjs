@@ -39,6 +39,8 @@ CREATE TABLE files (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(
 CREATE TABLE file_texts (file_id TEXT PRIMARY KEY, text TEXT NOT NULL DEFAULT '');
 CREATE TABLE deliveries (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
 CREATE TABLE service_requests (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
+CREATE TABLE service_instructions (delivery_id TEXT PRIMARY KEY, service_id TEXT NOT NULL, private INTEGER NOT NULL DEFAULT 0, fresh INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE service_replies (delivery_id TEXT PRIMARY KEY, service_id TEXT NOT NULL, chat_id TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE approvals (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL DEFAULT '');
 CREATE TABLE agent_sessions (agent_id TEXT NOT NULL, scope TEXT NOT NULL);
 `;
@@ -62,6 +64,8 @@ INSERT INTO files VALUES ('f_one', 'c_1', 'msg_1'), ('f_two', 'c_1', NULL);
 INSERT INTO file_texts VALUES ('f_one', 'the text of an upload');
 INSERT INTO deliveries VALUES ('d_1', 'c_1');
 INSERT INTO service_requests VALUES ('r_1', 'c_1');
+INSERT INTO service_instructions VALUES ('d_1', 'sv_1', 1, 1);
+INSERT INTO service_replies VALUES ('d_1', 'sv_1', 'c_1', 'a reply for the service alone');
 INSERT INTO approvals VALUES ('ap_1', 'c_1');
 INSERT INTO agent_sessions VALUES ('a_1', 'c_1');
 `;
@@ -150,7 +154,7 @@ test("clear refuses a table rc-clear does not list, and deletes nothing", () => 
 
 test("a table the server has not made yet is no problem", () => {
   const schema = SCHEMA.split("\n")
-    .filter((l) => !/CREATE TABLE (file_texts|service_requests|service_accounts|bridges) /.test(l))
+    .filter((l) => !/CREATE TABLE (file_texts|service_requests|service_instructions|service_replies|service_accounts|bridges) /.test(l))
     .join("\n");
   const db = new DatabaseSync(path.join(tmp(), "t.db"));
   db.exec(schema);
