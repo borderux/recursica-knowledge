@@ -4,7 +4,7 @@ description: Rules for the Recursica number input — quantity versus digit stri
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Number input

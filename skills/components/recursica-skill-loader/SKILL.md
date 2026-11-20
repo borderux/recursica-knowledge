@@ -4,7 +4,7 @@ description: Rules for the Recursica loader, a spinner — when a wait needs a l
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Loader
