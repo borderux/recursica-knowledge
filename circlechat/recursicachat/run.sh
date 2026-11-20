@@ -18,6 +18,9 @@ GOOGLE_DOMAIN=@GOOGLE_DOMAIN@
 PUBLIC_URL=@PUBLIC_URL@
 IMAGE_ID_FILE=/opt/recursicachat/hermes.image-id
 HERMES_IMAGE=circlechat/engine-hermes:latest
+# The PDF text reader for people's uploads (build-pdftext.sh), checked like the Hermes image
+PDF_ID_FILE=/opt/recursicachat/pdftext.image-id
+PDF_IMAGE=circlechat/pdftext:latest
 HOME_DIR=/opt/recursicachat/home
 # The server's own Colima VM's Docker socket, never the default VM's.
 SOCK="$HOME_DIR/.colima/recursicachat/docker.sock"
@@ -56,6 +59,15 @@ want="$(cat "$IMAGE_ID_FILE")"
 have="$(DOCKER_HOST="unix://$SOCK" PATH="$PATH_SAFE" docker image ls --no-trunc --format '{{.ID}}' "$HERMES_IMAGE")"
 [ -n "$want" ] && [ "$have" = "$want" ] || fail "$HERMES_IMAGE is not the recorded image (have: ${have:-none})"
 
+# The PDF text reader, once build-pdftext.sh has recorded it: the same image, run by its ID. Before
+# that, the server starts, and a PDF's text is "the reader isn't available" until it is built.
+pdf_id=""
+if [ -e "$PDF_ID_FILE" ]; then
+  pdf_id="$(cat "$PDF_ID_FILE")"
+  pdf_have="$(DOCKER_HOST="unix://$SOCK" PATH="$PATH_SAFE" docker image ls --no-trunc --format '{{.ID}}' "$PDF_IMAGE")"
+  [[ "$pdf_id" =~ ^sha256:[0-9a-f]{64}$ ]] && [ "$pdf_have" = "$pdf_id" ] || fail "$PDF_IMAGE is not the recorded image (have: ${pdf_have:-none}); run sudo /opt/recursicachat/bin/build-pdftext.sh"
+fi
+
 key="$(cat "$KEY_FILE")"
 [ -n "$key" ] || fail "$KEY_FILE is empty"
 
@@ -88,5 +100,7 @@ export CIRCLECHAT_TOOL_DEFAULT=block
 export CIRCLECHAT_GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" CIRCLECHAT_GOOGLE_CLIENT_SECRET_FILE="$GOOGLE_SECRET_FILE"
 export CIRCLECHAT_GOOGLE_DOMAIN="$GOOGLE_DOMAIN" CIRCLECHAT_PASSWORD_SIGNIN=off
 export CIRCLECHAT_MASTER_KEY="$key"
+# the PDF text reader by its recorded image ID, so the server runs exactly that image
+[ -z "$pdf_id" ] || export CIRCLECHAT_PDF_IMAGE="$pdf_id"
 [ -z "$use_seed" ] || export CIRCLECHAT_SEED="$SEED"
 exec "$NODE" server/src/index.ts

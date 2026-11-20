@@ -28,8 +28,8 @@ export const TEMPLATES = [
   "io.recursica.recursicachat-backup.plist",
   "io.recursica.recursicachat-restore-test.plist",
 ];
-// Copied as it is: the kit's own Colima service script.
-export const COPIED = { "colima-service.sh": join(here, "..", "kit", "colima-service.sh") };
+// Copied as they are: the kit's own Colima service script, and the PDF text reader's build.
+export const COPIED = { "colima-service.sh": join(here, "..", "kit", "colima-service.sh"), "build-pdftext.sh": join(here, "build-pdftext.sh") };
 
 const PATH = /^\/[A-Za-z0-9._/-]+$/;
 const SHAPES = {

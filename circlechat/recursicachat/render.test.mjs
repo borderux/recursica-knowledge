@@ -20,7 +20,7 @@ const DIRS = { ownerHome: "/Users/owner", kit: "/Users/owner/kit/circlechat", cc
 
 test("every template renders with no token left", () => {
   const files = render(SITE, DIRS);
-  for (const name of [...TEMPLATES, "colima-service.sh"]) {
+  for (const name of [...TEMPLATES, "colima-service.sh", "build-pdftext.sh"]) {
     assert.ok(files[name], name);
     assert.doesNotMatch(files[name], /@[A-Z_]+@/, name);
   }
@@ -39,6 +39,20 @@ test("every template renders with no token left", () => {
 
 test("the colima service is the kit's own script, not a second copy", () => {
   assert.equal(render(SITE, DIRS)["colima-service.sh"], readFileSync(join(here, "..", "kit", "colima-service.sh"), "utf8"));
+});
+
+test("the PDF text reader: built and recorded by build-pdftext.sh, checked by run.sh and run by its image ID", () => {
+  const files = render(SITE, DIRS);
+  const build = files["build-pdftext.sh"];
+  assert.equal(build, readFileSync(join(here, "build-pdftext.sh"), "utf8"), "copied as it is");
+  assert.match(build, /has a base image not pinned by digest/, "it refuses an unpinned base");
+  assert.match(build, /DOCKER_HOST="unix:\/\/\$SOCK"/, "on the server's own VM");
+  assert.match(build, /ID_FILE="\$BASE\/pdftext\.image-id"/);
+  assert.match(build, /docker run --rm --network none --user 65534:65534/, "the tools answer, with no network");
+  const run = files["run.sh"];
+  assert.match(run, /^PDF_ID_FILE=\/opt\/recursicachat\/pdftext\.image-id$/m);
+  assert.match(run, /is not the recorded image \(have: \$\{pdf_have:-none\}\); run sudo \/opt\/recursicachat\/bin\/build-pdftext\.sh/);
+  assert.match(run, /^\[ -z "\$pdf_id" \] \|\| export CIRCLECHAT_PDF_IMAGE="\$pdf_id"$/m, "the server runs the recorded ID");
 });
 
 test("a missing or badly shaped value is refused", () => {
