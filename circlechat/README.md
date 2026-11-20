@@ -1511,6 +1511,38 @@ refuses one for an owner or an admin. List each program in site.json:
   `Authorization: Bearer <token>`, with no cookie.
 - `rc-session.sh --once` makes each session once and stops.
 
+### A program that drives an agent
+
+**A program that decides what an agent is asked gets a service account, not a person's session.**
+The server marks the agent as driven by that service. Then every message that would wake the agent,
+from people, other agents and triggers, goes to the program instead, and only the program's own
+messages reach the agent. The program works in any chat the agent is in, without being a member: it
+posts one-line notes people see, sends the agent its instructions, and writes the detail in the
+agent's Watch view. The agent's own instructions don't change, so the same agent works anywhere
+without the program. List each program in site.json:
+
+```json
+"recursicachat": {
+  "services": [{ "name": "example-service", "agents": ["designer"], "account": "_program", "file": "/opt/program/run/token" }]
+}
+```
+
+- **`setup-host.sh` runs `circlechat/rc-service.sh` as root.** Through the server's root-only CLI it
+  makes the service account, drives exactly the agents listed (an agent no longer listed answers
+  for itself again), and writes the service's token into the file.
+- **A token doesn't expire**, so the script makes one only when the file is missing or empty, or the
+  server has no token for the service. `sudo OWNER=$(id -un) circlechat/rc-service.sh --rotate
+  <name>` makes a new one, and the old one stops working at once.
+- **The file belongs to the entry's account, mode 400, in a folder that belongs to root**, written
+  the same way as a session file: the token never passes through an argument, a variable or an
+  output line.
+- **The token works only on the server's `/api/service/*` routes, and only from the server's own
+  computer**, straight to the server: never from a browser or through Tailscale. The service sees
+  only the chats its agents are in.
+- **An agent has at most one service.** To hand an agent back to the people who use it, take it out
+  of the entry and run the script again. Revoking the service's token on the server (`cli.ts
+  service-revoke`) also stops the service driving its agents.
+
 ## Hard-won lessons (read before debugging)
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".

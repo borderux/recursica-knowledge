@@ -800,6 +800,14 @@ if [ "$(site_get recursicachat.sessions)" != "" ] && [ "$(site_get recursicachat
 else
   uninstall_unit "rc-session$SUFFIX" >/dev/null
 fi
+# A service account for each program that drives agents on the server, from recursicachat.services
+# (rc-service.sh): the account, the agents it drives, and its token in the program's file. A token
+# doesn't expire, so this runs here and when asked, not as a job. As root, because only root may run
+# the server's CLI and write the program's file.
+if [ "$(site_get recursicachat.services)" != "" ] && [ "$(site_get recursicachat.services)" != "[]" ]; then
+  sudo OWNER="$(id -un)" CC_DIR="$CC_DIR" SITE="$SITE" KIT_NODE="$(command -v node)" "$HERE/rc-service.sh" ||
+    echo "Setting up a RecursicaChat service failed (the lines above say why). Fix it, then run: sudo OWNER=\$(id -un) $HERE/rc-service.sh"
+fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
