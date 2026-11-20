@@ -39,9 +39,14 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "reboot-tonight": return schedule(nextAt(23, 0, tz, now()).getTime(), ref);
       case "reboot-at": return schedule(Number(extra.at), ref, extra.label);
       case "reboot-skip": fs.rmSync(rebootFile, { force: true }); return { ok: true, message: "skipped; the updates wait for the next check" };
-      case "cut-off-now": { const s = await guard.cutOff("cut off from Slack"); return { ok: s.status === "cut-off", message: s.status === "cut-off" ? "cut off" : "no watch window is open" }; }
+      case "cut-off-now": {
+        const s = await guard.cutOff("cut off from Slack");
+        if (s.status === "cut-off") return { ok: true, message: "cut off, and the firewall holds the lockdown rules" };
+        if (s.status === "cut-off-failed") return { ok: false, message: `the cut-off failed again: ${s.problems.join("; ")}` };
+        return { ok: false, message: "no watch window is open" };
+      }
       case "keep-watching": return guard.keepWatching();
-      case "shut-down": { if (guard.state.status === "watching") await guard.cutOff("shutting down"); await platform.shutDown(); return { ok: true, message: "shutting down in one minute" }; }
+      case "shut-down": { if (["watching", "cut-off-failed"].includes(guard.state.status)) await guard.cutOff("shutting down"); await platform.shutDown(); return { ok: true, message: "shutting down in one minute" }; }
       case "release-lockdown": return guard.release(false);
       case "allow-source": return guard.release(true);
       case "egress-allow-once": return egress ? egress.allowOnce(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
