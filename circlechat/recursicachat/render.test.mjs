@@ -42,35 +42,32 @@ test("every template renders with no token left", () => {
 test("rc-clear gets each service that has a job: its name, job, account and state folder", () => {
   const services = [
     { name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token", job: "io.example.program", state: "/opt/program/home/state" },
-    { name: "no-state", agents: [], account: "_other", file: "/opt/other/run/token", job: "io.example.other" },
-    { name: "no-job", agents: [], account: "_third", file: "/opt/third/run/token" },
+    { name: "no-state", agents: ["writer"], account: "_other", file: "/opt/other/run/token", job: "io.example.other" },
+    { name: "no-job", agents: ["researcher"], account: "_third", file: "/opt/third/run/token" },
   ];
   const site = { recursicachat: { ...SITE.recursicachat, services } };
   const line = "example-service:io.example.program:_program:/opt/program/home/state no-state:io.example.other:_other:";
   assert.deepEqual(programs(site), { value: line, errs: [] });
-  assert.match(render(site, DIRS)["rc-clear.sh"], new RegExp(`^PROGRAMS="${line.replace(/\./g, "\\.")}"$`, "m"));
+  assert.ok(render(site, DIRS)["rc-clear.sh"].split("\n").includes(`PROGRAMS="${line}"`));
 
+  // The kit's site check holds each shape: nothing that fails it reaches the root script.
   const bad = [
-    [{ job: "io.example.program; id" }, '"job" must be'],
-    [{ job: "io.recursica.recursicachat" }, "not one of the server's own"],
+    [{ job: "io.example.program; id" }, "job must be"],
     [{ job: "io.recursica.recursicachat-backup" }, "not one of the server's own"],
-    [{ name: "two words" }, '"name" must be'],
-    [{ name: "a:b" }, '"name" must be'],
-    [{ account: "$(id)" }, '"account" must be'],
-    [{ account: undefined }, '"account" must be'],
-    [{ state: "relative/state" }, '"state" must be'],
-    [{ state: "/opt/program/../../etc" }, '"state" must be'],
-    [{ state: "/opt/my program" }, '"state" must be'],
-    [{ state: "/opt/program/state", job: undefined }, '"state" needs "job"'],
+    [{ name: "two words" }, "name must be"],
+    [{ account: "$(id)" }, "account must be"],
+    [{ state: "relative/state" }, "state must be"],
+    [{ state: "/opt/my program" }, "state must be"],
+    [{ state: "/opt/program/state", job: undefined }, "state needs job"],
+    [{ shell: "/bin/sh" }, "shell is not a setting"],
   ];
   for (const [change, why] of bad) {
     const entry = { ...services[0], ...change };
     const { value, errs } = programs({ recursicachat: { services: [entry] } });
     assert.equal(value, "", JSON.stringify(change));
-    assert.ok(errs.length === 1 && errs[0].includes(why), `${JSON.stringify(change)}: ${errs.join(" | ")}`);
+    assert.ok(errs.some((e) => e.includes(why)), `${JSON.stringify(change)}: ${errs.join(" | ")}`);
     assert.throws(() => render({ recursicachat: { ...SITE.recursicachat, services: [entry] } }, DIRS), JSON.stringify(change));
   }
-  assert.deepEqual(programs({ recursicachat: { services: "example-service" } }).errs, ["recursicachat.services must be a list"]);
 });
 
 test("the colima service is the kit's own script, not a second copy", () => {

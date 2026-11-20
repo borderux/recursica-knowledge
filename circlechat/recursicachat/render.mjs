@@ -16,6 +16,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { rcServiceErrors } from "../kit/render.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -49,36 +50,23 @@ const SHAPES = {
   BUILD_NODE: [PATH, "recursicachat.node must be the owner's Node 24, such as /opt/node/v24.22.3/bin/node: rc-deploy builds the server with it"],
 };
 
-const WORD = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
-const ACCOUNT = /^[A-Za-z_][A-Za-z0-9_-]*$/;
-
 /**
  * rc-clear's programs, from recursicachat.services: "<name>:<launchd job>:<account>:<state folder>"
  * for each entry with a "job", with a space between two. An entry with no "job" is left out:
- * rc-clear cannot stop a program whose job it does not know.
+ * rc-clear cannot stop a program whose job it does not know. The kit's site check (kit/render.mjs)
+ * holds each setting's shape.
  */
 export function programs(site) {
-  const services = site?.recursicachat?.services ?? [];
-  if (!Array.isArray(services)) return { value: "", errs: ["recursicachat.services must be a list"] };
-  const errs = [];
-  const out = [];
-  for (const s of services) {
-    const who = `recursicachat.services, ${typeof s?.name === "string" ? s.name : "an entry with no name"}`;
-    if (s?.job === undefined) {
-      if (s?.state !== undefined) errs.push(`${who}: "state" needs "job", the launchd job rc-clear stops before the state is cleared`);
-      continue;
-    }
-    const bad = [];
-    if (typeof s.name !== "string" || !WORD.test(s.name)) bad.push(`"name" must be letters, digits, dots, dashes and underscores`);
-    if (typeof s.job !== "string" || !WORD.test(s.job)) bad.push(`"job" must be the program's launchd job, such as io.example.program`);
-    else if (s.job.startsWith("io.recursica.recursicachat")) bad.push(`"job" must be the program's launchd job, not one of the server's own`);
-    if (typeof s.account !== "string" || !ACCOUNT.test(s.account)) bad.push(`"account" must be the account the program runs as, such as _program`);
-    if (s.state !== undefined && (typeof s.state !== "string" || !PATH.test(s.state) || s.state.split("/").includes("..")))
-      bad.push(`"state" must be the absolute path of the folder that holds only the program's state, such as /opt/program/home/state`);
-    for (const b of bad) errs.push(`${who}: ${b}`);
-    if (!bad.length) out.push(`${s.name}:${s.job}:${s.account}:${s.state ?? ""}`);
-  }
-  return { value: out.join(" "), errs };
+  const rc = site?.recursicachat ?? {};
+  const errs = rcServiceErrors(rc);
+  if (errs.length) return { value: "", errs };
+  const value = (rc.services ?? [])
+    .filter((s) => s.job !== undefined)
+    .map((s) => `${s.name}:${s.job}:${s.account}:${s.state ?? ""}`)
+    .join(" ");
+  // The value lands inside double quotes in a root script.
+  if (!/^[A-Za-z0-9._/: -]*$/.test(value)) return { value: "", errs: ["recursicachat.services: a name, job, account or state holds a character rc-clear.sh does not take"] };
+  return { value, errs: [] };
 }
 
 /** The token values, or the list of what is wrong. */
