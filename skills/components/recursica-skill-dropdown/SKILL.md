@@ -4,7 +4,7 @@ description: Rules for the Recursica dropdown — when to hide a list of options
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Dropdown
