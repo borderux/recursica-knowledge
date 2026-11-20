@@ -82,6 +82,19 @@ test("the restore test fails when a cloud key is in the backup", () => {
   assert.doesNotMatch(r.stdout, /sk-ant-a/, "the report never shows the key");
 });
 
+test("the restore test counts the places that hold a key, never a symlink the key check skipped", () => {
+  const { env, cc } = setup();
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.writeFileSync(path.join(cc, "backup-saved", "notes.txt"), `key ${"sk-ant-" + "a".repeat(40)}\n`);
+  // The key check never follows a symlink, and lists each symlink it skipped in the same form as a
+  // place that holds a key. A secrets file that is a symlink gives one such line.
+  fs.symlinkSync(path.join(cc, "site.json"), path.join(cc, "model-keys.env"));
+  const r = run("restore-test.sh", env);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Skipped 1 symlink\(s\)/);
+  assert.match(r.stdout, /in the backup, in 1 place\(s\)/);
+});
+
 test("the restore test finds a key from the gateway's secrets file by its exact value", () => {
   const { env, cc } = setup();
   fs.writeFileSync(path.join(cc, "model-keys.env"), "MODEL_KEY_ACME=plain-looking-provider-secret-1234\n");
