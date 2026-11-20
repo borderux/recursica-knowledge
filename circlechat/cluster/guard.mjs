@@ -4,6 +4,8 @@
 //   watching: client stacks sealed, packets recorded; Slack gets the alert and the buttons
 //   watching --(10 minutes, or "Cut off now")--> cut off: only Tailscale and the guard's own
 //   Slack connection stay open; the evidence is fingerprinted, encrypted and uploaded
+//   The cut-off reads the firewall back. When the lockdown rules or a blocked source aren't in
+//   place, it is "cut-off-failed", never "cut-off": one loud Slack alert, and another try each minute.
 //   "Release lockdown" or "Allow this source" (both with an authenticator code) --> normal
 //
 // The OS commands come in as `platform`, so the logic runs the same on every computer.
@@ -29,6 +31,7 @@ export class Guard {
   async tick(canaryHits = []) {
     const s = this.state;
     if (s.status === "watching" && this.now() >= s.cutAt) return this.cutOff("the watch window ended");
+    if (s.status === "cut-off-failed") return this.cutOff(s.reason);
     if (s.status !== "normal") return s;
     const [conns, listening] = await Promise.all([this.platform.connections(), this.platform.listening()]);
     const found = suspicious(conns, listening, this.allowed).map((c) => ({ ...c, why: "incoming connection" }))
@@ -58,14 +61,34 @@ export class Guard {
 
   async cutOff(reason) {
     const s = this.state;
-    if (s.status !== "watching") return s;
-    await this.platform.captureStop();
-    for (const ip of s.sources) await this.platform.block(ip);
-    await this.platform.lockdownFirewall(true);
-    const manifest = await this.preserve(s.dir);
-    const next = { ...s, status: "cut-off", cutOffAt: this.now(), reason, manifest };
+    if (s.status !== "watching" && s.status !== "cut-off-failed") return s;
+    if (s.status === "watching") await this.platform.captureStop();
+    // The lockdown rules first: loading them can define the blocked table anew, so each source is
+    // added after them. Then the firewall is read back: a command that reports success proves nothing.
+    const loaded = (await this.platform.lockdownFirewall(true)) ?? { ok: true };
+    const blocks = [];
+    for (const ip of s.sources) blocks.push({ ip, ...((await this.platform.block(ip)) ?? { ok: true }) });
+    const fw = await this.platform.firewallState().catch((e) => ({ lockdown: false, blocked: [], error: e.message }));
+    const problems = [];
+    if (!fw.lockdown) problems.push(`the lockdown rules aren't loaded${loaded.ok ? "" : ` (${loaded.error})`}`);
+    for (const b of blocks) if (!fw.blocked.includes(b.ip)) problems.push(`${b.ip} isn't blocked${b.ok ? "" : ` (${b.error})`}`);
+    if (fw.error) problems.push(`the firewall couldn't be read (${fw.error})`);
+    const manifest = s.manifest ?? (await this.preserve(s.dir));
+    const evidence = `Evidence ${s.id}: ${manifest.files} files, fingerprints in manifest.json, ${manifest.uploaded ? "encrypted copy uploaded" : "kept on this computer"}.`;
+    if (problems.length) {
+      const next = { ...s, status: "cut-off-failed", reason, failedAt: s.failedAt ?? this.now(), tries: (s.tries ?? 0) + 1, problems, manifest };
+      this.state = next;
+      // One alert, at the first failure; each minute's try after it is quiet until one works.
+      if (s.status !== "cut-off-failed") {
+        await this.notify("cut-off-failed", `:rotating_light: <!channel> *${this.computer} is NOT cut off.* The cut-off (${reason}) failed: ${problems.join("; ")}. The computer stays sealed, and the guard tries again each minute. Press "Cut off now" to try at once, or "Shut down". ${evidence}`, s.id);
+      }
+      return next;
+    }
+    const { problems: _p, failedAt, tries, ...rest } = s;
+    const next = { ...rest, status: "cut-off", cutOffAt: this.now(), reason, manifest };
     this.state = next;
-    await this.notify("info", `:lock: ${this.computer} is cut off (${reason}). Only Tailscale and the guard's Slack connection stay open. Evidence ${s.id}: ${manifest.files} files, fingerprints in manifest.json, ${manifest.uploaded ? "encrypted copy uploaded" : "kept on this computer"}.`);
+    const after = tries ? ` after ${tries + 1} tries, the first failed at ${new Date(failedAt).toISOString().slice(11, 16)} UTC` : "";
+    await this.notify("info", `:lock: ${this.computer} is cut off (${reason})${after}. The firewall holds the lockdown rules and blocks ${s.sources.join(", ")}. Only Tailscale and the guard's Slack connection stay open. ${evidence}`);
     return next;
   }
 

@@ -27,6 +27,8 @@ export const ACTIONS = {
 export const KINDS = {
   reboot: ["reboot-4am", "reboot-tonight", "reboot-pick", "reboot-skip"],
   lockdown: ["cut-off-now", "keep-watching", "shut-down", "release-lockdown", "allow-source"],
+  // a cut-off that left the firewall open: try again, shut down, or release
+  "cut-off-failed": ["cut-off-now", "shut-down", "release-lockdown"],
   egress: ["egress-allow-once", "egress-deny"],
   upgrade: ["upgrade-now", "upgrade-skip"],
   release: ["release-install"],

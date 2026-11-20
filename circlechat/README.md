@@ -984,7 +984,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 1. The computer seals first: each client stack's disk image closes, and each secrets file becomes unreadable.
 2. For 10 minutes, tcpdump records the source's packets. A snapshot records the connections, programs, signed-in users and sign-in logs, and a lookup records the source's network owner and country.
 3. Slack gets the alert, with five buttons: "Cut off now", "Keep watching 30 min", "Shut down", "Release lockdown" and "Allow this source".
-4. After 10 minutes, the computer cuts off every connection except Tailscale and HTTPS on port 443.
+4. After 10 minutes, the computer cuts off every connection except Tailscale and HTTPS on port 443. The guard loads the lockdown rules, blocks each source, and then reads the firewall back. When the lockdown rules or a blocked source aren't in place, the cut-off counts as failed, never as done. Slack gets one loud alert with the reason and three buttons: "Cut off now", "Shut down" and "Release lockdown". The computer stays sealed, and the guard tries again each minute.
 5. Each evidence file gets a SHA-256 fingerprint and a UTC time in `manifest.json`. The evidence is encrypted to `security.evidence_recipient`, an age public key, and uploaded to the backups remote. The private key stays in the password manager.
 
 "Release lockdown" and "Allow this source" need a 6-digit authenticator code. Three wrong codes lock both buttons for an hour. The guard records only traffic to the cluster's own computers, and never acts against the source.
