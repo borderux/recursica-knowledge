@@ -63,7 +63,8 @@
     "skills:routing": "node scripts/routing-eval.mjs",
     "test": "node --test 'nest/bin/*.test.mjs' 'tools/knowledge-mcp/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'",
     "skills:versions": "node scripts/skill-versions.mjs propose",
-    "skills:versions:check": "node scripts/skill-versions.mjs check"
+    "skills:versions:check": "node scripts/skill-versions.mjs check",
+    "agents:versions:check": "node scripts/agent-versions.mjs check"
   },
   "packageManager": "npm@10.9.0",
   "engines": {

@@ -9,7 +9,8 @@
  *   propose  On a branch. Compares every changed SKILL.md with the base branch, decides a bump
  *            for each, and writes `.changeset/skill-bumps-<branch>.json`. A person reads the file
  *            and changes any bump the script got wrong. Running propose again keeps those edits.
- *   check    In CI. Fails when a changed skill has no bump in any skill-bumps file.
+ *   check    In CI. Fails when a changed skill has no bump in any skill-bumps file. A skill
+ *            changes when any file in its folder changes, not only its SKILL.md.
  *   apply    At release, after `changeset version`. Takes the largest bump for each skill across
  *            every skill-bumps file, writes the new version into the skill's frontmatter, and
  *            deletes the files, the same way changesets deletes its own.
@@ -162,6 +163,32 @@ export function changedSkills(base) {
     used.add(file).add(from);
     out[slugOf(file)] = { bump: "major", why: `renamed from ${slugOf(from)}` };
   }
+  const exists = (dir) => fs.existsSync(path.join(ROOT, dir, "SKILL.md"));
+  for (const [slug, result] of Object.entries(otherFiles(lines, exists)))
+    out[slug] ??= result;
+  return out;
+}
+
+/**
+ * Skills whose folder changed in a file besides SKILL.md, such as a template image, each with a
+ * patch bump for a person to check. `lines` is `git diff --name-status` output, and `exists`
+ * says whether a skill folder still holds a SKILL.md. A file directly in a category folder, such
+ * as skills/meta/GLOSSARY.md, belongs to no skill.
+ */
+export function otherFiles(lines, exists) {
+  const changed = {};
+  for (const line of lines) {
+    const file = line.split("\t")[1];
+    const m = /^(skills\/[^/]+\/([^/]+))\/(.+)$/.exec(file ?? "");
+    if (!m || m[3] === "SKILL.md" || !exists(m[1])) continue;
+    (changed[m[2]] ??= []).push(m[3]);
+  }
+  const out = {};
+  for (const [slug, files] of Object.entries(changed))
+    out[slug] = {
+      bump: "patch",
+      why: `${files.length} other file(s) in the skill's folder changed`,
+    };
   return out;
 }
 
