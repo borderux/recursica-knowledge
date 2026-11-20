@@ -23,6 +23,10 @@ const run = async (cmd, args) => {
   catch (e) { return { code: typeof e.code === "number" ? e.code : 1, stdout: e.stdout ?? "", stderr: String(e.stderr || e.message || "").trim() }; }
 };
 
+// The main rules in pfctl -sr use the agentguard anchor with the line anchor "agentguard". Without it,
+// pf never evaluates the anchor's rules, base or lockdown, though pfctl -a agentguard -sr still lists
+// them. A macOS update replaces /etc/pf.conf with Apple's own, which has no such line.
+export const pfAnchorUsed = (mainRules) => /^anchor "agentguard"(\s|$)/m.test(mainRules);
 // The lockdown rules in pfctl -a agentguard -sr: only they refuse outgoing traffic, with
 // "block drop out log all". The base rules have no outgoing block.
 export const pfLockdownLoaded = (rules) => /^block (drop|return) out\b.*\ball$/m.test(rules);
@@ -198,18 +202,24 @@ export function makePlatform(env = process.env) {
       windowsRequest({ action: on ? "lockdown-on" : "lockdown-off" });
       return r.code === 0 ? { ok: true } : { ok: false, error: lastLine(r) };
     },
-    // What the firewall holds now, read back from the kernel: whether the lockdown rules are in
-    // place, and the blocked addresses. On macOS the agentguard anchor; on Linux the lockdown table
-    // and the blocked sets.
+    // What the firewall holds now, read back from the kernel: whether it applies the guard's rules
+    // at all (enforced), whether the lockdown rules are in place, and the blocked addresses. On macOS
+    // the main rules and the agentguard anchor; on Linux the guard's tables and the blocked sets.
     async firewallState() {
       if (IS_MAC) {
+        const main = await run("pfctl", ["-sr"]);
         const rules = await run("pfctl", ["-a", "agentguard", "-sr"]);
         const table = await run("pfctl", ["-a", "agentguard", "-t", "blocked", "-T", "show"]);
-        return { lockdown: rules.code === 0 && pfLockdownLoaded(rules.stdout), blocked: table.code === 0 ? listedAddresses(table.stdout) : [] };
+        return {
+          enforced: main.code === 0 && pfAnchorUsed(main.stdout),
+          lockdown: rules.code === 0 && pfLockdownLoaded(rules.stdout),
+          blocked: table.code === 0 ? listedAddresses(table.stdout) : [],
+        };
       }
+      const enforced = (await run("nft", ["list", "table", "inet", "agentguard"])).code === 0;
       const lockdown = (await run("nft", ["list", "table", "inet", "agentguard_lockdown"])).code === 0;
       const sets = await Promise.all(["blocked4", "blocked6"].map((s) => run("nft", ["list", "set", "inet", "agentguard", s])));
-      return { lockdown, blocked: sets.flatMap((r) => (r.code === 0 ? listedAddresses(r.stdout) : [])) };
+      return { enforced, lockdown, blocked: sets.flatMap((r) => (r.code === 0 ? listedAddresses(r.stdout) : [])) };
     },
     // Encrypt the evidence folder to the evidence public key (age, open source), and upload the
     // encrypted file. This computer holds no key that can decrypt the file.

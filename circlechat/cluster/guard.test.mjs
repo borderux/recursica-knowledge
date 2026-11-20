@@ -4,14 +4,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Guard } from "./guard.mjs";
-import { pfLockdownLoaded, listedAddresses } from "./platform.mjs";
+import { pfLockdownLoaded, listedAddresses, pfAnchorUsed } from "./platform.mjs";
 
 // The firewall as the kernel holds it: the fake's lockdownFirewall and block change it, as the real
 // commands do, unless a test breaks them. firewallState reads it back.
 function setup(conns = []) {
   let t = 1_800_000_000_000;
   const log = [], notes = [];
-  const fw = { lockdown: false, blocked: [] };
+  const fw = { enforced: true, lockdown: false, blocked: [] };
   const breaks = { load: null, loadSilently: false, block: false };
   const platform = {
     connections: async () => conns, listening: async () => [{ host: "*", port: 22 }, { host: "*", port: 8080 }],
@@ -33,7 +33,7 @@ function setup(conns = []) {
       if (!breaks.loadSilently) fw.lockdown = on;
       return { ok: true };
     },
-    firewallState: async () => ({ lockdown: fw.lockdown, blocked: [...fw.blocked] }),
+    firewallState: async () => ({ enforced: fw.enforced, lockdown: fw.lockdown, blocked: [...fw.blocked] }),
     encryptAndUpload: async () => true,
   };
   const g = new Guard({ platform, computer: "machine-1", stateDir: fs.mkdtempSync(path.join(os.tmpdir(), "guard-")),
@@ -166,4 +166,39 @@ test("the firewall read back: the lockdown rules by their outgoing block, and th
   assert.deepEqual(listedAddresses("   203.0.113.10\n   2001:db8::7\n"), ["203.0.113.10", "2001:db8::7"]);
   assert.deepEqual(listedAddresses("table inet agentguard {\n\tset blocked4 {\n\t\ttype ipv4_addr\n\t\telements = { 203.0.113.10, 198.51.100.7 }\n\t}\n}\n"), ["203.0.113.10", "198.51.100.7"]);
   assert.deepEqual(listedAddresses("No ALTQ support in kernel\n"), []);
+});
+
+// From the same lockdown: a macOS update had replaced /etc/pf.conf with Apple's own, so the main rules
+// no longer used the agentguard anchor. pfctl -a agentguard -sr listed the anchor's rules, and pf
+// applied none of them: incoming connections weren't refused, and the cut-off blocked nothing.
+const APPLE_MAIN = ['scrub-anchor "com.apple/*" all fragment reassemble', 'anchor "com.apple/*" all'].join("\n");
+test("the main rules use the agentguard anchor, or none of its rules apply", () => {
+  assert.equal(pfAnchorUsed(APPLE_MAIN), false, "Apple's own main rules, as after the update");
+  assert.equal(pfAnchorUsed(`${APPLE_MAIN}\nanchor "agentguard" all`), true);
+  assert.equal(pfAnchorUsed(`${APPLE_MAIN}\nanchor "agentguard-ci" all`), false, "another anchor");
+});
+
+test("a firewall that doesn't apply the guard's rules: one loud alert, one line when it does again", async () => {
+  const { g, notes, fw } = setup([]);
+  fw.enforced = false;
+  await g.tick();
+  await g.tick();
+  const off = notes.filter((n) => /doesn't apply the guard's rules/.test(n.text));
+  assert.equal(off.length, 1, "once, not each minute");
+  assert.match(off[0].text, /^:rotating_light: <!channel> \*The firewall on machine-1 doesn't apply the guard's rules\.\* The main pf rules don't use the agentguard anchor/);
+  fw.enforced = true;
+  await g.tick();
+  assert.match(notes.at(-1).text, /^:white_check_mark: The firewall on machine-1 applies the guard's rules again\.$/);
+  await g.tick();
+  assert.equal(notes.length, 2);
+});
+
+test("a cut-off on a firewall that doesn't apply the guard's rules is a failed cut-off", async () => {
+  const { g, fw, advance } = setup(intruder);
+  await g.tick();
+  fw.enforced = false;
+  advance(11 * 60_000);
+  const c = await g.tick();
+  assert.equal(c.status, "cut-off-failed");
+  assert.equal(c.problems[0], "the main firewall rules don't use the agentguard anchor, so none of its rules apply");
 });

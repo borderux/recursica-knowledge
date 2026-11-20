@@ -862,7 +862,7 @@ A test restore runs on the first day of January, April, July and October. The te
 
 `~/recursica-knowledge/circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
 
-- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell, after Tailscale is up.
+- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On macOS the guard's rules sit in the `agentguard` anchor, and they apply only while the main pf rules use that anchor. A macOS update replaces `/etc/pf.conf` with Apple's own, which doesn't use it, so each start-up builds the main rules again from `/etc/pf.conf` with `firewall/pf-main.sh`. Each minute the guard checks that the main rules use the anchor, and posts one loud alert when they don't. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell, after Tailscale is up.
 - **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown.
 - **The cluster agent:** each minute, the agent checks incoming connections, the decoys and the other computers' stacks. The agent also runs each scheduled reboot.
 - **The update job,** hourly: one job for every kind of update.

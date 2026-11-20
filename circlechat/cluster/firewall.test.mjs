@@ -122,3 +122,18 @@ test("Windows passes Tailscale's addresses only on the Tailscale adapter, and WS
   assert.match(wsl, /-LocalAddresses \$tsAddresses -RemoteAddresses 100\.64\.0\.0\/10,fd7a:115c:a1e0::\/48/);
   assert.match(ps, /Remove-NetFirewallHyperVRule -Name "AgentGuard-Tailscale"/);
 });
+
+// A macOS update replaces /etc/pf.conf with Apple's own, which doesn't use the agentguard anchor. So the
+// firewall's start-up job builds the main rules again from it, with pf-main.sh, at each start-up.
+test("each start-up builds the main pf rules again from /etc/pf.conf, with the agentguard anchor", () => {
+  const install = fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8");
+  const unit = install.split("\n").find((l) => l.includes("install_unit agentguard-firewall") && l.includes("pfctl -E"));
+  assert.ok(unit, "the macOS start-up job");
+  assert.match(unit, /bash \/var\/lib\/agent-cluster\/pf-main\.sh < \/etc\/pf\.conf > \$PF_BOOT\.new && mv \$PF_BOOT\.new \$PF_BOOT; pfctl -E -f \$PF_BOOT; pfctl -a agentguard -f \/var\/lib\/agent-cluster\/pf-base\.conf/);
+  assert.match(install, /install -m 644 -o root "\$HERE\/firewall\/pf-main\.sh" \/var\/lib\/agent-cluster\/pf-main\.sh/);
+  // what the start-up job builds from Apple's own /etc/pf.conf, as a macOS update leaves it
+  const apple = 'scrub-anchor "com.apple/*"\nnat-anchor "com.apple/*"\nrdr-anchor "com.apple/*"\ndummynet-anchor "com.apple/*"\nanchor "com.apple/*"\nload anchor "com.apple" from "/etc/pf.anchors/com.apple"\n';
+  const built = spawnSync("bash", [path.join(here, "firewall/pf-main.sh")], { input: apple, encoding: "utf8" }).stdout;
+  assert.match(built, /^set skip on lo0\n/);
+  assert.match(built, /\nanchor "agentguard"\n$/);
+});

@@ -76,6 +76,8 @@ else
   for f in base lockdown; do
     sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/^@RUSTDESK_DIRECT@\$/$PF_DIRECT/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
+  sudo install -m 644 -o root "$HERE/firewall/pf-main.sh" /var/lib/agent-cluster/pf-main.sh
+  bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf | sudo tee /var/lib/agent-cluster/pf-main.conf >/dev/null
   # The main rules skip loopback and load the agentguard anchor (firewall/pf-main.sh). A backup of
   # macOS's own rules stays in /etc/pf.conf.agentguard-backup.
   PF_MAIN="$(bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf)"
@@ -83,7 +85,11 @@ else
     [ -f /etc/pf.conf.agentguard-backup ] || sudo cp /etc/pf.conf /etc/pf.conf.agentguard-backup
     printf '%s\n' "$PF_MAIN" | sudo tee /etc/pf.conf >/dev/null
   fi
-  install_unit agentguard-firewall "pfctl -E -f /etc/pf.conf; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf" / root boot
+  # At each start-up the main rules are built again from /etc/pf.conf, with the two lines the cluster
+  # needs. A macOS update replaces /etc/pf.conf with Apple's own, which has neither, and the
+  # agentguard anchor's rules then never apply. The guard alerts each minute it finds them unused.
+  PF_BOOT=/var/lib/agent-cluster/pf-main.conf
+  install_unit agentguard-firewall "bash /var/lib/agent-cluster/pf-main.sh < /etc/pf.conf > $PF_BOOT.new && mv $PF_BOOT.new $PF_BOOT; pfctl -E -f $PF_BOOT; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf" / root boot
 fi
 
 # Decoys: fake SSH, FTP and web services that nobody legitimate ever touches.
