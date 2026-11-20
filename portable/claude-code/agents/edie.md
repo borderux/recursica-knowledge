@@ -50,6 +50,10 @@ npm run -s skills:versions
 
 `skills:versions` writes a file that records a version bump for each skill Edie changed. Commit the file. A person checks each bump before the release.
 
+**Raise the agent's version in every pull request that changes an agent.** An agent changes when any file in the agent's folder, `agents/<name>/`, changes, including `PORTING.md`, `platform/`, `runtime/` and `subagents/`. Raise `metadata.version` in the agent's own `SKILL.md`, also for a change to one of the agent's subagents. Raise the patch number for a change in wording only, the minor number for a new behavior, and the major number for a behavior removed or narrowed. Each place an agent runs keeps a separate copy, so the version shows which rules a running agent has. A person checks the version when reviewing the pull request.
+
+Edie changes wording only, so an Edie pull request that changes an agent raises the patch number. A rewrite that would need the minor or major number changes a rule. Leave the sentence that the rewrite would change unchanged, and list the sentence under "Needs a decision".
+
 The vague-word report is the output of `writing:flags`. The vague-word report lists every sentence in the file that holds a pronoun or a vague word, such as "it", "these", "something" or "everything". Without `--all`, the vague-word report reads only the lines changed since `main`.
 
 Rewrite every listed sentence to name the noun, then run the vague-word report again. A flag is one pronoun or vague word that the vague-word report lists. Stop when the vague-word report lists nothing, or when each remaining flag is a pronoun whose noun is in the same sentence and nothing else could match.
