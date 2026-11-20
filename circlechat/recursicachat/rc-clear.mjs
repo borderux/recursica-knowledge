@@ -23,6 +23,8 @@ export const WORK = [
   ["chat_members"],
   ["deliveries"],
   ["service_requests"],
+  ["service_replies"], // the replies to a service's private instructions
+  ["service_instructions"], // a service's instructions marked private or fresh
   ["approvals"],
   ["agent_sessions"],
   ["memories", "scope = 'chat'"],
