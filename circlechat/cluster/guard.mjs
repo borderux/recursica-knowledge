@@ -7,6 +7,8 @@
 //   The cut-off reads the firewall back. When the lockdown rules or a blocked source aren't in
 //   place, it is "cut-off-failed", never "cut-off": one loud Slack alert, and another try each minute.
 //   "Release lockdown" or "Allow this source" (both with an authenticator code) --> normal
+// Each minute, whatever the state, the guard also checks that the firewall applies its rules at all.
+// When it doesn't, Slack gets one loud alert, and one line when the rules apply again.
 //
 // The OS commands come in as `platform`, so the logic runs the same on every computer.
 import crypto from "node:crypto";
@@ -29,6 +31,7 @@ export class Guard {
 
   // One check: called every minute, and whenever the decoys log a touch.
   async tick(canaryHits = []) {
+    await this.checkEnforced();
     const s = this.state;
     if (s.status === "watching" && this.now() >= s.cutAt) return this.cutOff("the watch window ended");
     if (s.status === "cut-off-failed") return this.cutOff(s.reason);
@@ -38,6 +41,25 @@ export class Guard {
       .concat(canaryHits.map((h) => ({ remote: h.src_host, remotePort: h.src_port, localPort: h.dst_port, process: "decoy", why: `touched a decoy (${h.logtype ?? "decoy"})` })));
     if (!found.length) return s;
     return this.lock(found);
+  }
+
+  // Whether the firewall applies the guard's rules. On macOS the main rules must use the agentguard
+  // anchor: a macOS update replaces /etc/pf.conf with Apple's own, and the anchor's rules, though
+  // loaded, then never apply. Kept in firewall.json, so each change is posted once.
+  async checkEnforced() {
+    if (!this.platform.firewallState) return;
+    const fw = await this.platform.firewallState().catch(() => null);
+    if (!fw || typeof fw.enforced !== "boolean") return;
+    const file = this.file("firewall.json");
+    let was = {};
+    try { was = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+    if (!fw.enforced && !was.offSince) {
+      fs.writeFileSync(file, JSON.stringify({ offSince: this.now() }), { mode: 0o600 });
+      await this.notify("info", `:rotating_light: <!channel> *The firewall on ${this.computer} doesn't apply the guard's rules.* The main pf rules don't use the agentguard anchor, so incoming connections aren't refused, and a lockdown can't cut the computer off. A macOS update replaces /etc/pf.conf with Apple's own. The next start-up builds the main rules again; to apply them now, run install-cluster.sh.`);
+    } else if (fw.enforced && was.offSince) {
+      fs.writeFileSync(file, JSON.stringify({}), { mode: 0o600 });
+      await this.notify("info", `:white_check_mark: The firewall on ${this.computer} applies the guard's rules again.`);
+    }
   }
 
   async lock(found) {
@@ -70,6 +92,7 @@ export class Guard {
     for (const ip of s.sources) blocks.push({ ip, ...((await this.platform.block(ip)) ?? { ok: true }) });
     const fw = await this.platform.firewallState().catch((e) => ({ lockdown: false, blocked: [], error: e.message }));
     const problems = [];
+    if (fw.enforced === false) problems.push("the main firewall rules don't use the agentguard anchor, so none of its rules apply");
     if (!fw.lockdown) problems.push(`the lockdown rules aren't loaded${loaded.ok ? "" : ` (${loaded.error})`}`);
     for (const b of blocks) if (!fw.blocked.includes(b.ip)) problems.push(`${b.ip} isn't blocked${b.ok ? "" : ` (${b.error})`}`);
     if (fw.error) problems.push(`the firewall couldn't be read (${fw.error})`);
