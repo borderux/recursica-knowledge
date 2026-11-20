@@ -542,6 +542,43 @@ export function rcSessionErrors(rc) {
   return errs;
 }
 
+// recursicachat.services: a program that drives agents on the server through a service account
+// (circlechat/rc-service.sh). Each entry: the service's name, the agents it drives, the macOS account
+// that runs the program, and the file that holds its token. An agent has at most one service.
+const RC_SERVICE_NAME = /^[a-z][a-z0-9-]{1,39}$/;
+export function rcServiceErrors(rc) {
+  if (rc.services === undefined) return [];
+  if (!Array.isArray(rc.services)) return ["recursicachat.services must be a list"];
+  const errs = [];
+  const names = new Set();
+  const driven = new Map();
+  const files = new Set((Array.isArray(rc.sessions) ? rc.sessions : []).map((s) => s?.file));
+  const serverDirs = [rc.app ?? RC_DEFAULTS.app, rc.data ?? RC_DEFAULTS.data].map((d) => String(d).replace(/\/+$/, "") + "/");
+  rc.services.forEach((s, i) => {
+    const at = `recursicachat.services[${i}]`;
+    if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account and file`);
+    if (typeof s.name !== "string" || !RC_SERVICE_NAME.test(s.name)) errs.push(`${at}.name must be 2 to 40 of a-z, 0-9 and -, starting with a letter`);
+    else if (names.has(s.name)) errs.push(`${at}.name ${s.name} is listed twice`);
+    else names.add(s.name);
+    if (!Array.isArray(s.agents) || !s.agents.length) errs.push(`${at}.agents must list the handles of the agents it drives`);
+    else
+      for (const h of s.agents) {
+        if (typeof h !== "string" || !/^[a-z0-9][a-z0-9_-]{0,36}$/.test(h)) errs.push(`${at}.agents: ${JSON.stringify(h)} is not an agent's handle`);
+        else if (driven.has(h)) errs.push(`${at}.agents: @${h} is already driven by ${driven.get(h)}: an agent has at most one service`);
+        else driven.set(h, s.name);
+      }
+    if (typeof s.account !== "string" || !RC_SESSION_ACCOUNT.test(s.account) || s.account === "root") errs.push(`${at}.account must be the macOS or Linux account that runs the program, not root`);
+    if (typeof s.file !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(s.file) || s.file.includes("/../")) errs.push(`${at}.file must be an absolute path`);
+    else {
+      if (serverDirs.some((d) => s.file.startsWith(d))) errs.push(`${at}.file must be outside the server's folders`);
+      if (files.has(s.file)) errs.push(`${at}.file is listed twice`);
+      files.add(s.file);
+    }
+  });
+  return errs;
+}
+
 export function recursicachatErrors(site = {}) {
   const errs = [];
   const rc = site.recursicachat;
@@ -567,6 +604,7 @@ export function recursicachatErrors(site = {}) {
   if (typeof rc.node === "string" && serverDir && (rc.node + "/").startsWith(serverDir + "/")) errs.push(`recursicachat.node must be a Node outside the server's folder (${serverDir}), such as the owner's Node 24`);
   if (synced.length && site.site?.gateway_local_port === undefined) errs.push("recursicachat needs site.gateway_local_port: the server reaches each agent's gateway handle there");
   errs.push(...rcSessionErrors(rc));
+  errs.push(...rcServiceErrors(rc));
   for (const [h, a] of synced) {
     const s = a.recursicachat;
     const at = `agents.${h}.recursicachat`;
