@@ -28,11 +28,16 @@ export function parseSs(text) {
     const f = line.trim().split(/\s+/);
     const local = splitHostPort(f[2]), remote = splitHostPort(f[3]);
     const proc = (line.match(/users:\(\("([^"]+)"/) ?? [])[1] ?? "";
-    return { localPort: local.port, remote: remote.host, remotePort: remote.port, process: proc };
+    return { local: local.host, localPort: local.port, remote: remote.host, remotePort: remote.port, process: proc };
   });
 }
+// ss -Htln:  LISTEN 0 4096 127.0.0.53%lo:53 0.0.0.0:*
+// With -l and no state filter, ss prints the state first, so the local address is the fourth field.
 export function parseSsListen(text) {
-  return text.trim().split("\n").filter(Boolean).map((l) => splitHostPort(l.trim().split(/\s+/)[2]).port).filter(Boolean);
+  return text.trim().split("\n").filter(Boolean).map((l) => {
+    const f = l.trim().split(/\s+/);
+    return splitHostPort(f[/^[A-Z][A-Z-]*$/.test(f[0]) ? 3 : 2] ?? "");
+  }).filter((x) => x.port);
 }
 
 // lsof -nP -iTCP -sTCP:ESTABLISHED:  sshd 512 root 5u IPv4 0x.. 0t0 TCP 192.168.1.5:22->192.168.1.77:50000 (ESTABLISHED)
@@ -42,22 +47,24 @@ export function parseLsof(text) {
     const name = f.find((x) => x.includes("->")) ?? "";
     const [l, r] = name.split("->");
     const local = splitHostPort(l ?? ""), remote = splitHostPort(r ?? "");
-    return { localPort: local.port, remote: remote.host, remotePort: remote.port, process: f[0] };
+    return { local: local.host, localPort: local.port, remote: remote.host, remotePort: remote.port, process: f[0] };
   }).filter((c) => c.remote);
 }
+// lsof -nP -iTCP -sTCP:LISTEN:  tailscal 875 root 30u IPv6 0x.. 0t0 TCP [fd7a:115c:a1e0::1]:51783 (LISTEN)
+// Each listener's address and port: "*" for every address.
 export function parseLsofListen(text) {
   return text.trim().split("\n").slice(1).map((l) => {
     const name = l.trim().split(/\s+/).find((x) => /:\d+$/.test(x));
-    return name ? splitHostPort(name).port : 0;
-  }).filter(Boolean);
+    return name ? splitHostPort(name) : { host: "", port: 0 };
+  }).filter((x) => x.port);
 }
 
 // Windows, read from WSL: Get-NetTCPConnection as JSON.
 async function windowsConnections(state) {
   if (!IS_WSL) return [];
-  const ps = `Get-NetTCPConnection -State ${state} -ErrorAction SilentlyContinue | ForEach-Object { [pscustomobject]@{ l=$_.LocalPort; r=$_.RemoteAddress; rp=$_.RemotePort; p=(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).Name } } | ConvertTo-Json -Compress`;
+  const ps = `Get-NetTCPConnection -State ${state} -ErrorAction SilentlyContinue | ForEach-Object { [pscustomobject]@{ la=$_.LocalAddress; l=$_.LocalPort; r=$_.RemoteAddress; rp=$_.RemotePort; p=(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue).Name } } | ConvertTo-Json -Compress`;
   const out = await sh("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", ps]);
-  try { const j = JSON.parse(out || "[]"); return (Array.isArray(j) ? j : [j]).map((x) => ({ localPort: x.l, remote: x.r, remotePort: x.rp, process: x.p ?? "" })); }
+  try { const j = JSON.parse(out || "[]"); return (Array.isArray(j) ? j : [j]).map((x) => ({ local: x.la ?? "", localPort: x.l, remote: x.r, remotePort: x.rp, process: x.p ?? "" })); }
   catch { return []; }
 }
 
@@ -88,7 +95,7 @@ export function makePlatform(env = process.env) {
     },
     async listening() {
       if (IS_MAC) return parseLsofListen(await sh("lsof", ["-nP", "-iTCP", "-sTCP:LISTEN"]));
-      return [...parseSsListen(await sh("ss", ["-Htln"])), ...(await windowsConnections("Listen")).map((c) => c.localPort)];
+      return [...parseSsListen(await sh("ss", ["-Htln"])), ...(await windowsConnections("Listen")).map((c) => ({ host: c.local, port: c.localPort }))];
     },
     // Seal: close each client stack's encrypted disk image, and make every secrets file
     // unreadable. Unseal restores each file's mode. Client stacks stay closed until the Unlock

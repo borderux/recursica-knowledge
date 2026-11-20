@@ -9,7 +9,7 @@ function setup(conns = []) {
   let t = 1_800_000_000_000;
   const log = [], notes = [];
   const platform = {
-    connections: async () => conns, listening: async () => [22, 8080],
+    connections: async () => conns, listening: async () => [{ host: "*", port: 22 }, { host: "*", port: 8080 }],
     seal: async (on) => log.push(["seal", on]),
     snapshot: async (dir) => { fs.writeFileSync(path.join(dir, "connections.txt"), "tcp ..."); log.push(["snapshot"]); },
     lookup: async (ip) => ({ ip, owner: "Example Net", country: "US" }),
