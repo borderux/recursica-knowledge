@@ -122,6 +122,16 @@ jobs:
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           node scripts/skill-versions.mjs check --base "origin/$BASE_REF"
 
+      # A failure: an agent's files changed and its metadata.version did not rise. Nothing releases
+      # agents, so the pull request that changes one raises its version by hand.
+      - name: Every changed agent has a higher version
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          node scripts/agent-versions.mjs check --base "origin/$BASE_REF"
+
       # Warnings, never a failure: every pronoun and vague word a pull request adds to a skill or
       # an agent, for a person to read for "which one?" (WRITING.md rule 3).
       - name: Pronouns and vague words to review

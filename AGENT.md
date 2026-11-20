@@ -380,6 +380,15 @@ npm run agents:build:check   # report drift, write nothing; exits 1 if there is 
 npm run agents:build         # write
 ```
 
+**A pull request that changes any file in `agents/<name>/` raises `metadata.version` in the
+agent's own `SKILL.md`.** Raise the patch number for wording only, the minor number for a new
+behavior, tool, question or file the agent reads, and the major number for a behavior removed or
+narrowed, a tool taken away, or a renamed agent. A new agent keeps the version the agent was
+written with. Every place an agent runs keeps a separate copy, so the version is the one way to tell which
+rules a running agent has. `npm run agents:versions:check` compares each changed agent with
+`main`, and CI fails a pull request whose changed agent has no higher version. Unlike a skill's
+version, an agent's version is raised by hand, because nothing releases agents.
+
 **Every place an agent runs keeps its own copy, and none of them updates when this repository
 does.** Buzz has `sync-prompts.mjs`, CircleChat has `circlechat/sync-skills.sh`, and Claude Code
 has this — run it after pulling a change to an agent:
@@ -535,7 +544,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
   - [skills/components/](skills/components/) — one skill per UI component.
   - [skills/design-rules/](skills/design-rules/) — one skill per design topic, carrying the team's house rules for composition. Load these alongside the relevant component skills when building a screen.
   - [skills/psychology/](skills/psychology/) — the cognitive-science basis behind those rules, with citations. Load when a decision turns on how much to put in front of a user, or when a rule needs justifying.
-- **Frontmatter**: a skill's `SKILL.md` frontmatter holds the skill's name, version, description, license and author. **Never edit `version` by hand.** `npm run skills:versions` compares each changed skill with `main` and records a patch, minor or major bump in `.changeset/skill-bumps-<branch>.json`. A person checks each bump and changes any that is wrong, CI fails when a changed skill has no bump, and the release writes the new versions. The `name` must match the skill's directory name, and `description` must be 450 characters or fewer — the house limit, well under the format's 1024. A description is paid for in every session that lists skills, so it says what the skill covers, when to use it, and which sibling to use instead, and nothing else. After changing descriptions, run `npm run -s skills:routing -- prompt`, give the prompt to the model you care about, and score its answer with `npm run -s skills:routing -- score <answer.json>`.
+- **Frontmatter**: a skill's `SKILL.md` frontmatter holds the skill's name, version, description, license and author. **Never edit `version` by hand.** `npm run skills:versions` compares each changed skill with `main` and records a patch, minor or major bump in `.changeset/skill-bumps-<branch>.json`. A person checks each bump and changes any that is wrong, CI fails when a changed skill has no bump, and the release writes the new versions. A skill changes when any file in its folder changes, such as a template image, not only its `SKILL.md`. The `name` must match the skill's directory name, and `description` must be 450 characters or fewer — the house limit, well under the format's 1024. A description is paid for in every session that lists skills, so it says what the skill covers, when to use it, and which sibling to use instead, and nothing else. After changing descriptions, run `npm run -s skills:routing -- prompt`, give the prompt to the model you care about, and score its answer with `npm run -s skills:routing -- score <answer.json>`.
 - **Frontmatter must parse as YAML.** An unquoted `description` containing a colon followed by a space breaks the document and the skill fails to install. Use an em dash instead of a colon, or quote the whole value.
 - **Define a term in the skill that uses it, in the glossary's words.** Put the definition in brackets after the term's first use in prose, and if the term is in [`skills/meta/GLOSSARY.md`](skills/meta/GLOSSARY.md), copy it exactly — `npm run skills:glossary:check` and `npm test` fail when one differs. The glossary is the source for those definitions, not a skill: nothing serves it to an agent building a screen, so never replace an in-place definition with a link to it.
 - **A paragraph several skills share is worded in [`skills/meta/SHARED-PASSAGES.md`](skills/meta/SHARED-PASSAGES.md).** The label-placement rule, the React-prop column note and the rest are copied into each skill for the same reason definitions are, and they had drifted into seven wordings. Change a shared passage there and in every copy together; a skill whose situation genuinely differs writes its own paragraph under an opening that file does not list.

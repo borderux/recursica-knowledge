@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { classify } from "./skill-versions.mjs";
+import { classify, otherFiles } from "./skill-versions.mjs";
 
 const skill = ({
   description = "Rules for the thing.",
@@ -95,4 +95,21 @@ test("a change to the version line alone gets no bump", () => {
     classify(base, base.replace("version: 0.1.0", "version: 0.2.0")),
     null,
   );
+});
+
+test("a changed file in a skill's folder besides SKILL.md is a patch to that skill", () => {
+  const lines = [
+    "M\tskills/design-rules/acme-skill/templates/hero/desktop.png",
+    "A\tskills/design-rules/acme-skill/templates/hero/phone.png",
+    "M\tskills/design-rules/acme-skill/SKILL.md",
+    "M\tskills/meta/GLOSSARY.md",
+    "D\tskills/components/gone-skill/notes.md",
+  ];
+  const exists = (dir) => dir !== "skills/components/gone-skill";
+  assert.deepEqual(otherFiles(lines, exists), {
+    "acme-skill": {
+      bump: "patch",
+      why: "2 other file(s) in the skill's folder changed",
+    },
+  });
 });
