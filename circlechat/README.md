@@ -1471,6 +1471,7 @@ This is the start of phase 5: the kit installs the server that rc-sync.sh alread
 | `backup.sh`, `io.recursica.recursicachat-backup.plist`             | The nightly backup, as root, at 03:30                                     |
 | `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist` | The monthly test restore, as root, on the 1st at 05:00                    |
 | `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`               | Puts the latest commit of the server's branch into service                |
+| `build-pdftext.sh`                                                 | Builds the PDF text reader's image for people's uploads, and records its ID |
 
 **Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
 `render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id`,
@@ -1486,6 +1487,22 @@ a provider key, and it lasts only while that engine runs. A restore loses nothin
 start writes the files again. The guard then checks what is left, unchanged: no file named like a
 key, and neither the vault key nor the restic password anywhere in the contents. The test restore
 fails if a backup holds any of those settings.
+
+**`build-pdftext.sh` builds the image that reads a PDF's text, and records its image ID, as the Hermes
+image's ID is recorded.** People upload PDF, `.txt` and `.md` files to the server, and the server reads
+a PDF's text in a container with no network, never in the server itself. The image is the app's
+`images/pdftext`: `poppler-utils` from Alpine's own packages, on the official Alpine image pinned by
+digest. The script refuses a base image that is not pinned by digest. It builds on the server's own
+Colima VM, checks that `pdftotext` and `pdfinfo` run with no network, and writes the ID to
+`/opt/recursicachat/pdftext.image-id`. After that, `run.sh` refuses to start the server unless the
+image matches the ID, and hands the server the ID, so the server runs exactly that image. Before the
+first build, the server starts, and a PDF's text reads as unavailable. Run it after an `rc-deploy`
+that adds or changes `images/pdftext`:
+
+```bash
+sudo /opt/recursicachat/bin/build-pdftext.sh
+sudo launchctl kickstart -k system/io.recursica.recursicachat
+```
 
 **`sudo rc-deploy` puts the latest commit of the server's branch into service, and puts the previous
 one back on any failure.** It prints one summary line; each step's output goes to
