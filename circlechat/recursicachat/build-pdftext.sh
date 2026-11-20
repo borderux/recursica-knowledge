@@ -27,8 +27,10 @@ fail() { echo "build-pdftext: $1" >&2; exit 1; }
 [ "$(id -u)" = 0 ] || fail "run it with sudo"
 [ -f "$DIR/Dockerfile" ] || fail "no $DIR/Dockerfile: deploy a server with people's uploads first (sudo rc-deploy)"
 # every FROM pinned by digest
-grep -E '^FROM ' "$DIR/Dockerfile" | grep -vqE '^FROM [^ ]+@sha256:[0-9a-f]{64}( |$)' && fail "$DIR/Dockerfile has a base image not pinned by digest"
-grep -qE '^FROM ' "$DIR/Dockerfile" || fail "$DIR/Dockerfile has no FROM"
+froms="$(grep -E '^FROM ' "$DIR/Dockerfile" || true)"
+[ -n "$froms" ] || fail "$DIR/Dockerfile has no FROM"
+unpinned="$(printf '%s\n' "$froms" | grep -vE '^FROM [^ ]+@sha256:[0-9a-f]{64}( |$)' || true)"
+[ -z "$unpinned" ] || fail "$DIR/Dockerfile has a base image not pinned by digest"
 
 export HOME="$HOME_DIR" PATH="$PATH_SAFE" DOCKER_HOST="unix://$SOCK"
 docker info >/dev/null 2>&1 || fail "the server VM's Docker at $SOCK does not answer"
