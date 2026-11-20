@@ -100,7 +100,8 @@ cp -R node_modules "$W/stage/node_modules"
 printf 'commit %s\nbranch %s\nrepo %s\nnode %s\nbuilt %s by %s with npm ci --ignore-scripts, npm run build, npm prune --omit=dev (rc-deploy)\n' \
   "$(cat "$W/commit")" "$BRANCH" "$REPO" "$(node -v)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(id -un)" > "$W/stage/REVISION"
 cd "$W/stage"
-if find . -type l -exec readlink {} \; | grep -q '^/'; then echo "the stage holds an absolute link"; exit 1; fi
+links="$(find . -type l -exec readlink {} \;)"
+if grep -q '^/' <<<"$links"; then echo "the stage holds an absolute link"; exit 1; fi
 find . -type f -print0 | LC_ALL=C sort -z | xargs -0 shasum -a 256 > "$W/manifest"
 BUILD
   before "build" "the build failed (the log says where)"

@@ -58,7 +58,7 @@ function setup({ sameCommit = false } = {}) {
   script(bin, "launchctl", [
     `echo "$1" >> "${calls}"`,
     `rev="$(sed -n 's/^commit //p' "${base}/app/REVISION")"`,
-    `if [ "$1" = bootstrap ] && [ "$rev" != "\${FAKE_NO_LINES_FOR:-none}" ]; then printf '%s' "${LINES.replace(/'/g, "'\\''").replace(/\n/g, "\\n")}" >> "${base}/server.log"; fi`,
+    `if [ "$1" = bootstrap ] && [ "$rev" != "\${FAKE_NO_LINES_FOR:-none}" ]; then printf '%b' "${LINES.replace(/\n/g, "\\n")}" >> "${base}/server.log"; fi`,
   ].join("\n"));
   script(bin, "curl", [`[ -z "\${FAKE_ALL_UNHEALTHY:-}" ] || exit 7`, `rev="$(sed -n 's/^commit //p' "${base}/app/REVISION")"`, `[ "$rev" = "\${FAKE_UNHEALTHY_FOR:-none}" ] && exit 7`, "echo ok"].join("\n"));
   script(bin, "sleep", "exit 0");
