@@ -21,6 +21,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { kitProblem } from "../cluster/kit-check.mjs";
+import { circlechatRetired } from "./render.mjs";
 import { stackSlack } from "./slack.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
@@ -120,9 +121,11 @@ async function main() {
   }
   delete state.kitProblem;
   // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
-  // failure. The weekly upstream sync brings the original project's changes to that branch.
+  // failure. The weekly upstream sync brings the original project's changes to that branch. A
+  // retired CircleChat 1.x (site.circlechat) is never rebuilt, so it never starts again.
   const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
-  try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
+  let site = {}; try { site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")); } catch { /* the setup reports a missing site.json */ }
+  if (!circlechatRetired(site)) try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
   git("fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);

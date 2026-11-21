@@ -7,13 +7,17 @@
 // images are rebuilt on fresh base images. Then the stack restarts and the health check runs:
 // every container running, and CircleChat answering. On a failure, every container goes back to
 // the version it ran before, and Slack gets a message.
+//
+// A stack whose CircleChat 1.x is retired (site.circlechat) starts no CircleChat container and
+// pulls none of CircleChat's images. Only the pins of RETIRED_PINS move, and the setup's --upgrade
+// then recreates the gateway on them.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
 import { stackSlack } from "../kit/slack.mjs";
-import { stackName } from "../kit/render.mjs";
+import { circlechatRetired, stackName } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
@@ -50,6 +54,12 @@ export async function hermesTurnFailures(homes, current, next, turn) {
   }
   return failed;
 }
+// The images the kit still starts on a stack whose CircleChat 1.x is retired: LiteLLM, the
+// router (node:22-alpine) and the app preview and Kev's install (node:22), all in setup-host.sh.
+// CircleChat's own images, the file store's and the agent image (Hermes) stay where they are.
+export const RETIRED_PINS = ["ghcr.io/berriai/litellm:main-stable", "node:22-alpine", "node:22"];
+export const pinsToRefresh = (lock, retired) => Object.keys(lock).filter((tag) => !retired || RETIRED_PINS.includes(tag));
+
 // Each agent's Hermes home: a real .hermes-<handle> folder. The owner, who runs this, cannot see
 // inside a home, which belongs to the agent's account with mode 700, so the test turn itself looks
 // for the home's config.yaml (kit/hermes-turn.sh). A home with none fails on the current version,
@@ -69,28 +79,33 @@ async function main() {
   let seen = {}; try { seen = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
   const port = (fs.readFileSync(path.join(ccDir, "site.json"), "utf8").match(/"port"\s*:\s*(\d+)/) ?? [])[1] ?? "8080";
 
+  const retired = circlechatRetired(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")));
+
   // What runs now: container -> image ID, so a rollback can return to it.
   const before = {};
-  for (const id of (await dc(["ps", "-q"])).split("\n").filter(Boolean)) {
-    const [svc, image] = (await run("docker", ["inspect", "-f", '{{index .Config.Labels "com.docker.compose.service"}} {{.Image}}', id], { env })).split(" ");
-    before[svc] = image;
+  let tags = {}, choice = [];
+  if (!retired) {
+    for (const id of (await dc(["ps", "-q"])).split("\n").filter(Boolean)) {
+      const [svc, image] = (await run("docker", ["inspect", "-f", '{{index .Config.Labels "com.docker.compose.service"}} {{.Image}}', id], { env })).split(" ");
+      before[svc] = image;
+    }
+    tags = JSON.parse(await dc(["config", "--format", "json"])).services;
+    const pulledTags = [];
+    for (const [svc, s] of taggedServices(tags)) {
+      const current = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
+      await run("docker", ["pull", "-q", s.image], { env }).catch(() => "");
+      const pulled = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
+      pulledTags.push({ svc, tag: s.image, current, pulled });
+    }
+    choice = chooseDigests(pulledTags, seen);
+    for (const c of choice) if (!c.changed && c.use) await run("docker", ["tag", c.use, c.tag], { env });   // keep the old version under the tag
+    fs.writeFileSync(stateFile, JSON.stringify(seen));
+    await dc(["build", "--pull"]);
+    // Stored files move from the old containers onto the storage volume before compose recreates
+    // them (kit/carry-storage.sh). It does nothing once they have moved.
+    await run("bash", [path.join(here, "../kit/carry-storage.sh")], { cwd: ccDir, env: { ...env, CC_DIR: ccDir } });
+    await dc(["up", "-d"]);
   }
-  const tags = JSON.parse(await dc(["config", "--format", "json"])).services;
-  const pulledTags = [];
-  for (const [svc, s] of taggedServices(tags)) {
-    const current = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
-    await run("docker", ["pull", "-q", s.image], { env }).catch(() => "");
-    const pulled = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
-    pulledTags.push({ svc, tag: s.image, current, pulled });
-  }
-  const choice = chooseDigests(pulledTags, seen);
-  for (const c of choice) if (!c.changed && c.use) await run("docker", ["tag", c.use, c.tag], { env });   // keep the old version under the tag
-  fs.writeFileSync(stateFile, JSON.stringify(seen));
-  await dc(["build", "--pull"]);
-  // Stored files move from the old containers onto the storage volume before compose recreates
-  // them (kit/carry-storage.sh). It does nothing once they have moved.
-  await run("bash", [path.join(here, "../kit/carry-storage.sh")], { cwd: ccDir, env: { ...env, CC_DIR: ccDir } });
-  await dc(["up", "-d"]);
 
   const healthy = async () => {
     for (let i = 0; i < 18; i++) {
@@ -105,11 +120,11 @@ async function main() {
   // The images the kit starts directly (gateway, notifier, agent image), pinned in images.lock:
   // each pin moves to a newer version after the newer version has been out for 7 days.
   const lockFile = path.join(ccDir, "images.lock");
-  let oldLock = null;
+  let oldLock = null, moved = [];
   if (fs.existsSync(lockFile)) {
     const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
     const pinned = [];
-    for (const tag of Object.keys(lock)) {
+    for (const tag of pinsToRefresh(lock, retired)) {
       await run("docker", ["pull", "-q", tag], { env }).catch(() => "");
       const pulled = await run("docker", ["image", "inspect", "-f", "{{index .RepoDigests 0}}", tag], { env }).catch(() => "");
       pinned.push({ tag, current: lock[tag].ref, pulled });
@@ -135,9 +150,16 @@ async function main() {
       oldLock = lock;
       const next = structuredClone(lock);
       for (const m of moves) next[m.tag] = { ref: m.use, since: new Date().toISOString() };
+      moved = moves.map((m) => m.tag);
       fs.writeFileSync(lockFile, JSON.stringify(next, null, 2) + "\n");
       await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } });
     }
+  }
+  // A retired CircleChat has no health check here: the setup's --upgrade above fails when the
+  // gateway does not start, and this job then fails with it.
+  if (retired) {
+    console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: CircleChat 1.x is retired; ${moved.length ? `pins moved (${moved.join(", ")})` : "no pin moved"}`);
+    return;
   }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {

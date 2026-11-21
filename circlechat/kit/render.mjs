@@ -55,6 +55,11 @@ export const clusterStackName = (site) => site?.site?.stack_name || DEFAULT_STAC
 export const stackName = (site) => site?.site?.tenant || clusterStackName(site);
 // The stack's GitHub environment, which the "Deploy secrets" workflow names.
 export const githubEnvironment = (site) => (site?.site?.tenant ? `client-${site.site.tenant}` : clusterStackName(site));
+// site.circlechat "retired": the stack's CircleChat 1.x server is retired and never starts again.
+// The setup, the image refresh, the CircleChat update and the uptime check skip it, and the gateway
+// reads no CircleChat database. Everything else the stack runs stays: the gateway, the job filter,
+// the app preview, Kev's jobs, the GitHub token service and the RecursicaChat 2.0 jobs.
+export const circlechatRetired = (site) => site?.site?.circlechat === "retired";
 
 // A backend is a cloud model unless it names a model on a computer in this site.json.
 export function isCloud(backend, site) {
@@ -213,6 +218,8 @@ export function gatewayConfig(site) {
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
     nodes: (site.nodes ?? []).filter((n) => !n.control && n.address !== "host.docker.internal").map((n) => n.address),
+    // A retired CircleChat 1.x: the router reads no CircleChat database (gateway/router.mjs).
+    ...(circlechatRetired(site) ? { circlechat: "retired" } : {}),
   };
 }
 
@@ -679,6 +686,7 @@ export function validate(site, { cluster } = {}) {
   if (site.git?.host !== undefined && !["github", "other"].includes(site.git.host)) errs.push('git.host must be "github" or "other"');
   if (site.repos?.access !== undefined && !["service-account", "github-app", "admin-token"].includes(site.repos.access)) errs.push('repos.access must be "service-account", "github-app" or "admin-token"');
   if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
+  if (site.site?.circlechat !== undefined && !circlechatRetired(site)) errs.push('site.circlechat must be "retired", or left out while CircleChat 1.x runs');
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
   errs.push(...validateNotify(site.notify));
@@ -940,6 +948,8 @@ export function render(site) {
     `REPO_ACCESS=${site.repos?.access ?? "service-account"}`,
     `PROXY=${site.site?.proxy ?? "tailscale"}`,
     `UPGRADE_AUTO=${site.upgrade?.auto === true ? "on" : "off"}`,
+    // site.circlechat: "retired" when the stack's CircleChat 1.x server never starts again.
+    `CIRCLECHAT=${circlechatRetired(site) ? "retired" : "on"}`,
     // Task details in Slack: on for the cluster's own stack and a demo; off for a client stack unless the client
     // allows details (notify.details), because Slack is an outside company.
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,

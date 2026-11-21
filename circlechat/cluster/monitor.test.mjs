@@ -53,3 +53,12 @@ test("local stacks: the cluster's own, named by site.stack_name, open client sta
   s = await localStacks(home, async () => true);
   assert.equal(s[0].name, "ops");
 });
+
+test("local stacks: a stack whose CircleChat 1.x is retired is left out, so it never reads as down", async () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "home-"));
+  fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ site: { port: 8080, slack_channel_id: "CB", circlechat: "retired" } }));
+  const asked = [];
+  assert.deepEqual(await localStacks(home, async (port) => { asked.push(port); return false; }), []);
+  assert.deepEqual(asked, [], "the retired stack's port is never asked");
+});

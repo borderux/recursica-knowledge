@@ -5,12 +5,13 @@
 // app, so no stack's own secrets ever reach another computer.
 import fs from "node:fs";
 import path from "node:path";
-import { clusterStackName } from "../kit/render.mjs";
+import { circlechatRetired, clusterStackName } from "../kit/render.mjs";
 
 const DOWN_AFTER_MS = 3 * 60_000;
 
 // The stacks on this computer, from each stack's site.json: the cluster's own stack, named by
-// site.stack_name, and each client stack whose encrypted disk image is open.
+// site.stack_name, and each client stack whose encrypted disk image is open. A stack whose
+// CircleChat 1.x is retired (site.circlechat) has no CircleChat to answer, so it is left out.
 export async function localStacks(home, check = (port) => fetch(`http://127.0.0.1:${port}/`, { signal: AbortSignal.timeout(5000) }).then((r) => r.status < 500).catch(() => false)) {
   const sites = [];
   const own = path.join(home, "circlechat/site.json");
@@ -24,6 +25,7 @@ export async function localStacks(home, check = (port) => fetch(`http://127.0.0.
   for (const [name, file] of sites) {
     if (!file) { out.push({ name, state: "locked" }); continue; }
     const s = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (circlechatRetired(s)) continue;
     const port = s.site?.port ?? 8080;
     out.push({ name: name ?? clusterStackName(s), channel: s.site?.slack_channel_id, state: (await check(port)) ? "up" : "down" });
   }
