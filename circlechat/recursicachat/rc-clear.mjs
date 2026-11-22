@@ -10,11 +10,17 @@
 //   node rc-clear.mjs history                  prints the Hermes history's entries, one a word
 //   node rc-clear.mjs unlisted                 stdin: a Hermes home's entries, one a line; prints
 //                                              each that neither list below names
+//   node rc-clear.mjs schema <server/src>      reads only: each table the server's code creates
+//                                              that neither WORK nor KEPT names, one a line; exit 1
+//                                              when there is one. The kit's CI runs it on the
+//                                              fork's branch, so a table a new server adds is
+//                                              listed before rc-clear meets it.
 //
 // Exit 0 when done. Exit 3 when rc-clear refuses: stdout says why, and nothing changed. Exit 1 on
 // any other failure, with the reason on stderr, and 2 on a usage error.
 import { DatabaseSync } from "node:sqlite";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // The work, in the order its rows are deleted: children first. A second value is the condition
@@ -23,6 +29,7 @@ export const WORK = [
   ["file_texts"], // the text read from each uploaded file, by the file's id
   ["files"],
   ["messages"],
+  ["task_progress"], // a task's progress line, such as "Step 17 of 43", which goes with the task
   ["tasks"], // a plan is the tasks that share a plan_id
   ["chat_reads"],
   ["chat_members"],
@@ -225,7 +232,51 @@ export function copy(db, to) {
   return statSync(to).size;
 }
 
+/**
+ * The tables a server's code creates: each CREATE TABLE in the text, without a table a migration
+ * builds under a passing name and renames ("ALTER TABLE tasks_new RENAME TO tasks").
+ */
+export function schemaTables(text) {
+  const made = [...text.matchAll(/\bCREATE\s+(?:VIRTUAL\s+)?TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?([A-Za-z_][A-Za-z0-9_]*)/gi)].map((m) => m[1]);
+  const passing = new Set([...text.matchAll(/\bALTER\s+TABLE\s+["`]?([A-Za-z_][A-Za-z0-9_]*)["`]?\s+RENAME\s+TO\b/gi)].map((m) => m[1]));
+  return [...new Set(made)].filter((t) => !passing.has(t) && !t.startsWith("sqlite_")).sort();
+}
+
+/** The tables neither list names. */
+export const unlistedTables = (names) => names.filter((t) => !WORK.some(([w]) => w === t) && !KEPT.includes(t));
+
+/** The text of each source file under a folder, tests and node_modules left out. */
+function sourceText(dir) {
+  let text = "";
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) {
+      if (e.name !== "node_modules") text += sourceText(p);
+    } else if (/\.(ts|mts|js|mjs|sql)$/.test(e.name) && !/\.test\./.test(e.name)) text += readFileSync(p, "utf8") + "\n";
+  }
+  return text;
+}
+
 export function main([cmd, file, to], out = (line) => console.log(line), err = (line) => console.error(line)) {
+  if (cmd === "schema") {
+    if (!file || !existsSync(file) || !statSync(file).isDirectory()) {
+      err("usage: rc-clear.mjs schema <the server's source folder, such as server/src>");
+      return 2;
+    }
+    const names = schemaTables(sourceText(file));
+    if (!names.includes("chats")) {
+      err(`${file} creates no chats table, so it is not the server's source.`);
+      return 2;
+    }
+    const missing = unlistedTables(names);
+    for (const t of missing) out(`${t}: the server creates it, and rc-clear.mjs lists it neither as work nor as kept`);
+    if (missing.length) {
+      err(`Add each table to WORK or KEPT in circlechat/recursicachat/rc-clear.mjs, or sudo rc-clear refuses the server's database.`);
+      return 1;
+    }
+    out(`rc-clear lists every table the server creates: ${names.length} tables.`);
+    return 0;
+  }
   if (cmd === "history") {
     out(HERMES_HISTORY.join(" "));
     return 0;
@@ -235,7 +286,7 @@ export function main([cmd, file, to], out = (line) => console.log(line), err = (
     return 0;
   }
   if (!["check", "copy", "clear", "hermes"].includes(cmd) || !file || (cmd === "copy") !== Boolean(to)) {
-    err("usage: rc-clear.mjs check <database> | copy <database> <copy> | clear <database> | hermes <database> | unlisted");
+    err("usage: rc-clear.mjs check <database> | copy <database> <copy> | clear <database> | hermes <database> | unlisted | schema <server/src>");
     return 2;
   }
   let db;

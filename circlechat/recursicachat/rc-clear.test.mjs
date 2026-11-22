@@ -10,7 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
-import { WORK, KEPT, Refusal, refusals, summary, clear, copy, main, HERMES_HISTORY, HERMES_KEPT, hermesVolume, hermesVolumes, unlisted } from "./rc-clear.mjs";
+import { WORK, KEPT, Refusal, refusals, summary, clear, copy, main, HERMES_HISTORY, HERMES_KEPT, hermesVolume, hermesVolumes, unlisted, schemaTables, unlistedTables } from "./rc-clear.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,6 +35,7 @@ CREATE TABLE chat_members (chat_id TEXT NOT NULL REFERENCES chats(id), member_id
 CREATE TABLE chat_reads (chat_id TEXT NOT NULL, user_id TEXT NOT NULL);
 CREATE TABLE messages (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), body TEXT NOT NULL DEFAULT '');
 CREATE TABLE tasks (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), plan_id TEXT NOT NULL DEFAULT '');
+CREATE TABLE task_progress (task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE, progress TEXT NOT NULL);
 CREATE TABLE files (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT REFERENCES messages(id));
 CREATE TABLE file_texts (file_id TEXT PRIMARY KEY, text TEXT NOT NULL DEFAULT '');
 CREATE TABLE deliveries (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
@@ -61,6 +62,7 @@ INSERT INTO chat_members VALUES ('c_1', 'u_1'), ('c_1', 'a_1'), ('c_2', 'u_2');
 INSERT INTO chat_reads VALUES ('c_1', 'u_1');
 INSERT INTO messages VALUES ('msg_1', 'c_1', 'hello'), ('msg_2', 'c_1', 'a plan'), ('msg_3', 'c_2', 'hi');
 INSERT INTO tasks VALUES ('t_1', 'c_1', 'p_1');
+INSERT INTO task_progress VALUES ('t_1', 'Step 17 of 43');
 INSERT INTO files VALUES ('f_one', 'c_1', 'msg_1'), ('f_two', 'c_1', NULL);
 INSERT INTO file_texts VALUES ('f_one', 'the text of an upload');
 INSERT INTO deliveries VALUES ('d_1', 'c_1');
@@ -653,4 +655,55 @@ test("an engine that still runs after the stop: no Hermes history and no row is 
   assert.ok(exists(s.home, "state.db") && exists(s.home, "sessions/s1.json"));
   assert.deepEqual(r.now, { work: WORK_LINE, kept: KEPT_LINE });
   assert.deepEqual(r.loaded, ["test.program", "test.rc-clear"], "started again");
+});
+
+// sudo rc-clear refused "The database has a table rc-clear does not list: task_progress." after the
+// server added a task's progress line. task_progress is work, and the schema check below catches the
+// next such table in the kit's CI, before a deploy.
+test("a task's progress line is work: cleared with its task, before the task", () => {
+  assert.ok(WORK.findIndex(([t]) => t === "task_progress") < WORK.findIndex(([t]) => t === "tasks"), "children first");
+  const db = makeDb(path.join(tmp(), "t.db"));
+  assert.deepEqual(refusals(db), []);
+  assert.equal(count(db, "task_progress"), 1);
+  clear(db);
+  assert.equal(count(db, "task_progress"), 0);
+  db.close();
+});
+
+test("schemaTables: each table the server's code creates, without a migration's passing name", () => {
+  const code = [
+    "CREATE TABLE IF NOT EXISTS chats (id TEXT PRIMARY KEY);",
+    "db.exec(`CREATE TABLE   tasks (id TEXT)`);",
+    'CREATE TABLE IF NOT EXISTS "agent_starters" (agent_id TEXT);',
+    "CREATE VIRTUAL TABLE example_search USING fts5(body);",
+    "CREATE TABLE tasks_new (id TEXT); INSERT INTO tasks_new SELECT * FROM tasks; DROP TABLE tasks; ALTER TABLE tasks_new RENAME TO tasks;",
+    "create table if not exists lower_case (x);",
+  ].join("\n");
+  assert.deepEqual(schemaTables(code), ["agent_starters", "chats", "example_search", "lower_case", "tasks"]);
+  assert.deepEqual(unlistedTables(["chats", "tasks", "task_progress", "example_notes"]), ["example_notes"]);
+});
+
+test("rc-clear.mjs schema: reads the server's source folder, names each table neither list has, and fails", () => {
+  const src = tmp();
+  fs.mkdirSync(path.join(src, "agents"));
+  fs.writeFileSync(path.join(src, "db.ts"), "CREATE TABLE IF NOT EXISTS chats (id TEXT);\nCREATE TABLE IF NOT EXISTS tasks (id TEXT);");
+  fs.writeFileSync(path.join(src, "agents", "notes.ts"), "db.exec(`CREATE TABLE IF NOT EXISTS task_progress (task_id TEXT)`);");
+  // a test file's tables and node_modules are left out
+  fs.writeFileSync(path.join(src, "db.test.ts"), "CREATE TABLE scratch_only (x);");
+  fs.mkdirSync(path.join(src, "node_modules"));
+  fs.writeFileSync(path.join(src, "node_modules", "dep.js"), "CREATE TABLE someone_elses (x);");
+  const run = (dir) => {
+    const out = [];
+    const err = [];
+    const code = main(["schema", dir], (l) => out.push(l), (l) => err.push(l));
+    return { code, out, err };
+  };
+  assert.deepEqual(run(src), { code: 0, out: ["rc-clear lists every table the server creates: 3 tables."], err: [] });
+  fs.writeFileSync(path.join(src, "notes.ts"), "CREATE TABLE IF NOT EXISTS example_notes (id TEXT);");
+  const r = run(src);
+  assert.equal(r.code, 1);
+  assert.deepEqual(r.out, ["example_notes: the server creates it, and rc-clear.mjs lists it neither as work nor as kept"]);
+  assert.match(r.err[0], /Add each table to WORK or KEPT/);
+  assert.equal(run(tmp()).code, 2, "a folder with no chats table isn't the server's source");
+  assert.equal(run(path.join(src, "missing")).code, 2);
 });
