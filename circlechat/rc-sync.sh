@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Keep each agent on the stack's RecursicaChat 2.0 server in step with the kit and site.json: the
-# instructions, the model, autonomy, the sandbox and the monthly budget (kit/rc-sync.mjs). Safe to
+# instructions, the model, autonomy, the sandbox, the monthly budget and the starters an empty chat
+# shows (kit/rc-sync.mjs). Safe to
 # rerun. setup-host.sh runs the script once, as the owner, and installs the hourly job, which runs
 # the script as root.
 # Usage: rc-sync.sh [--check]     --check reports what would change, and changes nothing
@@ -18,8 +19,10 @@
 #      file, clipboard or output line ever holds the key.
 #   2. The agent is managed (cli.ts manage): the server's API refuses changes to the five settings
 #      from every session, and the web app shows them read-only.
-#   3. The five settings, as JSON from kit/rc-sync.mjs, go into cli.ts agent-set on stdin. The CLI
-#      sets only the settings that differ.
+#   3. The five settings and the starters, as JSON from kit/rc-sync.mjs, go into cli.ts agent-set on
+#      stdin. The CLI sets only the settings that differ. A server whose agent-get prints no
+#      "starters" is too old to keep them: the step leaves them out, with a note when the kit names
+#      some, and sets the rest.
 #   4. Skills, for each Hermes agent in a Docker sandbox: the agent keeps only the bundled skills its
 #      kit settings name, in "skills" in agents/<handle>/runtime/recursicachat.json; with none named,
 #      none (kit/rc-skills.mjs). Hermes's own hermes-agent and every skill that isn't bundled, such
@@ -107,8 +110,14 @@ while IFS=$'\t' read -r -u 3 h gw provider model routes; do
       echo "$h: marked managed" ;;
   esac
 
-  # 3. The five settings, as JSON on stdin.
+  # 3. The five settings and the starters, as JSON on stdin; no starters for a server too old for them.
   want="$(kit want "$SITE" "$h" 2>&1)" || { echo "$h: FAILED: $want"; FAILED=1; continue; }
+  case "$state" in
+    *'"starters":'*) ;;
+    *)
+      case "$want" in *'"starters":["'*) echo "$h: note: this server keeps no starters yet, so @$h's starters wait for a newer RecursicaChat" ;; esac
+      want="$(kit want "$SITE" "$h" --no-starters 2>&1)" || { echo "$h: FAILED: $want"; FAILED=1; continue; } ;;
+  esac
   if out="$(printf '%s\n' "$want" | rc_cli agent-set "$h" $CHECK 2>&1)"; then
     echo "$h: $out"
   else

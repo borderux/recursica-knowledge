@@ -14,6 +14,11 @@
 //                 site.json. gw-<handle> is the agent's own provider on the server, which rc-sync.sh
 //                 sets first, with the key of the gateway handle rc-<handle>
 //   budget        agents.<handle>.recursicachat.budget_usd in site.json, a monthly budget in US dollars
+// and the agent's starters, the suggestions an empty chat with the agent shows: "starters" in
+// agents/<handle>/runtime/recursicachat.json, a list of one-line texts. With none, the server shows
+// its generic ones. A starter with a [placeholder] fills the message box for editing instead of
+// sending. A server too old to keep starters doesn't print them in agent-get, and rc-sync.sh then
+// leaves them out (want --no-starters).
 // The CLI sets only the settings that differ. The server restarts an agent when the model or the
 // sandbox changes, so a sync with nothing to change restarts nothing. The sync never adds an agent:
 // an agent missing on the server is a failure, and the other agents still sync.
@@ -21,7 +26,9 @@
 //   node rc-sync.mjs settings <site.json>        the wrapper's settings, one per line
 //   node rc-sync.mjs agents <site.json>          for the key step: handle, gateway handle, provider,
 //                                                model and routes, tab-separated, one agent per line
-//   node rc-sync.mjs want <site.json> <handle>   the agent's five settings as JSON, for cli.ts agent-set
+//   node rc-sync.mjs want <site.json> <handle> [--no-starters]
+//                                                the agent's settings as JSON, for cli.ts agent-set;
+//                                                --no-starters leaves the starters out
 //   node rc-sync.mjs warn <site.json>            reads cli.ts agent-models on stdin; prints a warning
 //                                                for each agent whose model can use another's key
 // Exit 1 when the agent's settings could not be made, 2 on a usage or setup error.
@@ -34,6 +41,10 @@ import { RC_DEFAULTS, rcAgents, rcHandle, rcProvider, recursicachatErrors } from
 const KIT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 // The server's CLI refuses longer instructions (MAX_INSTRUCTIONS in the server's managed.ts).
 export const MAX_INSTRUCTIONS = 20_000;
+// The server's CLI refuses more starters, or a longer one (MAX_STARTERS and MAX_STARTER_LENGTH in the
+// server's starters.ts).
+export const MAX_STARTERS = 8;
+export const MAX_STARTER_LENGTH = 200;
 
 class SetupError extends Error {}
 
@@ -83,7 +94,23 @@ export function wanted(site, handle, kitRoot = KIT_ROOT) {
   const run = JSON.parse(fs.readFileSync(runFile, "utf8"));
   if (!["ask", "act", "auto"].includes(run.autonomy)) throw new Error(`agents/${handle}/runtime/recursicachat.json: autonomy must be ask, act or auto`);
   if (!["docker", "local"].includes(run.sandbox)) throw new Error(`agents/${handle}/runtime/recursicachat.json: sandbox must be docker or local`);
-  return { instructions, model: `${rcProvider(handle)}:${s.model}`, autonomy: run.autonomy, sandbox: run.sandbox, budgetCents: Math.round(s.budget_usd * 100) };
+  const starters = startersIn(run.starters, `agents/${handle}/runtime/recursicachat.json`);
+  return { instructions, model: `${rcProvider(handle)}:${s.model}`, autonomy: run.autonomy, sandbox: run.sandbox, budgetCents: Math.round(s.budget_usd * 100), starters };
+}
+
+// The starters from the runtime file, checked as the server checks them; none when it names none.
+export function startersIn(list, at) {
+  if (list === undefined) return [];
+  const bad = (why) => new Error(`${at}: ${why}`);
+  if (!Array.isArray(list)) throw bad('"starters" must be a list of one-line texts');
+  if (list.length > MAX_STARTERS) throw bad(`"starters" has ${list.length}, and the server keeps at most ${MAX_STARTERS}`);
+  const out = list.map((x, k) => {
+    if (typeof x !== "string" || !x.trim() || /[\r\n]/.test(x)) throw bad(`starter ${k + 1} must be one line of text`);
+    if (x.trim().length > MAX_STARTER_LENGTH) throw bad(`starter ${k + 1} is ${x.trim().length} characters, and the server keeps at most ${MAX_STARTER_LENGTH}`);
+    return x.trim();
+  });
+  if (new Set(out).size !== out.length) throw bad("each starter must differ from the others");
+  return out;
 }
 
 // Warnings about agents whose model can use another agent's key, from cli.ts agent-models: an agent
@@ -116,7 +143,7 @@ async function readAll(stream) {
 }
 
 export async function main(argv = process.argv.slice(2), { stdin = process.stdin, out = (t) => process.stdout.write(t), log = console.error, kitRoot = KIT_ROOT } = {}) {
-  const [cmd, file, handle] = argv;
+  const [cmd, file, handle, flag] = argv;
   try {
     if (cmd === "settings") {
       out(wrapperSettings(readSite(file)).join("\n") + "\n");
@@ -134,10 +161,12 @@ export async function main(argv = process.argv.slice(2), { stdin = process.stdin
       for (const row of rootAgents(readSite(file))) out(row.join("\t") + "\n");
       return 0;
     }
-    if (cmd === "want" && handle) {
+    if (cmd === "want" && handle && (flag === undefined || flag === "--no-starters")) {
       const site = readSite(file);
       try {
-        out(JSON.stringify(wanted(site, handle, kitRoot)) + "\n");
+        const w = wanted(site, handle, kitRoot);
+        if (flag) delete w.starters;
+        out(JSON.stringify(w) + "\n");
         return 0;
       } catch (e) {
         log(e.message);
@@ -149,7 +178,7 @@ export async function main(argv = process.argv.slice(2), { stdin = process.stdin
       for (const w of warnings(await readAll(stdin))) out(w + "\n");
       return 0;
     }
-    throw new SetupError("usage: rc-sync.mjs settings <site.json> | sessions <site.json> | services <site.json> | agents <site.json> | want <site.json> <handle> | warn <site.json> < models");
+    throw new SetupError("usage: rc-sync.mjs settings <site.json> | sessions <site.json> | services <site.json> | agents <site.json> | want <site.json> <handle> [--no-starters] | warn <site.json> < models");
   } catch (e) {
     log(e instanceof SetupError ? e.message : `The sync stopped: ${e.message}`);
     return 2;

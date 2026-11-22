@@ -1414,7 +1414,8 @@ The check works in a throwaway chat with the agent. A member cannot archive a ch
 
 **`circlechat/rc-sync.sh` sets each agent's settings on the stack's RecursicaChat 2.0 server from the
 kit and site.json, through the server's API.** Nobody pastes an agent's instructions by hand. The
-sync sets five settings and a model key for each agent with `agents.<handle>.recursicachat` in site.json:
+sync sets five settings, the agent's starters and a model key for each agent with
+`agents.<handle>.recursicachat` in site.json:
 
 | Setting        | Source                                                                                        |
 | -------------- | --------------------------------------------------------------------------------------------- |
@@ -1423,6 +1424,7 @@ sync sets five settings and a model key for each agent with `agents.<handle>.rec
 | Sandbox        | `agents/<handle>/runtime/recursicachat.json` in the kit                                       |
 | Model          | `gw-<handle>:<route>`, with the route from `agents.<handle>.recursicachat.model` in site.json |
 | Monthly budget | `agents.<handle>.recursicachat.budget_usd` in site.json, in US dollars                        |
+| Starters       | `"starters"` in `agents/<handle>/runtime/recursicachat.json` in the kit                       |
 
 - **`setup-host.sh` runs the sync once, then installs the hourly job `rc-sync`.** The job runs as
   root, because only root may run the server's CLI. The sync itself runs as the owner.
@@ -1433,6 +1435,11 @@ sync sets five settings and a model key for each agent with `agents.<handle>.rec
   go to `cli.ts agent-set` as JSON on stdin. The CLI sets only the settings that differ. The server
   restarts an agent before its next turn when the model or the sandbox changed, so an hourly run with
   nothing to change restarts nothing.
+- **Starters are the suggestions an empty chat with the agent shows,** one tap each. List up to 8,
+  each one line of up to 200 characters. With none, the server shows its generic ones. A starter with
+  a `[placeholder]` in square brackets fills the message box for editing instead of sending. A server
+  too old to keep starters prints none in `cli.ts agent-get`: the sync then sets the other settings
+  and notes that the starters wait for a newer RecursicaChat.
 - **The sync never adds an agent.** Add the agent in RecursicaChat first, with the agent's handle
   from site.json. Until then, the sync fails for that agent, and the other agents still sync.
 - **No account is needed.** Earlier kits signed in as a builder account made for the sync. The sync

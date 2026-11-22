@@ -8,7 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { Readable } from "node:stream";
-import { MAX_INSTRUCTIONS, main, rootAgents, wanted, warnings, wrapperSettings } from "./rc-sync.mjs";
+import { MAX_INSTRUCTIONS, MAX_STARTERS, main, rootAgents, startersIn, wanted, warnings, wrapperSettings } from "./rc-sync.mjs";
 import { recursicachatErrors, validate } from "./render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -35,7 +35,24 @@ const sink = () => { const s = { text: "", write: (t) => { s.text += t; } }; ret
 
 test("wanted: the instructions from the built file, autonomy and sandbox from the kit, the route and budget from site.json, on the agent's own provider", () => {
   const w = wanted(site(), "standin", kit());
-  assert.deepEqual(w, { instructions: "You are Standin.\n", model: "gw-standin:local-large", autonomy: "ask", sandbox: "docker", budgetCents: 500 });
+  assert.deepEqual(w, { instructions: "You are Standin.\n", model: "gw-standin:local-large", autonomy: "ask", sandbox: "docker", budgetCents: 500, starters: [] });
+});
+
+test("wanted: the starters from the kit's runtime file, trimmed, and checked as the server checks them", () => {
+  const starters = [" Quick test: one short interview about a hobby ", "One interview about [your subject]", "What can you do?"];
+  const w = wanted(site(), "standin", kit({ run: { autonomy: "ask", sandbox: "docker", starters } }));
+  assert.deepEqual(w.starters, ["Quick test: one short interview about a hobby", "One interview about [your subject]", "What can you do?"]);
+  assert.deepEqual(startersIn(undefined, "x"), [], "none named: the server's generic ones");
+  for (const [list, why] of [
+    ["What can you do?", /"starters" must be a list/],
+    [[""], /starter 1 must be one line of text/],
+    [["a", "two\nlines"], /starter 2 must be one line of text/],
+    [[7], /starter 1 must be one line of text/],
+    [["x".repeat(201)], /201 characters, and the server keeps at most 200/],
+    [["same", " same"], /each starter must differ/],
+    [Array.from({ length: MAX_STARTERS + 1 }, (_, k) => `starter ${k}`), /has 9, and the server keeps at most 8/],
+  ])
+    assert.throws(() => wanted(site(), "standin", kit({ run: { autonomy: "ask", sandbox: "docker", starters: list } })), why, JSON.stringify(list));
 });
 
 test("wanted refuses missing instructions, instructions the server would refuse, a token left in, and a missing or wrong runtime file", () => {
@@ -55,6 +72,10 @@ test("main want prints the JSON agent-set reads, and fails without printing for 
   const out = sink();
   assert.equal(await main(["want", file, "standin"], { out: out.write, log: () => {}, kitRoot: dir }), 0);
   assert.deepEqual(JSON.parse(out.text), wanted(site(), "standin", dir));
+  const old = sink();
+  assert.equal(await main(["want", file, "standin", "--no-starters"], { out: old.write, log: () => {}, kitRoot: dir }), 0);
+  assert.equal("starters" in JSON.parse(old.text), false, "--no-starters leaves them out");
+  assert.equal(await main(["want", file, "standin", "--other"], { out: sink().write, log: () => {}, kitRoot: dir }), 2);
   const none = sink();
   const err = [];
   assert.equal(await main(["want", file, "standin"], { out: none.write, log: (l) => err.push(l), kitRoot: kit({ instructions: null }) }), 1);
@@ -115,7 +136,7 @@ test("site.json: the recursicachat block and each agent's settings are checked, 
 // whether the agent is managed, and the settings agent-set received. The key step's stand-in issues
 // NEW_KEY. Every CLI call is recorded, with what reached its stdin.
 const NEW_KEY = "ccg_" + "ab".repeat(24);
-function wrapper({ nodeMajor = 24, keyFile = true, stored = "h1", recorded = "h1", issueFails = false, managed = false, account = false, setFails = false, args = [] } = {}) {
+function wrapper({ nodeMajor = 24, keyFile = true, stored = "h1", recorded = "h1", issueFails = false, managed = false, account = false, setFails = false, starters = true, args = [] } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-sync-"));
   const log = path.join(dir, "calls.log");
   const bin = path.join(dir, "bin");
@@ -130,7 +151,7 @@ function wrapper({ nodeMajor = 24, keyFile = true, stored = "h1", recorded = "h1
     `case "$cmd" in`,
     `  provider-key-hash) echo "cli provider-key-hash $* key=\${CIRCLECHAT_MASTER_KEY:-none}" >> "${log}"; ${stored ? `echo ${stored}` : "true"} ;;`,
     `  set-provider) k="$(cat)"; echo "cli set-provider $* stdin=$k" >> "${log}" ;;`,
-    `  agent-get) echo "cli agent-get $*" >> "${log}"; if [ -f "${dir}/managed" ]; then echo '{"handle":"standin","managed":true}'; else echo '{"handle":"standin","managed":false}'; fi ;;`,
+    `  agent-get) echo "cli agent-get $*" >> "${log}"; m=false; [ -f "${dir}/managed" ] && m=true; echo "{\\"handle\\":\\"standin\\",\\"managed\\":$m${starters ? ',\\"starters\\":[]' : ""}}" ;;`,
     `  manage) echo "cli manage $*" >> "${log}"; touch "${dir}/managed" ;;`,
     `  agent-set) j="$(cat)"; printf '%s' "$j" > "${dir}/set.json"; echo "cli agent-set $*" >> "${log}"; ${setFails ? `echo "the model gw-standin:local-large names the provider \\"gw-standin\\", which the server does not have" >&2; exit 3` : `echo "\${2:+would }set model"`} ;;`,
     `  agent-models) echo "cli agent-models" >> "${log}"; printf 'standin\\tgw-standin:local-large\\nunpinned\\tlarge\\n' ;;`,
@@ -163,14 +184,24 @@ test("rc-sync.sh marks the agent managed and sets the five settings through the 
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(calls, /^cli manage loki$/m);
   assert.match(calls, /^cli manage loki\n(.*\n)*cli agent-set loki$/m, "managed before the settings");
-  assert.deepEqual(Object.keys(JSON.parse(set)).sort(), ["autonomy", "budgetCents", "instructions", "model", "sandbox"]);
+  assert.deepEqual(Object.keys(JSON.parse(set)).sort(), ["autonomy", "budgetCents", "instructions", "model", "sandbox", "starters"]);
   assert.equal(JSON.parse(set).model, "gw-loki:local-large");
+  assert.equal(JSON.parse(set).starters.length, 4, "Loki's starters");
+  assert.doesNotMatch(r.stdout, /keeps no starters/);
   assert.match(r.stdout, /^loki: marked managed$/m);
   assert.match(r.stdout, /^loki: set model$/m);
   assert.doesNotMatch(calls, /cli (session|end-sessions)/, "no account and no session");
   assert.match(calls, /^cli provider-key-hash gw-loki key=vault-key-standin$/m, "the vault key reaches the CLI as root");
   assert.doesNotMatch(calls.split("\n").filter((l) => l.startsWith("sudo")).join("\n"), /vault-key-standin/, "the key is never an argument");
   assert.match(r.stdout, /warning: @unpinned's model names no provider/);
+});
+
+test("rc-sync.sh: a server too old to keep starters gets the other settings, and a note that the starters wait", () => {
+  const { r, set } = wrapper({ managed: true, starters: false });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.deepEqual(Object.keys(JSON.parse(set)).sort(), ["autonomy", "budgetCents", "instructions", "model", "sandbox"]);
+  assert.match(r.stdout, /^loki: note: this server keeps no starters yet, so @loki's starters wait for a newer RecursicaChat$/m);
+  assert.match(r.stdout, /^loki: set model$/m);
 });
 
 test("rc-sync.sh: a managed agent is not marked again, and --check changes nothing", () => {
@@ -237,6 +268,9 @@ test("Loki's RecursicaChat instructions are built, fit the server, and the kit h
   assert.match(w.instructions, /SYNTHETIC — generated by Loki/);
   assert.equal(w.autonomy, "ask");
   assert.equal(w.sandbox, "docker");
+  assert.equal(w.starters.length, 4);
+  assert.match(w.starters[0], /^Quick test:/, "a quick test asks for no personas or sources");
+  assert.equal(w.starters.filter((x) => /\[[^\]]+\]/.test(x)).length, 2, "two fill the message box for a subject");
 });
 
 test("rc-sync.sh's skills step waits while the server isn't quiet, and starts no container", () => {
