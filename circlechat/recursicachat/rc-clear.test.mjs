@@ -49,7 +49,7 @@ const ROWS = `
 INSERT INTO settings VALUES ('workspace', 'acme');
 INSERT INTO users VALUES ('u_1', 'person-a@example.com'), ('u_2', 'person-b@example.com');
 INSERT INTO sessions VALUES ('s_1', 'u_1');
-INSERT INTO agents VALUES ('a_1', 'designer');
+INSERT INTO agents(id, handle) VALUES ('a_1', 'designer');
 INSERT INTO secrets VALUES ('k_1');
 INSERT INTO service_accounts VALUES ('sv_1');
 INSERT INTO grants VALUES ('mcp_1', 'workspace', ''), ('mcp_1', 'agent', 'a_1');
@@ -626,7 +626,7 @@ test("rc-clear empties each Hermes agent's history, copied aside first, with the
   // the rest stays
   for (const f of ["config.yaml", ".env", "SOUL.md", "skills/mine/SKILL.md", "memories/.keep", "state/gateway.heartbeat", "gateway.pid", "runtime/other.json", "recordings/r.txt"]) assert.ok(exists(s.home, f), f);
   assert.match(r.log, /cc-a1-hermes holds recordings which rc-clear neither empties nor lists as kept: left as it is/);
-  assert.match(r.log, /the Hermes history of 1 agents/);
+  assert.match(r.log, /copied the Hermes history of 1 agents to \S+, as hermes-<volume>\.tar/);
   // the reads mount the volume read-only; only the clear mounts it to write
   const mounts = fs.readFileSync(s.calls, "utf8").trim().split("\n");
   assert.ok(mounts.slice(0, -1).every((m) => m === "run cc-a1-hermes:/v:ro"), mounts.join("\n"));

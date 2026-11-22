@@ -276,7 +276,8 @@ for p in $PROGRAMS; do
   as "$account" tar -C "$state" -cf - . 2>> "$LOG" | tar -C "$SAVE/state-$name" -xf - 2>> "$LOG" || back "copy" "could not copy $name's state"
   [ "$(find "$SAVE/state-$name" -type f | wc -l | tr -d ' ')" = "$(files_in "$account" "$state")" ] || back "copy" "the copy of $name's state is not whole"
 done
-log "copied the database ($size bytes), $stored stored files, $worked files of $agents agents' Watch views and working folders, the Hermes history of $hermes agents, and the programs' state to $SAVE"
+log "copied the database ($size bytes), $stored stored files, $worked files of $agents agents' Watch views and working folders, and the programs' state to $SAVE"
+[ "$hermes" = 0 ] || log "copied the Hermes history of $hermes agents to $SAVE, as hermes-<volume>.tar"
 # The new copy is whole, so the copies older than $KEEP_DAYS days go.
 pruned=0
 while IFS= read -r old; do
