@@ -1,0 +1,39 @@
+# sudo rc-clear refuses a database with a table it doesn't list, so a server that adds a table
+# breaks rc-clear until the kit lists it. This job reads the tables the RecursicaChat server's code
+# creates, on the fork's branch, and fails when rc-clear.mjs lists one neither as work nor as kept.
+# It runs on each kit pull request, on main, and each morning, so a table a fork change adds is
+# listed before that change is deployed.
+name: rc-clear tables
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+# Read-only. Nothing here comments, labels, or writes.
+permissions:
+  contents: read
+
+concurrency:
+  group: rc-clear-tables-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tables:
+    name: rc-clear lists every table the server creates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      # The server's branch, read only: the fork is public, so no token is needed.
+      - name: The server's source, from its branch
+        run: git clone --quiet --depth 1 --branch recursica/main "https://github.com/${{ github.repository_owner }}/recursica-chat.git" "$RUNNER_TEMP/server"
+      - name: rc-clear lists every table
+        run: node circlechat/recursicachat/rc-clear.mjs schema "$RUNNER_TEMP/server/server/src"

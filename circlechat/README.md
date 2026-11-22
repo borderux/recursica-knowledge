@@ -1575,8 +1575,8 @@ checks `/healthz`. It makes no backup first: run the backup job before it when t
 summary line, with the counts of what stays and the path of the copy. Each step's output goes to
 `/var/log/recursicachat/rc-clear.log`.
 
-- **The work:** every chat with its members and read marks, messages, tasks and plans, files and the
-  text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
+- **The work:** every chat with its members and read marks, messages, tasks and plans with each
+  task's progress line, files and the text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
   trigger runs.
 - **The work outside the database:** each agent's Watch view and working folder. The server keeps an
   agent's Watch view in `agents/<id>/session.log.jsonl` in its data folder, and reads the view back
@@ -1596,7 +1596,10 @@ summary line, with the counts of what stays and the path of the copy. Each step'
 1. **Check, before anything changes.** `rc-clear` refuses when a trigger, a bridge or a chat grant
    points at a chat, because each would then point at a deleted chat. It also refuses when the
    database has a table `rc-clear.mjs` does not list. A newer server made that table, and
-   `rc-clear.mjs` must first list the table as work or as kept.
+   `rc-clear.mjs` must first list the table as work or as kept. The kit's CI catches such a table
+   before a deploy: the `rc-clear tables` job reads every table the server's code creates on the
+   fork's branch (`node rc-clear.mjs schema <server/src>`), on each kit pull request and each
+   morning, and fails on a table neither list names.
 2. **Stop** each program that drives an agent, then the server. Each agent's engine is a container
    the server started, and it stops with the server: `rc-clear` waits until none runs on the
    server's Docker, or starts everything again and deletes nothing.
