@@ -191,8 +191,8 @@ test("the stack's files: their own repository, the server's restic password, and
   assert.match(backup, /restic backup --tag "\$TAG" --host "\$HOST" "\$\{EXCLUDES\[@\]\}" "\$SITE" "\$WS"/);
   // what the backup leaves out, it also leaves out of its checks, and the restore test fails on a .env
   for (const x of ["node_modules", ".env", "'.env.*'", ".DS_Store"]) assert.ok(backup.includes(`--exclude ${x}`), x);
-  assert.match(backup, /-name node_modules -o -name \.env -o -name '\.env\.\*' -o -name \.DS_Store \) -prune/);
-  assert.match(restore, /-name \.env -o -name '\.env\.\*' -o -name master\.key -o -name '\*\.key' -o -name seed\.json/);
+  assert.ok(backup.includes(`-name node_modules -o -name .env -o -name '.env.*' -o -name .DS_Store \\) -prune`), "the file check leaves out what restic leaves out");
+  assert.ok(restore.includes(`-name .env -o -name '.env.*' -o -name master.key -o -name '*.key' -o -name seed.json`), "the restore test fails on a .env or a key-named file");
   // the backup refuses a key-named file and the secrets' values before restic runs
   assert.ok(backup.indexOf('STEP="file check"') < backup.indexOf('STEP="restic backup"'));
   for (const t of [backup, restore]) for (const f of ["$KEY_FILE", "$PW_FILE"]) assert.ok(t.includes(`for secret in "${"$"}KEY_FILE" "${"$"}PW_FILE"`), f);

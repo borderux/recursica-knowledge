@@ -81,9 +81,8 @@ if [ -n "$app" ]; then
 fi
 
 STEP="secrets"
-if find "$OUT" \( -name .env -o -name '.env.*' -o -name master.key -o -name '*.key' -o -name seed.json \) -print | grep -q .; then
-  fail "the snapshot holds a .env file or a file named like a key"
-fi
+named="$(find "$OUT" \( -name .env -o -name '.env.*' -o -name master.key -o -name '*.key' -o -name seed.json \) -print)"
+[ -z "$named" ] || fail "the snapshot holds a .env file or a file named like a key"
 for secret in "$KEY_FILE" "$PW_FILE"; do
   n="$(grep -r -a -l -F -f "$secret" "$OUT" | wc -l | tr -d ' ' || true)"
   [ "$n" = 0 ] || fail "$n restored file(s) hold the value of $secret"
