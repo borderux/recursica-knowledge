@@ -3,6 +3,10 @@
 // SLACK_BOT_TOKEN (the Slack app's bot token) and SLACK_CHANNEL (site.slack_channel_id).
 //
 //   node kit/slack.mjs "<text>"        (with CC_DIR set, or run from the stack's folder)
+//
+// It logs the result on one line: "slack: posted to the stack's channel (ts …)", or "slack: the post
+// failed: <Slack's error>" and exit 1. The jobs that call it send that line to their own log, so a
+// failed post is never silent.
 import fs from "node:fs";
 import path from "node:path";
 import { stackName } from "./render.mjs";
@@ -16,7 +20,8 @@ export function senderFields(name, icon) {
   return { ...(name ? { username: name } : {}), ...(icon ? { icon_emoji: icon } : {}) };
 }
 
-export function stackSlack(ccDir) {
+// Posts to the stack's channel. Resolves to { ok, ts } or { ok: false, error }, never throws.
+export function stackPost(ccDir) {
   let env = "";
   try { env = fs.readFileSync(path.join(ccDir, ".env"), "utf8"); } catch {}
   const get = (k) => (env.match(new RegExp(`^${k}=(.+)$`, "m")) ?? [])[1]?.trim() ?? "";
@@ -24,15 +29,28 @@ export function stackSlack(ccDir) {
   let name = "";
   try { name = stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"))); } catch {}
   return async (text) => {
-    if (!token || !channel) return false;
-    const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ channel, text, ...senderFields(name) }) }).catch(() => null);
-    return Boolean(r && (await r.json()).ok);
+    if (!token || !channel) return { ok: false, error: `SLACK_BOT_TOKEN or SLACK_CHANNEL is not set in ${path.join(ccDir, ".env")}` };
+    try {
+      const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST",
+        headers: { authorization: `Bearer ${token}`, "content-type": "application/json; charset=utf-8" },
+        body: JSON.stringify({ channel, text, ...senderFields(name) }), signal: AbortSignal.timeout(20_000) });
+      const j = await r.json();
+      return j.ok ? { ok: true, ts: j.ts } : { ok: false, error: j.error ?? `HTTP ${r.status}` };
+    } catch (e) {
+      return { ok: false, error: `no answer from Slack: ${e.message}` };
+    }
   };
 }
 
+// The same post, as true or false, for the callers that need no detail.
+export function stackSlack(ccDir) {
+  const post = stackPost(ccDir);
+  return async (text) => (await post(text)).ok;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const ok = await stackSlack(process.env.CC_DIR ?? process.cwd())(process.argv[2] ?? "");
-  process.exit(ok ? 0 : 1);
+  const r = await stackPost(process.env.CC_DIR ?? process.cwd())(process.argv[2] ?? "");
+  if (r.ok) console.log(`slack: posted to the stack's channel (ts ${r.ts})`);
+  else console.error(`slack: the post failed: ${r.error}`);
+  process.exit(r.ok ? 0 : 1);
 }

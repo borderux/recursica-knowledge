@@ -27,11 +27,14 @@ HOST="$(hostname -s)"
 
 say() {
   echo "$(date -u +%FT%TZ) $1"
-  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" >/dev/null 2>&1 || true
+  # the post's result, Slack's error included, goes to this job's log
+  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" || true
 }
-fail() { say ":x: Test restore of the RecursicaChat server failed on $HOST: $1"; exit 1; }
+# This run's result, for the morning summary (kit/job-status.mjs, cluster/daily-summary.mjs).
+status() { node "$KIT/kit/job-status.mjs" recursicachat-restore-test "$1" "$2" || true; }
+fail() { say ":x: Test restore of the RecursicaChat server failed on $HOST: $1"; status failed "$1"; exit 1; }
 STEP="start"
-trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":x: Test restore of the RecursicaChat server failed on $HOST, at step: $STEP."' ERR
+trap '[ "$BASH_SUBSHELL" -gt 0 ] || { say ":x: Test restore of the RecursicaChat server failed on $HOST, at step: $STEP."; status failed "at step: $STEP"; }' ERR
 trap 'rm -rf "$WORK"' EXIT
 
 STEP="must run as root"
@@ -112,3 +115,4 @@ STEP="newest backup's time"
 # restic gives local time with its offset (such as 09:32-08:00). Date turns it into UTC.
 when="$(restic snapshots --tag "$TAG" --latest 1 --json | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=JSON.parse(s).at(-1)?.time;const d=t?new Date(t):null;console.log(d&&!isNaN(d)?d.toISOString().slice(0,16).replace("T"," "):"unknown")})')"
 say ":white_check_mark: Test restore of the RecursicaChat server passed on $HOST. Newest backup: $when UTC. Database intact, owner present, the vault key opened $total of $total stored secrets."
+status ok "newest backup $when UTC restored, the vault key opened $total of $total secrets"

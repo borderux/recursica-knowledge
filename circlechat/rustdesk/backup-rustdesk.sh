@@ -17,7 +17,7 @@ CONTAINERS="rustdesk-hbbs rustdesk-hbbr"
 say() {
   echo "$1"
   [ -n "${KIT:-}" ] || return 0
-  ( set -a; . /etc/agent-cluster.env 2>/dev/null; set +a; node "$KIT/circlechat/cluster/post.mjs" info "$1" >/dev/null 2>&1 ) || true
+  ( set -a; . /etc/agent-cluster.env 2>/dev/null; set +a; node "$KIT/circlechat/cluster/post.mjs" info "$1" ) || true
 }
 STEP="start"
 trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":warning: Backup of the RustDesk server failed on $(hostname -s), at step: $STEP."' ERR
