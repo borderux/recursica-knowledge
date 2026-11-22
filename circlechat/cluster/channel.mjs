@@ -12,7 +12,12 @@ import { senderFields } from "../kit/slack.mjs";
 // allowed() lists the channels this computer may post to: the cluster channel and each local
 // stack's own channel. A post to any other channel is refused, so one client's alert can never
 // land in another client's channel.
-export function makeChannel(env = process.env, allowed = () => [env.SLACK_CHANNEL_ID]) {
+//
+// Every post logs its result through log() (stderr by default, so post.mjs's stdout stays the
+// message's timestamp): "slack: posted info to the cluster's channel (ts …)". A post Slack refuses
+// is logged by slackApi as "slack chat.postMessage: <error>"; one that gets no answer is logged here,
+// and resolves to { ok: false, error } instead of throwing.
+export function makeChannel(env = process.env, allowed = () => [env.SLACK_CHANNEL_ID], log = (line) => console.error(line)) {
   const chat = env.CHAT ?? "slack";
   if (chat === "slack") {
     const api = slackApi(env.SLACK_BOT_TOKEN);
@@ -21,8 +26,16 @@ export function makeChannel(env = process.env, allowed = () => [env.SLACK_CHANNE
         const to = channel ?? env.SLACK_CHANNEL_ID;
         if (!(await allowed()).includes(to)) { console.error(`refused a post to channel ${to}: not this computer's channel`); return { ok: false }; }
         // The message shows this computer's name, and the computer's icon, as the sender.
-        return api("chat.postMessage", { channel: to, text, ...senderFields(env.COMPUTER, env.SLACK_ICON),
-        ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref, clusterTz(env)) }) });
+        const where = to === env.SLACK_CHANNEL_ID ? "the cluster's channel" : "a stack's channel";
+        try {
+          const j = await api("chat.postMessage", { channel: to, text, ...senderFields(env.COMPUTER, env.SLACK_ICON),
+          ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref, clusterTz(env)) }) });
+          if (j?.ok) log(`slack: posted ${kind} to ${where} (ts ${j.ts})`);
+          return j;
+        } catch (e) {
+          log(`slack: the post (${kind}) to ${where} failed: no answer from Slack: ${e.message}`);
+          return { ok: false, error: `no answer from Slack: ${e.message}` };
+        }
       },
     };
   }

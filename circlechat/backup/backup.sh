@@ -24,7 +24,7 @@ STACK="${STACK_NAME:-${TENANT:-$(node --input-type=module -e 'const { stackName 
 env_value() { sed -n "s/^$1=//p" "$CC_DIR/.env" | tail -1; }
 say() {
   echo "$1"
-  CC_DIR="$CC_DIR" node "$(dirname "$0")/../kit/slack.mjs" "$1" >/dev/null 2>&1 || true
+  CC_DIR="$CC_DIR" node "$(dirname "$0")/../kit/slack.mjs" "$1" || true
 }
 STEP="start"
 trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":warning: Backup of stack $STACK failed on $(hostname -s), at step: $STEP."' ERR

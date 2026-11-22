@@ -42,3 +42,25 @@ test("a date and time in the cluster's time zone become the right moment, on bot
   const label = buttonBlocks("reboot", "x", "machine-1", "u1", "Europe/Berlin")[1].elements[0].text.text;
   assert.equal(label, `4 a.m. ${tzName("Europe/Berlin")}`);
 });
+
+test("every post logs its result: posted with the ts, or no answer from Slack, which resolves instead of throwing", async () => {
+  const realFetch = globalThis.fetch;
+  const logs = [];
+  let fail = false;
+  globalThis.fetch = async () => {
+    if (fail) throw new Error("connect ETIMEDOUT");
+    return { json: async () => ({ ok: true, ts: "1700000000.000200" }) };
+  };
+  try {
+    const chat = makeChannel({ SLACK_BOT_TOKEN: "xoxb", SLACK_CHANNEL_ID: "CCLUSTER", COMPUTER: "machine-1" }, async () => ["CCLUSTER", "CACME"], (l) => logs.push(l));
+    assert.equal((await chat.post("CCLUSTER", "info", "hello")).ok, true);
+    assert.equal((await chat.post("CACME", "info", "hello")).ok, true);
+    fail = true;
+    assert.deepEqual(await chat.post("CCLUSTER", "info", "hello"), { ok: false, error: "no answer from Slack: connect ETIMEDOUT" });
+  } finally { globalThis.fetch = realFetch; }
+  assert.deepEqual(logs, [
+    "slack: posted info to the cluster's channel (ts 1700000000.000200)",
+    "slack: posted info to a stack's channel (ts 1700000000.000200)",
+    "slack: the post (info) to the cluster's channel failed: no answer from Slack: connect ETIMEDOUT",
+  ]);
+});

@@ -1653,6 +1653,36 @@ no longer runs. The server's own backup holds only the server's data.
 To restore by hand: `restic restore --tag stack-files latest --target <folder>`, with
 `RESTIC_REPOSITORY=rclone:<backup.remote>/stack-files` and the server's restic password.
 
+### Posts, results and the morning summary
+
+**Every post logs how it went.** Most jobs post only when something goes wrong, so a quiet channel
+can't tell "all fine" from "posting is broken". Each post's result goes to the log of the job that
+posted it, never to `/dev/null`:
+
+- **A stack's own posts** (`kit/slack.mjs`, for the backups and restore tests): "slack: posted to the
+  stack's channel (ts …)", or "slack: the post failed: <Slack's error>".
+- **The cluster's posts** (`cluster/channel.mjs`, for the cluster agent, the updater, `post.mjs` and
+  the reminders): "slack: posted info to the cluster's channel (ts …)", or Slack's error, or "no
+  answer from Slack".
+
+**Each backup and restore test also logs a success line and records its result** in
+`/var/lib/agent-cluster/jobs/<job>.json` (`kit/job-status.mjs`): ok or failed, the time, and a short
+detail such as the snapshot and the file count.
+
+**Each morning, the updater posts a summary in the cluster's channel** (`cluster/daily-summary.mjs`),
+at its first hourly run from 07:00 in the cluster's time zone: the night's two backups with their
+snapshots and times, the last two restore tests, and each job that failed or didn't run on time. A
+daily job is late after 27 hours, a monthly one after 31 days and 3 hours. A missing summary means
+posting broke. Only the jobs installed on the computer are listed, so a computer without them posts
+none.
+
+To test each path with one post:
+
+```sh
+sudo bash -c 'set -a; . /etc/agent-cluster.conf; . /etc/agent-cluster.env; set +a; node "$KIT/circlechat/cluster/post.mjs" info ":test_tube: Test post through the cluster path"'
+CC_DIR=~/circlechat node ~/recursica-knowledge/circlechat/kit/slack.mjs ":test_tube: Test post through the stack path"
+```
+
 ### Retiring CircleChat 1.x
 
 Once a stack's agents run on RecursicaChat 2.0, set `"circlechat": "retired"` in site.json's `site` block. CircleChat 1.x then never starts again. Install the kit release that has the setting before copying a site.json that sets it.

@@ -27,11 +27,14 @@ HOST="$(hostname -s)"
 
 say() {
   echo "$(date -u +%FT%TZ) $1"
-  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" >/dev/null 2>&1 || true
+  # the post's result, Slack's error included, goes to this job's log
+  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" || true
 }
-fail() { say ":x: Test restore of the stack's files failed on $HOST: $1"; exit 1; }
+# This run's result, for the morning summary (kit/job-status.mjs, cluster/daily-summary.mjs).
+status() { node "$KIT/kit/job-status.mjs" stack-restore-test "$1" "$2" || true; }
+fail() { say ":x: Test restore of the stack's files failed on $HOST: $1"; status failed "$1"; exit 1; }
 STEP="start"
-trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":x: Test restore of the stack'"'"'s files failed on $HOST, at step: $STEP."' ERR
+trap '[ "$BASH_SUBSHELL" -gt 0 ] || { say ":x: Test restore of the stack'"'"'s files failed on $HOST, at step: $STEP."; status failed "at step: $STEP"; }' ERR
 trap 'rm -rf "$WORK"' EXIT
 
 STEP="must run as root"
@@ -91,3 +94,4 @@ done
 STEP="newest backup's time"
 when="$(restic snapshots --tag "$TAG" --latest 1 --json | /opt/recursicachat/node/v24.22.3/bin/node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=JSON.parse(s).at(-1)?.time;const d=t?new Date(t):null;console.log(d&&!isNaN(d)?d.toISOString().slice(0,16).replace("T"," "):"unknown")})')"
 say ":white_check_mark: Test restore of the stack's files passed on $HOST. Newest backup: $when UTC. $got files, site.json passes the site check, Kev and the app are there, and no secret is in it."
+status ok "newest backup $when UTC restored, $got files"

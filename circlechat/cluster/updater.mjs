@@ -11,6 +11,8 @@
 //   - An update that interrupts work waits until RecursicaChat 2.0 on this computer is quiet
 //     (quiet.mjs): a Tailscale, Ollama, Colima or Lima update, and an image pin that recreates the
 //     gateway. The cluster's channel hears once that it waits.
+//   - Each morning, the cluster's channel gets a summary of this computer's backups and restore
+//     tests, and of any job that didn't run on time (daily-summary.mjs).
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -124,9 +126,12 @@ async function main() {
       }
     }
   }
+  const { dailySummary } = await import("./daily-summary.mjs");
+  await dailySummary({ env, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text) }).catch((e) => console.error(`daily summary: ${e.message}`));
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
   const run = (cmd, args) => spawnSync(cmd, args, { stdio: "inherit" }).status;
   for (const c of refreshRootCopies({ kit: env.KIT, mac: process.platform === "darwin", run })) console.log(`${c}: installed again from the kit`);
+  console.log(`${new Date().toISOString()} updater: done`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(e); process.exit(1); });

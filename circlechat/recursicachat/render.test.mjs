@@ -218,3 +218,26 @@ test("the stack's jobs: nightly at 04:00 after the server's backup, a monthly re
   assert.match(install, /^for f in [^\n]*\bstack-backup\.sh stack-restore-test\.sh\b/m);
   for (const t of ["stack-backup.sh", "stack-restore-test.sh", "io.recursica.stack-backup.plist", "io.recursica.stack-restore-test.plist"]) assert.ok(TEMPLATES.includes(t), t);
 });
+
+// The jobs post only on trouble (or a passed restore test), so each post's result goes to the job's
+// log, never to /dev/null, and each run records its result for the morning summary
+// (cluster/daily-summary.mjs).
+test("the backups and restore tests log each post's result, log a success line, and record ok or failed", () => {
+  const jobs = { "backup.sh": "recursicachat-backup", "stack-backup.sh": "stack-backup", "restore-test.sh": "recursicachat-restore-test", "stack-restore-test.sh": "stack-restore-test" };
+  for (const [file, job] of Object.entries(jobs)) {
+    const t = readFileSync(join(here, file), "utf8");
+    assert.match(t, /^  CC_DIR="\$CC_DIR" node "\$KIT\/kit\/slack\.mjs" "\$1" \|\| true$/m, file);
+    assert.doesNotMatch(t, /slack\.mjs[^\n]*\/dev\/null/, file);
+    assert.ok(t.includes(`status() { node "$KIT/kit/job-status.mjs" ${job} "$1" "$2" || true; }`), file);
+    assert.match(t, /^trap '\[ "\$BASH_SUBSHELL" -gt 0 \] \|\| \{ say "[^\n]*"; status failed "at step: \$STEP"; \}' ERR$/m, `${file}: a failure is recorded`);
+    assert.match(t, /^status ok "/m, `${file}: a success is recorded`);
+  }
+  for (const file of ["backup.sh", "stack-backup.sh"]) {
+    const t = readFileSync(join(here, file), "utf8");
+    assert.match(t, /^restic backup [^\n]*\| tee "\$WORK\/restic\.out"$/m, `${file}: restic's output still reaches the log`);
+    assert.match(t, /^echo "\$\(date -u \+%FT%TZ\) Backup of [^\n]* done: snapshot \$\{SNAP:-saved\}, \$N [a-z ]+\."$/m, `${file}: the success line names the snapshot`);
+  }
+  for (const file of ["restore-test.sh", "stack-restore-test.sh"]) assert.match(readFileSync(join(here, file), "utf8"), /^fail\(\) \{ say "[^\n]*"; status failed "\$1"; exit 1; \}$/m, file);
+  const rustdesk = readFileSync(join(here, "..", "rustdesk", "backup-rustdesk.sh"), "utf8");
+  assert.doesNotMatch(rustdesk, /post\.mjs[^\n]*>\/dev\/null/);
+});

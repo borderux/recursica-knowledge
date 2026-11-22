@@ -38,10 +38,13 @@ HOST="$(hostname -s)"
 
 say() {
   echo "$(date -u +%FT%TZ) $1"
-  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" >/dev/null 2>&1 || true
+  # the post's result, Slack's error included, goes to this job's log
+  CC_DIR="$CC_DIR" node "$KIT/kit/slack.mjs" "$1" || true
 }
+# This run's result, for the morning summary (kit/job-status.mjs, cluster/daily-summary.mjs).
+status() { node "$KIT/kit/job-status.mjs" recursicachat-backup "$1" "$2" || true; }
 STEP="start"
-trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":warning: Backup of the RecursicaChat server failed on $HOST, at step: $STEP."' ERR
+trap '[ "$BASH_SUBSHELL" -gt 0 ] || { say ":warning: Backup of the RecursicaChat server failed on $HOST, at step: $STEP."; status failed "at step: $STEP"; }' ERR
 trap 'rm -rf "$WORK"' EXIT
 
 STEP="must run as root"
@@ -121,7 +124,10 @@ done
 STEP="restic init"
 restic cat config >/dev/null 2>&1 || restic init
 STEP="restic backup"
-restic backup --tag "$TAG" --host "$HOST" --stdin --stdin-filename recursicachat-trial.tar < "$TAR"
+restic backup --tag "$TAG" --host "$HOST" --stdin --stdin-filename recursicachat-trial.tar < "$TAR" | tee "$WORK/restic.out"
+SNAP="$(sed -n 's/^snapshot \([0-9a-f]*\) saved$/\1/p' "$WORK/restic.out")"
 STEP="restic forget"
 restic forget --tag "$TAG" --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
-echo "$(date -u +%FT%TZ) Backup of the RecursicaChat server done: $(wc -l < "$WORK/list" | tr -d ' ') archive entries."
+N="$(wc -l < "$WORK/list" | tr -d ' ')"
+echo "$(date -u +%FT%TZ) Backup of the RecursicaChat server done: snapshot ${SNAP:-saved}, $N archive entries."
+status ok "snapshot ${SNAP:-saved}, $N archive entries"
