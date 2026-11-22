@@ -28,11 +28,12 @@ export const WORK = [
   ["approvals"],
   ["agent_sessions"],
   ["memories", "scope = 'chat'"],
+  ["trigger_runs"], // each run of a trigger, with what it was given; the triggers themselves stay
   ["chats"],
 ];
 
-// Kept whole: people and their profiles, agents, the vault, apps and access, service accounts, the
-// tool log and the cost totals. Each row of the tool log holds the hash of the row before it, so
+// Kept whole: people and their profiles, agents, the vault, apps and access, service accounts,
+// triggers, the tool log and the cost totals. Each row of the tool log holds the hash of the row before it, so
 // the log stays whole. Memories of the team and of an agent stay too.
 export const KEPT = [
   "settings",
@@ -54,7 +55,6 @@ export const KEPT = [
   "tool_calls",
   "usage",
   "triggers",
-  "trigger_runs",
   "bridges",
   "sso_used",
 ];

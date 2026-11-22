@@ -43,6 +43,7 @@ CREATE TABLE service_instructions (delivery_id TEXT PRIMARY KEY, service_id TEXT
 CREATE TABLE service_replies (delivery_id TEXT PRIMARY KEY, service_id TEXT NOT NULL, chat_id TEXT NOT NULL, body TEXT NOT NULL);
 CREATE TABLE approvals (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL DEFAULT '');
 CREATE TABLE agent_sessions (agent_id TEXT NOT NULL, scope TEXT NOT NULL);
+CREATE TABLE trigger_runs (id TEXT PRIMARY KEY, trigger_id TEXT NOT NULL, payload TEXT NOT NULL DEFAULT '');
 `;
 const ROWS = `
 INSERT INTO settings VALUES ('workspace', 'acme');
@@ -68,6 +69,7 @@ INSERT INTO service_instructions VALUES ('d_1', 'sv_1', 1, 1);
 INSERT INTO service_replies VALUES ('d_1', 'sv_1', 'c_1', 'a reply for the service alone');
 INSERT INTO approvals VALUES ('ap_1', 'c_1');
 INSERT INTO agent_sessions VALUES ('a_1', 'c_1');
+INSERT INTO trigger_runs VALUES ('tr_run_1', 'tr_gone', 'what the trigger was given');
 `;
 // A kept table whose rows name a chat, for the tests of a delete that fails or reaches too far.
 const USAGE = "CREATE TABLE usage (agent_id TEXT NOT NULL, day TEXT NOT NULL);";
@@ -109,6 +111,7 @@ test("clear deletes the work's rows, children first, keeps the rest, and drops n
   for (const t of workTables) assert.equal(count(db, t), 0, t);
   assert.deepEqual(tableNames(db), tablesBefore, "every table is still there");
   assert.equal(count(db, "memories", "WHERE scope = 'chat'"), 0, "chat memories are work");
+  assert.equal(count(db, "trigger_runs"), 0, "a trigger's runs are work");
   assert.equal(count(db, "memories"), 2, "the team's and an agent's memories stay");
   assert.equal(count(db, "users"), 2);
   assert.equal(count(db, "sessions"), 1, "people stay signed in");
@@ -239,8 +242,8 @@ const DAY = 24 * 60 * 60 * 1000;
 /** A folder's names, sorted. Empty when the folder is missing or is not a folder. */
 const ls = (d) => (fs.existsSync(d) && fs.statSync(d).isDirectory() ? fs.readdirSync(d).sort() : []);
 
-/** A server folder with work in it, one program with a state folder, both jobs loaded, and the stand-ins. */
-function setup({ more = "", schema = SCHEMA, programs } = {}) {
+/** A server folder with work in it, one program with a state folder, both jobs loaded, and the stand-ins. With `agents`, the agents' folders too. */
+function setup({ more = "", schema = SCHEMA, programs, agents = false } = {}) {
   const dir = tmp();
   const base = path.join(dir, "base");
   const data = path.join(base, "data");
@@ -251,6 +254,26 @@ function setup({ more = "", schema = SCHEMA, programs } = {}) {
   makeDb(path.join(data, "circlechat.db"), { schema, more }).close();
   for (const f of ["f_one", "f_two", "notes.txt"]) fs.writeFileSync(path.join(data, "files", f), `${f}\n`);
   for (const f of ["state.db", "state.db-wal"]) fs.writeFileSync(path.join(state, f), `${f}\n`);
+  if (agents) {
+    // a_1: a Watch view, a working folder with a draft and a folder in it, and the engine's settings
+    const a1 = path.join(data, "agents", "a_1");
+    fs.mkdirSync(path.join(a1, "home", "work", "drafts"), { recursive: true });
+    fs.mkdirSync(path.join(a1, "home", ".hermes"), { recursive: true });
+    fs.writeFileSync(path.join(a1, "session.log.jsonl"), '{"kind":"lifecycle","text":"example-program: interview 1, exchange 3, try 1: passed"}\n');
+    fs.writeFileSync(path.join(a1, "home", "work", "draft.md"), "a draft\n");
+    fs.writeFileSync(path.join(a1, "home", "work", "drafts", "two.md"), "another\n");
+    fs.writeFileSync(path.join(a1, "home", ".hermes", "config.yaml"), "model: local\n");
+    // a_2: a Watch view only
+    fs.mkdirSync(path.join(data, "agents", "a_2"), { recursive: true });
+    fs.writeFileSync(path.join(data, "agents", "a_2", "session.log.jsonl"), '{"kind":"lifecycle","text":"started"}\n');
+    // a_3: a Watch view and a working folder that are links to somewhere else, never followed
+    const elsewhere = path.join(dir, "elsewhere");
+    fs.mkdirSync(elsewhere);
+    fs.writeFileSync(path.join(elsewhere, "keep.txt"), "not the server's\n");
+    fs.mkdirSync(path.join(data, "agents", "a_3", "home"), { recursive: true });
+    fs.symlinkSync(elsewhere, path.join(data, "agents", "a_3", "home", "work"));
+    fs.symlinkSync(path.join(elsewhere, "keep.txt"), path.join(data, "agents", "a_3", "session.log.jsonl"));
+  }
   for (const job of ["test.rc-clear", "test.program"]) {
     fs.writeFileSync(path.join(base, "daemons", `${job}.plist`), "<plist/>\n");
     fs.writeFileSync(path.join(loaded, job), "");
@@ -311,7 +334,7 @@ function setup({ more = "", schema = SCHEMA, programs } = {}) {
       log: fs.existsSync(path.join(base, "rc-clear.log")) ? fs.readFileSync(path.join(base, "rc-clear.log"), "utf8") : "",
     };
   };
-  return { run, base, data, state, copies };
+  return { run, base, data, state, copies, dir };
 }
 const UNTOUCHED = { stored: ["f_one", "f_two", "notes.txt"], state: ["state.db", "state.db-wal"] };
 const STOPPED_AND_STARTED = ["bootout test.program", "bootout test.rc-clear", "bootstrap test.rc-clear", "bootstrap test.program"];
@@ -345,6 +368,44 @@ test("rc-clear stops the program then the server, copies aside, empties the work
   assert.deepEqual(r.dataFolder, ["files"], "no working copy is left in the data folder");
   assert.ok(!fs.existsSync(path.join(s.base, ".rc-clear.lock")), "the lock is gone");
   assert.match(r.log, /copied the database \(\d+ bytes\), 3 stored files/);
+});
+
+test("rc-clear empties each agent's Watch view and working folder, copied aside first; the rest of an agent's folder stays, and a link is never followed", () => {
+  const s = setup({ agents: true });
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  const copyDir = path.join(s.copies, r.copies[0]);
+  assert.equal(r.out.trim(), `rc-clear: emptied ${WORK_LINE}, and the Watch view and working folder of 2 agents; kept ${KEPT_LINE}. The server answers ok; started example-program. The copy is ${copyDir}.`);
+  assert.match(r.log, /copied the database \(\d+ bytes\), 3 stored files, 4 files of 2 agents' Watch views and working folders, and the programs' state/);
+
+  // the copy holds each Watch view and working folder, and nothing else of the agents' folders
+  const a1 = path.join(s.data, "agents", "a_1");
+  const saved = path.join(copyDir, "agents", "a_1");
+  assert.match(fs.readFileSync(path.join(saved, "session.log.jsonl"), "utf8"), /exchange 3, try 1: passed/);
+  assert.equal(fs.readFileSync(path.join(saved, "home", "work", "draft.md"), "utf8"), "a draft\n");
+  assert.equal(fs.readFileSync(path.join(saved, "home", "work", "drafts", "two.md"), "utf8"), "another\n");
+  assert.ok(!fs.existsSync(path.join(saved, "home", ".hermes")), "the engine's settings aren't work");
+  assert.ok(fs.existsSync(path.join(copyDir, "agents", "a_2", "session.log.jsonl")));
+  assert.ok(!fs.existsSync(path.join(copyDir, "agents", "a_3")), "a link isn't copied");
+
+  // the Watch views are gone, so the server starts each one afresh; the working folders stay, empty
+  assert.ok(!fs.existsSync(path.join(a1, "session.log.jsonl")));
+  assert.ok(!fs.existsSync(path.join(s.data, "agents", "a_2", "session.log.jsonl")));
+  assert.deepEqual(ls(path.join(a1, "home", "work")), []);
+  assert.equal(fs.readFileSync(path.join(a1, "home", ".hermes", "config.yaml"), "utf8"), "model: local\n", "the engine's settings stay");
+  // the links stay, and so does what they point at
+  assert.ok(fs.lstatSync(path.join(s.data, "agents", "a_3", "session.log.jsonl")).isSymbolicLink());
+  assert.ok(fs.lstatSync(path.join(s.data, "agents", "a_3", "home", "work")).isSymbolicLink());
+  assert.equal(fs.readFileSync(path.join(s.dir, "elsewhere", "keep.txt"), "utf8"), "not the server's\n");
+});
+
+test("a failure before the delete leaves every Watch view and working folder as it was", () => {
+  const s = setup({ agents: true });
+  const r = s.run({ FAKE_UNHEALTHY: "1", FAKE_WONT_STOP: "test.rc-clear" });
+  assert.notEqual(r.r.status, 0);
+  assert.match(r.out, /No work was deleted/);
+  assert.ok(fs.existsSync(path.join(s.data, "agents", "a_1", "session.log.jsonl")));
+  assert.equal(fs.readFileSync(path.join(s.data, "agents", "a_1", "home", "work", "draft.md"), "utf8"), "a draft\n");
 });
 
 test("rc-clear deletes its copies older than 7 days, and no other folder", () => {
