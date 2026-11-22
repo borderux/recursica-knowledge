@@ -8,18 +8,23 @@
 # It prints one summary line; every step's output goes to /var/log/recursicachat/rc-clear.log.
 #
 # The work is every chat with its members and read marks, messages, tasks and plans, files and the
-# text read from them, deliveries, service requests, approvals, engine sessions and chat memories.
-# People and their profiles, agents, the vault, apps and access, service accounts, the tool log and
-# the cost totals stay. rc-clear.mjs lists the tables. No table is ever dropped.
+# text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
+# trigger runs. Outside the database, it is each agent's Watch view (agents/<id>/session.log.jsonl,
+# which the server reads the view back from after a restart) and each agent's working folder
+# (agents/<id>/home/work). People and their profiles, agents and the rest of their folders, the vault,
+# apps and access, service accounts, the tool log and the cost totals stay. rc-clear.mjs lists the
+# tables. No table is ever dropped.
 #
 # 1. Check, before anything changes. rc-clear refuses when a trigger, a bridge or a chat grant
 #    points at a chat, and when the database has a table rc-clear.mjs does not list.
 # 2. Stop each program that drives an agent, then the server.
-# 3. Copy the database, the stored files and each program's state to /var/root/rc-work-<time>/.
+# 3. Copy the database, the stored files, the agents' Watch views and working folders, and each
+#    program's state to /var/root/rc-work-<time>/.
 #    Then delete the copies older than 7 days.
 # 4. Delete the work's rows, children first, in one transaction. The transaction also checks that
 #    every kept table has the rows it had, and undoes itself otherwise.
-# 5. Remove the stored files, and clear each program's state.
+# 5. Remove the stored files, empty each agent's Watch view and working folder, and clear each
+#    program's state.
 # 6. Start the server, wait for /healthz, then start each program.
 # A failure before step 4 ends deletes no work: the server and the programs start again.
 #
@@ -74,6 +79,17 @@ LOCK="$BASE/.rc-clear.lock"
 [ ! -e "$BASE/.rc-deploy.lock" ] || { echo "rc-clear: rc-deploy is running. Nothing changed."; exit 1; }
 mkdir "$LOCK" 2>/dev/null || { echo "rc-clear: another rc-clear is running (or $LOCK was left behind: remove it if not)"; exit 1; }
 trap 'rmdir "$LOCK" 2>/dev/null' EXIT
+
+# Each agent's Watch view and working folder, as paths inside the data folder, one a line:
+# agents/<id>/session.log.jsonl and agents/<id>/home/work. Never a link, and nothing else in the
+# agent's folder: the engine's home keeps its settings. An agent's id has no space in it.
+AGENT_WORK='cd "$1" || exit 1
+for a in agents/*; do
+  [ -d "$a" ] && [ ! -L "$a" ] || continue
+  if [ -f "$a/session.log.jsonl" ] && [ ! -L "$a/session.log.jsonl" ]; then echo "$a/session.log.jsonl"; fi
+  if [ -d "$a/home/work" ] && [ ! -L "$a/home" ] && [ ! -L "$a/home/work" ]; then echo "$a/home/work"; fi
+done'
+agent_work() { as "$ACCOUNT" /bin/sh -c "$AGENT_WORK" sh "$DATA"; }
 
 # One program's values, from its entry in $PROGRAMS.
 program() { IFS=: read -r name job account state <<<"$1"; }
@@ -181,6 +197,19 @@ if as "$ACCOUNT" test -d "$DATA/files"; then
   stored="$(files_in "$ACCOUNT" "$DATA/files")"
   [ "$(find "$SAVE/files" -type f | wc -l | tr -d ' ')" = "$stored" ] || back "copy" "the stored files' copy is not whole"
 fi
+# The agents' Watch views and working folders, under agents/ in the copy.
+WORKED="" worked=0
+if as "$ACCOUNT" test -d "$DATA/agents"; then
+  WORKED="$(agent_work 2>> "$LOG")" || back "copy" "could not list the agents' Watch views and working folders"
+fi
+if [ -n "$WORKED" ]; then
+  # shellcheck disable=SC2086 # one path a line, with no space in it
+  as "$ACCOUNT" tar -C "$DATA" -cf - $WORKED 2>> "$LOG" | tar -C "$SAVE" -xf - 2>> "$LOG" || back "copy" "could not copy the agents' Watch views and working folders"
+  # shellcheck disable=SC2086
+  worked="$(as "$ACCOUNT" /bin/sh -c 'cd "$1" && shift && find "$@" -type f | wc -l' sh "$DATA" $WORKED 2>> "$LOG" | tr -d ' ')"
+  [ "$(find "$SAVE/agents" -type f | wc -l | tr -d ' ')" = "$worked" ] || back "copy" "the copy of the agents' Watch views and working folders is not whole"
+fi
+agents="$(sed -n 's#^agents/\([^/]*\)/.*#\1#p' <<<"$WORKED" | sort -u | grep -c . || true)"
 for p in $PROGRAMS; do
   program "$p"
   [ -n "$state" ] || continue
@@ -188,7 +217,7 @@ for p in $PROGRAMS; do
   as "$account" tar -C "$state" -cf - . 2>> "$LOG" | tar -C "$SAVE/state-$name" -xf - 2>> "$LOG" || back "copy" "could not copy $name's state"
   [ "$(find "$SAVE/state-$name" -type f | wc -l | tr -d ' ')" = "$(files_in "$account" "$state")" ] || back "copy" "the copy of $name's state is not whole"
 done
-log "copied the database ($size bytes), $stored stored files and the programs' state to $SAVE"
+log "copied the database ($size bytes), $stored stored files, $worked files of $agents agents' Watch views and working folders, and the programs' state to $SAVE"
 # The new copy is whole, so the copies older than $KEEP_DAYS days go.
 pruned=0
 while IFS= read -r old; do
@@ -218,6 +247,12 @@ problem() {
 if as "$ACCOUNT" test -d "$DATA/files"; then
   as "$ACCOUNT" find "$DATA/files" -type f -name 'f_*' -delete >> "$LOG" 2>&1 || problem "could not remove every stored file"
 fi
+# A Watch view's file goes, and the server starts a new one; a working folder stays, empty.
+if [ -n "$WORKED" ]; then
+  # shellcheck disable=SC2086
+  as "$ACCOUNT" /bin/sh -c 'cd "$1" && shift && for p in "$@"; do if [ -d "$p" ]; then find "$p" -mindepth 1 -delete || exit 1; else rm -f "$p" || exit 1; fi; done' sh "$DATA" $WORKED >> "$LOG" 2>&1 ||
+    problem "could not empty every agent's Watch view and working folder"
+fi
 started=""
 for p in $PROGRAMS; do
   program "$p"
@@ -229,6 +264,7 @@ done
 # 6. Start the server, then each program.
 up="$(start_all)" || problem "$up"
 
+[ "$agents" = 0 ] || emptied="$emptied, and the Watch view and working folder of $agents agent$([ "$agents" = 1 ] || echo s)"
 line="rc-clear: emptied $emptied; kept $kept."
 if [ -z "$problems" ]; then
   line="$line The server answers ok${started:+; started $started}."

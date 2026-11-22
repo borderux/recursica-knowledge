@@ -1549,20 +1549,28 @@ summary line, with the counts of what stays and the path of the copy. Each step'
 `/var/log/recursicachat/rc-clear.log`.
 
 - **The work:** every chat with its members and read marks, messages, tasks and plans, files and the
-  text read from them, deliveries, service requests, approvals, engine sessions and chat memories.
-- **What stays:** people and their profiles, agents, the vault, apps and access, service accounts, the
-  tool log and the cost totals. `rc-clear.mjs` lists every table. No table is dropped.
+  text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
+  trigger runs.
+- **The work outside the database:** each agent's Watch view and working folder. The server keeps an
+  agent's Watch view in `agents/<id>/session.log.jsonl` in its data folder, and reads the view back
+  from that file after a restart, so a clear that left it would show the earlier runs again. An
+  agent's working folder is `agents/<id>/home/work`.
+- **What stays:** people and their profiles, agents and the rest of their folders (an engine's
+  settings), the vault, apps and access, service accounts, triggers, the tool log and the cost
+  totals. `rc-clear.mjs` lists every table. No table is dropped.
 
 1. **Check, before anything changes.** `rc-clear` refuses when a trigger, a bridge or a chat grant
    points at a chat, because each would then point at a deleted chat. It also refuses when the
    database has a table `rc-clear.mjs` does not list. A newer server made that table, and
    `rc-clear.mjs` must first list the table as work or as kept.
 2. **Stop** each program that drives an agent, then the server.
-3. **Copy** the database, the stored files and each program's state to `/var/root/rc-work-<time>/`, a
-   folder only root opens. Then delete the copies older than 7 days.
+3. **Copy** the database, the stored files, the agents' Watch views and working folders, and each
+   program's state to `/var/root/rc-work-<time>/`, a folder only root opens. Then delete the copies
+   older than 7 days.
 4. **Delete the work's rows**, children first, in one transaction. The transaction checks that every
    kept table has the rows it had, and undoes itself otherwise.
-5. **Remove** the stored files, and clear each program's state.
+5. **Remove** the stored files and the Watch views' files, empty each working folder, and clear each
+   program's state. A link in an agent's folder is never followed or removed.
 6. **Start** the server, wait for `/healthz`, then start each program.
 
 A failure before step 4 ends deletes no work: the server and the programs start again. A failure
@@ -1577,6 +1585,7 @@ running, with its state. Run `install.sh` again after a change to either setting
 - Copy `circlechat.db` over the server's database, owned by `_recursicachat`. Remove the `-wal` and
   `-shm` files beside the database.
 - Copy `files/` into the data folder.
+- Copy `agents/` into the data folder: each agent's Watch view and working folder.
 - Copy each `state-<name>/` into that program's state folder.
 
 Then start the server and the programs.
