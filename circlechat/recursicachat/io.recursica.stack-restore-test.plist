@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Monthly test restore of the backup of the stack's own files, as root, on the first of each month
+     at 05:30, after the RecursicaChat server's test restore at 05:00. The log is in
+     /var/log/recursicachat, which only root can open. No secret is in this file. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>io.recursica.stack-restore-test</string>
+  <key>UserName</key><string>root</string>
+  <key>WorkingDirectory</key><string>/</string>
+  <key>ProgramArguments</key><array>
+    <string>/bin/bash</string>
+    <string>/opt/recursicachat/bin/stack-restore-test.sh</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>HOME</key><string>/var/root</string>
+  </dict>
+  <key>StartCalendarInterval</key><dict>
+    <key>Day</key><integer>1</integer>
+    <key>Hour</key><integer>5</integer>
+    <key>Minute</key><integer>30</integer>
+  </dict>
+  <key>StandardOutPath</key><string>/var/log/recursicachat/stack-restore-test.log</string>
+  <key>StandardErrorPath</key><string>/var/log/recursicachat/stack-restore-test.log</string>
+</dict></plist>

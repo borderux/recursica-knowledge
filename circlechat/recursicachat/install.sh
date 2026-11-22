@@ -9,11 +9,14 @@
 #
 # render.mjs fills each template with values from site.json. Then this script installs:
 #   /opt/recursicachat/bin/   run.sh, backup.sh, restore-test.sh, colima-service.sh,  root:wheel 755
+#                             stack-backup.sh and stack-restore-test.sh, the stack's
+#                             own files (site.json and the workspace),
 #                             rc-deploy.sh, linked as /usr/local/bin/rc-deploy,
 #                             rc-clear.sh, linked as /usr/local/bin/rc-clear, with
 #                             rc-clear.mjs (644), its database work, and
 #                             build-pdftext.sh, which builds the PDF text reader's image
-#   /Library/LaunchDaemons/   the four io.recursica.recursicachat*.plist             root:wheel 644
+#   /Library/LaunchDaemons/   the four io.recursica.recursicachat*.plist, and         root:wheel 644
+#                             io.recursica.stack-backup and -restore-test
 # It changes only the files whose text changed. A changed backup or restore-test job is loaded
 # again at once. A changed server or Colima job is not restarted: the script prints the command,
 # so the restart happens when you choose. A changed script takes effect at its next start.
@@ -55,7 +58,7 @@ mkdir -p "$BIN" && chown root:wheel "$BIN" && chmod 755 "$BIN"
 mkdir -p /var/log/recursicachat && chown root:wheel /var/log/recursicachat && chmod 700 /var/log/recursicachat
 
 same() { [ -f "$2" ] && cmp -s "$1" "$2"; }
-for f in run.sh backup.sh restore-test.sh colima-service.sh rc-deploy.sh rc-clear.sh rc-clear.mjs build-pdftext.sh; do
+for f in run.sh backup.sh restore-test.sh stack-backup.sh stack-restore-test.sh colima-service.sh rc-deploy.sh rc-clear.sh rc-clear.mjs build-pdftext.sh; do
   if same "$OUT/$f" "$BIN/$f"; then echo "$f is unchanged"; continue; fi
   # rc-clear.mjs is read by the server's Node, never run as a command.
   mode=755

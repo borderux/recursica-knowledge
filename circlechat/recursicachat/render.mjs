@@ -4,9 +4,9 @@
 //   GOOGLE_CLIENT_ID  site.json recursicachat.google_client_id   run.sh
 //   GOOGLE_DOMAIN     site.json recursicachat.google_domain      run.sh
 //   PUBLIC_URL        site.json recursicachat.public_url         run.sh
-//   OWNER_HOME        the owner's home folder                     backup.sh, restore-test.sh
-//   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh
-//   CC_DIR            the stack's folder                          backup.sh, restore-test.sh
+//   OWNER_HOME        the owner's home folder                     backup.sh, restore-test.sh, stack-*.sh
+//   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh, stack-*.sh
+//   CC_DIR            the stack's folder                          backup.sh, restore-test.sh, stack-*.sh
 //   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
 //   PROGRAMS          site.json recursicachat.services            rc-clear.sh: each entry with a "job"
 //
@@ -30,6 +30,11 @@ export const TEMPLATES = [
   "io.recursica.recursicachat-colima.plist",
   "io.recursica.recursicachat-backup.plist",
   "io.recursica.recursicachat-restore-test.plist",
+  // the stack's own files: site.json and the workspace (CircleChat 1.x's backup held them)
+  "stack-backup.sh",
+  "stack-restore-test.sh",
+  "io.recursica.stack-backup.plist",
+  "io.recursica.stack-restore-test.plist",
 ];
 // Copied as they are: the kit's own Colima service script, the PDF text reader's build, and
 // rc-clear's database work.

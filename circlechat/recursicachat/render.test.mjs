@@ -29,7 +29,7 @@ test("every template renders with no token left", () => {
   assert.match(files["run.sh"], /^PUBLIC_URL=https:\/\/chat\.example\.ts\.net$/m, "the trailing slash is dropped");
   assert.match(files["run.sh"], /^export CIRCLECHAT_GOOGLE_CLIENT_ID="\$GOOGLE_CLIENT_ID" CIRCLECHAT_GOOGLE_CLIENT_SECRET_FILE="\$GOOGLE_SECRET_FILE"$/m);
   assert.match(files["run.sh"], /^export CIRCLECHAT_PUBLIC_URL="\$PUBLIC_URL"$/m);
-  for (const name of ["backup.sh", "restore-test.sh"]) {
+  for (const name of ["backup.sh", "restore-test.sh", "stack-backup.sh", "stack-restore-test.sh"]) {
     assert.match(files[name], /^OWNER_HOME=\/Users\/owner$/m, name);
     assert.match(files[name], /^KIT=\/Users\/owner\/kit\/circlechat$/m, name);
     assert.match(files[name], /^CC_DIR=\/Users\/owner\/circlechat$/m, name);
@@ -170,4 +170,51 @@ test("bsdtar leaves out exactly the engine settings", { skip: !bsdtar && "no bsd
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// CircleChat 1.x's nightly backup was the only backup of site.json and the workspace. With 1.x
+// retired, stack-backup.sh backs them up, and stack-restore-test.sh proves the backup restores.
+test("the stack's files: their own repository, the server's restic password, and a restore test that reads the same repository", () => {
+  const backup = readFileSync(join(here, "stack-backup.sh"), "utf8");
+  const restore = readFileSync(join(here, "stack-restore-test.sh"), "utf8");
+  const server = readFileSync(join(here, "backup.sh"), "utf8");
+  const tag = (t) => /^TAG=(\S+)/m.exec(t)[1];
+  assert.equal(tag(backup), "stack-files");
+  assert.equal(tag(restore), tag(backup), "the restore test reads the backup's repository");
+  assert.notEqual(tag(backup), tag(server), "a repository of its own, apart from the server's");
+  for (const t of [backup, restore]) {
+    assert.match(t, /^PW_FILE=\/etc\/recursicachat\/restic\.password$/m, "the server's password: one secret for both");
+    assert.match(t, /^export RESTIC_REPOSITORY="rclone:\$BACKUP_REMOTE\/\$TAG"$/m);
+    assert.match(t, /^WS="\$OWNER_HOME\/circlechat-workspace"$/m);
+    assert.match(t, /^SITE="\$CC_DIR\/site\.json"$/m);
+  }
+  assert.match(backup, /restic backup --tag "\$TAG" --host "\$HOST" "\$\{EXCLUDES\[@\]\}" "\$SITE" "\$WS"/);
+  // what the backup leaves out, it also leaves out of its checks, and the restore test fails on a .env
+  for (const x of ["node_modules", ".env", "'.env.*'", ".DS_Store"]) assert.ok(backup.includes(`--exclude ${x}`), x);
+  assert.match(backup, /-name node_modules -o -name \.env -o -name '\.env\.\*' -o -name \.DS_Store \) -prune/);
+  assert.match(restore, /-name \.env -o -name '\.env\.\*' -o -name master\.key -o -name '\*\.key' -o -name seed\.json/);
+  // the backup refuses a key-named file and the secrets' values before restic runs
+  assert.ok(backup.indexOf('STEP="file check"') < backup.indexOf('STEP="restic backup"'));
+  for (const t of [backup, restore]) for (const f of ["$KEY_FILE", "$PW_FILE"]) assert.ok(t.includes(`for secret in "${"$"}KEY_FILE" "${"$"}PW_FILE"`), f);
+  // the restore test: every file back, the kit's site check, Kev and the app
+  assert.match(restore, /restic restore --tag "\$TAG" latest --target "\$OUT"/);
+  assert.match(restore, /node "\$KIT\/kit\/render\.mjs" "\$R_SITE"/);
+  assert.match(restore, /\$R_WS\/kev\/package\.json/);
+});
+
+test("the stack's jobs: nightly at 04:00 after the server's backup, a monthly restore test, and labels install.sh reloads without touching the server", () => {
+  const job = (name) => readFileSync(join(here, name), "utf8");
+  const nightly = job("io.recursica.stack-backup.plist");
+  const monthly = job("io.recursica.stack-restore-test.plist");
+  assert.match(nightly, /<string>io\.recursica\.stack-backup<\/string>/);
+  assert.match(nightly, /<key>Hour<\/key><integer>4<\/integer>\s*<key>Minute<\/key><integer>0<\/integer>/);
+  assert.match(nightly, /\/opt\/recursicachat\/bin\/stack-backup\.sh/);
+  assert.match(monthly, /<string>io\.recursica\.stack-restore-test<\/string>/);
+  assert.match(monthly, /<key>Day<\/key><integer>1<\/integer>\s*<key>Hour<\/key><integer>5<\/integer>\s*<key>Minute<\/key><integer>30<\/integer>/);
+  assert.match(monthly, /\/opt\/recursicachat\/bin\/stack-restore-test\.sh/);
+  // install.sh loads a changed *-backup or *-restore-test job at once, and installs both scripts
+  const install = readFileSync(join(here, "install.sh"), "utf8");
+  assert.match(install, /\*-backup \| \*-restore-test\)/);
+  assert.match(install, /^for f in [^\n]*\bstack-backup\.sh stack-restore-test\.sh\b/m);
+  for (const t of ["stack-backup.sh", "stack-restore-test.sh", "io.recursica.stack-backup.plist", "io.recursica.stack-restore-test.plist"]) assert.ok(TEMPLATES.includes(t), t);
 });
