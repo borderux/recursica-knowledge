@@ -89,3 +89,59 @@ test("listed reads the gateway's model list, and usage errors exit 2", async () 
   assert.equal(await main(["issue", "/tmp"], { err }), 2);
   assert.match(err.text, /usage/);
 });
+
+// A program's key, svc-<name> (circlechat/rc-service.sh): the gateway must list exactly the
+// service's routes.
+test("a service's key passes only when the gateway lists exactly the service's routes", async () => {
+  const ok = state();
+  const out = sink();
+  assert.equal(await main(["issue", ok, "svc-example-service", URL, "judge", "judge"], { out, fetchImpl: gateway({ ids: ["judge"] }).fetchImpl, platform: "linux" }), 0);
+  assert.equal(loadKeys(ok)["svc-example-service"].sha256, sha(out.text.trim()));
+  for (const [gw, why] of [
+    [gateway({ ids: ["judge", "local-large"] }), /more than the service's routes/],
+    [gateway({ ids: ["judge"] }), /not every route of the service \(judge, local-small\)/],
+    [gateway({ ids: [] }), /no route\. Rerun setup-host\.sh/],
+  ]) {
+    const dir = state();
+    const bad = sink();
+    const err = sink();
+    assert.equal(await main(["issue", dir, "svc-example-service", URL, "judge", "judge,local-small"], { out: bad, err, fetchImpl: gw.fetchImpl, platform: "linux" }), 1);
+    assert.equal(bad.text, "", "no key on stdout");
+    assert.match(err.text, why);
+    assert.equal(loadKeys(dir)["svc-example-service"], undefined, "the new key is revoked");
+  }
+});
+
+test("current says whether a key file holds the recorded key, and prints nothing of the key", async () => {
+  const dir = state();
+  const file = path.join(dir, "example-service.gateway-key");
+  const ask = async () => { const out = sink(); assert.equal(await main(["current", dir, "svc-example-service", file], { out }), 0); return out.text; };
+  assert.equal(await ask(), "", "no key recorded and no file");
+  const key = issue(dir, "svc-example-service");
+  assert.equal(await ask(), "", "no file yet");
+  fs.writeFileSync(file, `${key}\n`);
+  assert.equal(await ask(), "current\n");
+  fs.writeFileSync(file, "ccg_" + "0".repeat(48) + "\n");
+  assert.equal(await ask(), "", "another key is not current");
+  fs.rmSync(file);
+  const real = path.join(dir, "real-key");
+  fs.writeFileSync(real, `${key}\n`);
+  fs.symlinkSync(real, file);
+  assert.equal(await ask(), "", "a symlink is never followed");
+});
+
+test("revoke ends a service's key, and refuses a handle that is not rc- or svc-", async () => {
+  const dir = state();
+  const other = issue(dir, "standin");
+  issue(dir, "svc-example-service");
+  const out = sink();
+  assert.equal(await main(["revoke", dir, "svc-example-service"], { out, platform: "linux" }), 0);
+  assert.equal(out.text, "revoked\n");
+  assert.equal(loadKeys(dir)["svc-example-service"], undefined);
+  const again = sink();
+  assert.equal(await main(["revoke", dir, "svc-example-service"], { out: again, platform: "linux" }), 0);
+  assert.equal(again.text, "none\n");
+  const err = sink();
+  assert.equal(await main(["revoke", dir, "standin"], { err, platform: "linux" }), 1);
+  assert.equal(loadKeys(dir).standin.sha256, sha(other), "a 1.x agent's key stays");
+});

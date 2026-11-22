@@ -1763,6 +1763,61 @@ without the program. List each program in site.json:
   the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's
   account. `rc-clear` deletes everything in that folder, after copying it aside.
 
+**A program that asks a model directly gets a gateway key of its own,** from a `gateway` block in the
+program's entry. A program asks a model directly for a short check, such as a yes-or-no question about
+an agent's answer, instead of running an agent turn:
+
+```json
+"recursicachat": {
+  "services": [{
+    "name": "example-service", "agents": ["designer"], "account": "_program", "file": "/opt/program/run/token",
+    "gateway": { "routes": ["judge"], "max_parallel": 4, "daily_requests": 5000 }
+  }]
+}
+```
+
+- `routes`: the routes the program's key may use. Each route is one of site.json's `routes`, and
+  lists cluster models only: the program's key never reaches a cloud model.
+- `max_parallel`: the requests the key may have at once, from 1 to 64. Match the model server's
+  parallel slots, such as an Ollama server's `parallel`.
+- `daily_requests`: the requests the key may send each day, from 1 to 1,000,000. The day runs from
+  midnight to midnight in the cluster's time zone, `site.timezone`, or the control computer's own
+  time zone without `site.timezone`.
+- The block needs `site.gateway_local_port`. The program asks the gateway at
+  `http://127.0.0.1:<site.gateway_local_port>/v1`, with the key as `Authorization: Bearer <key>`.
+- With a gateway block, the entry's name is at most 36 characters.
+
+How the gateway key works:
+
+- **The key's gateway handle is `svc-<name>`.** The gateway lists the handle beside the agents'
+  handles in `gateway.json`. `GET /v1/models` with the key lists exactly the block's routes. A
+  request with the key runs outside any task, so only the cluster answers it, and the key gets no
+  task key. An agent's handle never starts with `svc-`.
+- **`rc-service.sh` issues the key** and writes the key to `<name>.gateway-key`, in the folder of
+  the entry's `file`: the entry's account owns the key file, mode 400, in the folder that belongs to
+  root, written the same way as the token. The key never passes through an argument, an environment
+  variable or an output line. Before the file takes a new key, the script checks the key on the
+  gateway's `GET /v1/models`, which must list exactly the block's routes. A key that fails the check
+  is revoked, and the old file stays.
+- **A rerun keeps the key** while the file holds the key the gateway records for `svc-<name>`.
+  `--rotate <name>` makes a new token and a new gateway key, and the old key stops working at once.
+  Without a gateway block, a rerun revokes the key `svc-<name>` still has and removes the key file.
+- **The gateway answers 429 at once past either cap,** and never queues the request. The JSON error's
+  `type` is `too_many_at_once`, with a `Retry-After` of 1 second, or `daily_limit`, which lasts until
+  midnight in the cluster's time zone. The program decides how to wait, and a held request never sits
+  in the gateway where the program cannot see the request. A request in flight counts until the
+  answer ends or the program closes the connection, including a request that waits for a busy
+  cluster.
+- **Each request counts toward the day once the gateway admits the request,** whatever the answer.
+  The gateway writes the day's count to `service-counts.json` in the `gateway-state` folder before the
+  request goes on, so a restart keeps the count. A refused request does not count.
+- **The spend log gets a line for each request,** as for an agent: the handle, the route, the model,
+  the status and the token counts. A refused request gets a line with status 429 and the cap as the
+  reason. The log holds no prompt and no answer.
+- **The gateway must know the handle before the key works.** Change site.json, run `setup-host.sh`,
+  which renders `gateway.json` and restarts the gateway, and `setup-host.sh` then runs
+  `rc-service.sh`. Run `rc-service.sh` alone only when the running gateway already lists the handle.
+
 ## Hard-won lessons (read before debugging)
 
 - **Compose needs every file in `COMPOSE_FILE`.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml` into `.env`, plus `compose.egress.yml` with the filter on and `compose.privacy.yml` with masking on, so a plain `docker compose up -d` in the CircleChat folder loads them all. Without `compose.agents.yml`, the api loses Docker access and new agents fail to install. Without `compose.workspace.yml`, every attachment fails with "not a regular file".
