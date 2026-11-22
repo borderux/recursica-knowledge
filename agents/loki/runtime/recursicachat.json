@@ -3,5 +3,12 @@
   "autonomy": "ask",
   "$autonomyComment": "ask: Loki asks before each action that is not a read. Loki delivers each transcript with attach_files, a server tool that needs no approval, so a question before an action means a request went outside Loki's work.",
   "sandbox": "docker",
-  "$sandboxComment": "docker: each turn runs in a container, never on the server itself."
+  "$sandboxComment": "docker: each turn runs in a container, never on the server itself.",
+  "starters": [
+    "Quick test: one 15-minute interview about meal planning",
+    "One 30-minute interview about [your subject], based on the attached persona",
+    "Three 15-minute interviews with different people about [your subject]",
+    "What can you do?"
+  ],
+  "$startersComment": "The suggestions an empty chat with Loki shows, one tap each. A starter with a [placeholder] fills the message box for editing instead of sending. \"Quick test\" asks for no personas or sources; the others bring a persona or ask once for one."
 }
