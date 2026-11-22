@@ -1,5 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { decide, setupRunner } from "./upgrade.mjs";
 
 const tags = ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.11.1", "@recursica/knowledge@0.12.0", "@recursica/knowledge@1.0.0"];
@@ -42,4 +47,17 @@ test("with root's steps, the setup gets the password on stdin, needs no sudo, an
   assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, undefined);
   // A failed setup fails the release, which the upgrade then rolls back.
   assert.equal(setupRunner({ kit: "/kit", rootSteps: true, password: "x", run: () => ({ status: 1 }) })(), false);
+});
+
+test("a kit that follows main installs no release, not even with \"Upgrade now\"", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "upgrade-main-"));
+  const cc = path.join(home, "circlechat");
+  fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true });
+  fs.mkdirSync(path.join(home, "ws"));
+  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ site: { circlechat: "retired" }, updates: { follow: "main" } }));
+  const script = fileURLToPath(new URL("./upgrade.mjs", import.meta.url));
+  const r = spawnSync(process.execPath, [script, "@recursica/knowledge@0.12.0"], { encoding: "utf8", env: { ...process.env, HOME: home, CC_DIR: cc, WS: path.join(home, "ws"), KIT_ROOT_STEPS: "" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /The kit follows main .*so no release installs, not even @recursica\/knowledge@0\.12\.0\./);
+  assert.equal(fs.existsSync(path.join(cc, "kit-out/upgrade-state.json")), false, "no setup ran");
 });

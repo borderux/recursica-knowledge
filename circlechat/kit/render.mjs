@@ -60,6 +60,10 @@ export const githubEnvironment = (site) => (site?.site?.tenant ? `client-${site.
 // reads no CircleChat database. Everything else the stack runs stays: the gateway, the job filter,
 // the app preview, Kev's jobs, the GitHub token service and the RecursicaChat 2.0 jobs.
 export const circlechatRetired = (site) => site?.site?.circlechat === "retired";
+// updates.follow: how the kit checkout on each computer moves. "releases", the default, installs
+// only approved kit releases (cluster/release-gate.mjs). "main" fast-forwards the checkout to each
+// verified commit on main (cluster/follow-main.mjs). Only the cluster's own site.json sets updates.follow.
+export const followsMain = (site) => site?.updates?.follow === "main";
 
 // A backend is a cloud model unless it names a model on a computer in this site.json.
 export function isCloud(backend, site) {
@@ -741,6 +745,8 @@ export function validate(site, { cluster } = {}) {
   if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
   if (site.site?.circlechat !== undefined && !circlechatRetired(site)) errs.push('site.circlechat must be "retired", or left out while CircleChat 1.x runs');
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
+  if (site.updates?.follow !== undefined && !["releases", "main"].includes(site.updates.follow)) errs.push('updates.follow must be "releases" or "main"');
+  if (site.updates?.follow !== undefined && t.tenant !== undefined) errs.push("updates.follow is for the cluster's own site.json only. One kit checkout serves every stack on a computer");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
   errs.push(...validateNotify(site.notify));
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
