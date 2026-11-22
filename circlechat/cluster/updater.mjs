@@ -8,6 +8,9 @@
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).
 //   - An update that needs a reboot asks for a time in Slack.
+//   - An update that interrupts work waits until RecursicaChat 2.0 on this computer is quiet
+//     (quiet.mjs): a Tailscale, Ollama, Colima or Lima update, and an image pin that recreates the
+//     gateway. The cluster's channel hears once that it waits.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -22,6 +25,15 @@ export function plan(stacks, state = {}, now = Date.now()) {
     upgrade: s.upgradeAuto,
     images: now - (state.images?.[s.name] ?? 0) >= DAY,
   }));
+}
+
+// The post for a stack's image pins that wait for a quiet RecursicaChat, or "" when the same pins
+// were already announced. state.imagesWaiting keeps each stack's announced pins.
+export function imagesWaitingPost(stack, tags, why, state) {
+  const key = [...tags].sort().join(",");
+  if (!tags.length || state.imagesWaiting?.[stack] === key) return "";
+  state.imagesWaiting = { ...(state.imagesWaiting ?? {}), [stack]: key };
+  return `:hourglass: Stack ${stack}: new versions of ${tags.join(", ")} wait to install. Each move recreates the gateway, which interrupts work, so it waits until RecursicaChat is quiet, with no agent work queued and no one online. Now: ${why}.`;
 }
 
 // The stacks whose control computer is this computer. A helper computer keeps a copy of a stack's
@@ -88,13 +100,29 @@ async function main() {
       .catch((e) => console.error(`kit release check: ${e.message}`));
   }
   const stacks = localStacks(env.OWNER_HOME, env.COMPUTER);
+  // Whether RecursicaChat on this computer is quiet, read as root once, for the image refresh.
+  const { serverQuiet } = await import("./quiet.mjs");
+  let site = {}; try { site = JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME, "circlechat/site.json"), "utf8")); } catch {}
+  const q = await serverQuiet(site);
   const asOwner = (ccDir, script) => spawnSync("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`,
-    `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, script], { stdio: "inherit" });
+    `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, `SERVER_QUIET=${q.quiet ? "yes" : "no"}`, `SERVER_BUSY=${q.why}`, process.execPath, script], { stdio: "inherit" });
+  const { WAITING } = await import("./images.mjs");
   for (const p of plan(stacks, state)) {
     const st = stacks.find((s) => s.name === p.name);
     // The release upgrade runs as the owner, and root takes the steps that need root (root-steps.mjs).
     if (p.upgrade) await runUpgrade({ env, ccDir: st.ccDir }).catch((e) => console.error(`upgrade of ${p.name}: ${e.message}`));
-    if (p.images) { asOwner(st.ccDir, path.join(here, "images.mjs")); state.images = { ...(state.images ?? {}), [p.name]: Date.now() }; }
+    if (p.images) {
+      const r = asOwner(st.ccDir, path.join(here, "images.mjs"));
+      // Pins that wait for a quiet RecursicaChat: the refresh runs again the next hour, not the next day.
+      if (r.status === WAITING) {
+        let tags = []; try { tags = JSON.parse(fs.readFileSync(path.join(st.ccDir, "kit-out/images-waiting.json"), "utf8")); } catch {}
+        const text = imagesWaitingPost(p.name, tags, q.why, state);
+        if (text) await chat.post(env.SLACK_CHANNEL_ID, "info", text).catch(() => {});
+      } else {
+        state.images = { ...(state.images ?? {}), [p.name]: Date.now() };
+        delete state.imagesWaiting?.[p.name];
+      }
+    }
   }
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
   const run = (cmd, args) => spawnSync(cmd, args, { stdio: "inherit" }).status;

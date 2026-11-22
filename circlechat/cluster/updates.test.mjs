@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide, parseAptUpgradable, cvesInChangelog, parseSoftwareUpdate, SOAK_MS, toolVersion, vmToolLines, VM_TOOLS } from "./updates.mjs";
+import { decide, holdUntilQuiet, parseAptUpgradable, cvesInChangelog, parseSoftwareUpdate, SOAK_MS, toolVersion, vmToolLines, VM_TOOLS } from "./updates.mjs";
 
 test("an update waits 7 days from first sight, then installs; a reboot update is held", () => {
   const seen = {}, t = 1_800_000_000_000;
@@ -112,4 +112,18 @@ test("a new Lima or Colima release posts once in Slack after 7 days, with the pi
   assert.deepEqual(lines, ["Colima 0.11.0 is out, and this computer runs 0.10.3. Move COLIMA_VERSION and its checksum in circlechat/tenant/setup-pc.sh to 0.11.0 by pull request, then rerun setup-pc.sh."]);
   assert.deepEqual(vmToolLines(found, seen, t0 + SOAK_MS + 3600_000), [], "once per release");
   assert.deepEqual(vmToolLines([{ name: "Lima", pin: "LIMA_VERSION", installed: "2.3.0", latest: "2.2.1" }], {}, t0 + SOAK_MS), [], "an older release is no update");
+});
+
+test("an update that interrupts work waits for a quiet RecursicaChat, announced once; a quiet update installs at once", () => {
+  const due = [{ key: "ollama@1.2", name: "ollama", version: "1.2" }, { key: "gh@2.9", name: "gh", version: "2.9" }, { key: "tailscale@1.9", name: "tailscale", version: "1.9" }];
+  const seen = {};
+  const busy = { quiet: false, why: "1 web app connection(s) open" };
+  let r = holdUntilQuiet(due, busy, seen, 1000);
+  assert.deepEqual(r.install.map((u) => u.name), ["gh"]);
+  assert.deepEqual(r.waiting.map((u) => u.name), ["ollama", "tailscale"]);
+  assert.match(r.line, /ollama 1\.2, tailscale 1\.9 wait to install.*Now: 1 web app connection/);
+  r = holdUntilQuiet(due, busy, seen, 2000);
+  assert.equal(r.line, "", "announced once");
+  r = holdUntilQuiet(due, { quiet: true, why: "" }, seen, 3000);
+  assert.deepEqual(r.install.map((u) => u.name), ["ollama", "gh", "tailscale"]);
 });

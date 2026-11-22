@@ -7,6 +7,9 @@
 //   - An update that fixes a flaw on CISA's Known Exploited Vulnerabilities list installs at once.
 //   - An update with no reboot installs, and the check posts what it installed.
 //   - An update that needs a reboot is held, and Slack gets the reboot buttons.
+//   - An update that interrupts work (quiet.mjs DISRUPTIVE_BREWS: Tailscale, Ollama, Colima, Lima)
+//     waits, after its 7 days, until RecursicaChat 2.0 on this computer is quiet. The cluster's
+//     channel hears once that it waits, and why.
 //
 //   node updates.mjs check          the check (updater.mjs runs it hourly)
 //   node updates.mjs install-held   install the held updates (the agent runs this before a reboot)
@@ -16,6 +19,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { stopColimaVms } from "./colima.mjs";
 import { IS_MAC, IS_WSL } from "./platform.mjs";
+import { disruptive, serverQuiet } from "./quiet.mjs";
 
 const exec = promisify(execFile);
 const sh = async (cmd, args, opts = {}) => { try { return (await exec(cmd, args, { maxBuffer: 64 << 20, timeout: 30 * 60_000, ...opts })).stdout; } catch (e) { return e.stdout ?? ""; } };
@@ -107,6 +111,24 @@ const latestRelease = async (repo) => {
   } catch { return null; }
 };
 
+// The updates due now that may install now: all of them when RecursicaChat is quiet, and otherwise
+// only those that interrupt no work. Each update that waits is announced once (seen["waiting:<key>"]).
+//   returns { install, waiting, line }: line is "" when nothing new waits
+export function holdUntilQuiet(due, { quiet, why }, seen, now) {
+  if (quiet) return { install: due, waiting: [], line: "" };
+  const waiting = due.filter((u) => disruptive(u.name));
+  const fresh = waiting.filter((u) => seen[`waiting:${u.key}`] === undefined);
+  for (const u of fresh) seen[`waiting:${u.key}`] = now;
+  const line = fresh.length ? `${fresh.map((u) => `${u.name} ${u.version}`).join(", ")} wait${fresh.length === 1 ? "s" : ""} to install. Each one interrupts work, so it waits until RecursicaChat is quiet, with no agent work queued and no one online. Now: ${why}.` : "";
+  return { install: due.filter((u) => !disruptive(u.name)), waiting, line };
+}
+
+const siteQuiet = (env) => {
+  let site = {};
+  try { site = JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME ?? "", "circlechat/site.json"), "utf8")); } catch {}
+  return serverQuiet(site);
+};
+
 async function kevList() {
   try {
     const r = await fetch("https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json", { signal: AbortSignal.timeout(30_000) });
@@ -114,7 +136,7 @@ async function kevList() {
   } catch { return new Set(); }
 }
 
-export async function check({ env = process.env, post, stateDir = "/var/lib/agent-cluster", now = Date.now() } = {}) {
+export async function check({ env = process.env, post, stateDir = "/var/lib/agent-cluster", now = Date.now(), quiet = () => siteQuiet(env) } = {}) {
   const seenFile = path.join(stateDir, "updates-seen.json"), heldFile = path.join(stateDir, "updates-held.json");
   let seen = {}; try { seen = JSON.parse(fs.readFileSync(seenFile, "utf8")); } catch {}
   const kev = await kevList();
@@ -150,10 +172,13 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
       const outdated = JSON.parse((await sh("sudo", ["-u", env.OWNER, "-H", "brew", "outdated", "--json=v2"])) || "{}");
       const brews = (outdated.formulae ?? []).map((f) => ({ key: `${f.name}@${f.current_version}`, name: f.name, version: f.current_version, reboot: false }));
       const bd = decide(brews, seen, kev, now);
-      if (bd.install.length) {
-        await sh("sudo", ["-u", env.OWNER, "-H", "brew", "upgrade", ...bd.install.map((u) => u.name)]);
-        await afterBrewUpgrade(bd.install.map((u) => u.name), { owner: env.OWNER, run: sh });
-        lines.push(`Installed ${bd.install.length} Homebrew update(s): ${bd.install.map((u) => `${u.name} ${u.version}`).join(", ")}.`);
+      const q = bd.install.some((u) => disruptive(u.name)) ? await quiet() : { quiet: true, why: "" };
+      const go = holdUntilQuiet(bd.install, q, seen, now);
+      if (go.line) lines.push(go.line);
+      if (go.install.length) {
+        await sh("sudo", ["-u", env.OWNER, "-H", "brew", "upgrade", ...go.install.map((u) => u.name)]);
+        await afterBrewUpgrade(go.install.map((u) => u.name), { owner: env.OWNER, run: sh });
+        lines.push(`Installed ${go.install.length} Homebrew update(s): ${go.install.map((u) => `${u.name} ${u.version}`).join(", ")}.`);
       }
     }
   }

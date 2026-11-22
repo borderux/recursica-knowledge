@@ -11,6 +11,11 @@
 // A stack whose CircleChat 1.x is retired (site.circlechat) starts no CircleChat container and
 // pulls none of CircleChat's images. Only the pins of RETIRED_PINS move, and the setup's --upgrade
 // then recreates the gateway on them.
+//
+// A pin that moves recreates the gateway, which interrupts work. When the update job finds
+// RecursicaChat 2.0 busy (SERVER_QUIET=no, cluster/quiet.mjs), each move waits: the pins stay,
+// kit-out/images-waiting.json names the waiting images, and the job exits WAITING, so the update
+// job tries again the next hour. Run by hand, with no SERVER_QUIET, the pins move as before.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -20,6 +25,9 @@ import { stackSlack } from "../kit/slack.mjs";
 import { circlechatRetired, stackName } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
+export const WAITING = 75;
+// The pin moves that wait for a quiet RecursicaChat: all of them when the update job found it busy.
+export const waitingMoves = (moves, serverQuiet) => (serverQuiet === "no" ? moves : []);
 
 const exec = promisify(execFile);
 const run = async (cmd, args, opts = {}) => (await exec(cmd, args, { maxBuffer: 64 << 20, timeout: 60 * 60_000, ...opts })).stdout.trim();
@@ -120,7 +128,7 @@ async function main() {
   // The images the kit starts directly (gateway, notifier, agent image), pinned in images.lock:
   // each pin moves to a newer version after the newer version has been out for 7 days.
   const lockFile = path.join(ccDir, "images.lock");
-  let oldLock = null, moved = [];
+  let oldLock = null, moved = [], waiting = [];
   if (fs.existsSync(lockFile)) {
     const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
     const pinned = [];
@@ -146,6 +154,12 @@ async function main() {
       }
     }
     fs.writeFileSync(stateFile, JSON.stringify(seen));
+    waiting = waitingMoves(moves, process.env.SERVER_QUIET).map((m) => m.tag);
+    if (waiting.length) {
+      moves = [];
+      fs.writeFileSync(path.join(ccDir, "kit-out/images-waiting.json"), JSON.stringify(waiting) + "\n");
+      console.log(`${waiting.join(", ")}: the new pins wait for a quiet RecursicaChat (${process.env.SERVER_BUSY || "busy"})`);
+    }
     if (moves.length) {
       oldLock = lock;
       const next = structuredClone(lock);
@@ -159,11 +173,13 @@ async function main() {
   // gateway does not start, and this job then fails with it.
   if (retired) {
     console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: CircleChat 1.x is retired; ${moved.length ? `pins moved (${moved.join(", ")})` : "no pin moved"}`);
+    if (waiting.length) process.exit(WAITING);
     return;
   }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {
     console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
+    if (waiting.length) process.exit(WAITING);
     return;
   }
   // Roll back: tag each service's old image back, and recreate from it. Each new version that

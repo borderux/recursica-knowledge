@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { plan, localStacks, refreshRootCopies } from "./updater.mjs";
+import { imagesWaitingPost, plan, localStacks, refreshRootCopies } from "./updater.mjs";
 
 test("Recursica's software every hour on a stack with upgrade.auto; images once a day per stack", () => {
   const stacks = [{ name: "cluster", upgradeAuto: true }, { name: "acme", upgradeAuto: false }];
@@ -52,4 +52,12 @@ test("a new kit reaches the root-owned copies: the secrets helper on any compute
   assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: false, run, fsx }), []);
   assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: false, run, fsx: { exists: () => false, read: () => { throw new Error("no file"); } } }), []);
   assert.deepEqual(calls, []);
+});
+
+test("image pins that wait for a quiet RecursicaChat are announced once per set of pins", () => {
+  const state = {};
+  assert.match(imagesWaitingPost("acme", ["node:22-alpine"], "2 agent message(s) queued or in a turn", state), /node:22-alpine wait to install.*Now: 2 agent message/);
+  assert.equal(imagesWaitingPost("acme", ["node:22-alpine"], "the same", state), "");
+  assert.match(imagesWaitingPost("acme", ["node:22-alpine", "node:22"], "busy", state), /node:22-alpine, node:22/);
+  assert.equal(imagesWaitingPost("acme", [], "busy", state), "");
 });
