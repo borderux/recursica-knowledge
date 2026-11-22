@@ -68,9 +68,9 @@ jobs:
           bash circlechat/cluster/firewall/pf-main.sh < /etc/pf.conf > /tmp/pf-main.conf
           grep -qx 'set skip on lo0' /tmp/pf-main.conf
           sudo pfctl -nf /tmp/pf-main.conf
-      # Whether loading rules into an anchor empties the anchor's persist tables, with the runner's
+      # Loading rules into an anchor keeps the anchor's persist tables, checked with the runner's
       # real pf, in a throwaway anchor.
-      - name: Loading pf rules again keeps or empties the tables
+      - name: Loading pf rules again keeps the anchor's tables
         run: bash circlechat/ci/pf-tables.sh
       - name: A client disk image is created, opened and closed
         run: |
