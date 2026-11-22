@@ -384,13 +384,21 @@ export function pgDb(url, pg) {
   };
 }
 
+// A retired CircleChat 1.x (site.circlechat "retired" in gateway.json): no database and no db.url.
+// Each lookup fails at once, as with a database the router cannot reach, so each request is cluster
+// only, with no task, and the router tells no task.
+export function retiredDb() {
+  const none = async () => { throw new Error("CircleChat 1.x is retired"); };
+  return { runTasks: none, setting: none, onTask: none, botToken: none };
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
   const config = JSON.parse(fs.readFileSync(env.GATEWAY_CONFIG ?? "/etc/gateway/gateway.json", "utf8"));
   const { default: pg } = await import("pg");
   const allow = await allowedSources(config.nodes);
   const handler = createGateway({
-    config, db: pgDb(fs.readFileSync(env.DATABASE_URL_FILE ?? "/state/db.url", "utf8").trim(), pg), litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
+    config, db: config.circlechat === "retired" ? retiredDb() : pgDb(fs.readFileSync(env.DATABASE_URL_FILE ?? "/state/db.url", "utf8").trim(), pg), litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
     litellmKey: fs.readFileSync(env.LITELLM_KEY_FILE ?? "/state/litellm-master.key", "utf8").trim(),
     stateDir: env.GATEWAY_STATE ?? "/state", spendLog: env.SPEND_LOG ?? "/logs/spend.jsonl", apiBase: env.CC_API ?? "http://api:3000/api", allow,
     refreshAllow: () => allowedSources(config.nodes),

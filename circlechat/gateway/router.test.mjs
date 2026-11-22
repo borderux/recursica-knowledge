@@ -5,7 +5,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { createGateway, inCidr, strictest } from "./router.mjs";
+import { createGateway, inCidr, retiredDb, strictest } from "./router.mjs";
 import { issue, revoke } from "./keys.mjs";
 
 const listen = (handler) => new Promise((r) => { const s = http.createServer(handler); s.listen(0, "127.0.0.1", () => r(s)); });
@@ -329,4 +329,11 @@ test("a network the gateway joins after it starts counts, and an outside address
   assert.equal(await ask(), 403);
   assert.equal(outsideReads, 2);
   outside.close();
+});
+
+test("a retired CircleChat 1.x gives the router no database: every lookup fails at once, as with a database it cannot reach", async () => {
+  const db = retiredDb();
+  for (const [name, args] of [["runTasks", ["agent-a"]], ["setting", ["task-1"]], ["onTask", ["agent-a", "task-1"]], ["botToken", ["agent-a"]]]) {
+    await assert.rejects(db[name](...args), /retired/, name);
+  }
 });

@@ -1560,6 +1560,22 @@ running, with its state. Run `install.sh` again after a change to either setting
 
 Then start the server and the programs.
 
+### Retiring CircleChat 1.x
+
+Once a stack's agents run on RecursicaChat 2.0, set `"circlechat": "retired"` in site.json's `site` block. CircleChat 1.x then never starts again. Install the kit release that has the setting before copying a site.json that sets it.
+
+With the setting, the kit skips CircleChat 1.x:
+
+- **`setup-host.sh`, in every mode,** starts no CircleChat container and sets up no CircleChat database role. It runs no Slack notifier, no receiver for cloud-model requests and no filter for CircleChat's agents. The full setup removes the `circlechat-boot`, `backup`, `restore-test` and `release-watch` jobs, and serves no tailnet address for CircleChat.
+- **The image refresh** pulls none of CircleChat's images and the Hermes image, and starts no CircleChat container. It moves only the pins of the gateway's images and `node:22`, then runs `setup-host.sh --upgrade`.
+- **The upgrade job** no longer rebuilds CircleChat from the fork's branch.
+- **The uptime check** leaves the stack out, so no "is not answering" alert is posted for it.
+- **The gateway** reads no CircleChat database and needs no `db.url`. Each request is cluster only, with no task, as for a RecursicaChat 2.0 agent.
+
+These stay: the gateway and LiteLLM, the job runners' filter and the port-job path, the app preview, Kev's jobs, the GitHub token service, and the RecursicaChat 2.0 jobs. The stack's folder stays too: the gateway, `rc-sync` and the token service read `site.json`, `.env`, `kit-out/` and `gateway-state/` there.
+
+The setting removes nothing by hand. CircleChat's containers, volumes, agent homes and images stay until someone removes them. Its last backup stays in the backup remote. `setup-host.sh` never runs `tailscale serve reset`, which would clear every rule, the gateway's included. Remove CircleChat's own rule by hand, as in `tailscale serve --https=443 off`.
+
 ### A session for a program outside the server
 
 **A program that uses the RecursicaChat 2.0 server's API from outside gets a member session from

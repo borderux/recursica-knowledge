@@ -22,6 +22,12 @@
 set -euo pipefail
 # --upgrade: the upgrade job's mode, after a new release is checked out. Changes only what needs
 # no sudo: the rendered config, the containers, the gateway, the notifier and the filter.
+#
+# site.circlechat "retired" (kit/render.mjs): CircleChat 1.x never starts again. Every mode then
+# skips CircleChat's containers, its database roles, its notifier, its cloud-request receiver and
+# its agents' filter, and the full setup removes its boot, backup, restore-test and release-watch
+# jobs and serves no address for it. The gateway, the job filter, the app preview, Kev's jobs, the
+# GitHub token service and the RecursicaChat 2.0 jobs stay.
 SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 [ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
@@ -408,11 +414,17 @@ mount_check() {
 # The kit's own folders that the compose files mount exist before the check: a fresh stack has
 # neither yet.
 mkdir -p "$CC_DIR/hermes-homes" "$WS"
-mount_check
+[ "$CIRCLECHAT" = retired ] || mount_check
 NET="${COMPOSE_PROJECT_NAME}_default"
 
 start_egress() {
   [ "$EGRESS" = on ] || { docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true; return 0; }
+  # A retired CircleChat has no agents to filter. The job runner's filter stays, on the kit's image.
+  if [ "$CIRCLECHAT" = retired ]; then
+    docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
+    refresh_egress "$(egress_image)"
+    return 0
+  fi
   local image; image="$(egress_image)"
   mkdir -p "$CC_DIR/egress-logs" && chmod 777 "$CC_DIR/egress-logs"
   docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
@@ -433,6 +445,8 @@ start_egress() {
 # when it starts, so this waits for them.
 gateway_db_role() {
   local pw i
+  # A retired CircleChat has no database: the router reads none (gateway/router.mjs, retiredDb).
+  [ "$CIRCLECHAT" != retired ] || return 0
   # The secrets helper passes the password, and writes the role's address itself.
   if [ "$HELPER" = true ]; then
     pw="$HELPER_DB_PASSWORD"
@@ -582,7 +596,9 @@ start_gateway_and_notifier() {
   # else the ID on notify.people (circlechat/notify/events.mjs). The notifier also sends the codes of
   # CircleChat's Slack ID check. The notifier signs in as cc_notify, never as the database's owner.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
-  if [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
+  if [ "$CIRCLECHAT" = retired ]; then
+    echo "Slack notifier off: CircleChat 1.x is retired (site.circlechat)."
+  elif [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
     if notify_db_role; then
       mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/drops.mjs" "$HERE/notify/events.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
       docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
@@ -605,7 +621,9 @@ start_gateway_and_notifier() {
   # own network only, with no published port. The receiver checks each request's signature, then
   # posts the request in the stack's channel with Approve and Deny buttons.
   docker rm -f "cc-cloud-requests$SUFFIX" >/dev/null 2>&1 || true
-  if [ "$CLOUD_REQUESTS" = on ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL; then
+  if [ "$CIRCLECHAT" = retired ]; then
+    [ "$CLOUD_REQUESTS" != on ] || echo "Cloud-model requests off: CircleChat 1.x is retired (site.circlechat)."
+  elif [ "$CLOUD_REQUESTS" = on ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL; then
     mkdir -p "$CC_DIR/cloud-requests" && cp "$HERE/cluster/cloud-requests.mjs" "$CC_DIR/cloud-requests/"
     docker run -d --name "cc-cloud-requests$SUFFIX" --restart unless-stopped --network "$NET" --network-alias cloud-requests \
       -v "$CC_DIR/cloud-requests":/app:ro -v "$CLOUD_DIR/webhook-secret":/run/secrets/webhook-secret:ro -w /app \
@@ -646,7 +664,7 @@ key_check() {
 set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
 
 if [ "$SECRETS_ONLY" = true ]; then
-  if [ "$UPGRADE_ONLY" = true ]; then
+  if [ "$UPGRADE_ONLY" = true ] && [ "$CIRCLECHAT" != retired ]; then
     # Stored files move from the old containers onto the storage volume first (kit/carry-storage.sh).
     CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
     docker compose up -d --remove-orphans
@@ -726,8 +744,10 @@ done
 
 # Stored files move from the old containers onto the storage volume before the containers are
 # recreated (kit/carry-storage.sh). It does nothing once they have moved.
-CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
-docker compose up -d --force-recreate
+if [ "$CIRCLECHAT" != retired ]; then
+  CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
+  docker compose up -d --force-recreate
+fi
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
 docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
@@ -745,7 +765,7 @@ key_check
 # its password signs in only while check-agent.sh runs a check. Before the
 # first agent is installed the step has no workspace to join, so the setup goes on; check-agent.sh
 # runs the same step again before each check.
-if [ -f "$CC_DIR/agent-check.env" ]; then
+if [ -f "$CC_DIR/agent-check.env" ] && [ "$CIRCLECHAT" != retired ]; then
   CC_DIR="$CC_DIR" SITE="$SITE" TENANT="$TENANT" node "$HERE/kit/check-account.mjs" \
     || echo "The agent check's account is not ready yet (the line above says why). check-agent.sh makes the account when the check runs."
 fi
@@ -755,10 +775,16 @@ ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE OWNER=$(id -un) OWNER_HOME=$HOME"
 # A client stack's folder sits inside an encrypted disk image, which the "Unlock stack" workflow
 # opens after a restart. Until then the boot job finds no folder and does nothing.
 [ -n "$TENANT" ] && export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
-install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose up -d" "$HOME" "$(id -un)" boot
+# A retired CircleChat gets no boot job, and no backup or test restore: both read its database.
+# Its last backup stays in the backup remote until someone deletes it.
+if [ "$CIRCLECHAT" = retired ]; then
+  for u in circlechat-boot backup restore-test; do uninstall_unit "$u$SUFFIX"; done
+else
+  install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose up -d" "$HOME" "$(id -un)" boot
+fi
 # Nightly encrypted backup of this stack, and a test restore each quarter. Both run as root, which
 # can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
-if [ -n "$BACKUP_REMOTE" ]; then
+if [ -n "$BACKUP_REMOTE" ] && [ "$CIRCLECHAT" != retired ]; then
   for t in restic rclone; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
   rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -x "${BACKUP_REMOTE%%:*}:" >/dev/null \
     || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
@@ -808,7 +834,10 @@ if [ "$(site_get recursicachat.services)" != "" ] && [ "$(site_get recursicachat
   sudo OWNER="$(id -un)" CC_DIR="$CC_DIR" SITE="$SITE" KIT_NODE="$(command -v node)" "$HERE/rc-service.sh" ||
     echo "Setting up a RecursicaChat service failed (the lines above say why). Fix it, then run: sudo OWNER=\$(id -un) $HERE/rc-service.sh"
 fi
-if [ -n "$(site_get porter.watch)" ]; then
+if [ "$CIRCLECHAT" = retired ]; then
+  # Porter is an agent of CircleChat 1.x, so a retired CircleChat has no one to announce to.
+  uninstall_unit "release-watch$SUFFIX"
+elif [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
   install_unit "release-watch$SUFFIX" "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
@@ -871,7 +900,19 @@ if [ "$PROXY" = other ]; then
   ADDRESS="Point an HTTPS reverse proxy on this computer at http://127.0.0.1:$PORT for CircleChat, and at http://127.0.0.1:$PREVIEW_PORT for the app preview."
 else
   if [ -z "$TENANT" ]; then CC_HTTPS=443; WHERE="https://$TS_HOST"; else CC_HTTPS="$PORT"; WHERE="https://$TS_HOST:$PORT"; fi
-  if ! command -v tailscale >/dev/null; then
+  if [ "$CIRCLECHAT" = retired ]; then
+    # A retired CircleChat gets no address. Only the app preview's rule is added and checked. The
+    # setup never removes a rule: tailscale serve reset would clear every rule, the gateway's too.
+    if ! command -v tailscale >/dev/null; then
+      ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
+    else
+      ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
+        || { echo "tailscale serve failed, so the tailnet cannot reach the app preview. Run setup-host.sh in a terminal."; exit 1; }
+      problems="$(site_serve_check "$PREVIEW_PORT:$PREVIEW_PORT")"
+      [ -z "$problems" ] || { echo "$problems"; echo "Check tailscale serve status, then run setup-host.sh again."; exit 1; }
+      ADDRESS="CircleChat 1.x is retired, so it has no address. tailscale serve, tailnet only: https://$TS_HOST:$PREVIEW_PORT passes to http://127.0.0.1:$PREVIEW_PORT for the app preview."
+    fi
+  elif ! command -v tailscale >/dev/null; then
     ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$CC_HTTPS http://127.0.0.1:$PORT && tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
   else
     ts_serve "--https=$CC_HTTPS" "http://127.0.0.1:$PORT" && ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
@@ -884,5 +925,5 @@ fi
 cat << MSG
 
 Done${TENANT:+ (stack: $TENANT)}. $ADDRESS
-Wait ~30s for the api, then install agents in the UI and run ${TENANT:+TENANT=$TENANT }setup-agent.sh for each.
 MSG
+[ "$CIRCLECHAT" = retired ] || echo "Wait ~30s for the api, then install agents in the UI and run ${TENANT:+TENANT=$TENANT }setup-agent.sh for each."

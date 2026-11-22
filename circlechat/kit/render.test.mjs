@@ -2,13 +2,29 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
-import { warnings, checkAccountEmail, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { warnings, checkAccountEmail, circlechatRetired, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
 const clone = () => structuredClone(example);
 
 test("the example is valid", () => assert.deepEqual(validate(example), []));
+
+test("site.circlechat \"retired\" marks CircleChat 1.x retired for the setup and the gateway; any other value is refused", () => {
+  assert.equal(circlechatRetired(example), false);
+  assert.match(render(example).tenantEnv, /^CIRCLECHAT=on$/m);
+  assert.equal(render(example).gateway.circlechat, undefined, "a running CircleChat leaves gateway.json as it was");
+  const s = clone();
+  s.site.circlechat = "retired";
+  assert.deepEqual(validate(s), []);
+  assert.equal(circlechatRetired(s), true);
+  assert.match(render(s).tenantEnv, /^CIRCLECHAT=retired$/m);
+  assert.equal(render(s).gateway.circlechat, "retired");
+  for (const v of [true, "off", "on"]) {
+    s.site.circlechat = v;
+    assert.match(validate(s).join("\n"), /site\.circlechat must be "retired"/, String(v));
+  }
+});
 
 test("routes become aliases with ordered fallbacks among the cluster's models", () => {
   const { litellm } = render(example);
