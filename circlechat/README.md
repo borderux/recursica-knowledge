@@ -1635,7 +1635,8 @@ summary line, with the counts of what stays and the path of the copy. Each step'
    `rc-clear.mjs` must first list the table as work or as kept. The kit's CI catches such a table
    before a deploy: the `rc-clear tables` job reads every table the server's code creates on the
    fork's branch (`node rc-clear.mjs schema <server/src>`), on each kit pull request and each
-   morning, and fails on a table neither list names.
+   morning, and fails on a table neither list names. `sudo rc-deploy` runs the same check on the build it is about to
+   install, and prints a warning naming each table before it swaps the app in. The deploy goes on.
 2. **Stop** each program that drives an agent, then the server. Each agent's engine is a container
    the server started, and it stops with the server: `rc-clear` waits until none runs on the
    server's Docker, or starts everything again and deletes nothing.
