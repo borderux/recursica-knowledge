@@ -343,6 +343,7 @@ A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout
 - `setup-host.sh` clones each checkout once, when nothing is at the checkout's path, and never runs git in a checkout after that. Alan's checkout gets the repository's commit hooks at the clone.
 - `sync-skills.sh` never pulls a checkout in the workspace. The skills and personas come from the kit checkout.
 - With `upgrade.auto`, the upgrade job moves only the kit checkout, `~/recursica-knowledge`, to each release. The job runs the setup from that checkout.
+- With `updates.follow` set to `"main"`, the update job moves only the kit checkout, to each verified commit on main.
 
 **The check finds a checkout that agents or other accounts could change.** The check cannot find a file that was changed before the check ran.
 
@@ -1018,6 +1019,7 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 - **Recursica's own software**, on a stack with `upgrade.auto`:
   - Each new commit on the CircleChat fork's branch: right away.
   - Each new kit release, a release of the knowledge repo: only after an approver approves the release in Slack. "Kit releases" describes the approval. A new major version asks in Slack first.
+  - With `updates.follow` set to `"main"`, the kit checkout on every computer follows main instead. "A kit that follows main" describes the steps.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
 - **An update that interrupts work** waits, after its 7 days, until RecursicaChat 2.0 on the computer is quiet. "Updates that interrupt work" describes the wait.
@@ -1060,6 +1062,40 @@ Until an approval, every computer holds the release, and nothing installs. The j
 **A run of `kit/upgrade.mjs <tag>` by hand, in a terminal, installs the release without an approval.** A run with no tag installs only an approved release.
 
 Every other update keeps the rules above. Such updates include images, Ollama, the operating system and the CircleChat fork's commits.
+
+#### A kit that follows main
+
+**`updates.follow` in the cluster's own site.json picks how the kit checkout moves.** The setting has two values:
+
+| `updates.follow`          | How the kit checkout moves                                                          |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `"releases"`, the default | Only to an approved kit release, as "Kit releases" describes                        |
+| `"main"`                  | To each new commit on main, on every computer, the control computer and each helper |
+
+A helper computer hosts no stack, so with `"releases"` the update job never moves a helper's kit checkout. With `"main"`, each helper follows main too. Copy the changed site.json to `~/circlechat/site.json` on each computer.
+
+**With `"main"`, the update job takes six steps each hour, as root, on each computer** (`cluster/follow-main.mjs`):
+
+1. The job fetches `origin/main` into the kit checkout, as the owner. With no new commit, the job stops here.
+2. GitHub must show each new commit as verified. One commit that GitHub doesn't verify stops the whole update, and the kit checkout stays where the checkout was. The cluster's channel, `SLACK_CHANNEL_ID`, gets one alert for each such commit.
+3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears once about each update that waits. A helper runs no RecursicaChat server, so a helper never waits.
+4. The kit checkout fast-forwards to the new commit. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
+5. The job runs each setup the change touches again, as the owner. A change touches a setup when the change edits a kit file the setup reads. The table below lists the setups.
+6. The channel gets one line with the computer, the old and new commit, and the result.
+
+| Setup                | Where the setup runs                                         |
+| -------------------- | ------------------------------------------------------------ |
+| `setup-host.sh`      | The control computer, once for each stack the computer hosts |
+| `setup-node.sh`      | Each computer, for the computer's own entry in site.json     |
+| `install-cluster.sh` | Each computer, for the computer's own entry in site.json     |
+
+The job never runs `rc-deploy`. A new RecursicaChat 2.0 server still waits for `sudo rc-deploy` by hand.
+
+**A setup runs again only when the owner has password-free sudo.** Each of the three setups calls sudo as the owner. Without password-free sudo, the channel's line names each command to run by hand. On the control computer, `setup-host.sh --upgrade` still runs, with root's own steps, as in an upgrade. The line asks for the full `setup-host.sh` only when the change adds or removes a service or a job.
+
+**A failed setup leaves the kit checkout at the new commit for a person to look at.** The channel's line ends with the last lines of the setup's output. Text that looks like a key or a token is hidden. The job runs no other setup after the failed one. The next update waits for a newer commit on main, such as a fix. That update runs the failed setup again, with each setup the newer change touches.
+
+**A kit that follows main installs no release.** The control computer posts no new release, and "Upgrade now" installs nothing.
 
 #### Root's steps in an upgrade
 
@@ -1748,7 +1784,7 @@ without the program. List each program in site.json:
   for itself again), and writes the service's token into the file.
 - **A token doesn't expire**, so the script makes one only when the file is missing or empty, or the
   server has no token for the service. `sudo OWNER=$(id -un) circlechat/rc-service.sh --rotate
-  <name>` makes a new one, and the old one stops working at once.
+<name>` makes a new one, and the old one stops working at once.
 - **The file belongs to the entry's account, mode 400, in a folder that belongs to root**, written
   the same way as a session file: the token never passes through an argument, a variable or an
   output line.
@@ -1757,7 +1793,7 @@ without the program. List each program in site.json:
   only the chats its agents are in.
 - **An agent has at most one service.** To hand an agent back to the people who use it, take it out
   of the entry and run the script again. Revoking the service's token on the server (`cli.ts
-  service-revoke`) also stops the service driving its agents.
+service-revoke`) also stops the service driving its agents.
 - **An entry may also name the program's `job` and `state`, for `sudo rc-clear` only.** `job` is the
   program's launchd job, such as `"job": "io.example.program"`. `state` is the folder that holds only
   the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's

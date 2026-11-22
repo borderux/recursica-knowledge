@@ -121,7 +121,7 @@ export function afterUpgrade({ env, ccDir, run = spawnSync }) {
 }
 
 // The owner's uid and gid, for a Mac.
-function ownerIds(owner, run) {
+export function ownerIds(owner, run = spawnSync) {
   const id = (flag) => Number(String(run("id", [flag, owner], { encoding: "utf8" }).stdout ?? "").trim());
   return { uid: id("-u"), gid: id("-g") };
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
-import { warnings, checkAccountEmail, circlechatRetired, clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { warnings, checkAccountEmail, circlechatRetired, clusterStackName, followsMain, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
@@ -24,6 +24,23 @@ test("site.circlechat \"retired\" marks CircleChat 1.x retired for the setup and
     s.site.circlechat = v;
     assert.match(validate(s).join("\n"), /site\.circlechat must be "retired"/, String(v));
   }
+});
+
+test("updates.follow is \"releases\" by default, or \"main\", and only in the cluster's own site.json", () => {
+  assert.equal(followsMain(example), false);
+  const s = clone();
+  for (const v of ["releases", "main"]) {
+    s.updates = { follow: v };
+    assert.deepEqual(validate(s), [], v);
+    assert.equal(followsMain(s), v === "main");
+  }
+  for (const v of ["tags", true, ""]) {
+    s.updates = { follow: v };
+    assert.match(validate(s).join("\n"), /updates\.follow must be "releases" or "main"/, String(v));
+  }
+  s.updates = { follow: "main" };
+  s.site.tenant = "acme";
+  assert.match(validate(s).join("\n"), /updates\.follow is for the cluster's own site\.json only/);
 });
 
 test("routes become aliases with ordered fallbacks among the cluster's models", () => {

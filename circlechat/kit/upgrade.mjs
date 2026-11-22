@@ -13,6 +13,9 @@
 //     reruns the setup, syncs the agents, and checks the stack. On a failure, the stack goes back to
 //     the version it ran, and Slack gets a message. Until an approval, the release is held.
 //   - A release with a higher first number (a major version) asks first, in Slack.
+//   - With updates.follow "main" in the cluster's site.json, no release installs, not even with
+//     "Upgrade now". The update job moves the checkout to each verified commit on main instead
+//     (cluster/follow-main.mjs).
 //
 //   node upgrade.mjs              the hourly check
 //   node upgrade.mjs <tag>        upgrade to one release now (the Slack button runs this)
@@ -21,7 +24,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { kitProblem } from "../cluster/kit-check.mjs";
-import { circlechatRetired } from "./render.mjs";
+import { circlechatRetired, followsMain } from "./render.mjs";
 import { stackSlack } from "./slack.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
@@ -126,6 +129,12 @@ async function main() {
   const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
   let site = {}; try { site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")); } catch { /* the setup reports a missing site.json */ }
   if (!circlechatRetired(site)) try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
+  // A kit that follows main never checks out a release tag.
+  let clusterSite = {}; try { clusterSite = JSON.parse(fs.readFileSync(path.join(os.homedir(), "circlechat/site.json"), "utf8")); } catch {}
+  if (followsMain(clusterSite)) {
+    console.log(`The kit follows main (updates.follow in ${path.join(os.homedir(), "circlechat/site.json")}), so no release installs${process.argv[2] ? `, not even ${process.argv[2]}` : ""}.`);
+    return;
+  }
   git("fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);

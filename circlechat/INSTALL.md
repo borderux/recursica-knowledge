@@ -68,6 +68,7 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `security`                                            | `security.evidence_recipient`: the age public key for lockdown evidence                                                                                     |
 | `egress`                                              | The outgoing filter: `egress.allow` lists extra sites the agents may reach                                                                                  |
 | `privacy`                                             | `privacy.mask_pii`: personal information masking before cloud model calls                                                                                   |
+| `updates`                                             | `updates.follow`: `"releases"`, the default, or `"main"` for a kit checkout that follows main on every computer (README, "A kit that follows main")         |
 | `upgrade`                                             | `upgrade.auto`: leave off, and update the forks by hand                                                                                                     |
 
 Run `node circlechat/kit/render.mjs ~/circlechat/site.json /tmp/check` to check the settings before the setup.
