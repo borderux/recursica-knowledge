@@ -124,11 +124,12 @@ dk() { as_root env HOME=/opt/recursicachat/home DOCKER_HOST=unix:///opt/recursic
 # shellcheck disable=SC2016 # the JavaScript and the container's shell read their own arguments
 skills_step() {
   local why plan h vol allow found dirs n out
+  # stdout is the reason the server is busy, or nothing; stderr goes to the job's log
   why="$(as_root "$KIT_NODE" --input-type=module -e '
     const { serverQuiet } = await import(process.argv[1]);
     const site = JSON.parse((await import("node:fs")).readFileSync(process.argv[2], "utf8"));
     process.stdout.write((await serverQuiet(site)).why);
-  ' "$HERE/cluster/quiet.mjs" "$SITE" 2>&1)" || { echo "skills: FAILED: the quiet check could not run: $why"; FAILED=1; return; }
+  ' "$HERE/cluster/quiet.mjs" "$SITE")" || { echo "skills: FAILED: the quiet check could not run (the lines above say why)"; FAILED=1; return; }
   if [ -n "$why" ]; then echo "skills: not now, the server isn't quiet ($why); the next sync tries again"; return; fi
   plan="$(as_root "$KIT_NODE" "$HERE/kit/rc-skills.mjs" plan "$RC_DATA/circlechat.db" "$SITE" 2>&1)" || { echo "skills: FAILED: $plan"; FAILED=1; return; }
   while IFS=$'\t' read -r -u 4 h vol allow; do
