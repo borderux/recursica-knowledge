@@ -238,3 +238,16 @@ test("Loki's RecursicaChat instructions are built, fit the server, and the kit h
   assert.equal(w.autonomy, "ask");
   assert.equal(w.sandbox, "docker");
 });
+
+test("rc-sync.sh's skills step waits while the server isn't quiet, and starts no container", () => {
+  // the stand-in server has no database, so the quiet check can't read its work: busy
+  const { r, calls } = wrapper();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^skills: not now, the server isn't quiet \(its database can't be read\); the next sync tries again$/m);
+  assert.doesNotMatch(calls, /docker/);
+  const script = fs.readFileSync(path.join(here, "../rc-sync.sh"), "utf8");
+  // both containers: Hermes's own image, no network, a read-only root, and the read is read-only
+  assert.match(script, /dk run --rm --network none --read-only --user 0:0 -v "\$vol:\/v:ro" --entrypoint \/bin\/sh "\$HERMES_IMAGE"/);
+  assert.match(script, /dk run --rm --network none --read-only --user 0:0 -v "\$vol:\/v" --entrypoint \/bin\/sh "\$HERMES_IMAGE" -c 'cd \/v\/home\/skills && rm -rf -- "\$@"' sh \$dirs/);
+  assert.ok(script.indexOf("serverQuiet") < script.indexOf("rc-skills.mjs\" plan"), "the quiet check comes first");
+});

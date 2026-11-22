@@ -1480,6 +1480,24 @@ a key gets no route and no cloud model, and the router refuses the key outright,
 whose handle site.json does not list now stops `setup-host.sh` with a line that names the fix: add
 `agents.<handle>` to site.json, with the agent's routes and cloud switch.
 
+**Each Hermes agent keeps only the bundled skills its settings name.** Hermes seeds every agent's
+home with dozens of bundled skills (apple, email, social media, devops and more), and each one sits
+in the agent's prompt. The hourly sync's fourth step removes each bundled skill an agent's
+`agents/<handle>/runtime/recursicachat.json` doesn't list in `"skills"`, such as
+`"skills": ["github"]`. With no `skills`, the agent keeps none.
+
+- **What stays:** Hermes's own `hermes-agent`, which Hermes never lets go, and every skill that
+  isn't bundled, such as one the agent learned. Hermes lists its bundled skills in
+  `skills/.bundled_manifest`, and never seeds a deleted one again.
+- **When:** only while the server is quiet (`cluster/quiet.mjs`): no turn running and no one
+  online. Otherwise the sync says so and tries again the next hour. Nothing restarts: the agent's
+  engine sees the change at its next start.
+- **How:** two short containers on the server's own Docker, from Hermes's own image, with no network.
+  One reads the agent's skills folder, read-only. The other removes the folders `kit/rc-skills.mjs`
+  names, each a plain path inside the skills folder. `rc-sync.sh --check` lists what it would remove.
+- **To give a skill back,** add its name to `"skills"`, then remove its line from the agent's
+  `.bundled_manifest`: Hermes seeds it again at the engine's next start.
+
 ### The RecursicaChat 2.0 server's service, backup and restore test
 
 **`circlechat/recursicachat/` holds the server's own scripts and launchd jobs, for the control Mac.**

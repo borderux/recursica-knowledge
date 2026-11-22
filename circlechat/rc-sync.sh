@@ -20,6 +20,11 @@
 #      from every session, and the web app shows them read-only.
 #   3. The five settings, as JSON from kit/rc-sync.mjs, go into cli.ts agent-set on stdin. The CLI
 #      sets only the settings that differ.
+#   4. Skills, for each Hermes agent in a Docker sandbox: the agent keeps only the bundled skills its
+#      kit settings name, in "skills" in agents/<handle>/runtime/recursicachat.json; with none named,
+#      none (kit/rc-skills.mjs). Hermes's own hermes-agent and every skill that isn't bundled, such
+#      as one the agent learned, stay. Only while the server is quiet (cluster/quiet.mjs): no turn
+#      running and no one online. The engine sees the change at its next start; nothing restarts.
 # Then a warning for each agent on the server whose model can use another agent's key.
 #
 # As root (the hourly job), the script runs only the server's CLI and the key step as root. The read
@@ -110,6 +115,38 @@ while IFS=$'\t' read -r -u 3 h gw provider model routes; do
     echo "$h: FAILED: $out"; FAILED=1
   fi
 done 3<<<"$AGENTS"
+
+# 4. Skills. Two short containers on the server's own Docker, from Hermes's own image, with no
+# network: one reads the agent's skills folder, read-only, and one removes the folders rc-skills.mjs
+# names. Each folder is ./<names>/ inside the skills folder, which rc-skills.mjs checks.
+HERMES_IMAGE=circlechat/engine-hermes:latest
+dk() { as_root env HOME=/opt/recursicachat/home DOCKER_HOST=unix:///opt/recursicachat/home/.colima/recursicachat/docker.sock /opt/homebrew/bin/docker "$@"; }
+# shellcheck disable=SC2016 # the JavaScript and the container's shell read their own arguments
+skills_step() {
+  local why plan h vol allow found dirs n out
+  # stdout is the reason the server is busy, or nothing; stderr goes to the job's log
+  why="$(as_root "$KIT_NODE" --input-type=module -e '
+    const { serverQuiet } = await import(process.argv[1]);
+    const site = JSON.parse((await import("node:fs")).readFileSync(process.argv[2], "utf8"));
+    process.stdout.write((await serverQuiet(site)).why);
+  ' "$HERE/cluster/quiet.mjs" "$SITE")" || { echo "skills: FAILED: the quiet check could not run (the lines above say why)"; FAILED=1; return; }
+  if [ -n "$why" ]; then echo "skills: not now, the server isn't quiet ($why); the next sync tries again"; return; fi
+  plan="$(as_root "$KIT_NODE" "$HERE/kit/rc-skills.mjs" plan "$RC_DATA/circlechat.db" "$SITE" 2>&1)" || { echo "skills: FAILED: $plan"; FAILED=1; return; }
+  while IFS=$'\t' read -r -u 4 h vol allow; do
+    [ -n "$h" ] || continue
+    found="$(dk run --rm --network none --read-only --user 0:0 -v "$vol:/v:ro" --entrypoint /bin/sh "$HERMES_IMAGE" -c 'cd /v/home/skills 2>/dev/null || exit 0; cat .bundled_manifest 2>/dev/null; echo ---; find . -name SKILL.md' 2>&1)" ||
+      { echo "$h: skills: FAILED: could not read $vol: $found"; FAILED=1; continue; }
+    dirs="$(printf '%s\n' "$found" | "$KIT_NODE" "$HERE/kit/rc-skills.mjs" remove "$allow" 2>&1)" || { echo "$h: skills: FAILED: $dirs"; FAILED=1; continue; }
+    n="$(grep -c . <<<"$dirs" || true)"
+    if [ "$n" = 0 ]; then echo "$h: skills: no bundled skill beyond what its settings name"; continue; fi
+    if [ -n "$CHECK" ]; then echo "$h: skills: would remove $n bundled skill(s): $(tr '\n' ' ' <<<"$dirs")"; continue; fi
+    # shellcheck disable=SC2086 # one folder a line, each ./<names>/ with no space in it
+    out="$(dk run --rm --network none --read-only --user 0:0 -v "$vol:/v" --entrypoint /bin/sh "$HERMES_IMAGE" -c 'cd /v/home/skills && rm -rf -- "$@"' sh $dirs 2>&1)" ||
+      { echo "$h: skills: FAILED: could not remove them: $out"; FAILED=1; continue; }
+    echo "$h: skills: removed $n bundled skill(s) its settings don't name; its engine sees it at its next start"
+  done 4<<<"$plan"
+}
+skills_step
 
 # Agents whose model can use another agent's key.
 rc_cli agent-models </dev/null | kit warn "$SITE" || true
