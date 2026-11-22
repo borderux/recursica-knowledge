@@ -1491,6 +1491,8 @@ This is the start of phase 5: the kit installs the server that rc-sync.sh alread
 | `io.recursica.recursicachat-colima.plist`                              | The server's own Colima VM, through `kit/colima-service.sh`                 |
 | `backup.sh`, `io.recursica.recursicachat-backup.plist`                 | The nightly backup, as root, at 03:30                                       |
 | `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist`     | The monthly test restore, as root, on the 1st at 05:00                      |
+| `stack-backup.sh`, `io.recursica.stack-backup.plist`                   | The nightly backup of the stack's own files, as root, at 04:00              |
+| `stack-restore-test.sh`, `io.recursica.stack-restore-test.plist`       | Its monthly test restore, as root, on the 1st at 05:30                      |
 | `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`                   | Puts the latest commit of the server's branch into service                  |
 | `rc-clear.sh` with `rc-clear.mjs`, linked as `/usr/local/bin/rc-clear` | Empties the server's work, and keeps a copy of what it removes              |
 | `build-pdftext.sh`                                                     | Builds the PDF text reader's image for people's uploads, and records its ID |
@@ -1589,6 +1591,29 @@ running, with its state. Run `install.sh` again after a change to either setting
 - Copy each `state-<name>/` into that program's state folder.
 
 Then start the server and the programs.
+
+### The stack's own files: site.json and the workspace
+
+**`stack-backup.sh` backs up the stack's `site.json` and the agents' shared workspace each night.**
+The workspace (`~/circlechat-workspace`) holds Kev's code, the app the agents build in and the
+knowledge checkouts. CircleChat 1.x's nightly backup was their only backup, and with 1.x retired it
+no longer runs. The server's own backup holds only the server's data.
+
+- **Its own restic repository, `stack-files`,** on the same backup remote (`backup.remote` in
+  site.json), with its own retention and its own restore test. Purging or rebuilding the server's
+  repository never touches it.
+- **The server's restic password,** `/etc/recursicachat/restic.password`: one password to keep for
+  both repositories.
+- **Left out:** each `node_modules` folder, which npm makes again, and each `.env` file. A file named
+  like a key, or one that holds the value of the vault key or the restic password, stops the backup.
+  restic keeps a link as a link and never follows one.
+- **`stack-restore-test.sh`,** on the 1st of each month, restores the newest snapshot into a folder
+  only root opens. It checks that every file came back, that `site.json` passes the kit's site
+  check, that Kev and the app are there, and that no secret is in it. It posts the result in the
+  stack's Slack channel.
+
+To restore by hand: `restic restore --tag stack-files latest --target <folder>`, with
+`RESTIC_REPOSITORY=rclone:<backup.remote>/stack-files` and the server's restic password.
 
 ### Retiring CircleChat 1.x
 

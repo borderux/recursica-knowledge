@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Nightly backup of the stack's own files (site.json and the workspace), as root, at 04:00, after the
+     RecursicaChat server's backup at 03:30. The log is in /var/log/recursicachat, which only root can
+     open. No secret is in this file. -->
+<plist version="1.0"><dict>
+  <key>Label</key><string>io.recursica.stack-backup</string>
+  <key>UserName</key><string>root</string>
+  <key>WorkingDirectory</key><string>/</string>
+  <key>ProgramArguments</key><array>
+    <string>/bin/bash</string>
+    <string>/opt/recursicachat/bin/stack-backup.sh</string>
+  </array>
+  <key>EnvironmentVariables</key><dict>
+    <key>HOME</key><string>/var/root</string>
+  </dict>
+  <key>StartCalendarInterval</key><dict>
+    <key>Hour</key><integer>4</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+  <key>StandardOutPath</key><string>/var/log/recursicachat/stack-backup.log</string>
+  <key>StandardErrorPath</key><string>/var/log/recursicachat/stack-backup.log</string>
+</dict></plist>
