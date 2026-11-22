@@ -1020,6 +1020,27 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
   - Each new kit release, a release of the knowledge repo: only after an approver approves the release in Slack. "Kit releases" describes the approval. A new major version asks in Slack first.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
+- **An update that interrupts work** waits, after its 7 days, until RecursicaChat 2.0 on the computer is quiet. "Updates that interrupt work" describes the wait.
+
+#### Updates that interrupt work
+
+**Four Homebrew updates and every image pin that moves wait until RecursicaChat 2.0 on the computer is quiet.** Each one interrupts work:
+
+| Update                  | What it interrupts                                               |
+| ----------------------- | ---------------------------------------------------------------- |
+| `tailscale`             | The update job reinstalls `tailscaled`, which restarts Tailscale |
+| `ollama`                | The kit's Ollama service restarts, and the model reloads         |
+| `colima`, `lima`        | The tools that run the Docker VMs change                         |
+| An image pin that moves | `setup-host.sh --upgrade` recreates the gateway                  |
+
+**Quiet means no agent work and no one online.** The update job checks both as root, each hour (`cluster/quiet.mjs`):
+
+- **No agent work:** no message waits for an agent or sits in a running turn, in the server's database, read-only.
+- **No one online:** no web app is open. A person reaches the server through `tailscale serve`, and an open app holds a connection from `tailscaled` to the server's port.
+
+A database that can't be read counts as busy. A computer with no `recursicachat` block in site.json runs no server, and is always quiet.
+
+**The cluster's channel, `SLACK_CHANNEL_ID`, hears once about each update that waits**, with the reason, such as one web app open. The update installs at the first quiet hour, and the usual "Installed" post follows. Every other Homebrew update installs as before. The 7-day wait and the rule for CISA's list come first. A waiting image refresh runs again each hour, not each day.
 
 #### Kit releases
 
@@ -1058,7 +1079,7 @@ Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's
 2. Run `colima stop` for each VM, including each unlocked client stack's VM.
 3. Wait until `colima list` shows each VM stopped, for up to 2 minutes.
 
-**After Homebrew upgrades tailscale on a Mac, the update job runs `tailscaled install-system-daemon` again.** The tailscale daemon runs a copy of the `tailscaled` binary in `/usr/local/bin`. The upgrade replaces only Homebrew's binary. The daemon keeps the old version until the copy is made again.
+**After Homebrew upgrades tailscale on a Mac, at a quiet hour, the update job runs `tailscaled install-system-daemon` again.** The tailscale daemon runs a copy of the `tailscaled` binary in `/usr/local/bin`. The upgrade replaces only Homebrew's binary. The daemon keeps the old version until the copy is made again.
 
 **A new kit reaches the two commands that are root-owned copies of kit files.** Root owns each copy. The account that runs the command cannot change the command.
 
