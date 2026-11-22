@@ -16,6 +16,8 @@
 # 2. Swap: stop the server; the running app becomes app.prev (replacing an older app.prev); the stage
 #    is copied in, root-owned, with no write for the group or others.
 # 3. Check the copy file by file against the manifest, and that nothing in it is writable by others.
+#    Before the swap, a warning when the build creates a table rc-clear.mjs doesn't list: sudo rc-clear
+#    would refuse the database (rc-clear.mjs schema).
 # 4. Start the server; /healthz must answer ok within 3 minutes; the new start must print the same
 #    sign-in and tools lines the previous start printed, within a minute.
 # Any failure after the server stopped puts app.prev back, starts it and checks /healthz again.
@@ -115,6 +117,27 @@ if [ "$NEW" = "$OLD" ]; then
 fi
 [ -f "$WORK/manifest" ] && [ -f "$WORK/stage/REVISION" ] || before "build" "the build made no stage"
 log "built $(short "$NEW"): $(wc -l < "$WORK/manifest" | tr -d ' ') files"
+
+# rc-clear lists every table this build creates (rc-clear.mjs schema), or sudo rc-clear refuses the
+# server's database after the deploy. A warning only: the deploy goes on. The check reads the build's
+# source as the owner, with rc-clear.mjs as install.sh installed it beside this script.
+CLEAR_MJS="${RC_DEPLOY_CLEAR_MJS:-$BASE/bin/rc-clear.mjs}"
+if [ -f "$CLEAR_MJS" ] && [ -d "$WORK/stage/server/src" ]; then
+  tables="$(as_owner "$BUILD_NODE" "$CLEAR_MJS" schema "$WORK/stage/server/src" 2>>"$LOG")"
+  code=$?
+  case "$code" in
+    0) log "rc-clear lists every table $(short "$NEW") creates" ;;
+    1)
+      unlisted="$(sed -n 's/^\([A-Za-z0-9_]*\): .*/\1/p' <<<"$tables" | paste -sd, - | sed 's/,/, /g')"
+      log "warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list: $unlisted"
+      echo "rc-deploy: warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list ($unlisted), so sudo rc-clear will refuse the database until the kit lists them. Update the kit, then run its recursicachat/install.sh." ;;
+    *)
+      log "warning: the rc-clear tables check could not run on $(short "$NEW") (exit $code)"
+      echo "rc-deploy: warning: the rc-clear tables check could not run on $(short "$NEW"). $LOG says why." ;;
+  esac
+else
+  log "rc-clear tables check skipped: no $CLEAR_MJS, or no server/src in the build"
+fi
 
 # The sign-in and tools lines the previous start printed, to compare with the new start's.
 want_lines() { grep -E '^(Sign-in with Google:|Tools: )' "$1" 2>/dev/null | awk '{ k = $1 " " $2; last[k] = $0 } END { for (k in last) print last[k] }' | sort; }

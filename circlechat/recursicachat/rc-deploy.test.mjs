@@ -19,7 +19,7 @@ function script(dir, name, body) {
 }
 
 /** A server folder running OLD, a repository whose branch is at NEW, and the stand-ins. */
-function setup({ sameCommit = false } = {}) {
+function setup({ sameCommit = false, tables = "" } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-deploy-"));
   // the server's repository: two commits on its branch
   const repo = path.join(dir, "repo");
@@ -31,6 +31,11 @@ function setup({ sameCommit = false } = {}) {
   git(repo, "commit", "-q", "-m", "one");
   const old = git(repo, "rev-parse", "HEAD");
   fs.writeFileSync(path.join(repo, "server.ts"), "// two\n");
+  // the server's source, for the rc-clear tables check: the tables the new commit creates
+  if (tables) {
+    fs.mkdirSync(path.join(repo, "server", "src"), { recursive: true });
+    fs.writeFileSync(path.join(repo, "server", "src", "db.ts"), tables);
+  }
   git(repo, "add", ".");
   git(repo, "commit", "-q", "-m", "two");
   const next = git(repo, "rev-parse", "HEAD");
@@ -43,6 +48,11 @@ function setup({ sameCommit = false } = {}) {
   fs.writeFileSync(path.join(base, "app", "server.ts"), "// the running app\n");
   fs.writeFileSync(path.join(base, "server.plist"), "<plist/>\n");
   fs.writeFileSync(path.join(base, "server.log"), LINES);
+  // rc-clear.mjs, where install.sh puts it beside rc-deploy
+  if (tables) {
+    fs.mkdirSync(path.join(base, "bin"));
+    fs.copyFileSync(path.join(here, "rc-clear.mjs"), path.join(base, "bin", "rc-clear.mjs"));
+  }
 
   // the owner's Node folder: node itself, and npm and npx stand-ins
   const nodeDir = path.join(dir, "node", "bin");
@@ -148,4 +158,35 @@ test("rc-deploy reports a rollback that failed too, refuses a second run at once
     assert.equal(plain.status, 2);
     assert.match(plain.stdout, /run it with sudo/);
   }
+});
+
+// sudo rc-clear refused a database after a deploy added a table rc-clear.mjs didn't list. rc-deploy
+// now runs the same check on the build it is about to install, and warns.
+test("a build that creates a table rc-clear doesn't list: a warning before the swap, and the deploy goes on", () => {
+  const s = setup({ tables: "CREATE TABLE IF NOT EXISTS chats (id TEXT);\nCREATE TABLE IF NOT EXISTS tasks (id TEXT);\nCREATE TABLE IF NOT EXISTS example_notes (id TEXT);\n" });
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  const lines = r.out.trim().split("\n");
+  assert.equal(lines.length, 2);
+  assert.equal(lines[0], `rc-deploy: warning: ${s.short(s.next)} creates tables rc-clear.mjs doesn't list (example_notes), so sudo rc-clear will refuse the database until the kit lists them. Update the kit, then run its recursicachat/install.sh.`);
+  assert.match(lines[1], /^rc-deploy: [0-9a-f]{7} -> [0-9a-f]{7} \(example-main\) deployed and checked/);
+  assert.equal(r.app, s.next, "deployed all the same");
+  assert.match(r.log, /warning: [0-9a-f]{7} creates tables rc-clear\.mjs doesn't list: example_notes/);
+  assert.ok(r.log.indexOf("doesn't list") < r.log.indexOf("starting"), "checked before the server starts again");
+});
+
+test("a build whose tables rc-clear all lists: no warning, and the log says it was checked", () => {
+  const s = setup({ tables: "CREATE TABLE IF NOT EXISTS chats (id TEXT);\nCREATE TABLE IF NOT EXISTS task_progress (task_id TEXT);\n" });
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  assert.equal(r.out.trim().split("\n").length, 1, "one line");
+  assert.match(r.log, /rc-clear lists every table [0-9a-f]{7} creates/);
+});
+
+test("a build whose source isn't the server's: a warning that the check couldn't run, and the deploy goes on", () => {
+  const s = setup({ tables: "CREATE TABLE IF NOT EXISTS example_only (id TEXT);\n" });
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  assert.match(r.out, /^rc-deploy: warning: the rc-clear tables check could not run on [0-9a-f]{7}\. .*rc-deploy\.log says why\.$/m);
+  assert.equal(r.app, s.next);
 });
