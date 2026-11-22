@@ -7,13 +7,18 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
+import http from "node:http";
+import { spawn, spawnSync } from "node:child_process";
 import { rcServiceErrors, recursicachatErrors } from "./render.mjs";
 import { main, rcServices } from "./rc-sync.mjs";
+import { createGateway } from "../gateway/router.mjs";
+import { loadKeys } from "../gateway/keys.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ME = os.userInfo().username;
 const ENTRY = { name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token" };
+const KEY_FILE = "/opt/program/run/example-service.gateway-key";
 
 test("recursicachat.services: a name, its agents, a non-root account and a file outside the server's folders", () => {
   assert.deepEqual(rcServiceErrors({}), []);
@@ -53,7 +58,8 @@ test("recursicachat.services: a name, its agents, a non-root account and a file 
 });
 
 test("rc-sync.mjs services prints one tab-separated line for each entry", async () => {
-  assert.deepEqual(rcServices({ recursicachat: { services: [{ ...ENTRY, agents: ["designer", "writer"] }] } }), [[ENTRY.name, ENTRY.account, ENTRY.file, "designer,writer"]]);
+  assert.deepEqual(rcServices({ recursicachat: { services: [{ ...ENTRY, agents: ["designer", "writer"] }] } }), [[ENTRY.name, ENTRY.account, ENTRY.file, "designer,writer", "svc-example-service", KEY_FILE, ""]]);
+  assert.deepEqual(rcServices({ recursicachat: { services: [{ ...ENTRY, gateway: { routes: ["judge", "local-small"], max_parallel: 2, daily_requests: 10 } }] } })[0].slice(4), ["svc-example-service", KEY_FILE, "judge,local-small"], "the routes come last");
   assert.deepEqual(rcServices({}), []);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-site-"));
   const file = path.join(dir, "site.json");
@@ -61,7 +67,7 @@ test("rc-sync.mjs services prints one tab-separated line for each entry", async 
   let out = "";
   const code = await main(["services", file], { out: (t) => (out += t), log: () => {} });
   assert.equal(code, 0);
-  assert.equal(out, `${ENTRY.name}\t${ENTRY.account}\t${ENTRY.file}\tdesigner\n`);
+  assert.equal(out, `${ENTRY.name}\t${ENTRY.account}\t${ENTRY.file}\tdesigner\tsvc-example-service\t${KEY_FILE}\t\n`);
 });
 
 // The script with stand-ins: sudo runs its command; the server's Node is a small fake of the CLI's
@@ -95,7 +101,7 @@ if (cmd === "service-list") {
 } else fail("unknown " + cmd);
 `;
 
-function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, oldToken = true, state } = {}) {
+function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, oldToken = true, state, gateway, gwPort } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-"));
   const bin = path.join(dir, "bin");
   fs.mkdirSync(bin);
@@ -108,6 +114,11 @@ function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, o
     fs.chmodSync(path.join(bin, name), 0o755);
   };
   script("sudo", `exec "$@"`);
+  // The kit's Node, logging every argument list it is given.
+  const argvLog = path.join(dir, "argv.log");
+  script("kit-node", `printf '%s\\n' "$*" >> "${argvLog}"\nexec "${process.execPath}" "$@"`);
+  const gwState = path.join(dir, "gateway-state");
+  fs.mkdirSync(gwState);
   script("server-node", [`[ "$1" = -p ] && { echo 24; exit 0; }`, `exec "${process.execPath}" "${path.join(dir, "fake-cli.mjs")}" "$@"`].join("\n"));
   const run = path.join(dir, "run");
   fs.mkdirSync(run);
@@ -117,31 +128,44 @@ function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, o
   const key = path.join(dir, "vault.key");
   fs.writeFileSync(key, "vault-key-standin\n");
   const site = {
-    site: { public_host: "chat.example.ts.net" },
+    site: { public_host: "chat.example.ts.net", ...(gwPort ? { gateway_local_port: gwPort } : {}) },
+    nodes: [{ name: "m1", control: true, os: "macos", address: "host.docker.internal", servers: [{ id: "ollama", kind: "ollama", port: 11434, models: [{ id: "large", model: "example-model" }] }] }],
+    routes: { judge: ["m1/ollama/large"] },
     recursicachat: {
       app: path.join(dir, "srv", "app"),
       data: path.join(dir, "srv", "data"),
       node: path.join(bin, "server-node"),
       vault_key_file: key,
-      ...(services === null ? {} : { services: services ?? [{ ...ENTRY, account, file }] }),
+      ...(services === null ? {} : { services: services ?? [{ ...ENTRY, account, file, ...(gateway ? { gateway } : {}) }] }),
     },
   };
   const siteFile = path.join(dir, "site.json");
   fs.writeFileSync(siteFile, JSON.stringify(site));
-  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, SITE: siteFile, KIT_NODE: process.execPath, RC_SERVICE_ROOT_OWNER: folderOwner, FAKE_STATE: stateFile, FAKE_LOG: log };
-  const go = (args = [], extra = {}) => {
-    const r = spawnSync("bash", [path.join(here, "../rc-service.sh"), ...args], { env: { ...env, ...extra }, encoding: "utf8" });
-    return {
-      r,
-      out: r.stdout + r.stderr,
-      text: fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null,
-      mode: fs.existsSync(file) ? fs.statSync(file).mode & 0o777 : null,
-      calls: fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "",
-      state: fs.existsSync(stateFile) ? JSON.parse(fs.readFileSync(stateFile, "utf8")) : {},
-      files: fs.readdirSync(run),
-    };
-  };
-  return { go, file, log };
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, SITE: siteFile, KIT_NODE: path.join(bin, "kit-node"), GW_STATE: gwState, RC_SERVICE_ROOT_OWNER: folderOwner, FAKE_STATE: stateFile, FAKE_LOG: log };
+  const keyFile = path.join(run, "example-service.gateway-key");
+  const result = (r) => ({
+    r,
+    out: r.stdout + r.stderr,
+    text: fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null,
+    mode: fs.existsSync(file) ? fs.statSync(file).mode & 0o777 : null,
+    key: fs.existsSync(keyFile) ? fs.readFileSync(keyFile, "utf8") : null,
+    keyMode: fs.existsSync(keyFile) ? fs.statSync(keyFile).mode & 0o777 : null,
+    calls: fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "",
+    argv: fs.existsSync(argvLog) ? fs.readFileSync(argvLog, "utf8") : "",
+    state: fs.existsSync(stateFile) ? JSON.parse(fs.readFileSync(stateFile, "utf8")) : {},
+    files: fs.readdirSync(run).sort(),
+    recorded: loadKeys(gwState)["svc-example-service"]?.sha256 ?? null,
+  });
+  // The script while a gateway runs in this process: spawned, so the gateway can answer.
+  const goAsync = (args = [], extra = {}) => new Promise((resolve) => {
+    const c = spawn("bash", [path.join(here, "../rc-service.sh"), ...args], { env: { ...env, ...extra } });
+    let stdout = "", stderr = "";
+    c.stdout.on("data", (d) => (stdout += d));
+    c.stderr.on("data", (d) => (stderr += d));
+    c.on("close", (status) => resolve(result({ status, stdout, stderr })));
+  });
+  const go = (args = [], extra = {}) => result(spawnSync("bash", [path.join(here, "../rc-service.sh"), ...args], { env: { ...env, ...extra }, encoding: "utf8" }));
+  return { go, goAsync, file, log, gwState, keyFile };
 }
 
 test("rc-service.sh makes the service, drives its agents, and writes its token, mode 400, never printing it", () => {
@@ -222,4 +246,124 @@ test("rc-service.sh does nothing without services in site.json, and refuses a ba
   const bad = setup().go(["--what"]);
   assert.equal(bad.r.status, 2);
   assert.match(bad.out, /usage: rc-service.sh/);
+});
+
+// A service's gateway block: its own gateway key, svc-<name>, in <name>.gateway-key beside the token.
+const JUDGE = { routes: ["judge"], max_parallel: 2, daily_requests: 10 };
+const SITE = { site: { gateway_local_port: 4005 }, nodes: [{ name: "m1", servers: [{ id: "ollama", kind: "ollama", port: 11434, models: [{ id: "large" }] }] }], routes: { judge: ["m1/ollama/large"] } };
+
+test("recursicachat.services: a gateway block names local routes and two caps, and nothing else", () => {
+  const rc = (gateway) => ({ services: [{ ...ENTRY, gateway }] });
+  assert.deepEqual(rcServiceErrors(rc(JUDGE), SITE), []);
+  assert.ok(rcServiceErrors(rc({ ...JUDGE, extra: 1 }), SITE).some((e) => /gateway\.extra is not a setting/.test(e)));
+  assert.ok(rcServiceErrors(rc({ ...JUDGE, routes: ["other"] }), SITE).some((e) => /"other" is not one of site\.json's routes/.test(e)));
+  assert.ok(rcServiceErrors(rc(JUDGE), { ...SITE, routes: { judge: ["m1/ollama/large", "anthropic/claude-sonnet-5-5"] } }).some((e) => /cluster models only/.test(e)));
+  assert.ok(rcServiceErrors(rc({ ...JUDGE, max_parallel: 0 }), SITE).some((e) => /max_parallel must be a whole number/.test(e)));
+  assert.ok(rcServiceErrors(rc({ ...JUDGE, daily_requests: -1 }), SITE).some((e) => /daily_requests must be a whole number/.test(e)));
+  assert.ok(recursicachatErrors({ ...SITE, recursicachat: rc({ ...JUDGE, max_parallel: 100 }) }).some((e) => /max_parallel/.test(e)), "the site check runs it");
+});
+
+// A gateway in this process, from the same key records the script writes: GET /v1/models lists the
+// routes gateway.json gives svc-example-service.
+async function liveGateway(gwState, routes = ["judge"]) {
+  const config = { agents: routes ? { "svc-example-service": { routes, cloud: false, key: null, service: true, max_parallel: 2, daily_requests: 10 } } : {}, routes: { judge: { local: true } } };
+  const db = { runTasks: async () => [], onTask: async () => false, setting: async () => null, botToken: async () => null };
+  const server = http.createServer(createGateway({ config, db, litellm: "http://127.0.0.1:9", stateDir: gwState, spendLog: null }));
+  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  return server;
+}
+const sha = (k) => crypto.createHash("sha256").update(k).digest("hex");
+const models = async (port, key) => fetch(`http://127.0.0.1:${port}/v1/models`, { headers: { authorization: `Bearer ${key}` } });
+
+test("rc-service.sh issues the service's gateway key into a file only its account reads, checked on the gateway, never printing it or passing it as an argument", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-gw-"));
+  const gwState = path.join(dir, "state");
+  fs.mkdirSync(gwState);
+  // The port is known only once the gateway listens, so the gateway reads the key records the
+  // script's state folder holds: the test points GW_STATE at the gateway's folder.
+  const server = await liveGateway(gwState);
+  const port = server.address().port;
+  try {
+    const { goAsync, keyFile } = setup({ gateway: JUDGE, gwPort: port });
+    const first = await goAsync([], { GW_STATE: gwState });
+    assert.equal(first.r.status, 0, first.out);
+    const key = first.key.trim();
+    assert.match(key, /^ccg_[0-9a-f]{48}$/);
+    assert.equal(first.keyMode, 0o400);
+    assert.equal(fs.statSync(keyFile).uid, os.userInfo().uid, "the entry's account owns the key file");
+    assert.equal(loadKeys(gwState)["svc-example-service"].sha256, sha(key), "the gateway records the key");
+    assert.match(first.out, /a new gateway key for svc-example-service in .*example-service\.gateway-key \(no gateway key file yet\)/);
+    assert.ok(!first.out.includes(key), "the key is never in the output");
+    assert.ok(!first.argv.includes(key) && !first.calls.includes(key), "the key is never an argument");
+    assert.match(first.argv, /rc-gateway-key\.mjs issue \S+ svc-example-service http:\/\/127\.0\.0\.1:\d+\/v1 judge judge/);
+    assert.deepEqual(first.files, ["example-service.gateway-key", "token"], "no temporary file is left");
+    const listed = await (await models(port, key)).json();
+    assert.deepEqual(listed.data.map((m) => m.id), ["judge"]);
+
+    // again: the file holds the recorded key, so the key stays
+    const again = await goAsync([], { GW_STATE: gwState });
+    assert.equal(again.r.status, 0, again.out);
+    assert.match(again.out, /the gateway key in .* is current/);
+    assert.equal(again.key.trim(), key);
+    assert.equal((again.argv.match(/ issue /g) ?? []).length, 1, "a rerun issues no new key");
+
+    // --rotate: a new key, and the old one stops working at once
+    const rotated = await goAsync(["--rotate", "example-service"], { GW_STATE: gwState });
+    assert.equal(rotated.r.status, 0, rotated.out);
+    assert.match(rotated.out, /a new gateway key, as asked/);
+    assert.notEqual(rotated.key.trim(), key);
+    assert.equal((await models(port, key)).status, 401);
+    assert.equal((await models(port, rotated.key.trim())).status, 200);
+    assert.ok(!rotated.out.includes(rotated.key.trim()));
+
+    // a file that holds another key: a new key
+    fs.chmodSync(keyFile, 0o600);
+    fs.writeFileSync(keyFile, "ccg_" + "0".repeat(48) + "\n");
+    const replaced = await goAsync([], { GW_STATE: gwState });
+    assert.equal(replaced.r.status, 0, replaced.out);
+    assert.match(replaced.out, /the file holds no key the gateway knows/);
+    assert.equal(loadKeys(gwState)["svc-example-service"].sha256, sha(replaced.key.trim()));
+  } finally {
+    server.close();
+    server.closeAllConnections?.();
+  }
+});
+
+test("rc-service.sh revokes a key the gateway does not serve, and keeps no file", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-gw-"));
+  const gwState = path.join(dir, "state");
+  fs.mkdirSync(gwState);
+  // A gateway started before site.json named the service: no route for svc-example-service.
+  const server = await liveGateway(gwState, null);
+  try {
+    const { goAsync } = setup({ gateway: JUDGE, gwPort: server.address().port });
+    const r = await goAsync([], { GW_STATE: gwState });
+    assert.equal(r.r.status, 1);
+    assert.match(r.out, /failed the check, and is revoked/);
+    assert.match(r.out, /Rerun setup-host\.sh/);
+    assert.match(r.out, /no new gateway key for svc-example-service/);
+    assert.equal(r.key, null);
+    assert.equal(loadKeys(gwState)["svc-example-service"], undefined);
+    assert.deepEqual(r.files, ["token"], "no temporary file is left");
+    assert.doesNotMatch(r.out, /ccg_[0-9a-f]{48}/, "no key in the output");
+  } finally {
+    server.close();
+    server.closeAllConnections?.();
+  }
+});
+
+test("rc-service.sh revokes the key and removes its file once the gateway block is gone", () => {
+  const { go, gwState, keyFile } = setup();
+  const keys = { "svc-example-service": { sha256: sha("ccg_" + "1".repeat(48)), issued: "2026-01-01T00:00:00.000Z" }, designer: { sha256: sha("other"), issued: "2026-01-01T00:00:00.000Z" } };
+  fs.writeFileSync(path.join(gwState, "agent-keys.json"), JSON.stringify(keys));
+  fs.writeFileSync(keyFile, "ccg_" + "1".repeat(48) + "\n");
+  const r = go();
+  assert.equal(r.r.status, 0, r.out);
+  assert.match(r.out, /no gateway block in site\.json, so the gateway key of svc-example-service is revoked/);
+  assert.match(r.out, /removed .*example-service\.gateway-key/);
+  assert.equal(r.key, null);
+  assert.equal(r.recorded, null);
+  assert.equal(loadKeys(gwState).designer.sha256, sha("other"), "another handle's key stays");
+  const again = go();
+  assert.doesNotMatch(again.out, /revoked|removed/, "nothing to do the second time");
 });

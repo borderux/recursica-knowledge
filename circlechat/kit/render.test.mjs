@@ -72,6 +72,54 @@ test("each agent on the RecursicaChat 2.0 server gets a gateway handle of its ow
   assert.equal(g.agents["rc-betty"], undefined, "only agents with a recursicachat block");
 });
 
+// A program in recursicachat.services with a gateway block: svc-<name> in gateway.json, with only its
+// routes, no cloud model, and its two caps.
+function withJudge() {
+  const s = clone();
+  s.site.gateway_local_port = 4005;
+  s.site.timezone = "America/New_York";
+  s.routes.judge = ["machine-2/ollama/large-local"];
+  s.recursicachat = { services: [{ name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token", gateway: { routes: ["judge"], max_parallel: 4, daily_requests: 5000 } }] };
+  return s;
+}
+
+test("a service's gateway block gives gateway.json the handle svc-<name>, its routes, its caps and the cluster's time zone", () => {
+  const s = withJudge();
+  assert.deepEqual(validate(s), []);
+  const g = render(s).gateway;
+  assert.deepEqual(g.agents["svc-example-service"], { routes: ["judge"], cloud: false, key: null, service: true, max_parallel: 4, daily_requests: 5000 });
+  assert.equal(g.timezone, "America/New_York");
+  assert.deepEqual(g.agents.betty, render(example).gateway.agents.betty, "an agent's entry is unchanged, with no caps");
+  assert.equal(render(example).gateway.timezone, undefined, "a stack with no service gateway keeps gateway.json as it was");
+  delete s.site.timezone;
+  assert.equal(render(s).gateway.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone, "without site.timezone, the control computer's own time zone");
+  const none = withJudge();
+  delete none.recursicachat.services[0].gateway;
+  assert.equal(render(none).gateway.agents["svc-example-service"], undefined, "a service without a gateway block gets no handle");
+});
+
+test("a service's gateway block takes local routes only, whole numbers in bounds, and no other setting", () => {
+  const bad = (change, re) => {
+    const s = withJudge();
+    change(s, s.recursicachat.services[0]);
+    assert.match(validate(s).join("\n"), re);
+  };
+  bad((s, e) => { e.gateway.routes = ["no-such-route"]; }, /"no-such-route" is not one of site\.json's routes/);
+  bad((s, e) => { e.gateway.routes = ["machine-2/ollama/large-local"]; }, /is not one of site\.json's routes/);
+  bad((s, e) => { delete s.model_keys; s.routes.judge.push("anthropic/claude-sonnet-5-5"); }, /route judge must list cluster models only, never a cloud model/);
+  bad((s, e) => { e.gateway.routes = []; }, /gateway\.routes must list at least one/);
+  bad((s, e) => { e.gateway.routes = ["judge", "judge"]; }, /lists a route twice/);
+  for (const v of [0, 65, 2.5, "4", undefined]) bad((s, e) => { e.gateway.max_parallel = v; }, /max_parallel must be a whole number from 1 to 64/);
+  for (const v of [0, 1_000_001, 1.5, "5000", undefined]) bad((s, e) => { e.gateway.daily_requests = v; }, /daily_requests must be a whole number from 1 to 1000000/);
+  bad((s, e) => { e.gateway.cloud = true; }, /gateway\.cloud is not a setting/);
+  bad((s, e) => { e.gateway = ["judge"]; }, /gateway must be an object/);
+  bad((s) => { delete s.site.gateway_local_port; }, /gateway needs site\.gateway_local_port/);
+  bad((s, e) => { e.name = "a".repeat(37); }, /at most 36 characters with a gateway block/);
+  bad((s) => { s.agents["svc-example"] = { routes: ["judge"] }; }, /handles starting with svc- belong to the programs/);
+  bad((s) => { s.model_keys.default.agents = ["svc-example-service"]; }, /starts with svc-/);
+  bad((s) => { s.recursicachat.sessions = [{ email: "person-a@example.com", account: "_program", file: "/opt/program/run/example-service.gateway-key" }]; }, /gateway key file .* is another entry's file/);
+});
+
 test("a stack with no model_keys block keeps working: its cloud route model becomes the default key", () => {
   const s = clone();
   delete s.model_keys;

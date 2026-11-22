@@ -36,7 +36,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { RC_DEFAULTS, rcAgents, rcHandle, rcProvider, recursicachatErrors } from "./render.mjs";
+import { RC_DEFAULTS, rcAgents, rcHandle, rcProvider, recursicachatErrors, svcHandle, svcKeyFile } from "./render.mjs";
 
 const KIT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 // The server's CLI refuses longer instructions (MAX_INSTRUCTIONS in the server's managed.ts).
@@ -64,9 +64,11 @@ export function rcSessions(site) {
 }
 
 // Each service circlechat/rc-service.sh sets up: the name, the account, the file and the agents it
-// drives, comma-separated.
+// drives, comma-separated; then its gateway handle, the file for its gateway key, and the routes of
+// its gateway block, comma-separated, last, so a service with no block ends its line with nothing.
 export function rcServices(site) {
-  return (site.recursicachat?.services ?? []).map((s) => [s.name, s.account, s.file, (s.agents ?? []).join(",")]);
+  return (site.recursicachat?.services ?? []).map((s) => [s.name, s.account, s.file, (s.agents ?? []).join(","),
+    svcHandle(s.name), svcKeyFile(s), (s.gateway?.routes ?? []).join(",")]);
 }
 
 // What the root step needs for each agent: the handle, the gateway handle, the provider, the model

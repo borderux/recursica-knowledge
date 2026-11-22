@@ -190,6 +190,19 @@ export function rcAgents(site) {
   return Object.entries(site.agents && typeof site.agents === "object" ? site.agents : {})
     .filter(([, a]) => a && typeof a === "object" && a.recursicachat !== undefined).map(([h]) => h);
 }
+// A program in recursicachat.services with a gateway block gets a gateway handle of its own,
+// svc-<name>, with only its block's routes, no cloud model, and the block's two caps: requests at
+// once (max_parallel) and requests per day in the cluster's time zone (daily_requests). The router
+// enforces both (gateway/router.mjs), and circlechat/rc-service.sh issues the handle's key.
+export const SVC_PREFIX = "svc-";
+export const svcHandle = (name) => `${SVC_PREFIX}${name}`;
+// The file that holds the service's gateway key: beside the service's token file, in the same folder
+// that belongs to root, and like the token file, the service account's own, mode 400.
+export const svcKeyFile = (s) => `${String(s.file).replace(/\/[^/]*$/, "")}/${s.name}.gateway-key`;
+export function gatewayServices(site) {
+  const list = site.recursicachat?.services;
+  return (Array.isArray(list) ? list : []).filter((s) => s && typeof s === "object" && s.gateway !== undefined);
+}
 
 export function gatewayConfig(site) {
   const keys = modelKeys(site);
@@ -201,9 +214,14 @@ export function gatewayConfig(site) {
   const agents = Object.fromEntries([
     ...[...handles].map((h) => [h, entry(h)]),
     ...rcAgents(site).map((h) => [rcHandle(h), entry(h)]),
+    ...gatewayServices(site).map((s) => [svcHandle(s.name), { routes: s.gateway.routes, cloud: false, key: null, service: true, max_parallel: s.gateway.max_parallel, daily_requests: s.gateway.daily_requests }]),
   ].sort(([a], [b]) => a.localeCompare(b)));
+  const services = gatewayServices(site).length > 0;
   return {
     agents,
+    // The day a service's daily_requests counts: midnight to midnight in the cluster's time zone,
+    // site.timezone, or the control computer's own time zone, as for the cluster's reboot times.
+    ...(services ? { timezone: site.site?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone } : {}),
     fallback: { routes: [], cloud: false, key: null },
     keys: Object.fromEntries(Object.entries(keys).map(([name, k]) => [name, { model: `key/${name}`, provider: k.provider }])),
     // Each route, and each cluster model, which an agent may also name as a route of its own.
@@ -558,7 +576,34 @@ export function rcSessionErrors(rc) {
 // land in rc-clear.sh, a root script, so each shape allows no space, quote, colon or dollar sign.
 const RC_SERVICE_NAME = /^[a-z][a-z0-9-]{1,39}$/;
 const RC_SERVICE_JOB = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
-export function rcServiceErrors(rc) {
+// The bounds of a service's gateway caps: requests at once, and requests per day.
+export const SVC_MAX_PARALLEL = 64;
+export const SVC_MAX_DAILY = 1_000_000;
+// A service's gateway block: { "routes": [...], "max_parallel": <int>, "daily_requests": <int> }.
+// Each route is one of site.json's routes whose every model is a cluster model, so the service's key
+// never reaches a cloud model.
+export function svcGatewayErrors(s, at, site = {}) {
+  const g = s.gateway;
+  if (!g || typeof g !== "object" || Array.isArray(g)) return [`${at}.gateway must be an object: routes, max_parallel and daily_requests`];
+  const errs = [];
+  for (const k of Object.keys(g)) if (!["routes", "max_parallel", "daily_requests"].includes(k)) errs.push(`${at}.gateway.${k} is not a setting: routes, max_parallel and daily_requests`);
+  if (typeof s.name === "string" && svcHandle(s.name).length > 40) errs.push(`${at}.name must be at most 36 characters with a gateway block, for the gateway handle ${svcHandle(s.name)}`);
+  const cluster = clusterModels(site);
+  if (!Array.isArray(g.routes) || !g.routes.length) errs.push(`${at}.gateway.routes must list at least one of site.json's routes`);
+  else {
+    if (new Set(g.routes).size !== g.routes.length) errs.push(`${at}.gateway.routes lists a route twice`);
+    for (const r of g.routes) {
+      const backends = typeof r === "string" && Object.hasOwn(site.routes ?? {}, r) ? site.routes[r] : null;
+      if (!Array.isArray(backends)) errs.push(`${at}.gateway.routes: ${JSON.stringify(r)} is not one of site.json's routes`);
+      else if (!backends.length || backends.some((b) => !cluster.has(b))) errs.push(`${at}.gateway.routes: route ${r} must list cluster models only, never a cloud model`);
+    }
+  }
+  if (!Number.isInteger(g.max_parallel) || g.max_parallel < 1 || g.max_parallel > SVC_MAX_PARALLEL) errs.push(`${at}.gateway.max_parallel must be a whole number from 1 to ${SVC_MAX_PARALLEL}: the requests the service may have at once`);
+  if (!Number.isInteger(g.daily_requests) || g.daily_requests < 1 || g.daily_requests > SVC_MAX_DAILY) errs.push(`${at}.gateway.daily_requests must be a whole number from 1 to ${SVC_MAX_DAILY}: the requests the service may send each day`);
+  if (site.site?.gateway_local_port === undefined) errs.push(`${at}.gateway needs site.gateway_local_port: the service reaches the gateway there`);
+  return errs;
+}
+export function rcServiceErrors(rc, site = {}) {
   if (rc.services === undefined) return [];
   if (!Array.isArray(rc.services)) return ["recursicachat.services must be a list"];
   const errs = [];
@@ -569,7 +614,8 @@ export function rcServiceErrors(rc) {
   rc.services.forEach((s, i) => {
     const at = `recursicachat.services[${i}]`;
     if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
-    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job and state`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state and gateway`);
+    if (s.gateway !== undefined) errs.push(...svcGatewayErrors(s, at, site));
     if (s.job !== undefined) {
       if (typeof s.job !== "string" || !RC_SERVICE_JOB.test(s.job)) errs.push(`${at}.job must be the program's launchd job, such as io.example.program`);
       else if (s.job.startsWith("io.recursica.recursicachat")) errs.push(`${at}.job must be the program's launchd job, not one of the server's own`);
@@ -595,6 +641,10 @@ export function rcServiceErrors(rc) {
       if (serverDirs.some((d) => s.file.startsWith(d))) errs.push(`${at}.file must be outside the server's folders`);
       if (files.has(s.file)) errs.push(`${at}.file is listed twice`);
       files.add(s.file);
+      if (s.gateway !== undefined && typeof s.name === "string") {
+        if (files.has(svcKeyFile(s))) errs.push(`${at}: the gateway key file ${svcKeyFile(s)} is another entry's file`);
+        files.add(svcKeyFile(s));
+      }
     }
   });
   return errs;
@@ -607,9 +657,12 @@ export function recursicachatErrors(site = {}) {
   // rc-<handle> belongs to an agent on the RecursicaChat 2.0 server, never to a 1.x agent.
   for (const h of Object.keys(site.agents && typeof site.agents === "object" ? site.agents : {})) {
     if (h.startsWith(RC_PREFIX)) errs.push(`agents.${h}: handles starting with ${RC_PREFIX} belong to the RecursicaChat 2.0 server's agents. Rename the agent`);
+    // svc-<name> belongs to a program in recursicachat.services.
+    if (h.startsWith(SVC_PREFIX)) errs.push(`agents.${h}: handles starting with ${SVC_PREFIX} belong to the programs in recursicachat.services. Rename the agent`);
   }
   for (const [name, k] of Object.entries(site.model_keys ?? {})) {
     for (const h of Array.isArray(k?.agents) ? k.agents : []) if (String(h).startsWith(RC_PREFIX)) errs.push(`model_keys.${name}.agents: ${h} starts with ${RC_PREFIX}, which belongs to the RecursicaChat 2.0 server's agents. Name the agent itself`);
+    for (const h of Array.isArray(k?.agents) ? k.agents : []) if (String(h).startsWith(SVC_PREFIX)) errs.push(`model_keys.${name}.agents: ${h} starts with ${SVC_PREFIX}, which belongs to the programs in recursicachat.services, and a program's gateway key never reaches a cloud model`);
   }
   if (rc === undefined) {
     if (synced.length) errs.push(`agents.${synced[0][0]}.recursicachat needs a recursicachat block: the server's folders and the vault key file`);
@@ -625,7 +678,7 @@ export function recursicachatErrors(site = {}) {
   if (typeof rc.node === "string" && serverDir && (rc.node + "/").startsWith(serverDir + "/")) errs.push(`recursicachat.node must be a Node outside the server's folder (${serverDir}), such as the owner's Node 24`);
   if (synced.length && site.site?.gateway_local_port === undefined) errs.push("recursicachat needs site.gateway_local_port: the server reaches each agent's gateway handle there");
   errs.push(...rcSessionErrors(rc));
-  errs.push(...rcServiceErrors(rc));
+  errs.push(...rcServiceErrors(rc, site));
   for (const [h, a] of synced) {
     const s = a.recursicachat;
     const at = `agents.${h}.recursicachat`;

@@ -19,9 +19,18 @@
 // port for port jobs on other computers, which setup-host.sh publishes only on the control
 // computer's Tailscale address. On port 4001 every request needs a task key, /health included.
 //
+// A program's key (svc-<name>, from recursicachat.services in site.json) has two caps in gateway.json:
+// max_parallel, the requests the key may have in flight at once, and daily_requests, the requests the
+// key may send each day, midnight to midnight in the cluster's time zone (gateway.json's timezone).
+// A request past either cap gets 429 at once, with a JSON error that names the cap. A key without
+// caps, such as every agent's, has no such limit. A program's key reaches only its own routes, never a
+// cloud model, and never a task: each of its requests is outside a task, so cluster only.
+//
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
-// request and first cluster answer) and notified.json. The spend log gets one line per request:
+// request and first cluster answer), notified.json and service-counts.json (each capped key's day
+// and the requests it sent that day, written at each request, so a restart keeps the count). The
+// spend log gets one line per request:
 // the time, the task, the agent, the key's name, the route, the server and the model that
 // answered, the status and the token counts. The log holds no prompt and no answer.
 import dns from "node:dns/promises";
@@ -88,6 +97,46 @@ function jsonFile(file, fallback) {
   };
 }
 
+// The day a moment falls on in a time zone, as YYYY-MM-DD. An unknown time zone counts in UTC.
+export function dayIn(ms, timeZone = "UTC") {
+  let f;
+  try { f = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }); } catch { f = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", year: "numeric", month: "2-digit", day: "2-digit" }); }
+  const p = Object.fromEntries(f.formatToParts(new Date(ms)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+// The caps of each key that has some (gateway.json's max_parallel and daily_requests): the requests
+// in flight, kept in memory, and each day's count, kept in <state>/service-counts.json. The count is
+// written before the request goes on, so a restart never forgets a request.
+export function createCaps({ stateDir, timeZone = "UTC", now = Date.now }) {
+  const file = path.join(stateDir, "service-counts.json");
+  let counts = {};
+  try { counts = JSON.parse(fs.readFileSync(file, "utf8")) ?? {}; } catch { /* no count yet */ }
+  const inFlight = new Map();
+  const save = () => { fs.writeFileSync(`${file}.tmp`, JSON.stringify(counts)); fs.renameSync(`${file}.tmp`, file); };
+  return {
+    // { ok: true, release } for a request within the caps, or { ok: false, type, message }.
+    take(handle, { max_parallel: parallel, daily_requests: daily }) {
+      const day = dayIn(now(), timeZone);
+      const used = counts[handle]?.day === day ? counts[handle].requests : 0;
+      if (Number.isInteger(daily) && used >= daily) {
+        return { ok: false, type: "daily_limit", message: `${handle} has sent its ${daily} requests for ${day} (${timeZone}). The count starts again at midnight in ${timeZone}.` };
+      }
+      const busy = inFlight.get(handle) ?? 0;
+      if (Number.isInteger(parallel) && busy >= parallel) {
+        return { ok: false, type: "too_many_at_once", retryAfter: 1, message: `${handle} already has ${busy} requests in flight, its max_parallel. Send the next one when one finishes.` };
+      }
+      if (Number.isInteger(daily)) { counts[handle] = { day, requests: used + 1 }; save(); }
+      inFlight.set(handle, busy + 1);
+      let done = false;
+      return { ok: true, release() { if (done) return; done = true; inFlight.set(handle, inFlight.get(handle) - 1); } };
+    },
+    inFlight: (handle) => inFlight.get(handle) ?? 0,
+    count: (handle) => (counts[handle]?.day === dayIn(now(), timeZone) ? counts[handle].requests : 0),
+  };
+}
+const capped = (agent) => agent?.max_parallel !== undefined || agent?.daily_requests !== undefined;
+
 // --- the gateway ---------------------------------------------------------------------------------
 // createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, apiBase, now, allow, refreshAllow })
 //   db          { runTasks(handle) -> the task id of each of the agent's running turns (null for a
@@ -115,6 +164,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   const secret = taskSecret(stateDir);
   const clocks = jsonFile(path.join(stateDir, "clocks.json"), {});
   const notified = jsonFile(path.join(stateDir, "notified.json"), {});
+  const caps = createCaps({ stateDir, timeZone: config.timezone ?? "UTC", now });
   const settings = new Map();
   let keys = {}, keysAt = null;
   const keyFile = path.join(stateDir, "agent-keys.json");
@@ -207,8 +257,8 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     up.on("error", () => res.destroy());
   }
 
-  const fail = (res, code, type, message) => {
-    res.writeHead(code, { "content-type": "application/json" });
+  const fail = (res, code, type, message, headers = {}) => {
+    res.writeHead(code, { "content-type": "application/json", ...headers });
     res.end(JSON.stringify({ error: { type, message } }));
   };
   const wait = (ms, signal) => new Promise((r) => { const t = setTimeout(r, Math.max(0, ms)); signal.addEventListener("abort", () => { clearTimeout(t); r(); }, { once: true }); });
@@ -228,11 +278,22 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
       route = routes[0];
     }
     if (!route) return fail(res, 403, "no_route", `Agent ${who.agent} has no route in site.json.`);
+    // A key with caps: refused at once past either cap, and counted otherwise. The slot is free
+    // again when the answer ends or the caller goes.
+    if (capped(agent)) {
+      const slot = caps.take(who.agent, agent);
+      if (!slot.ok) {
+        log({ task: null, agent: who.agent, route, key: null, model: null, status: 429, reason: slot.type });
+        return fail(res, 429, slot.type, slot.message, slot.retryAfter ? { "retry-after": String(slot.retryAfter) } : {});
+      }
+      res.once("close", slot.release);
+    }
     // The request's task: the task key's task, or the task of the agent's running turn. With more
     // than one running turn the router cannot tell which task the request belongs to, so the
-    // strictest setting among those turns decides (strictest()).
+    // strictest setting among those turns decides (strictest()). A program's key has no task.
     let tasks = [who.task];
-    if (!who.task) { try { tasks = [...new Set(await db.runTasks(who.agent))]; } catch { tasks = [null]; } }
+    if (agent.service) tasks = [null];
+    else if (!who.task) { try { tasks = [...new Set(await db.runTasks(who.agent))]; } catch { tasks = [null]; } }
     if (tasks.length === 0) tasks = [null];
     const unsure = tasks.length > 1;
     const view = { cloud: agent.cloud !== false, key: agent.key ?? null, local: Boolean(config.routes?.[route]?.local) };
@@ -310,6 +371,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
       if (pathname === "/health") { res.writeHead(200, { "content-type": "application/json" }); return res.end('{"ok":true}'); }
       if (req.method === "POST" && pathname === "/task-key") {
         if (who.task) return fail(res, 403, "agent_key_needed", "Only an agent key gets a task key.");
+        if (config.agents?.[who.agent]?.service) return fail(res, 403, "agent_key_needed", "A program's key gets no task key: only an agent key does.");
         let raw = ""; for await (const c of req) { raw += c; if (raw.length > 10_000) break; }
         let asked = null; try { asked = raw.trim() ? JSON.parse(raw).task ?? null : null; } catch { return fail(res, 400, "bad_json", "The request body is not JSON."); }
         let task = null;
