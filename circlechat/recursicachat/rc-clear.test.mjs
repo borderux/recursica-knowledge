@@ -10,7 +10,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { DatabaseSync } from "node:sqlite";
-import { WORK, KEPT, Refusal, refusals, summary, clear, copy, main } from "./rc-clear.mjs";
+import { WORK, KEPT, Refusal, refusals, summary, clear, copy, main, HERMES_HISTORY, HERMES_KEPT, hermesVolume, hermesVolumes, unlisted } from "./rc-clear.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -545,4 +545,101 @@ test("rc-clear checks its setup first, refuses a second run at once, waits for r
     assert.equal(plain.status, 2);
     assert.match(plain.stdout, /run it with sudo/);
   }
+});
+
+// ---- Hermes history ----
+// Each Hermes agent's home is in a Docker volume. rc-clear empties its history with the engine
+// stopped, and leaves its settings, skills, memories and runtime files. A stand-in docker maps a
+// volume to a folder and runs each container's script on it.
+
+test("the Hermes lists: history and kept never overlap, and state.db goes with its -wal and -shm", () => {
+  for (const h of HERMES_HISTORY) assert.ok(!HERMES_KEPT.includes(h), h);
+  for (const f of ["state.db", "state.db-wal", "state.db-shm"]) assert.ok(HERMES_HISTORY.includes(f), f);
+  for (const k of [".env", "config.yaml", "SOUL.md", "skills", "memories", "state", ".curator_backups"]) assert.ok(HERMES_KEPT.includes(k), k);
+  assert.deepEqual(unlisted([".env", "state.db", "sessions", "runtime", "gateway.pid", "gateway_state.json", "recordings", ""]), ["recordings"]);
+  assert.equal(hermesVolume("a_Xy7Example_1"), "cc-axy7example1-hermes");
+});
+
+test("the Hermes volumes: each agent that runs Hermes in a Docker sandbox, archived ones too; none on a server without the columns", () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec("CREATE TABLE agents (id TEXT PRIMARY KEY, handle TEXT, engine TEXT, sandbox TEXT, archived INTEGER NOT NULL DEFAULT 0)");
+  db.exec("INSERT INTO agents VALUES ('a_2', 'writer', 'hermes', 'docker', 0), ('a_1', 'old', 'hermes', 'docker', 1), ('a_3', 'local', 'hermes', 'local', 0), ('a_4', 'coder', 'codex', 'docker', 0)");
+  assert.deepEqual(hermesVolumes(db), ["cc-a1-hermes", "cc-a2-hermes"]);
+  const old = new DatabaseSync(":memory:");
+  old.exec("CREATE TABLE agents (id TEXT PRIMARY KEY, handle TEXT)");
+  assert.deepEqual(hermesVolumes(old), []);
+});
+
+const HERMES_SCHEMA = SCHEMA.replace("CREATE TABLE agents (id TEXT PRIMARY KEY, handle TEXT NOT NULL);", "CREATE TABLE agents (id TEXT PRIMARY KEY, handle TEXT NOT NULL, engine TEXT NOT NULL DEFAULT 'hermes', sandbox TEXT NOT NULL DEFAULT 'docker');");
+/** setup() with a Hermes agent: its volume as a folder, and a stand-in docker that runs each container's script on it. */
+function hermesSetup() {
+  const s = setup({ schema: HERMES_SCHEMA });
+  const vols = path.join(s.dir, "volumes");
+  const home = path.join(vols, "cc-a1-hermes", "home");
+  const files = {
+    "state.db": "sessions", "state.db-wal": "wal", "sessions/s1.json": "{}", "logs/agent.log": "a turn",
+    "runtime/active_sessions.json": "[]", "runtime/other.json": "{}", "cron/output/run.txt": "ran",
+    "config.yaml": "model: local", ".env": "OPENAI_API_KEY=none", "SOUL.md": "persona", "skills/mine/SKILL.md": "# mine",
+    "memories/.keep": "", "state/gateway.heartbeat": "1", "gateway.pid": "42", "recordings/r.txt": "unknown",
+  };
+  for (const [f, text] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(home, f)), { recursive: true });
+    fs.writeFileSync(path.join(home, f), text);
+  }
+  const bin = path.join(s.dir, "docker-bin");
+  fs.mkdirSync(bin);
+  const calls = path.join(s.dir, "docker.log");
+  const running = path.join(s.dir, "running");
+  fs.writeFileSync(path.join(bin, "docker"), [
+    "#!/usr/bin/env bash",
+    'case "$1" in',
+    "  version) exit 0 ;;",
+    `  volume) [ "$2" = inspect ] && [ -d "${vols}/$3" ]; exit ;;`,
+    `  ps) [ -f "${running}" ] && cat "${running}"; exit 0 ;;`,
+    "  run)",
+    '    shift; mount=""; script=""; args=()',
+    '    while [ $# -gt 0 ]; do case "$1" in -v) mount="$2"; shift 2 ;; -c) script="$2"; shift 2; args=("$@"); break ;; --entrypoint|--user|--network) shift 2 ;; *) shift ;; esac; done',
+    `    echo "run $mount" >> "${calls}"`,
+    `    dir="${vols}/\${mount%%:*}"`,
+    '    script="${script//\\/v\\//$dir/}"',
+    '    exec /bin/sh -c "$script" "${args[@]}" ;;',
+    "esac",
+  ].join("\n"));
+  fs.chmodSync(path.join(bin, "docker"), 0o755);
+  const run = (extra = {}) => s.run({ RC_CLEAR_DOCKER: path.join(bin, "docker"), ...extra });
+  return { ...s, run, home, calls, running };
+}
+const exists = (home, f) => fs.existsSync(path.join(home, f));
+
+test("rc-clear empties each Hermes agent's history, copied aside first, with the engine stopped; its settings, skills, memories and runtime files stay", () => {
+  const s = hermesSetup();
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  const copyDir = path.join(s.copies, r.copies[0]);
+  assert.equal(r.out.trim(), `rc-clear: emptied ${WORK_LINE}, and the Hermes history of 1 agent; kept ${KEPT_LINE}. The server answers ok; started example-program. The copy is ${copyDir}.`);
+  // the copy: exactly the history
+  const listed = spawnSync("tar", ["-tf", path.join(copyDir, "hermes-cc-a1-hermes.tar")], { encoding: "utf8" }).stdout.split("\n").filter((l) => l && !l.endsWith("/")).sort();
+  assert.deepEqual(listed, ["cron/output/run.txt", "logs/agent.log", "runtime/active_sessions.json", "sessions/s1.json", "state.db", "state.db-wal"]);
+  // the history is gone, its folders stay, empty
+  for (const f of ["state.db", "state.db-wal", "runtime/active_sessions.json"]) assert.ok(!exists(s.home, f), f);
+  for (const d of ["sessions", "logs", "cron"]) assert.deepEqual(ls(path.join(s.home, d)), [], d);
+  // the rest stays
+  for (const f of ["config.yaml", ".env", "SOUL.md", "skills/mine/SKILL.md", "memories/.keep", "state/gateway.heartbeat", "gateway.pid", "runtime/other.json", "recordings/r.txt"]) assert.ok(exists(s.home, f), f);
+  assert.match(r.log, /cc-a1-hermes holds recordings which rc-clear neither empties nor lists as kept: left as it is/);
+  assert.match(r.log, /the Hermes history of 1 agents/);
+  // the reads mount the volume read-only; only the clear mounts it to write
+  const mounts = fs.readFileSync(s.calls, "utf8").trim().split("\n");
+  assert.ok(mounts.slice(0, -1).every((m) => m === "run cc-a1-hermes:/v:ro"), mounts.join("\n"));
+  assert.equal(mounts.at(-1), "run cc-a1-hermes:/v");
+});
+
+test("an engine that still runs after the stop: no Hermes history and no row is touched, and the server starts again", () => {
+  const s = hermesSetup();
+  fs.writeFileSync(s.running, "c0ffee\n");
+  const r = s.run();
+  assert.notEqual(r.r.status, 0);
+  assert.match(r.out, /FAILED at stop: an agent's engine still runs after 3s\. No work was deleted/);
+  assert.ok(exists(s.home, "state.db") && exists(s.home, "sessions/s1.json"));
+  assert.deepEqual(r.now, { work: WORK_LINE, kept: KEPT_LINE });
+  assert.deepEqual(r.loaded, ["test.program", "test.rc-clear"], "started again");
 });

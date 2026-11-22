@@ -11,20 +11,24 @@
 # text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
 # trigger runs. Outside the database, it is each agent's Watch view (agents/<id>/session.log.jsonl,
 # which the server reads the view back from after a restart) and each agent's working folder
-# (agents/<id>/home/work). People and their profiles, agents and the rest of their folders, the vault,
+# (agents/<id>/home/work), and each Hermes agent's history in its Docker volume: its conversations
+# (state.db), sessions, logs, pending messages, its own boards and projects, past scheduled runs and
+# caches (rc-clear.mjs HERMES_HISTORY). People and their profiles, agents and the rest of their
+# folders, each Hermes agent's settings, skills, memories and runtime files, the vault,
 # apps and access, service accounts, the tool log and the cost totals stay. rc-clear.mjs lists the
 # tables. No table is ever dropped.
 #
 # 1. Check, before anything changes. rc-clear refuses when a trigger, a bridge or a chat grant
 #    points at a chat, and when the database has a table rc-clear.mjs does not list.
-# 2. Stop each program that drives an agent, then the server.
-# 3. Copy the database, the stored files, the agents' Watch views and working folders, and each
-#    program's state to /var/root/rc-work-<time>/.
+# 2. Stop each program that drives an agent, then the server, and check that no agent's engine
+#    still runs: each one is a container the server started.
+# 3. Copy the database, the stored files, the agents' Watch views and working folders, each Hermes
+#    agent's history and each program's state to /var/root/rc-work-<time>/.
 #    Then delete the copies older than 7 days.
 # 4. Delete the work's rows, children first, in one transaction. The transaction also checks that
 #    every kept table has the rows it had, and undoes itself otherwise.
-# 5. Remove the stored files, empty each agent's Watch view and working folder, and clear each
-#    program's state.
+# 5. Remove the stored files, empty each agent's Watch view and working folder and each Hermes
+#    agent's history, and clear each program's state.
 # 6. Start the server, wait for /healthz, then start each program.
 # A failure before step 4 ends deletes no work: the server and the programs start again.
 #
@@ -48,6 +52,11 @@ PROGRAMS="@PROGRAMS@"
 KEEP_DAYS=7
 STOP_WAIT=30
 HEALTH_WAIT=180
+# The server's own Docker, where each agent's engine runs, and Hermes's own image, for the short
+# containers that read and empty a Hermes home. Root uses the socket, as build-pdftext.sh does.
+DOCKER=/opt/homebrew/bin/docker
+DOCKER_ENV=(HOME=/opt/recursicachat/home DOCKER_HOST=unix:///opt/recursicachat/home/.colima/recursicachat/docker.sock)
+HERMES_IMAGE=circlechat/engine-hermes:latest
 if [ -n "${RC_CLEAR_TEST:-}" ]; then
   # The kit's tests, as any account, with stand-ins for launchctl and curl: never the real server's
   # job, port or folders, even if a stand-in is missing. sudo hands a command none of the caller's
@@ -55,6 +64,7 @@ if [ -n "${RC_CLEAR_TEST:-}" ]; then
   BASE="$RC_CLEAR_BASE" NODE="$RC_CLEAR_NODE" TOOL="$RC_CLEAR_TOOL" LABEL=test.rc-clear URL=http://127.0.0.1:9
   DAEMONS="$RC_CLEAR_BASE/daemons" COPIES="$RC_CLEAR_BASE/copies" LOG="$RC_CLEAR_BASE/rc-clear.log"
   PROGRAMS="${RC_CLEAR_PROGRAMS:-}" STOP_WAIT="${RC_CLEAR_STOP_WAIT:-3}" HEALTH_WAIT="${RC_CLEAR_HEALTH_WAIT:-4}"
+  DOCKER="${RC_CLEAR_DOCKER:-}" DOCKER_ENV=(RC_CLEAR_TEST=1)
   as() { shift; "$@"; }
 elif [ "$(id -u)" = 0 ]; then
   export PATH=/usr/bin:/bin:/usr/sbin:/sbin
@@ -68,6 +78,14 @@ else
 fi
 DATA="$BASE/data"
 DB="$DATA/circlechat.db"
+dk() { env "${DOCKER_ENV[@]}" "$DOCKER" "$@"; }
+# A short container on a Hermes volume, with no network: hermes_in <volume> <ro|rw> <script> [args...].
+# The volume is mounted at /v, so the home is /v/home. The script reads its arguments as "$@".
+hermes_in() {
+  local v="$1" mode="$2" script="$3"; shift 3
+  local mount="$v:/v"; [ "$mode" = rw ] || mount="$v:/v:ro"
+  dk run --rm --network none --read-only --user 0:0 -v "$mount" --entrypoint /bin/sh "$HERMES_IMAGE" -c "$script" sh "$@"
+}
 # The folders this command makes in $COPIES, and no other folder: rc-work-<date>-<time>.
 COPY_NAME='rc-work-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]'
 SAVE="" TMPDB=""
@@ -128,6 +146,15 @@ case $? in
   *) before "check" "could not read the database (the log says why)" ;;
 esac
 log "rc-clear: the work is $(sed -n 's/^work //p' <<<"$found"); to keep: $(sed -n 's/^kept //p' <<<"$found")"
+# Each Hermes agent's volume that exists: an agent that never ran has none yet.
+listed="$(as "$ACCOUNT" "$NODE" "$TOOL" hermes "$DB" 2>> "$LOG")" || before "check" "could not list the Hermes agents (the log says why)"
+VOLUMES=""
+if [ -n "$listed" ]; then
+  dk version >/dev/null 2>> "$LOG" || before "check" "the server's Docker does not answer, so no Hermes history can be copied"
+  for v in $listed; do
+    if dk volume inspect "$v" >/dev/null 2>&1; then VOLUMES="${VOLUMES:+$VOLUMES }$v"; fi
+  done
+fi
 
 # Stops one job, and waits until launchd no longer has it.
 stop() {
@@ -180,6 +207,15 @@ for p in $PROGRAMS; do
 done
 stop "$LABEL" || back "stop" "the server did not stop within ${STOP_WAIT}s"
 ! answers || back "stop" "the server still answers"
+# Each engine is a container the server started, with the agent's id as a label. It stops with the
+# server; a Hermes home is touched only once none runs.
+if [ -n "$VOLUMES" ]; then
+  for ((i = 0; i < STOP_WAIT; i++)); do
+    [ -n "$(dk ps -q --filter label=circlechat.agent 2>> "$LOG")" ] || break
+    sleep 1
+  done
+  [ -z "$(dk ps -q --filter label=circlechat.agent 2>> "$LOG")" ] || back "stop" "an agent's engine still runs after ${STOP_WAIT}s"
+fi
 
 # 3. Copy aside. Each account writes a stream, and root saves the stream in a folder only root opens.
 STAMP="$(date +%Y%m%d-%H%M%S)"
@@ -210,6 +246,29 @@ if [ -n "$WORKED" ]; then
   [ "$(find "$SAVE/agents" -type f | wc -l | tr -d ' ')" = "$worked" ] || back "copy" "the copy of the agents' Watch views and working folders is not whole"
 fi
 agents="$(sed -n 's#^agents/\([^/]*\)/.*#\1#p' <<<"$WORKED" | sort -u | grep -c . || true)"
+# Each Hermes agent's history, as hermes-<volume>.tar in the copy. Root writes the stream from a
+# read-only container, and the copy holds as many entries as the home has.
+HISTORY="$(as "$ACCOUNT" "$NODE" "$TOOL" history 2>> "$LOG")" || back "copy" "could not read rc-clear.mjs's Hermes list"
+# One "<volume><tab><entries>" line for each volume with history in it (the bash macOS ships has no
+# associative arrays).
+PRESENT="" hermes=0
+for v in $VOLUMES; do
+  # shellcheck disable=SC2016,SC2086 # the container's shell reads its own arguments; one entry a word
+  here="$(hermes_in "$v" ro 'cd /v/home 2>/dev/null || exit 0; for p in "$@"; do [ -e "$p" ] || [ -L "$p" ] && echo "$p"; done; exit 0' $HISTORY 2>> "$LOG")" ||
+    back "copy" "could not read the Hermes home in $v"
+  # shellcheck disable=SC2016
+  others="$(hermes_in "$v" ro 'cd /v/home 2>/dev/null && ls -A' 2>> "$LOG" | as "$ACCOUNT" "$NODE" "$TOOL" unlisted 2>> "$LOG" || true)"
+  [ -z "$others" ] || log "$v holds $(tr '\n' ' ' <<<"$others")which rc-clear neither empties nor lists as kept: left as it is"
+  [ -n "$here" ] || continue
+  entries="$(tr '\n' ' ' <<<"$here")"
+  PRESENT="$PRESENT$v"$'\t'"$entries"$'\n'
+  # shellcheck disable=SC2016,SC2086
+  hermes_in "$v" ro 'cd /v/home && tar -cf - -- "$@"' $entries > "$SAVE/hermes-$v.tar" 2>> "$LOG" || back "copy" "could not copy the Hermes history in $v"
+  # shellcheck disable=SC2016,SC2086
+  want="$(hermes_in "$v" ro 'cd /v/home && find "$@" ! -type d | wc -l' $entries 2>> "$LOG" | tr -d ' ')"
+  [ "$(tar -tf "$SAVE/hermes-$v.tar" 2>> "$LOG" | grep -cv '/$' || true)" = "$want" ] || back "copy" "the copy of the Hermes history in $v is not whole"
+  hermes=$((hermes + 1))
+done
 for p in $PROGRAMS; do
   program "$p"
   [ -n "$state" ] || continue
@@ -217,7 +276,7 @@ for p in $PROGRAMS; do
   as "$account" tar -C "$state" -cf - . 2>> "$LOG" | tar -C "$SAVE/state-$name" -xf - 2>> "$LOG" || back "copy" "could not copy $name's state"
   [ "$(find "$SAVE/state-$name" -type f | wc -l | tr -d ' ')" = "$(files_in "$account" "$state")" ] || back "copy" "the copy of $name's state is not whole"
 done
-log "copied the database ($size bytes), $stored stored files, $worked files of $agents agents' Watch views and working folders, and the programs' state to $SAVE"
+log "copied the database ($size bytes), $stored stored files, $worked files of $agents agents' Watch views and working folders, the Hermes history of $hermes agents, and the programs' state to $SAVE"
 # The new copy is whole, so the copies older than $KEEP_DAYS days go.
 pruned=0
 while IFS= read -r old; do
@@ -253,6 +312,14 @@ if [ -n "$WORKED" ]; then
   as "$ACCOUNT" /bin/sh -c 'cd "$1" && shift && for p in "$@"; do if [ -d "$p" ]; then find "$p" -mindepth 1 -delete || exit 1; else rm -f "$p" || exit 1; fi; done' sh "$DATA" $WORKED >> "$LOG" 2>&1 ||
     problem "could not empty every agent's Watch view and working folder"
 fi
+# Each Hermes agent's history: a folder stays, empty; a file goes. state.db goes with its -wal and
+# -shm, in the same container. The engine starts afresh at its next turn.
+while IFS=$'\t' read -r v entries; do
+  [ -n "$v" ] || continue
+  # shellcheck disable=SC2016,SC2086
+  hermes_in "$v" rw 'cd /v/home || exit 1; for p in "$@"; do if [ -d "$p" ] && [ ! -L "$p" ]; then find "$p" -mindepth 1 -delete || exit 1; else rm -f -- "$p" || exit 1; fi; done' $entries < /dev/null >> "$LOG" 2>&1 ||
+    problem "could not empty the Hermes history in $v"
+done <<<"$PRESENT"
 started=""
 for p in $PROGRAMS; do
   program "$p"
@@ -265,6 +332,7 @@ done
 up="$(start_all)" || problem "$up"
 
 [ "$agents" = 0 ] || emptied="$emptied, and the Watch view and working folder of $agents agent$([ "$agents" = 1 ] || echo s)"
+[ "$hermes" = 0 ] || emptied="$emptied, and the Hermes history of $hermes agent$([ "$hermes" = 1 ] || echo s)"
 line="rc-clear: emptied $emptied; kept $kept."
 if [ -z "$problems" ]; then
   line="$line The server answers ok${started:+; started $started}."
