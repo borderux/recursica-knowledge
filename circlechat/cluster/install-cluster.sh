@@ -41,6 +41,14 @@ if [ "$DIRECT_IP" = off ]; then
   NFT_DIRECT='    tcp dport { 21118, 21119 } drop comment "rustdesk direct"\n    udp dport { 21118, 21119 } drop comment "rustdesk direct"'
   PF_DIRECT='block in quick proto { tcp udp } to port { 21118 21119 }'
 fi
+# On Linux, Tailscale's addresses pass only from tailscale0, Tailscale's interface: a packet that
+# claims a Tailscale address on another interface is refused as a forged source. WSL has no
+# tailscale0, because Tailscale runs on Windows, so in WSL the rules check only the address
+# (firewall/nft-base.nft).
+NFT_TAILNET=""
+if [ "$OS" = Linux ] && ! grep -qi microsoft /proc/version; then
+  NFT_TAILNET='    iifname != "tailscale0" ip saddr 100.64.0.0/10 drop comment "tailnet only on tailscale0"\n    iifname != "tailscale0" ip6 saddr fd7a:115c:a1e0::/48 drop comment "tailnet only on tailscale0"'
+fi
 
 sudo mkdir -p /var/lib/agent-cluster && sudo chmod 700 /var/lib/agent-cluster
 # DOCKER_CONFIG: the cluster's root services read Docker's settings from the owner's ~/.docker.
@@ -69,12 +77,15 @@ CONF
 # network-step begin: the firewall rules
 if network_held "the firewall rules, pf.conf and the agentguard-firewall start-up job"; then :
 elif [ "$OS" = Linux ]; then
-  sed "s/@CANARY_PORTS@/$CANARY_PORTS/; s/^@RUSTDESK_DIRECT@\$/$NFT_DIRECT/" "$HERE/firewall/nft-base.nft" | sudo tee /etc/agentguard.nft >/dev/null
-  sudo nft -f /etc/agentguard.nft
-  # The guard's lockdown rules (platform.mjs) load from this copy, so a kit update changes the
-  # lockdown rules only when a person applies the firewall rules.
+  sed "s/@CANARY_PORTS@/$CANARY_PORTS/; s/^@RUSTDESK_DIRECT@\$/$NFT_DIRECT/; s|^@TAILNET_IF@\$|$NFT_TAILNET|" "$HERE/firewall/nft-base.nft" | sudo tee /etc/agentguard.nft >/dev/null
+  # The guard's lockdown rules (platform.mjs) and the start-up job load from these copies, so a kit
+  # update changes them only when a person applies the firewall rules.
   sudo install -m 644 -o root "$HERE/firewall/nft-lockdown.nft" /var/lib/agent-cluster/nft-lockdown.nft
-  install_unit agentguard-firewall "nft -f /etc/agentguard.nft" / root boot
+  sudo install -m 755 -o root "$HERE/firewall/nft-load.sh" /var/lib/agent-cluster/nft-load.sh
+  # The rules delete the agentguard table and make the table again; nft-load.sh keeps the addresses
+  # in the blocked and allowed sets, so a rerun of this script unblocks nothing.
+  sudo bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft
+  install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft" / root boot
   if grep -qi microsoft /proc/version; then
     echo "Windows side: run circlechat/cluster/windows/install-windows-guard.ps1 once in an Administrator PowerShell."
     echo "  With the RustDesk server on this computer, add -RustDeskServer. With remote_access.direct_ip false, add -BlockRustDeskDirect."

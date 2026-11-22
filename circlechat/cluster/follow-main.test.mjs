@@ -338,7 +338,7 @@ test("every network command in the setups sits in a network step, and each step 
   const install = fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8");
   const fw = networkSteps(install).find((s) => s.what === "the firewall rules");
   const inStep = (re) => install.split("\n").findIndex((l) => re.test(l)) + 1;
-  for (const re of [/sudo nft -f/, /sudo tee \/etc\/pf\.conf/, /install_unit agentguard-firewall/, /nft-lockdown\.nft/]) {
+  for (const re of [/sudo bash \/var\/lib\/agent-cluster\/nft-load\.sh/, /nft-load\.sh" \/var\/lib\/agent-cluster\/nft-load\.sh/, /sudo tee \/etc\/pf\.conf/, /install_unit agentguard-firewall/, /nft-lockdown\.nft/]) {
     const n = inStep(re);
     assert.ok(n >= fw.first && n <= fw.last, `${re} sits in the firewall step`);
   }

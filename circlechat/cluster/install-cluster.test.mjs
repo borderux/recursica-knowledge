@@ -66,7 +66,9 @@ test("without KIT_HOLD_NETWORK, install-cluster.sh loads the Linux firewall rule
   assert.doesNotMatch(r.stdout, /Held for a person/);
   const calls = s.calls();
   assert.match(calls, /^sudo tee \/etc\/agentguard\.nft$/m);
-  assert.match(calls, /^sudo nft -f \/etc\/agentguard\.nft$/m);
+  assert.match(calls, /^sudo install -m 755 -o root \S+\/firewall\/nft-load\.sh \/var\/lib\/agent-cluster\/nft-load\.sh$/m);
+  assert.match(calls, /^sudo bash \/var\/lib\/agent-cluster\/nft-load\.sh \/etc\/agentguard\.nft$/m);
+  assert.doesNotMatch(calls, /^sudo nft -f \/etc\/agentguard\.nft$/m);
   assert.match(calls, /^sudo install -m 644 -o root \S+\/firewall\/nft-lockdown\.nft \/var\/lib\/agent-cluster\/nft-lockdown\.nft$/m);
   assert.match(calls, /^sudo tee \S+\/agentguard-firewall\.service$/m);
   assert.equal(fs.readFileSync(s.marker, "utf8"), `${SHA}\n`);

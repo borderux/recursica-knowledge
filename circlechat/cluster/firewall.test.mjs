@@ -21,10 +21,15 @@ test("the Linux firewall rules parse", { skip: !has("nft") && "nftables is not i
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "nft-"));
   // Both ways install-cluster.sh fills @RUSTDESK_DIRECT@: empty, and the rule that refuses
   // RustDesk's direct-address ports (remote_access.direct_ip false).
+  // And both ways it fills @TAILNET_IF@: the tailscale0 rules on Linux, empty in WSL.
   const base = fs.readFileSync(path.join(here, "firewall/nft-base.nft"), "utf8").replaceAll("@CANARY_PORTS@", "2222, 2121, 8088");
-  fs.writeFileSync(path.join(tmp, "base.nft"), base.replace(/^@RUSTDESK_DIRECT@$/m, ""));
-  fs.writeFileSync(path.join(tmp, "base-direct-off.nft"), base.replace(/^@RUSTDESK_DIRECT@$/m, directRule("NFT_DIRECT").replaceAll("\\n", "\n")));
-  for (const f of [path.join(tmp, "base.nft"), path.join(tmp, "base-direct-off.nft"), path.join(here, "firewall/nft-lockdown.nft")]) {
+  const tailnet = directRule("NFT_TAILNET").replaceAll("\\n", "\n");
+  const files = [path.join(here, "firewall/nft-lockdown.nft")];
+  for (const [name, direct, tailscale0] of [["base", "", tailnet], ["base-direct-off", directRule("NFT_DIRECT").replaceAll("\\n", "\n"), tailnet], ["base-wsl", "", ""]]) {
+    fs.writeFileSync(path.join(tmp, `${name}.nft`), base.replace(/^@RUSTDESK_DIRECT@$/m, direct).replace(/^@TAILNET_IF@$/gm, tailscale0));
+    files.push(path.join(tmp, `${name}.nft`));
+  }
+  for (const f of files) {
     const [cmd, ...args] = asRoot(["nft", "-c", "-f", f]);
     const r = spawnSync(cmd, args, { encoding: "utf8" });
     if (/Operation not permitted|password is required/.test(r.stderr)) return t.skip("nft -c needs root here");
@@ -111,6 +116,31 @@ test("RustDesk's server ports take only Tailscale and loopback, before any wider
   const pf = rules("firewall/pf-base.conf");
   assert.ok(pf.indexOf("@RUSTDESK_DIRECT@") >= 0 && pf.indexOf("@RUSTDESK_DIRECT@") < pf.findIndex((l) => l.startsWith("pass in quick on $tailscale_if")));
   assert.equal(directRule("PF_DIRECT"), "block in quick proto { tcp udp } to port { 21118 21119 }");
+});
+
+// On Linux, Tailscale's addresses pass only from tailscale0; in WSL, where Tailscale runs on Windows,
+// the rules check only the address. A rerun of install-cluster.sh and the start-up job load the rules
+// with nft-load.sh, which keeps the sets' addresses.
+test("the nftables rules refuse a Tailscale source off tailscale0, outside WSL, and load with nft-load.sh", () => {
+  const install = fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8");
+  assert.equal(directRule("NFT_TAILNET"), '    iifname != "tailscale0" ip saddr 100.64.0.0/10 drop comment "tailnet only on tailscale0"\\n    iifname != "tailscale0" ip6 saddr fd7a:115c:a1e0::/48 drop comment "tailnet only on tailscale0"');
+  assert.match(install, /^if \[ "\$OS" = Linux \] && ! grep -qi microsoft \/proc\/version; then\n  NFT_TAILNET=/m, "empty in WSL");
+  assert.match(install, /s\|\^@TAILNET_IF@\\\$\|\$NFT_TAILNET\|/, "sed fills every @TAILNET_IF@ line, with | as the separator, since the rules hold a /");
+  const nft = rules("firewall/nft-base.nft").map((l) => l.trim());
+  const input = nft.slice(nft.indexOf("chain input {"), nft.indexOf("chain forward {"));
+  assert.ok(input.indexOf("@TAILNET_IF@") === input.indexOf("@RUSTDESK_DIRECT@") + 1, "right after the direct-address rule");
+  assert.equal(input[input.indexOf("@TAILNET_IF@") + 1], "ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept");
+  const forward = nft.slice(nft.indexOf("chain forward {"));
+  assert.equal(forward[forward.indexOf("@TAILNET_IF@") - 1], "ct state established,related accept");
+  assert.equal(nft.filter((l) => l === "@TAILNET_IF@").length, 2);
+  const lines = install.split("\n").map((l) => l.trim());
+  assert.ok(lines.includes('sudo install -m 755 -o root "$HERE/firewall/nft-load.sh" /var/lib/agent-cluster/nft-load.sh'), "a root-owned copy, inside the held firewall step");
+  assert.ok(lines.includes("sudo bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft"), "install-cluster.sh loads the rules with nft-load.sh");
+  assert.ok(!lines.includes("sudo nft -f /etc/agentguard.nft"), "never with nft -f alone, which empties the sets");
+  assert.ok(lines.includes('install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft" / root boot'), "the start-up job runs the copy, never the kit checkout's file");
+  assert.ok(!install.includes("$HERE/firewall/nft-load.sh /etc/agentguard.nft"), "nothing loads the kit checkout's nft-load.sh");
+  const step = install.slice(install.indexOf("# network-step begin: the firewall rules"), install.indexOf("# network-step end", install.indexOf("# network-step begin: the firewall rules")));
+  for (const l of ['nft-load.sh" /var/lib/agent-cluster/nft-load.sh', "sudo bash /var/lib/agent-cluster/nft-load.sh", "install_unit agentguard-firewall"]) assert.ok(step.includes(l), `${l} is inside the held firewall step`);
 });
 
 test("Windows passes Tailscale's addresses only on the Tailscale adapter, and WSL only to the computer's Tailscale addresses", () => {

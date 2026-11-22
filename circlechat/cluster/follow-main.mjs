@@ -94,7 +94,7 @@ export const APPLY_WITH_UNDO = { darwin: "circlechat/cluster/firewall/pf-apply-t
 // rules, since the apply script installs the files only on --confirm.
 export const INSTALLED_RULES = {
   darwin: ["/var/lib/agent-cluster/pf-base.conf", "/var/lib/agent-cluster/pf-lockdown.conf"],
-  linux: ["/etc/agentguard.nft", "/var/lib/agent-cluster/nft-lockdown.nft"],
+  linux: ["/etc/agentguard.nft", "/var/lib/agent-cluster/nft-lockdown.nft", "/var/lib/agent-cluster/nft-load.sh"],
 };
 
 // The network steps in one shell script: each step's name and the step's first and last line,
