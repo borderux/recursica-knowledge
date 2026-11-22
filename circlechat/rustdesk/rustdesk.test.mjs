@@ -414,6 +414,7 @@ test("the Windows and Hyper-V block rules cover every address but Tailscale's an
 function backupRun({ withKey = true } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-backup-"));
   const bin = path.join(tmp, "bin"), data = path.join(tmp, "data"), log = path.join(tmp, "calls.log");
+  const stage = path.join(tmp, "stage");
   fs.mkdirSync(bin); fs.mkdirSync(data);
   const names = [];
   if (withKey) { fs.writeFileSync(path.join(data, "id_ed25519"), "key\n"); names.push("./id_ed25519"); }
@@ -431,13 +432,13 @@ function backupRun({ withKey = true } = {}) {
 esac; exit 0`);
   stub("restic", `case "$1" in
   cat) exit 0 ;;
-  ls) echo "/var/tmp/stage/rustdesk.tgz"; seq 1 40000 | sed 's|^|/var/tmp/stage/other-file-|' ;;
+  ls) echo "${stage}/rustdesk.tgz"; seq 1 40000 | sed 's|^|${stage}/other-file-|' ;;
 esac; exit 0`);
   const secrets = path.join(tmp, "node.env");
   fs.writeFileSync(secrets, "RUSTDESK_RESTIC_PASSWORD=pw\n");
   const r = spawnSync("bash", [path.join(here, "backup-rustdesk.sh")], { encoding: "utf8",
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: "offsite:backups", SECRETS: secrets, KIT: "" } });
-  return { r, calls: fs.readFileSync(log, "utf8") };
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: "offsite:backups", SECRETS: secrets, KIT: "", RUSTDESK_STAGE: stage } });
+  return { r, calls: fs.readFileSync(log, "utf8"), stage };
 }
 
 test("the backup finds the key in a long archive listing, and the archive in a long snapshot listing", () => {
@@ -446,7 +447,14 @@ test("the backup finds the key in a long archive listing, and the archive in a l
   assert.doesNotMatch(r.stdout + r.stderr, /write error|holds no id_ed25519|has no rustdesk\.tgz/);
   assert.match(r.stdout, /Backup of the RustDesk server done\./);
   assert.match(calls, /^restic backup --tag rustdesk /m);
-  assert.match(calls, /^restic forget --tag rustdesk /m);
+  assert.match(calls, /^restic forget --tag rustdesk --group-by host,tags /m);
+});
+
+test("the backup uses one fixed path and leaves no archive behind", () => {
+  const { r, calls, stage } = backupRun();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(calls.includes(`restic backup --tag rustdesk ${stage}/rustdesk.tgz\n`), calls);
+  assert.ok(!fs.existsSync(path.join(stage, "rustdesk.tgz")), "the archive holds the server's key, so the run deletes the archive");
 });
 
 test("the backup still stops when the volume holds no id_ed25519", () => {
@@ -454,4 +462,80 @@ test("the backup still stops when the volume holds no id_ed25519", () => {
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /at step: the volume holds no id_ed25519/);
   assert.doesNotMatch(calls, /^restic backup /m);
+});
+
+// backup-rustdesk.sh with the real restic, against a local rclone remote. Docker is still a
+// stand-in. CI installs restic and rclone and sets RUSTDESK_RESTIC_REQUIRED, so a missing tool fails
+// there instead of skipping the test.
+const sh = (cmd) => spawnSync("bash", ["-c", `command -v ${cmd}`]).status === 0;
+const realRestic = sh("restic") && sh("rclone");
+
+test("two backups share one restic group, and the keep policy also removes snapshots from before the fixed path", { skip: !realRestic && !process.env.RUSTDESK_RESTIC_REQUIRED, timeout: 180_000 }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-restic-"));
+  const bin = path.join(tmp, "bin"), data = path.join(tmp, "data"), stage = path.join(tmp, "stage");
+  fs.mkdirSync(bin); fs.mkdirSync(data);
+  fs.writeFileSync(path.join(data, "id_ed25519"), "key\n");
+  const fixture = path.join(tmp, "fixture.tgz");
+  assert.equal(spawnSync("tar", ["czf", fixture, "-C", data, "."]).status, 0);
+  fs.writeFileSync(path.join(bin, "docker"), `#!/usr/bin/env bash
+case "$1" in
+  run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; esac; done; cp ${fixture} "$out/rustdesk.tgz" ;;
+esac; exit 0
+`, { mode: 0o755 });
+  const rcloneConf = path.join(tmp, "rclone.conf");
+  fs.writeFileSync(rcloneConf, "[offsite]\ntype = local\n");
+  const secrets = path.join(tmp, "node.env");
+  fs.writeFileSync(secrets, "RUSTDESK_RESTIC_PASSWORD=pw\n");
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: `offsite:${tmp}/remote`,
+    SECRETS: secrets, KIT: "", RUSTDESK_STAGE: stage, RCLONE_CONFIG: rcloneConf,
+    RESTIC_PASSWORD: "pw", RESTIC_REPOSITORY: `rclone:offsite:${tmp}/remote/cluster-rustdesk`, RESTIC_CACHE_DIR: path.join(tmp, "cache") };
+  const restic = (...args) => {
+    const r = spawnSync("restic", args, { encoding: "utf8", env });
+    assert.equal(r.status, 0, `restic ${args.join(" ")}\n${r.stderr}`);
+    return r.stdout;
+  };
+  const snapshots = () => JSON.parse(restic("snapshots", "--json")).sort((a, b) => a.time.localeCompare(b.time));
+  const backup = () => {
+    const r = spawnSync("bash", [path.join(here, "backup-rustdesk.sh")], { encoding: "utf8", env });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+  };
+
+  // Before the fixed path: each run backed up from a new temp folder. Two runs a day, three days ago
+  // to one day ago, give six snapshots in six groups.
+  restic("init");
+  const day = (ago) => { const d = new Date(Date.now() - ago * 86_400_000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  for (const ago of [3, 2, 1]) for (const at of ["12:00", "12:30"]) {
+    const old = path.join(tmp, `old-${ago}-${at.replace(":", "")}`);
+    fs.mkdirSync(old); fs.copyFileSync(fixture, path.join(old, "rustdesk.tgz"));
+    restic("backup", "--tag", "rustdesk", "--time", `${day(ago)} ${at}:00`, path.join(old, "rustdesk.tgz"));
+  }
+  assert.equal(snapshots().length, 6);
+
+  const archive = path.join(stage, "rustdesk.tgz");
+  backup();
+  const first = snapshots().at(-1);
+  backup();
+  const all = snapshots();
+  const second = all.at(-1);
+
+  assert.deepEqual(first.paths, [archive]);
+  assert.deepEqual(second.paths, [archive]);
+  assert.equal(second.parent, first.id, "the second run links to the first run's snapshot");
+  // Keep-daily keeps the newest snapshot of each day: the second run today, and the 12:30 snapshot
+  // of each earlier day, from before the fixed path. restic 0.16 and later also keeps the oldest
+  // snapshot while the policy has fewer days than the policy asks for, so the test leaves the
+  // oldest snapshot, from three days ago at 12:00, unchecked.
+  const kept = new Set(all.map((s) => s.paths[0]));
+  const old = (ago, at) => path.join(tmp, `old-${ago}-${at}`, "rustdesk.tgz");
+  assert.ok(!all.some((s) => s.id === first.id), "the keep policy removes the first run's snapshot");
+  for (const ago of [3, 2, 1]) assert.ok(kept.has(old(ago, "1230")), `the keep policy keeps the newest snapshot from ${ago} day(s) ago`);
+  for (const ago of [2, 1]) assert.ok(!kept.has(old(ago, "1200")), `the keep policy removes the older snapshot from ${ago} day(s) ago`);
+  assert.ok(!fs.existsSync(archive), "the run deletes the archive");
+
+  // The restore steps in README.md: the newest snapshot holds rustdesk.tgz at the fixed path, with the key.
+  const target = path.join(tmp, "restore");
+  restic("restore", "latest", "--tag", "rustdesk", "--target", target);
+  const listing = spawnSync("tar", ["tzf", path.join(target, archive)], { encoding: "utf8" });
+  assert.equal(listing.status, 0, listing.stderr);
+  assert.match(listing.stdout, /^\.\/id_ed25519$/m);
 });
