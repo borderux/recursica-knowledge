@@ -142,6 +142,17 @@ test("clear refuses a trigger, a bridge or a chat grant, and deletes nothing", (
   }
 });
 
+test("an agent's starters are settings: a database with them is not refused, and clear keeps them", () => {
+  // the server keeps each agent's starters in a table of its own (the server's starters.ts)
+  const more = "CREATE TABLE agent_starters (agent_id TEXT PRIMARY KEY REFERENCES agents(id) ON DELETE CASCADE, starters TEXT NOT NULL);\nINSERT INTO agent_starters VALUES ('a_1', '[\"What can you do?\"]');";
+  const db = makeDb(path.join(tmp(), "t.db"), { more });
+  assert.ok(KEPT.includes("agent_starters"));
+  assert.deepEqual(refusals(db), []);
+  assert.deepEqual(clear(db), { emptied: WORK_LINE, kept: KEPT_LINE });
+  assert.deepEqual(db.prepare("SELECT agent_id, starters FROM agent_starters").all().map((r) => ({ ...r })), [{ agent_id: "a_1", starters: '["What can you do?"]' }]);
+  db.close();
+});
+
 test("clear refuses a table rc-clear does not list, and deletes nothing", () => {
   const db = makeDb(path.join(tmp(), "t.db"), { more: "CREATE TABLE example_notes (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL); CREATE TABLE example_tags (id TEXT PRIMARY KEY);" });
   assert.deepEqual(refusals(db), ["The database has a table rc-clear does not list: example_notes, example_tags. Add each one to rc-clear.mjs first, as work or as kept."]);

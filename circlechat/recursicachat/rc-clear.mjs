@@ -37,7 +37,7 @@ export const WORK = [
   ["chats"],
 ];
 
-// Kept whole: people and their profiles, agents, the vault, apps and access, service accounts,
+// Kept whole: people and their profiles, agents and their settings, the vault, apps and access, service accounts,
 // triggers, the tool log and the cost totals. Each row of the tool log holds the hash of the row before it, so
 // the log stays whole. Memories of the team and of an agent stay too.
 export const KEPT = [
@@ -50,6 +50,7 @@ export const KEPT = [
   "user_photos",
   "agents",
   "managed_agents",
+  "agent_starters", // the suggestions an empty chat with an agent shows: settings, set by rc-sync
   "secrets",
   "connections",
   "mcp_servers",
