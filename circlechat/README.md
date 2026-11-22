@@ -1575,6 +1575,13 @@ summary line, with the counts of what stays and the path of the copy. Each step'
   agent's Watch view in `agents/<id>/session.log.jsonl` in its data folder, and reads the view back
   from that file after a restart, so a clear that left it would show the earlier runs again. An
   agent's working folder is `agents/<id>/home/work`.
+- **Each Hermes agent's history,** in its Docker volume (`cc-<id>-hermes`): its conversations
+  (`state.db` with its `-wal` and `-shm`), `sessions`, `logs`, `pending_messages`,
+  `runtime/active_sessions.json`, its own boards and projects (`kanban`, `kanban.db`,
+  `projects.db`), past scheduled runs (`cron`) and its caches. `rc-clear.mjs` lists them in
+  `HERMES_HISTORY`. Its settings (`config.yaml`, `.env`, `SOUL.md`), skills, the curator's copies,
+  memories, plugins and Hermes's runtime files (`state/`, the gateway's files) stay, in
+  `HERMES_KEPT`. An entry on neither list stays too, with a note in the log.
 - **What stays:** people and their profiles, agents and the rest of their folders (an engine's
   settings), the vault, apps and access, service accounts, triggers, the tool log and the cost
   totals. `rc-clear.mjs` lists every table. No table is dropped.
@@ -1583,14 +1590,19 @@ summary line, with the counts of what stays and the path of the copy. Each step'
    points at a chat, because each would then point at a deleted chat. It also refuses when the
    database has a table `rc-clear.mjs` does not list. A newer server made that table, and
    `rc-clear.mjs` must first list the table as work or as kept.
-2. **Stop** each program that drives an agent, then the server.
-3. **Copy** the database, the stored files, the agents' Watch views and working folders, and each
-   program's state to `/var/root/rc-work-<time>/`, a folder only root opens. Then delete the copies
+2. **Stop** each program that drives an agent, then the server. Each agent's engine is a container
+   the server started, and it stops with the server: `rc-clear` waits until none runs on the
+   server's Docker, or starts everything again and deletes nothing.
+3. **Copy** the database, the stored files, the agents' Watch views and working folders, each Hermes
+   agent's history (`hermes-<volume>.tar`) and each program's state to `/var/root/rc-work-<time>/`,
+   a folder only root opens. Then delete the copies
    older than 7 days.
 4. **Delete the work's rows**, children first, in one transaction. The transaction checks that every
    kept table has the rows it had, and undoes itself otherwise.
-5. **Remove** the stored files and the Watch views' files, empty each working folder, and clear each
-   program's state. A link in an agent's folder is never followed or removed.
+5. **Remove** the stored files and the Watch views' files, empty each working folder and each Hermes
+   agent's history (a folder stays, empty), and clear each program's state. Short containers from
+   Hermes's own image, with no network, read and empty each volume; only the emptying one mounts it
+   to write. A link in an agent's folder is never followed or removed.
 6. **Start** the server, wait for `/healthz`, then start each program.
 
 A failure before step 4 ends deletes no work: the server and the programs start again. A failure
@@ -1606,6 +1618,7 @@ running, with its state. Run `install.sh` again after a change to either setting
   `-shm` files beside the database.
 - Copy `files/` into the data folder.
 - Copy `agents/` into the data folder: each agent's Watch view and working folder.
+- Unpack each `hermes-<volume>.tar` into that volume's `home/`, with the server stopped.
 - Copy each `state-<name>/` into that program's state folder.
 
 Then start the server and the programs.
