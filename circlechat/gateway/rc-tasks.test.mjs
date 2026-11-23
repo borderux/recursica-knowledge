@@ -130,6 +130,7 @@ test("a switch report: recorded, a duplicate, refused for a closed task, and an 
   rc.tasks["t-report-closed"] = { settings: {}, open: false };
   assert.equal(await s.cloudSwitch("t-report-closed", 1, "stalled"), "refused");
   assert.equal(await s.cloudSwitch("t-report-none", 1, "stalled"), "refused");
+  assert.equal(await source({ key: "rct_wrong" }).cloudSwitch("t-report", 2, "stalled"), "refused", "a 4xx is final: only a network error or a 5xx is asked again");
   rc.failSwitches = 1;
   await assert.rejects(s.cloudSwitch("t-report", 2, "stalled"), /answered 503/);
   await assert.rejects(rcTasks({ url: GONE, key: RC_KEY, handles: HANDLES }).cloudSwitch("t-report", 2, "stalled"));

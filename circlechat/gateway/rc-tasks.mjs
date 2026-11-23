@@ -110,14 +110,15 @@ export function rcTasks({ url, keyFile, key, handles = {}, stallMinutes = DEFAUL
         return null;
       }
     },
-    // Reports the task's n-th move to the cloud. "recorded" or "duplicate" when the server has the
-    // switch, "refused" when the server never will (no such task, a closed task, a bad request).
-    // Throws when the server could not be asked or failed: the router tries again later.
+    // Reports the task's n-th move to the cloud. "recorded" (201) or "duplicate" (200) when the
+    // server has the switch, even for a task that has finished since. "refused" for any other 4xx,
+    // such as no such task (404), a bad request (400) or a closed task (409): asking again would
+    // get the same answer. Throws on a network error or a 5xx: the router tries again later.
     async cloudSwitch(task, n, reason) {
       const { status } = await call("POST", `/gateway/tasks/${taskPath(task)}/cloud-switch`, { n, reason });
       if (status === 201) return "recorded";
       if (status === 200) return "duplicate";
-      if ([400, 404, 409].includes(status)) return "refused";
+      if (status >= 400 && status < 500) return "refused";
       throw new Error(`the server answered ${status}`);
     },
   };
