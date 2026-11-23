@@ -794,6 +794,7 @@ test("a trial server on 127.0.0.1 stays out of the gateway, and no route or agen
 
 test("the config check refuses a Linux helper's Ollama server with models that don't fit, or with a wrong setting", () => {
   let s = withHelper();
+  delete s.nodes.at(-1).servers[0].max_loaded_models;
   s.nodes.at(-1).servers[0].models.push({ id: "second", model: "gemma3:4b", memory_gb: 3 });
   assert.match(validate(s).join("\n"), /node machine-3: the loaded models need 8 GB, and the node gives its models 6 GB \(model_memory_gb\): ollama\/judge-small 5 GB, ollama\/second 3 GB/);
   s = withHelper();
@@ -824,4 +825,40 @@ test("the control computer's Ollama service gets the new settings too, with flas
   assert.deepEqual(ollamaService(s).env, ["OLLAMA_KV_CACHE_TYPE=f16", "OLLAMA_MAX_LOADED_MODELS=2"], "f16 needs no flash attention");
   sv.kv_cache_type = "q4_0";
   assert.deepEqual(ollamaService(s).env, ["OLLAMA_KV_CACHE_TYPE=q4_0", "OLLAMA_MAX_LOADED_MODELS=2", "OLLAMA_FLASH_ATTENTION=1"]);
+});
+
+test("with max_loaded_models, the memory check counts only the largest models an Ollama server keeps loaded", () => {
+  const two = (k, room) => {
+    const s = withHelper({ max_loaded_models: k });
+    const n = s.nodes.at(-1);
+    n.model_memory_gb = room;
+    n.servers[0].models = [{ id: "small", model: "gemma3:4b", memory_gb: 3 }, { id: "large", model: "qwen3:4b-instruct-2507", memory_gb: 5 }];
+    return validate(s).join("\n");
+  };
+  // One model loaded at a time: the larger model, 5 GB, must fit.
+  assert.equal(two(1, 6), "");
+  assert.equal(two(1, 5), "");
+  assert.match(two(1, 4), /node machine-3: the loaded models need 5 GB, and the node gives its models 4 GB \(model_memory_gb\): ollama\/large 5 GB\. server ollama keeps 1 of its 2 models loaded \(max_loaded_models\)/);
+  // Two at a time, or as many as the server lists: every model counts.
+  assert.match(two(2, 6), /the loaded models need 8 GB, and the node gives its models 6 GB \(model_memory_gb\): ollama\/small 3 GB, ollama\/large 5 GB$/);
+  assert.match(two(3, 6), /the loaded models need 8 GB/);
+  // Without max_loaded_models, every listed model stays loaded.
+  const s = withHelper();
+  const n = s.nodes.at(-1);
+  delete n.servers[0].max_loaded_models;
+  n.servers[0].models.push({ id: "second", model: "gemma3:4b", memory_gb: 5 });
+  n.model_memory_gb = 6;
+  assert.match(validate(s).join("\n"), /the loaded models need 10 GB/);
+  // Each server counts on its own, and an mlx-lm server's model always counts.
+  const t = clone();
+  const mac = t.nodes.find((x) => x.os === "macos");
+  const ollama = mac.servers.find((x) => x.kind === "ollama");
+  const mlx = mac.servers.find((x) => x.kind === "mlx-lm");
+  ollama.models = [{ ...ollama.models[0], memory_gb: 30 }, { id: "b", model: "b", memory_gb: 40 }];
+  ollama.max_loaded_models = 1;
+  mlx.models = [{ ...mlx.models[0], memory_gb: 20 }];
+  mac.model_memory_gb = 60;
+  assert.deepEqual(validate(t), []);
+  mac.model_memory_gb = 59;
+  assert.match(validate(t).join("\n"), new RegExp(`the loaded models need 60 GB, and the node gives its models 59 GB \\(model_memory_gb\\): ollama/b 40 GB, mlx/${mlx.models[0].id} 20 GB\\. server ollama keeps 1 of its 2 models loaded`));
 });
