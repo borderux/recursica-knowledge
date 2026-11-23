@@ -1080,8 +1080,8 @@ A helper computer hosts no stack, so with `"releases"` the update job never move
 2. GitHub must show each new commit as verified. One commit that GitHub doesn't verify stops the whole update, and the kit checkout stays where the checkout was. The cluster's channel, `SLACK_CHANNEL_ID`, gets one alert for each such commit.
 3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears once about each update that waits. A helper runs no RecursicaChat server, so a helper never waits.
 4. The kit checkout fast-forwards to the new commit. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
-5. The job runs each setup the change touches again, as the owner. A change touches a setup when the change edits a kit file the setup reads. The table below lists the setups.
-6. The channel gets one line with the computer, the old and new commit, and the result.
+5. The job runs each setup the change touches again, as the owner, without the setup's network steps. A change touches a setup when the change edits a kit file the setup reads. The table below lists the setups.
+6. The channel gets one line with the computer, the old and new commit, and the result. A network change that waits for a person gets one post of its own.
 
 | Setup                | Where the setup runs                                         |
 | -------------------- | ------------------------------------------------------------ |
@@ -1094,6 +1094,30 @@ The job never runs `rc-deploy`. A new RecursicaChat 2.0 server still waits for `
 **A setup runs again only when the owner has password-free sudo.** Each of the three setups calls sudo as the owner. Without password-free sudo, the channel's line names each command to run by hand. On the control computer, `setup-host.sh --upgrade` still runs, with root's own steps, as in an upgrade. The line asks for the full `setup-host.sh` only when the change adds or removes a service or a job.
 
 **A failed setup leaves the kit checkout at the new commit for a person to look at.** The channel's line ends with the last lines of the setup's output. Text that looks like a key or a token is hidden. The job runs no other setup after the failed one. The next update waits for a newer commit on main, such as a fix. That update runs the failed setup again, with each setup the newer change touches.
+
+**The job never applies a change that can cut remote access.** A network step is a setup step that changes the firewall rules, the `agentguard` anchor, `/etc/pf.conf`, nftables, Tailscale's settings or the guard's lockdown rules. The job runs each setup with `KIT_HOLD_NETWORK=1`, which skips the setup's network steps and runs every other step. A setup run by hand, with no `KIT_HOLD_NETWORK`, runs every step. The network steps are:
+
+| Setup                | Network step                                                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install-cluster.sh` | The firewall rules: on Linux `/etc/agentguard.nft`, `nft -f`, the guard's lockdown copy and the start-up job; on a Mac the pf rule files, `/etc/pf.conf` and the start-up job |
+| `setup-host.sh`      | `tailscale serve` for the gateway's port for port jobs, on a Mac with Colima, and for CircleChat and the app preview                                                          |
+| `setup-node.sh`      | `tailscale serve` for the RustDesk console, through `rustdesk/setup-rustdesk.sh`                                                                                              |
+
+**A change to a network step waits for a person, and the channel hears once.** A network change edits a file in `circlechat/cluster/firewall/`, or a line between `# network-step begin` and `# network-step end` in a setup's script. The post names the computer, the commits, each waiting step and the command to run by hand on that computer:
+
+- On a Mac, with `circlechat/cluster/firewall/pf-apply-tailnet.sh` in the kit checkout: `sudo <kit>/circlechat/cluster/firewall/pf-apply-tailnet.sh`. The script loads the new rules and puts the old rules back after 5 minutes. Within the 5 minutes, open a new RustDesk or SSH session over Tailscale, and run the script with `--confirm` there.
+- On Linux, with `circlechat/cluster/firewall/nft-apply-tailnet.sh` in the kit checkout: the same, with that script. The kit has no such script yet.
+- Otherwise: the setup itself, such as `<kit>/circlechat/cluster/install-cluster.sh <computer>`. The setup has no automatic undo.
+
+The job posts again only for a newer network change, with every change that still waits. A change that moves the hold itself, such as `network_held` in `kit/lib.sh`, runs none of the setups that read the file. A network command added outside a network step does the same. Such a setup waits whole for a person.
+
+**A kit from before the hold runs no setup.** A kit whose `kit/lib.sh` has no `network_held` can't skip a network step. So each setup that such a change touches waits whole for a person, and the post says why. The kit checkout still fast-forwards.
+
+**An edit to network code waits for a person too.** Network code runs in a network step but sits outside the steps, such as the job installer in `kit/lib.sh`, which writes the firewall's start-up job. It sits between `# network-code begin` and `# network-code end`. An edit there changes what `install-cluster.sh` applies on its next run by hand, so the post asks for that run. The apply scripts don't load it, so new rule files don't clear it.
+
+**The release upgrade holds network steps as well.** A stack with `upgrade.auto`, and "Upgrade now", run `setup-host.sh --upgrade` with `KIT_HOLD_NETWORK=1` (`cluster/root-steps.mjs`). A `tailscale serve` step there waits for `setup-host.sh` run by hand.
+
+**The waiting change clears once a person applies the change.** A setup run by hand with no hold writes the kit's commit to `~/.recursica-kit/network-applied/<setup>` as the setup's last step. The job clears the setup's waiting change once that commit holds the change. For the firewall rules, the job also clears the change when the installed rule files change, as `pf-apply-tailnet.sh --confirm` installs them: `/var/lib/agent-cluster/pf-base.conf` and `pf-lockdown.conf` on a Mac, `/etc/agentguard.nft` and `/var/lib/agent-cluster/nft-lockdown.nft` on Linux.
 
 **A kit that follows main installs no release.** The control computer posts no new release, and "Upgrade now" installs nothing.
 

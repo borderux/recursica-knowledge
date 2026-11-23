@@ -5,7 +5,8 @@
 //     installs once an approver approves the release in Slack with an authenticator code
 //     (release-gate.mjs); a new major version asks first. With updates.follow "main" in the
 //     cluster's site.json, the kit checkout on every computer follows main instead: each verified
-//     commit, then the setups the change touches (follow-main.mjs).
+//     commit, then the setups the change touches (follow-main.mjs). A change that can cut remote
+//     access, such as the firewall rules or a tailscale serve step, waits for a person.
 //   - Everything else: after 7 days, or right away for a flaw on CISA's Known Exploited
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).

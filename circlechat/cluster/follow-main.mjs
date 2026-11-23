@@ -11,8 +11,10 @@
 //      updates (quiet.mjs). The channel hears once about each update that waits.
 //   4. The checkout fast-forwards to the new commit.
 //   5. The setups the change touches run again (SETUPS): setup-host.sh on the control computer,
-//      and setup-node.sh and install-cluster.sh on each computer. rc-deploy never runs here.
-//   6. The channel gets one line: the computer, the old and new commit, and the result.
+//      and setup-node.sh and install-cluster.sh on each computer, each without its network steps.
+//      rc-deploy never runs here.
+//   6. The channel gets one line: the computer, the old and new commit, and the result. Network
+//      changes that wait for a person get one post of their own.
 //
 // The full setups call sudo as the owner. A setup runs again only when the owner has password-free
 // sudo. Otherwise the channel's line names the command to run by hand. On the control computer,
@@ -21,7 +23,19 @@
 // A failed setup posts the last lines of the setup's output. The checkout stays at the new commit
 // for a person to look at, and the next update waits for a newer commit on main. That update runs
 // the failed setup again, with each setup the newer change touches.
+//
+// The step never applies a change that can cut remote access: the firewall rules, the agentguard
+// anchor, pf.conf, nftables, Tailscale's settings and the guard's lockdown rules. Each setup runs
+// with KIT_HOLD_NETWORK=1, which skips the setup's network steps (network_held, kit/lib.sh) and
+// runs the rest. A change to a network step (networkChanges) waits for a person, and the channel
+// hears once, with the command to run by hand. A newer network change posts again. The waiting
+// change clears once a person applies it: the setup's run by hand records its kit commit
+// (network_applied, kit/lib.sh), or, for the firewall rules, the installed rule files change.
+// A kit from before the hold, whose lib.sh has no network_held, can't skip a network step. So each
+// setup such a change touches waits whole for a person, and none of them runs.
+import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 
 // The kit files each setup reads. A change to one of the listed files runs the setup again. A path that
@@ -39,6 +53,200 @@ export const SETUPS = {
   "install-cluster.sh": ["circlechat/cluster/install-cluster.sh", "circlechat/kit/lib.sh", "circlechat/cluster/firewall/"],
 };
 const ORDER = Object.keys(SETUPS);
+
+// The network steps: each step that can cut remote access. Two kinds of kit file hold network steps:
+//   - a folder whose every file is a network file: the firewall rules
+//   - a shell script with network steps, each between a "# network-step begin: <what>" line and a
+//     "# network-step end" line, such as install-cluster.sh's firewall step or setup-host.sh's
+//     tailscale serve steps. Each step starts with network_held (kit/lib.sh).
+export const NETWORK_FOLDERS = { "circlechat/cluster/firewall/": "the firewall rules" };
+// The file that holds the hold itself. A change to a network step there runs none of the setups that
+// read the file: each one waits whole for a person.
+export const HOLD_FILE = "circlechat/kit/lib.sh";
+// A command that changes a firewall, pf.conf, nftables or Tailscale's settings, in a shell line with
+// the line's quoted text left out. A read, such as tailscale serve status or nft list, is no change.
+export const NETWORK_CMD = /\bpfctl\b|\bnft\s+(-f|-i|add|delete|flush|insert|replace|create|destroy)\b|\/etc\/pf\.conf\b|\/etc\/agentguard|\b(tailscale(\.exe)?|ts)\s+(serve|funnel)\b(?!\s+status)|\b(tailscale(\.exe)?|ts)\s+(set|up|down|login|logout|cert|switch)\b|\bts_serve\b|\binstall_unit\s+agentguard|\bsocketfilterfw\b|\biptables\b|\bufw\b/;
+const BEGIN = /^\s*# network-step begin: (.+?)\s*$/, END = /^\s*# network-step end\s*$/;
+// A kit that can hold network steps: its lib.sh defines network_held. A kit from before the hold
+// can't skip a network step, so each setup the change touches waits whole for a person.
+export const HOLD_READY = /^\s*network_held\(\)\s*\{/m;
+// Code that a network step runs but that sits outside the steps, such as lib.sh's job installer,
+// which writes the firewall's start-up job. Each part sits between a "# network-code begin: <what>"
+// line and a "# network-code end" line. An edit there changes what the network step applies on its
+// next run by hand, so it waits for a person, for the setups listed here. In a file with no
+// network-code lines at either commit, any edit counts.
+export const NETWORK_CODE = {
+  "circlechat/kit/lib.sh": { setups: ["install-cluster.sh"], what: "the job installer, which writes the firewall's start-up job" },
+};
+const CODE_BEGIN = /^\s*# network-code begin: (.+?)\s*$/, CODE_END = /^\s*# network-code end\s*$/;
+// The files that the apply scripts (APPLY_WITH_UNDO) don't load. A change to one needs the setup's
+// own run by hand, which has no automatic undo.
+const NOT_IN_APPLY = ["circlechat/cluster/firewall/pf-main.sh", ...Object.keys(NETWORK_CODE)];
+// The scripts that apply the firewall rules with an automatic undo, for each operating system, when
+// the kit checkout has one. The script loads the new rules, and puts the old rules back after 5
+// minutes unless a person confirms from a new session.
+export const APPLY_WITH_UNDO = { darwin: "circlechat/cluster/firewall/pf-apply-tailnet.sh", linux: "circlechat/cluster/firewall/nft-apply-tailnet.sh" };
+// The installed rule files, for each operating system. A change to one clears the waiting firewall
+// rules, since the apply script installs the files only on --confirm.
+export const INSTALLED_RULES = {
+  darwin: ["/var/lib/agent-cluster/pf-base.conf", "/var/lib/agent-cluster/pf-lockdown.conf"],
+  linux: ["/etc/agentguard.nft", "/var/lib/agent-cluster/nft-lockdown.nft"],
+};
+
+// The network steps in one shell script: each step's name and the step's first and last line,
+// counted from 1. A step with no end line runs to the end of the script.
+export function networkSteps(text, begin = BEGIN, end = END) {
+  const steps = [];
+  let open = null;
+  String(text ?? "").split("\n").forEach((line, i) => {
+    const b = line.match(begin);
+    if (b && !open) open = { what: b[1], first: i + 1 };
+    else if (end.test(line) && open) { steps.push({ ...open, last: i + 1 }); open = null; }
+  });
+  if (open) steps.push({ ...open, last: Infinity });
+  return steps;
+}
+// The network code in one file (NETWORK_CODE), in the same form.
+export const networkCode = (text) => networkSteps(text, CODE_BEGIN, CODE_END);
+
+// A shell line with the line's quoted text left out, or "" for a comment line.
+const code = (line) => (/^\s*#/.test(line) ? "" : line.replace(/"(?:\\.|[^"\\])*"|'[^']*'|`(?:\\.|[^`\\])*`/g, '""'));
+
+// The lines outside every network step that run a network command, counted from 1.
+export function strayNetworkLines(text) {
+  const steps = networkSteps(text);
+  return String(text ?? "").split("\n").flatMap((line, i) => (NETWORK_CMD.test(code(line)) && !steps.some((s) => i + 1 >= s.first && i + 1 <= s.last) ? [i + 1] : []));
+}
+
+// The hunks of git diff -U0: the first line and the line count on each side.
+export function hunks(diff) {
+  return [...String(diff ?? "").matchAll(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/gm)].map((m) => ({
+    oldFirst: +m[1], oldCount: m[2] === undefined ? 1 : +m[2], newFirst: +m[3], newCount: m[4] === undefined ? 1 : +m[4],
+  }));
+}
+
+// The lines that hold a step's begin and end lines and the network_held calls, which make the hold.
+const holdLines = (text) => String(text ?? "").split("\n").map((l) => l.trim()).filter((l) => BEGIN.test(l) || END.test(l) || /\bnetwork_held\b/.test(l)).join("\n");
+
+// The network changes between two commits, for each setup the change touches.
+//   files: the changed files; control: as in touchedSetups
+//   oldText(file), newText(file): the file's text at the old and the new commit, "" when missing
+//   diff(file): git diff -U0 of the file
+//   returns [{ setup, file, what, whole, why?, byHand? }]: what names each step; whole: the setup
+//   waits whole, because the change moves the hold itself or adds a network command outside a
+//   network step, and why says so; byHand: the change is in network code (NETWORK_CODE) or a file
+//   the apply scripts don't load, so only the setup's own run by hand applies it
+export function networkChanges({ files, control, oldText, newText, diff }) {
+  const out = [];
+  const within = (n, first, count) => count > 0 && n >= first && n < first + count;
+  const overlaps = (s, first, count) => count > 0 && first <= s.last && first + count - 1 >= s.first;
+  for (const file of files) {
+    const setups = touchedSetups([file], { control });
+    if (!setups.length) continue;
+    const folder = Object.keys(NETWORK_FOLDERS).find((f) => file.startsWith(f));
+    if (folder) {
+      for (const setup of setups) out.push({ setup, file, what: [NETWORK_FOLDERS[folder]], whole: false, ...(NOT_IN_APPLY.includes(file) ? { byHand: true } : {}) });
+      continue;
+    }
+    if (!file.endsWith(".sh")) continue;
+    const before = oldText(file), after = newText(file);
+    const hs = hunks(diff(file));
+    // Network code: an edit inside a marked part, or anywhere in a file with no marked part.
+    const code = new Set(), net = NETWORK_CODE[file];
+    if (net) {
+      const oldCode = networkCode(before), newCode = networkCode(after);
+      if (!oldCode.length && !newCode.length) { if (hs.length) code.add(net.what); }
+      else for (const h of hs) {
+        for (const s of oldCode) if (overlaps(s, h.oldFirst, h.oldCount)) code.add(s.what);
+        for (const s of newCode) if (overlaps(s, h.newFirst, h.newCount)) code.add(s.what);
+      }
+    }
+    const oldSteps = networkSteps(before), newSteps = networkSteps(after);
+    const oldStray = strayNetworkLines(before), newStray = strayNetworkLines(after);
+    const what = new Set();
+    let stray = false, added = false;
+    for (const h of hs) {
+      for (const s of oldSteps) if (overlaps(s, h.oldFirst, h.oldCount)) what.add(s.what);
+      for (const s of newSteps) if (overlaps(s, h.newFirst, h.newCount)) what.add(s.what);
+      if (oldStray.some((n) => within(n, h.oldFirst, h.oldCount))) stray = true;
+      if (newStray.some((n) => within(n, h.newFirst, h.newCount))) { stray = true; added = true; }
+    }
+    const moved = holdLines(before) !== holdLines(after);
+    if (stray) what.add("a network command outside a network step");
+    const whole = added || moved || (file === HOLD_FILE && what.size > 0);
+    for (const setup of setups) {
+      const own = code.size && net.setups.includes(setup) ? [...code] : [];
+      if (!what.size && !moved && !own.length) continue;
+      out.push({
+        setup, file, what: [...what, ...own], whole,
+        ...(whole ? { why: "the change moves the hold or adds a network command outside a network step" } : {}),
+        ...(own.length ? { byHand: true } : {}),
+      });
+    }
+  }
+  return out;
+}
+
+// The changes when the kit at the new commit can't hold network steps (HOLD_READY): each setup the
+// change touches waits whole, since its run would apply every network step.
+//   to: the new commit; todo: the setups the change touches
+export function unheldChanges({ files, control, todo, to }) {
+  return todo.map((setup) => ({
+    setup, file: files.find((f) => touchedSetups([f], { control }).includes(setup)) ?? HOLD_FILE,
+    what: ["every step"], whole: true,
+    why: `the kit at ${short(to)} has no hold for network steps (no network_held in kit/lib.sh)`,
+  }));
+}
+
+// The waiting network changes, merged with newer ones: for each setup, the files, the steps and
+// whether the setup waits whole, and why; and whether only the setup's run by hand applies it.
+export function mergeWaiting(waiting = {}, changes = []) {
+  const out = structuredClone(waiting);
+  for (const c of changes) {
+    const w = (out[c.setup] ??= { files: [], what: [], whole: false });
+    if (!w.files.includes(c.file)) w.files.push(c.file);
+    for (const x of c.what) if (!w.what.includes(x)) w.what.push(x);
+    w.whole ||= c.whole;
+    if (c.why && !(w.why ??= []).includes(c.why)) w.why.push(c.why);
+    if (c.byHand) w.byHand = true;
+  }
+  return out;
+}
+
+// The command a person runs for each waiting setup, with or without an automatic undo.
+//   kit: the kit checkout's folder; platform: process.platform; applyScript: whether the new
+//   checkout has the operating system's apply script (APPLY_WITH_UNDO)
+export function networkCommands({ waiting, computer, kit, platform, applyScript }) {
+  const k = kit.replace(/\/+$/, "");
+  const script = { "setup-host.sh": `${k}/circlechat/setup-host.sh`, "setup-node.sh": `${k}/circlechat/setup-node.sh ${computer}`, "install-cluster.sh": `${k}/circlechat/cluster/install-cluster.sh ${computer}` };
+  return ORDER.filter((s) => waiting[s]).map((setup) => {
+    const w = waiting[setup];
+    const apply = APPLY_WITH_UNDO[platform];
+    if (setup === "install-cluster.sh" && !w.whole && apply && applyScript) {
+      const left = w.files.filter((f) => NOT_IN_APPLY.includes(f)).map((f) => path.basename(f));
+      const extra = left.length ? ` ${path.basename(apply)} loads only the anchor's rule files, so after --confirm run \`${script[setup]}\` for ${list(left)}, which has no automatic undo.` : "";
+      return { setup, undo: true, text: `\`sudo ${k}/${apply}\` loads the firewall rules with an automatic undo. Then, within 5 minutes, open a new RustDesk or SSH session over Tailscale and run \`sudo ${k}/${apply} --confirm\` there. With no --confirm, the old rules come back.${extra}` };
+    }
+    return { setup, undo: false, text: `\`${script[setup]}\` applies ${w.whole ? "the whole setup" : w.what.join(", ")}. The command has no automatic undo: a mistake can cut remote access until a person at the computer fixes it.` };
+  });
+}
+
+// The one post for network changes that wait for a person.
+//   commits: "<short sha> <subject>" for each commit that touches a waiting file
+export function networkPost({ computer, from, to, commits, waiting, commands }) {
+  const shown = commits.slice(0, 10);
+  const lines = [
+    `:warning: Kit on ${computer}: network changes from ${short(from)} to ${short(to)} wait for a person. The update job never applies a change that can cut remote access.`,
+    "Commits:",
+    ...shown.map((c) => `• ${c}`),
+    ...(commits.length > shown.length ? [`• and ${commits.length - shown.length} more`] : []),
+    "What waits:",
+    ...ORDER.filter((s) => waiting[s]).map((s) => `• ${s}: ${waiting[s].whole ? `the whole setup waits, since ${(waiting[s].why ?? ["the change moves the hold or adds a network command outside a network step"]).join(", and ")}` : "the network steps wait"}. Steps: ${waiting[s].what.join(", ")} (${waiting[s].files.join(", ")}).`),
+    `To apply, run on ${computer}, in a RustDesk or SSH session over Tailscale:`,
+    ...commands.map((c) => `• ${c.text}`),
+  ];
+  return lines.join("\n");
+}
 // A line that a change adds to or removes from setup-host.sh or lib.sh, and that installs or
 // removes a service or a job. Only the full setup-host.sh, with sudo, applies such a line.
 const UNIT_LINE = /^[+-](?![+-]).*\b(un)?install_unit\b/m;
@@ -95,16 +303,18 @@ const list = (names) => (names.length < 2 ? names.join("") : `${names.slice(0, -
 // The one line for the cluster's channel after an update.
 //   ran: setups that ran and passed; manual: { setup, command } for each setup that needs a person
 //   failed: { setup, output } for the setup that failed
-export function resultPost({ computer, from, to, count, ran = [], manual = [], failed = null, hostNote = "" }) {
+//   network: network changes in this update wait for a person, in a post of their own
+export function resultPost({ computer, from, to, count, ran = [], manual = [], failed = null, hostNote = "", network = false }) {
   const head = `Kit on ${computer}: ${short(from)} → ${short(to)}, ${count} new commit${count === 1 ? "" : "s"} on main.`;
   if (failed) {
     const tail = lastLines(failed.output);
-    return `:x: ${head} ${failed.setup} failed${ran.length ? ` after ${list(ran)} passed` : ""}. The checkout stays at ${short(to)} for a person to look at, and the next update waits for a newer commit on main.${tail ? `\n\`\`\`\n${tail}\n\`\`\`` : ""}`;
+    return `:x: ${head} ${failed.setup} failed${ran.length ? ` after ${list(ran)} passed` : ""}. The checkout stays at ${short(to)} for a person to look at, and the next update waits for a newer commit on main.${network ? " Network changes wait for a person, in the next message." : ""}${tail ? `\n\`\`\`\n${tail}\n\`\`\`` : ""}`;
   }
-  const parts = [ran.length ? `Ran ${list(ran)} again.` : manual.length ? "" : "No setup needed to run again."];
+  const parts = [ran.length ? `Ran ${list(ran)} again.` : manual.length || network ? "" : "No setup needed to run again."];
   if (manual.length) parts.push(`${list(manual.map((m) => m.setup))} need${manual.length === 1 ? "s" : ""} a person, because the owner has no password-free sudo. Run ${manual.map((m) => m.command).join(", then ")} by hand.`);
   if (hostNote) parts.push(hostNote);
-  return `${manual.length || hostNote ? ":warning:" : ":white_check_mark:"} ${head} ${parts.filter(Boolean).join(" ")}`;
+  if (network) parts.push("Network changes wait for a person, in the next message.");
+  return `${manual.length || hostNote || network ? ":warning:" : ":white_check_mark:"} ${head} ${parts.filter(Boolean).join(" ")}`;
 }
 
 // The update's decision before any change: what to do with the kit checkout this hour.
@@ -122,13 +332,39 @@ export function decide({ head, target, ancestor, branch, mainAncestor }) {
 //   git(...args): { status, stdout, stderr } of git in the kit checkout, run as the owner
 //   get(url): GitHub API JSON; quiet(): { quiet, why }; post(text): the cluster's channel
 //   sudoFree(): whether the owner has password-free sudo
-//   setup(name): { status, output } of one setup run as the owner, the full setup
-//   hostUpgrade(): { ok, output, problems } of setup-host.sh --upgrade with root's steps, for each local stack
+//   setup(name): { status, output } of one setup run as the owner, the full setup, with KIT_HOLD_NETWORK=1
+//   hostUpgrade(): { ok, output, problems } of setup-host.sh --upgrade with root's steps, for each
+//   local stack, with KIT_HOLD_NETWORK=1
+//   kit: the kit checkout's folder; platform: process.platform
+//   applied(setup): the kit commit of the setup's last run by hand (network_applied), or ""
+//   installed(): a fingerprint of the installed firewall rule files (INSTALLED_RULES)
 //   state: the update job's state object, changed in place (state.follow)
 //   returns a short word for the log: none, stopped, waiting, updated, failed
-export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state }) {
+export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state, kit = "", platform = process.platform, applied = async () => "", installed = async () => "" }) {
   const follow = state.follow ?? {};
   const g = (...a) => { const r = git(...a); return { ...r, out: String(r.stdout ?? "").trim() }; };
+  // Network changes that wait for a person: each one a person applied clears, and an unsent post is sent.
+  if (follow.network) {
+    const n = follow.network, now = await installed();
+    for (const s of Object.keys(n.waiting)) {
+      const mark = String((await applied(s)) ?? "").trim();
+      const byHand = /^[0-9a-f]{40}$/.test(mark) && g("merge-base", "--is-ancestor", n.to, mark).status === 0;
+      const rules = s === "install-cluster.sh" && !n.waiting[s].whole && !n.waiting[s].byHand && now !== n.installed;
+      if (byHand || rules) delete n.waiting[s];
+    }
+    if (!Object.keys(n.waiting).length) { delete follow.network; console.log("kit follows main: a person applied the network changes that waited"); }
+  }
+  const tellNetwork = async () => {
+    const n = follow.network;
+    if (!n || n.told === n.to) return;
+    const files = [...new Set(Object.values(n.waiting).flatMap((w) => w.files))];
+    const commits = g("log", "--format=%h %s", `${n.from}..${n.to}`, "--", ...files).out.split("\n").filter(Boolean);
+    const applyScript = Boolean(APPLY_WITH_UNDO[platform]) && g("cat-file", "-e", `${n.to}:${APPLY_WITH_UNDO[platform]}`).status === 0;
+    const commands = networkCommands({ waiting: n.waiting, computer, kit, platform, applyScript });
+    const r = await post(networkPost({ computer, from: n.from, to: n.to, commits, waiting: n.waiting, commands })).catch(() => ({ ok: false }));
+    if (r?.ok !== false) n.told = n.to;
+  };
+  await tellNetwork();
   const fetched = g("fetch", "--quiet", "origin", "main");
   if (fetched.status !== 0) { console.error(`kit follows main: git fetch failed: ${String(fetched.stderr ?? "").trim()}`); return "none"; }
   const head = g("rev-parse", "HEAD").out, target = g("rev-parse", "refs/remotes/origin/main").out;
@@ -173,7 +409,21 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
   }
   // 5. Run each setup the change touches again, and each setup an earlier failure left.
   const files = g("diff", "--name-only", head, target).out.split("\n").filter(Boolean);
-  const todo = touchedSetups(files, { control, carried: follow.failedAt === head ? follow.pending ?? [] : [] });
+  // Network changes wait for a person. A setup that waits whole doesn't run.
+  const show = (rev, f) => { const r = g("show", `${rev}:${f}`); return r.status === 0 ? String(r.stdout ?? "") : ""; };
+  const touched = touchedSetups(files, { control, carried: follow.failedAt === head ? follow.pending ?? [] : [] });
+  // A kit from before the hold can't skip a network step: each setup the change touches waits whole.
+  const ready = HOLD_READY.test(show(target, HOLD_FILE));
+  const changes = ready
+    ? networkChanges({ files, control, oldText: (f) => show(head, f), newText: (f) => show(target, f), diff: (f) => String(g("diff", "-U0", head, target, "--", f).stdout ?? "") })
+    : unheldChanges({ files, control, todo: touched, to: target });
+  if (changes.length) {
+    const base = follow.network ?? { from: head, waiting: {}, installed: await installed() };
+    follow.network = { ...base, to: target, waiting: mergeWaiting(base.waiting, changes) };
+  }
+  // A setup that waits whole stays held until a person runs it, through every later update.
+  const whole = new Set(Object.entries(follow.network?.waiting ?? {}).filter(([, w]) => w.whole).map(([s]) => s));
+  const todo = touched.filter((s) => !whole.has(s));
   const ran = [], manual = [];
   let failed = null, hostNote = "";
   const free = todo.length ? await sudoFree() : false;
@@ -196,29 +446,43 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
     ran.push(s);
   }
   // 6. One line in the cluster's channel.
-  const text = resultPost({ computer, from: head, to: target, count: shas.length, ran, manual, failed, hostNote });
+  const text = resultPost({ computer, from: head, to: target, count: shas.length, ran, manual, failed, hostNote, network: changes.length > 0 });
   await post(text).catch(() => {});
+  await tellNetwork();
+  const network = follow.network ? { network: follow.network } : {};
   if (failed) {
     const left = todo.slice(todo.findIndex((s) => failed.setup.startsWith(s)));
-    state.follow = { failedAt: target, pending: left };
+    state.follow = { failedAt: target, pending: left, ...network };
     return "failed";
   }
-  state.follow = {};
+  state.follow = network;
   return "updated";
 }
 
 // The real effects, for updater.mjs. Runs as root.
 //   env: /etc/agent-cluster.conf and /etc/agent-cluster.env (COMPUTER, OWNER, OWNER_HOME, KIT, PATH)
-export function realDeps({ env, stacks, afterUpgrade, prepare }) {
-  const asOwner = (args, opts = {}) => spawnSync("sudo", ["-u", env.OWNER, "-H", ...args], { encoding: "utf8", maxBuffer: 64 << 20, ...opts });
+//   spawn, read: spawnSync and a file read, for the tests
+// Every setup runs with KIT_HOLD_NETWORK=1, so no setup applies a network step.
+export function realDeps({ env, stacks, afterUpgrade, prepare, platform = process.platform, spawn = spawnSync, read = (f) => fs.readFileSync(f) }) {
+  const asOwner = (args, opts = {}) => spawn("sudo", ["-u", env.OWNER, "-H", ...args], { encoding: "utf8", maxBuffer: 64 << 20, ...opts });
   const kit = env.KIT;
   const site = path.join(env.OWNER_HOME, "circlechat/site.json");
-  const ownerEnv = (extra = {}) => ["env", ...Object.entries({ PATH: env.PATH, SITE: site, ...extra }).map(([k, v]) => `${k}=${v}`)];
+  const ownerEnv = (extra = {}) => ["env", ...Object.entries({ PATH: env.PATH, SITE: site, KIT_HOLD_NETWORK: "1", ...extra }).map(([k, v]) => `${k}=${v}`)];
+  const tryRead = (f) => { try { return read(f); } catch { return ""; } };
   const output = (r) => `${r.stdout ?? ""}${r.stderr ?? ""}${r.error ? `\n${r.error.message}` : ""}`;
   const show = (r) => { process.stdout.write(output(r)); return r; };
   const HOUR = 3600_000;
   return {
+    kit,
+    platform,
     git: (...a) => asOwner(["git", "-C", kit, ...a]),
+    // The kit commit the setup's last run by hand recorded (network_applied, kit/lib.sh).
+    applied: (name) => String(tryRead(path.join(env.OWNER_HOME, ".recursica-kit/network-applied", path.basename(name)))).trim(),
+    installed: () => {
+      const h = createHash("sha256");
+      for (const f of INSTALLED_RULES[platform] ?? []) h.update(`${f}\0`).update(tryRead(f)).update("\0");
+      return h.digest("hex");
+    },
     get: async (url) => {
       const r = await fetch(url, { headers: { Accept: "application/vnd.github+json", "User-Agent": "recursica-kit-updater" }, signal: AbortSignal.timeout(30_000) });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
