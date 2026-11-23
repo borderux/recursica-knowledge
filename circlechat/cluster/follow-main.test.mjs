@@ -178,7 +178,7 @@ test("an update waits until RecursicaChat is quiet, and says so once", async () 
   assert.equal(await followMain(w.deps), "waiting");
   assert.equal(r.head(), old);
   assert.equal(w.posts.length, 1);
-  assert.match(w.posts[0], /^:hourglass: Kit on machine-2: the update from .* waits until RecursicaChat is quiet.*Now: 1 agent message\(s\) queued or in a turn\.$/);
+  assert.match(w.posts[0], /^:hourglass: Kit on machine-2: the update from .* waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open\. Now: 1 agent message\(s\) queued or in a turn\.$/);
   quiet = true;
   assert.equal(await followMain(w.deps), "updated");
   assert.equal(r.head(), sha);

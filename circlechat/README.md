@@ -1101,14 +1101,14 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 | `colima`, `lima`        | The tools that run the Docker VMs change                         |
 | An image pin that moves | `setup-host.sh --upgrade` recreates the gateway                  |
 
-**Quiet means no agent work and no one online.** The update job checks both as root, each hour (`cluster/quiet.mjs`):
+**Quiet means no agent work.** An open web app and a person online don't count. The update job reads the server's database as root, read-only, each hour (`cluster/quiet.mjs`). Agent work is either:
 
-- **No agent work:** no message waits for an agent or sits in a running turn, in the server's database, read-only.
-- **No one online:** no web app is open. A person reaches the server through `tailscale serve`, and an open app holds a connection from `tailscaled` to the server's port.
+- **An agent turn, running or queued:** a message waits for an agent or sits in a running turn.
+- **A service's run:** a service account drives an agent, and the service has a request open. An open request is pending or taken, and not yet done or declined. The service closes the request when the service's run ends.
 
-A database that can't be read counts as busy. A computer with no `recursicachat` block in site.json runs no server, and is always quiet.
+A request unchanged for more than a day counts as abandoned, so a service that crashed can't hold every update for good. A server too old to have service requests has no service runs. A database that can't be read counts as busy. A computer with no `recursicachat` block in site.json runs no server, and is always quiet.
 
-**The cluster's channel, `SLACK_CHANNEL_ID`, hears once about each update that waits**, with the reason, such as one web app open. The update installs at the first quiet hour, and the usual "Installed" post follows. Every other Homebrew update installs as before. The 7-day wait and the rule for CISA's list come first. A waiting image refresh runs again each hour, not each day.
+**The cluster's channel, `SLACK_CHANNEL_ID`, hears once about each update that waits**, with the reason, such as one agent message in a turn. The update installs at the first quiet hour, and the usual "Installed" post follows. Every other Homebrew update installs as before. The 7-day wait and the rule for CISA's list come first. A waiting image refresh runs again each hour, not each day.
 
 #### Kit releases
 
@@ -1622,9 +1622,9 @@ in the agent's prompt. The hourly sync's fourth step removes each bundled skill 
 - **What stays:** Hermes's own `hermes-agent`, which Hermes never lets go, and every skill that
   isn't bundled, such as one the agent learned. Hermes lists its bundled skills in
   `skills/.bundled_manifest`, and never seeds a deleted one again.
-- **When:** only while the server is quiet (`cluster/quiet.mjs`): no turn running and no one
-  online. Otherwise the sync says so and tries again the next hour. Nothing restarts: the agent's
-  engine sees the change at its next start.
+- **When:** only while the server is quiet (`cluster/quiet.mjs`): no agent turn running or
+  queued, and no service run open. Otherwise the sync says so and tries again the next hour.
+  Nothing restarts: the agent's engine sees the change at its next start.
 - **How:** two short containers on the server's own Docker, from Hermes's own image, with no network.
   One reads the agent's skills folder, read-only. The other removes the folders `kit/rc-skills.mjs`
   names, each a plain path inside the skills folder. `rc-sync.sh --check` lists what it would remove.

@@ -119,7 +119,7 @@ export function holdUntilQuiet(due, { quiet, why }, seen, now) {
   const waiting = due.filter((u) => disruptive(u.name));
   const fresh = waiting.filter((u) => seen[`waiting:${u.key}`] === undefined);
   for (const u of fresh) seen[`waiting:${u.key}`] = now;
-  const line = fresh.length ? `${fresh.map((u) => `${u.name} ${u.version}`).join(", ")} wait${fresh.length === 1 ? "s" : ""} to install. Each one interrupts work, so it waits until RecursicaChat is quiet, with no agent work queued and no one online. Now: ${why}.` : "";
+  const line = fresh.length ? `${fresh.map((u) => `${u.name} ${u.version}`).join(", ")} wait${fresh.length === 1 ? "s" : ""} to install. Each one interrupts work, so it waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open. Now: ${why}.` : "";
   return { install: due.filter((u) => !disruptive(u.name)), waiting, line };
 }
 

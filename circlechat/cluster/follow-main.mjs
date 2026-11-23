@@ -393,7 +393,7 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
   // 3. Wait until RecursicaChat is quiet.
   const q = await quiet();
   if (!q.quiet) {
-    await tell(`waiting:${target}`, `:hourglass: Kit on ${computer}: the update from ${short(head)} to ${short(target)} waits until RecursicaChat is quiet, with no agent work queued and no one online. Now: ${q.why}.`);
+    await tell(`waiting:${target}`, `:hourglass: Kit on ${computer}: the update from ${short(head)} to ${short(target)} waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open. Now: ${q.why}.`);
     save(); return "waiting";
   }
   // 4. Fast-forward. A detached checkout, such as a release tag, moves to main first.

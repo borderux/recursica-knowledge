@@ -117,11 +117,13 @@ test("a new Lima or Colima release posts once in Slack after 7 days, with the pi
 test("an update that interrupts work waits for a quiet RecursicaChat, announced once; a quiet update installs at once", () => {
   const due = [{ key: "ollama@1.2", name: "ollama", version: "1.2" }, { key: "gh@2.9", name: "gh", version: "2.9" }, { key: "tailscale@1.9", name: "tailscale", version: "1.9" }];
   const seen = {};
-  const busy = { quiet: false, why: "1 web app connection(s) open" };
+  const busy = { quiet: false, why: "1 service request(s) open for a driven agent" };
   let r = holdUntilQuiet(due, busy, seen, 1000);
   assert.deepEqual(r.install.map((u) => u.name), ["gh"]);
   assert.deepEqual(r.waiting.map((u) => u.name), ["ollama", "tailscale"]);
-  assert.match(r.line, /ollama 1\.2, tailscale 1\.9 wait to install.*Now: 1 web app connection/);
+  assert.match(r.line, /ollama 1\.2, tailscale 1\.9 wait to install.*Now: 1 service request/);
+  assert.match(r.line, /quiet, with no agent turn running or queued and no service run open\./);
+  assert.doesNotMatch(r.line, /online/, "a person online doesn't hold an update");
   r = holdUntilQuiet(due, busy, seen, 2000);
   assert.equal(r.line, "", "announced once");
   r = holdUntilQuiet(due, { quiet: true, why: "" }, seen, 3000);
