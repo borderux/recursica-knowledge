@@ -58,6 +58,10 @@ node -e '
   settings=""; case "$cmd" in *"$SECRETS"*) settings="$SECRETS" ;; esac
   UNIT_SETTINGS="$settings" install_unit "$name" "$cmd" "$dir" "$(id -un)"
 done
+# The kit's Ollama server on a Linux helper, when the node has an `ollama` block (kit/setup-ollama.sh).
+if node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).ollama ? 0 : 1)' "$SPEC"; then
+  bash "$HERE/kit/setup-ollama.sh" "$SPEC"
+fi
 # The cluster's RustDesk server, when the node has a `rustdesk` block (rustdesk/setup-rustdesk.sh).
 if node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).rustdesk ? 0 : 1)' "$SPEC"; then
   SECRETS="$SECRETS" bash "$HERE/rustdesk/setup-rustdesk.sh" "$SPEC" "$OUT/tenant.env"

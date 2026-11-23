@@ -746,3 +746,82 @@ test("notify.people gets a warning during the switch to verified Slack IDs, and 
   assert.match(r.stdout, /^Warning: notify.people is a fallback/m);
   assert.ok(fs.existsSync(`${dir}/out/tenant.env`));
 });
+
+// A Linux helper computer with the kit's Ollama server (kit/ollama.mjs, kit/setup-ollama.sh).
+const helperSettings = { context_length: 8192, parallel: 2, keep_alive: "-1", kv_cache_type: "q8_0", max_loaded_models: 1 };
+function withHelper(server = {}) {
+  const s = clone();
+  s.nodes.push({ name: "machine-3", os: "linux", address: "100.64.0.9", model_memory_gb: 6,
+    servers: [{ id: "ollama", kind: "ollama", port: 11434, ...helperSettings, models: [{ id: "judge-small", model: "qwen3:4b", memory_gb: 5 }], ...server }] });
+  return s;
+}
+
+test("a Linux helper's Ollama server becomes the node's ollama block, with the pinned release and site.json's settings", () => {
+  const s = withHelper({ listen: "100.64.0.9" });
+  assert.deepEqual(validate(s), []);
+  const spec = render(s).services["machine-3"].ollama;
+  assert.equal(spec.version, "0.40.15");
+  assert.match(spec.archives.amd64.url, /^https:\/\/github\.com\/ollama\/ollama\/releases\/download\/v0\.40\.15\/ollama-linux-amd64\.tar\.zst$/);
+  assert.match(spec.archives.amd64.sha256, /^[0-9a-f]{64}$/);
+  assert.equal(spec.listen, "100.64.0.9");
+  assert.equal(spec.port, 11434);
+  assert.deepEqual(spec.models, ["qwen3:4b"]);
+  assert.deepEqual(spec.env, ["OLLAMA_CONTEXT_LENGTH=8192", "OLLAMA_NUM_PARALLEL=2", "OLLAMA_KEEP_ALIVE=-1", "OLLAMA_KV_CACHE_TYPE=q8_0", "OLLAMA_MAX_LOADED_MODELS=1", "OLLAMA_FLASH_ATTENTION=1"]);
+  // Without listen, the server listens on the computer's address.
+  assert.equal(render(withHelper()).services["machine-3"].ollama.listen, "100.64.0.9");
+  // The control computer and a Mac get no ollama block: the Mac's Ollama is a LaunchDaemon.
+  for (const n of example.nodes) assert.equal(render(s).services[n.name].ollama, null, n.name);
+});
+
+test("a trial server on 127.0.0.1 stays out of the gateway, and no route or agent may name the server's models", () => {
+  const s = withHelper({ listen: "127.0.0.1" });
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.equal(r.services["machine-3"].ollama.listen, "127.0.0.1");
+  assert.ok(!r.litellm.model_list.some((m) => m.model_name === "machine-3/ollama/judge-small"), "the gateway gets no entry for a model it cannot reach");
+  assert.ok(!Object.hasOwn(r.gateway.routes, "machine-3/ollama/judge-small"));
+  s.routes.judge = ["machine-3/ollama/judge-small"];
+  s.agents = { ...(s.agents ?? {}), loki: { routes: ["machine-3/ollama/judge-small"] } };
+  const errs = validate(s).join("\n");
+  assert.match(errs, /route judge: "machine-3\/ollama\/judge-small" is on a trial Ollama server, which listens on 127\.0\.0\.1 only/);
+  assert.match(errs, /agents\.loki\.routes: "machine-3\/ollama\/judge-small" is on a trial Ollama server/);
+  // Once the server listens on the computer's address, the route reaches the model.
+  s.nodes.at(-1).servers[0].listen = "100.64.0.9";
+  assert.deepEqual(validate(s), []);
+  const entry = render(s).litellm.model_list.find((m) => m.model_name === "judge");
+  assert.equal(entry.litellm_params.api_base, "http://100.64.0.9:11434/v1");
+});
+
+test("the config check refuses a Linux helper's Ollama server with models that don't fit, or with a wrong setting", () => {
+  let s = withHelper();
+  s.nodes.at(-1).servers[0].models.push({ id: "second", model: "gemma3:4b", memory_gb: 3 });
+  assert.match(validate(s).join("\n"), /node machine-3: the loaded models need 8 GB, and the node gives its models 6 GB \(model_memory_gb\): ollama\/judge-small 5 GB, ollama\/second 3 GB/);
+  s = withHelper();
+  delete s.nodes.at(-1).model_memory_gb;
+  assert.match(validate(s).join("\n"), /node machine-3: model_memory_gb must be the memory, in GB, this computer gives its models/);
+  s = withHelper({ listen: "0.0.0.0", kv_cache_type: "q5", max_loaded_models: 0 });
+  let errs = validate(s).join("\n");
+  assert.match(errs, /server ollama: listen must be "127\.0\.0\.1", for a trial, or the computer's address, 100\.64\.0\.9/);
+  assert.match(errs, /server ollama: kv_cache_type must be "f16", "q8_0", "q4_0"/);
+  assert.match(errs, /server ollama: max_loaded_models must be a whole number above 0/);
+  s = withHelper();
+  s.nodes.at(-1).servers.push({ id: "ollama-2", kind: "ollama", port: 11435, models: [{ id: "x", model: "x", memory_gb: 1 }] });
+  assert.match(validate(s).join("\n"), /node machine-3: the kit runs one Ollama server on a Linux helper computer/);
+  s = withHelper();
+  s.nodes.at(-1).address = "machine-3.example.ts.net";
+  assert.match(validate(s).join("\n"), /node machine-3: the kit's Ollama server listens on the computer's address, so the address must be an IPv4 address/);
+  // listen belongs to a Linux helper's server only.
+  s = clone();
+  s.nodes.find((n) => n.control).servers.find((x) => x.kind === "ollama").listen = "127.0.0.1";
+  assert.match(validate(s).join("\n"), /listen is for an Ollama server on a Linux helper computer/);
+});
+
+test("the control computer's Ollama service gets the new settings too, with flash attention for a compressed working memory", () => {
+  const s = clone();
+  const sv = s.nodes.find((n) => n.control).servers.find((x) => x.kind === "ollama");
+  Object.assign(sv, { kv_cache_type: "f16", max_loaded_models: 2 });
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(ollamaService(s).env, ["OLLAMA_KV_CACHE_TYPE=f16", "OLLAMA_MAX_LOADED_MODELS=2"], "f16 needs no flash attention");
+  sv.kv_cache_type = "q4_0";
+  assert.deepEqual(ollamaService(s).env, ["OLLAMA_KV_CACHE_TYPE=q4_0", "OLLAMA_MAX_LOADED_MODELS=2", "OLLAMA_FLASH_ATTENTION=1"]);
+});

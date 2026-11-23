@@ -38,7 +38,7 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 
 **A computer can run more than one model server.** List each server under the node's `servers`, with the models the server serves. The kit supports two kinds of server:
 
-- `ollama`: Ollama, on a Mac or a PC. One Ollama server can serve several models.
+- `ollama`: Ollama, on a Mac or a PC. One Ollama server can serve several models. The kit installs and runs Ollama on a Mac control computer and on a Linux helper computer, as "Ollama on a Linux helper computer" describes.
 - `mlx-lm`: mlx-lm's OpenAI-compatible server, `mlx_lm.server`, on a Mac only. An mlx-lm server serves one model, so run one server, on its own port, for each model. Start each one from the node's `services`, as `site.example.json` shows.
 
 ```json
@@ -55,13 +55,17 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 - `memory_gb`: the memory the model needs, in GB.
 - `model_memory_gb`: the memory the computer gives its models. On a Mac, that is unified memory, less what macOS and other work need. On a PC, that is the GPU's memory.
 
-**An Ollama server on the control computer can set three of Ollama's own settings.** On a Mac, the kit's Ollama service runs with each setting the server sets. A setting left out keeps Ollama's default.
+**An Ollama server the kit runs can set five of Ollama's own settings.** The kit runs Ollama on a Mac control computer and on a Linux helper computer. The kit's Ollama service runs with each setting the server sets. A setting left out keeps Ollama's default.
 
-| Setting in `site.json` | Ollama's setting        | What the setting sets                                                                     |
-| ---------------------- | ----------------------- | ----------------------------------------------------------------------------------------- |
-| `context_length`       | `OLLAMA_CONTEXT_LENGTH` | The context length, in tokens, for each model                                             |
-| `parallel`             | `OLLAMA_NUM_PARALLEL`   | The requests each model answers at once                                                   |
-| `keep_alive`           | `OLLAMA_KEEP_ALIVE`     | How long a model stays loaded: `"-1"` keeps each model loaded, or a time, such as `"30m"` |
+| Setting in `site.json` | Ollama's setting           | What the setting sets                                                                       |
+| ---------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| `context_length`       | `OLLAMA_CONTEXT_LENGTH`    | The context length, in tokens, for each request                                             |
+| `parallel`             | `OLLAMA_NUM_PARALLEL`      | The requests each model answers at once                                                     |
+| `keep_alive`           | `OLLAMA_KEEP_ALIVE`        | How long a model stays loaded: `"-1"` keeps each model loaded, or a time, such as `"30m"`   |
+| `kv_cache_type`        | `OLLAMA_KV_CACHE_TYPE`     | The working memory's number format: `"f16"`, or `"q8_0"` or `"q4_0"` to compress the memory |
+| `max_loaded_models`    | `OLLAMA_MAX_LOADED_MODELS` | The models loaded at one time                                                               |
+
+A compressed working memory, `"q8_0"` or `"q4_0"`, needs Ollama's flash attention. The kit then turns on `OLLAMA_FLASH_ATTENTION` too.
 
 ```json
 {
@@ -82,6 +86,53 @@ Each request that runs at once holds a context of its own in memory. Count the c
 **Every listed model stays loaded,** so agents can use several models at once. The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs.
 
 **Name a model as `<node>/<server id>/<model id>`,** such as `machine-2/mlx/large-mlx`, in a route or in an agent's routes. Pull or download each model on its server first: the kit does not.
+
+### Ollama on a Linux helper computer
+
+**`setup-node.sh` installs and runs Ollama on a Linux helper computer** that has a server of kind `ollama` in site.json. A helper computer is a node without `"control": true`. The kit runs one Ollama server on each helper.
+
+```json
+{
+  "name": "machine-3",
+  "os": "linux",
+  "address": "100.64.0.9",
+  "model_memory_gb": 6,
+  "servers": [
+    {
+      "id": "ollama",
+      "kind": "ollama",
+      "port": 11434,
+      "listen": "127.0.0.1",
+      "context_length": 8192,
+      "parallel": 2,
+      "keep_alive": "-1",
+      "kv_cache_type": "q8_0",
+      "max_loaded_models": 1,
+      "models": [{ "id": "judge-small", "model": "qwen3:4b", "memory_gb": 5 }]
+    }
+  ]
+}
+```
+
+`listen` is the address the server listens on. The setting takes one of two values:
+
+- `"127.0.0.1"`, for a trial on the computer itself. The control computer's gateway can't reach the server. So the gateway gets no entry for the server's models, and the config check refuses a route or an agent that names one of the models.
+- The computer's address in site.json, such as its Tailscale address, once the gateway uses the server. Without `listen`, the server listens on the computer's address.
+
+Each firewall on the computer already refuses every source outside Tailscale. Ollama's API can download and delete models. In the tailnet's policy file, let only the control computer reach the server's port.
+
+`setup-node.sh` takes four steps for the server, in `kit/setup-ollama.sh`:
+
+1. **The pinned release.** The script downloads Ollama's Linux archive, version 0.40.15. The script checks the archive's SHA-256 against the hash pinned in `kit/ollama.mjs` before unpacking the archive. A different hash stops the script, and nothing is installed. The release goes to `/opt/recursica-ollama/<version>`, owned by root. Version 0.40.15 supports NVIDIA's GeForce RTX 50 series (Blackwell) with driver 550 or newer.
+2. **The account.** A system account, `recursica-ollama`, has no login shell. The account owns `/var/lib/recursica-ollama`, mode 700, which holds the models. No other account can write there. On a computer with the `video` or `render` group, the account joins the group, so the account can use the GPU.
+3. **The service.** The systemd service `recursica-ollama` runs `ollama serve` as the account, on `listen` and the port, with the server's settings. The service can write only to the account's folder.
+4. **The models.** The script pulls each model the server lists, when the server lacks the model. The script removes no model, including a model site.json no longer lists.
+
+**The script stops, and changes nothing, beside another Ollama.** Another Ollama is an `ollama.service` from Ollama's own installer, or another program on the server's port. The message names the commands that retire the other service. The script also needs `curl` and `zstd`, and names the command that installs a missing tool.
+
+**The config check refuses models that don't fit.** The models of a helper's server must fit in the computer's `model_memory_gb`, as on every computer. On a PC, `model_memory_gb` is the GPU's memory left beside other programs, such as a Kev-engine.
+
+To move to a newer Ollama, change the version and both hashes in `kit/ollama.mjs`, from the release's `sha256sum.txt`. Then run `setup-node.sh` on each helper.
 
 **An older `site.json` keeps working.** A node may still list `models`, each with its own port, and name each model `<node>/<model id>`. The gateway counts port 11434 as an Ollama server named `ollama`.
 

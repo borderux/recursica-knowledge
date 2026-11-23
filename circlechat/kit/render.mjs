@@ -30,6 +30,7 @@
 // computers, so the stack's agents, jobs, models and Kev's model use only them. kit/stack-site.mjs
 // writes such a site.json from the cluster's. A chosen computer's limits (nodes[].limits) make it
 // act like a smaller computer, and placeStack() leaves out each model that does not fit.
+import { OLLAMA_SETTINGS, linuxOllamaErrors, linuxOllamaSpec, ollamaEnv, ollamaSettingErrors, trialServer } from "./ollama.mjs";
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
@@ -122,24 +123,16 @@ export function clusterModels(site) {
   }
   return out;
 }
-
-// An Ollama server's own settings, which the kit's Ollama service on a Mac runs with (kit/lib.sh
-// mac_services): "context_length" (OLLAMA_CONTEXT_LENGTH, in tokens), "parallel" (OLLAMA_NUM_PARALLEL,
-// the requests each model answers at once) and "keep_alive" (OLLAMA_KEEP_ALIVE, how long a model
-// stays loaded: "-1" keeps each model loaded, or a time such as "30m" or 300 seconds). A setting
-// left out keeps Ollama's default.
-export const OLLAMA_SETTINGS = { context_length: "OLLAMA_CONTEXT_LENGTH", parallel: "OLLAMA_NUM_PARALLEL", keep_alive: "OLLAMA_KEEP_ALIVE" };
-const KEEP_ALIVE = /^(-1|\d+|\d+(ms|s|m|h)|(\d+h)?(\d+m)?(\d+s)?)$/;
-function ollamaSettingErrors(sv, where) {
-  const set = Object.keys(OLLAMA_SETTINGS).filter((k) => sv[k] !== undefined);
-  if (set.length && sv.kind !== "ollama") return [`${where}: ${set.join(", ")} ${set.length > 1 ? "are Ollama settings" : "is an Ollama setting"}, and this server is ${sv.kind}`];
-  const errs = [];
-  for (const k of ["context_length", "parallel"]) if (sv[k] !== undefined && !(Number.isInteger(sv[k]) && sv[k] > 0)) errs.push(`${where}: ${k} must be a whole number above 0`);
-  if (sv.keep_alive !== undefined && !(["string", "number"].includes(typeof sv.keep_alive) && String(sv.keep_alive) !== "" && KEEP_ALIVE.test(String(sv.keep_alive)))) {
-    errs.push(`${where}: keep_alive must be "-1", to keep each model loaded, or a time such as "30m" or 300 (seconds)`);
-  }
-  return errs;
+// The cluster models the gateway reaches: every cluster model but those on a trial server, a Linux
+// helper's Ollama server on 127.0.0.1 (kit/ollama.mjs).
+export function gatewayModels(site) {
+  return new Map([...clusterModels(site)].filter(([, { n, server }]) => !trialServer(n, server)));
 }
+
+// An Ollama server's own settings (kit/ollama.mjs OLLAMA_SETTINGS). The kit's Ollama service runs
+// with each setting the server sets: on a Mac control computer (kit/lib.sh mac_services), and on a
+// Linux helper (kit/setup-ollama.sh). A setting left out keeps Ollama's default.
+export { OLLAMA_SETTINGS };
 
 // The control computer's Ollama server, for the kit's Ollama service on a Mac: the port, and each
 // setting from site.json as NAME=value. An older site.json names the server by port 11434, with no
@@ -148,7 +141,7 @@ export function ollamaService(site) {
   const n = (site.nodes ?? []).find((x) => x.control) ?? {};
   const sv = (n.servers ?? []).find((x) => x.kind === "ollama");
   if (!sv) return (n.models ?? []).some((m) => m.port === 11434) ? { port: 11434, env: [] } : null;
-  return { port: sv.port, env: Object.entries(OLLAMA_SETTINGS).filter(([k]) => sv[k] !== undefined).map(([k, name]) => `${name}=${sv[k]}`) };
+  return { port: sv.port, env: ollamaEnv(sv) };
 }
 
 // The secret that holds a key's value, in GitHub and in the gateway's secrets file.
@@ -210,7 +203,7 @@ export function gatewayServices(site) {
 
 export function gatewayConfig(site) {
   const keys = modelKeys(site);
-  const cluster = clusterModels(site);
+  const cluster = gatewayModels(site);
   const local = (b) => cluster.has(b);
   const all = Object.keys(site.routes ?? {});
   const handles = new Set([...Object.keys(site.agents ?? {}), ...Object.values(keys).flatMap((k) => k.agents)]);
@@ -347,7 +340,7 @@ function serverErrors(n, { leaveOut = false } = {}) {
     if (!Number.isInteger(sv.port)) errs.push(`${where}: port must be a number`);
     else if (ports.has(sv.port)) errs.push(`${where}: port ${sv.port} is already used by ${ports.get(sv.port)}`);
     else ports.set(sv.port, `server ${sv.id}`);
-    errs.push(...ollamaSettingErrors(sv, where));
+    errs.push(...ollamaSettingErrors(n, sv, where));
     if (!Array.isArray(sv.models) || !sv.models.length) { errs.push(`${where}: models must list at least one model`); continue; }
     // mlx-lm's server holds one model at a time: run one server for each model.
     if (sv.kind === "mlx-lm" && sv.models.length > 1) errs.push(`${where}: an mlx-lm server serves one model. Run one mlx-lm server, on its own port, for each model`);
@@ -360,6 +353,7 @@ function serverErrors(n, { leaveOut = false } = {}) {
       if (!(m.memory_gb > 0)) errs.push(`${where}, model ${m.id}: memory_gb must be the memory the model needs, in GB`);
     }
   }
+  errs.push(...linuxOllamaErrors(n));
   // Every model a node lists stays loaded, so agents can use several at once. The models must fit.
   const loaded = [...servers.flatMap((sv) => (sv.models ?? []).map((m) => [`${sv.id}/${m.id}`, m.memory_gb])), ...(n.models ?? []).map((m) => [m.id, m.memory_gb])];
   if (servers.length && !(n.model_memory_gb > 0)) errs.push(`node ${n.name}: model_memory_gb must be the memory, in GB, this computer gives its models`);
@@ -829,11 +823,16 @@ export function validate(site, { cluster } = {}) {
   const controls = nodes.filter((n) => n.control);
   if (controls.length !== 1) errs.push(`exactly one node must have "control": true (found ${controls.length})`);
   const known = new Set(clusterModels(site).keys());
+  // A model on a trial server: the gateway cannot reach the server, so no route or agent names the model.
+  const reached = gatewayModels(site);
+  const trial = (b) => known.has(b) && !reached.has(b);
+  const trialWhy = (b) => `"${b}" is on a trial Ollama server, which listens on 127.0.0.1 only, so the gateway cannot reach the server. Set the server's listen to the computer's address first`;
   for (const [route, backends] of Object.entries(site.routes ?? {})) {
     if (!SLUG.test(route)) errs.push(`route "${route}" must be a slug`);
     if (!Array.isArray(backends) || !backends.length) errs.push(`route ${route}: needs at least one backend`);
     for (const b of backends ?? []) {
       if (CLOUD_PREFIXES.some((p) => b.startsWith(p))) continue;
+      if (trial(b)) errs.push(`route ${route}: ${trialWhy(b)}`);
       if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<server id>/<model id>, or a cloud model: ${CLOUD_PREFIXES.map((p) => `${p}<model>`).join(", ")})`);
     }
   }
@@ -872,6 +871,7 @@ export function validate(site, { cluster } = {}) {
       if (a.routes !== undefined && (!Array.isArray(a.routes) || !a.routes.length)) errs.push(`agents.${h}.routes must list at least one route`);
       for (const r of Array.isArray(a.routes) ? a.routes : []) {
         if (!site.routes?.[r] && !known.has(r)) errs.push(`agents.${h}.routes: "${r}" is neither a route nor a cluster model (<node>/<server id>/<model id>)`);
+        if (!site.routes?.[r] && trial(r)) errs.push(`agents.${h}.routes: ${trialWhy(r)}`);
       }
     }
   }
@@ -905,7 +905,7 @@ const url = (n, port, suffix = "") => `http://${n.address}:${port}${suffix}`;
 
 export function render(site) {
   const nodes = site.nodes;
-  const byKey = clusterModels(site);
+  const byKey = gatewayModels(site);
 
   // A cluster model may take a long time to answer when the cluster is busy: the request waits.
   // hosted_vllm is LiteLLM's name for any server with the OpenAI chat API, which Ollama and mlx-lm
@@ -983,7 +983,7 @@ export function render(site) {
     if (l.cpus) j.cpus = l.cpus;
     return j;
   };
-  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null, rustdesk: rustdeskSpec(site, n) }]));
+  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null, rustdesk: rustdeskSpec(site, n), ollama: linuxOllamaSpec(n) }]));
   const appEnv = envFile([`APP_REPO=${site.repos.app_dir}`, `APP_REPO_GITHUB=${site.repos.app_github}`]);
   // No tenant keeps the names a single-stack install has always used, so an existing install
   // keeps its containers, volumes and jobs.
