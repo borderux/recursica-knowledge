@@ -16,8 +16,8 @@
 //   budget        agents.<handle>.recursicachat.budget_usd in site.json, a monthly budget in US dollars
 // and the agent's starters, the suggestions an empty chat with the agent shows: "starters" in
 // agents/<handle>/runtime/recursicachat.json, a list of one-line texts. With none, the server shows
-// its generic ones. A starter with a [placeholder] fills the message box for editing instead of
-// sending. A server too old to keep starters doesn't print them in agent-get, and rc-sync.sh then
+// its generic ones. A starter with [placeholders] opens a fill-in dialog, one field per placeholder,
+// instead of sending. A server too old to keep starters doesn't print them in agent-get, and rc-sync.sh then
 // leaves them out (want --no-starters).
 // The CLI sets only the settings that differ. The server restarts an agent when the model or the
 // sandbox changes, so a sync with nothing to change restarts nothing. The sync never adds an agent:
