@@ -101,11 +101,17 @@ check_vm_limits() {
 }
 
 # network-code begin: the job installer, which writes the firewall's start-up job
-# Writes a unit file only when the file's text changes. Returns 0 after a write, 1 for no change.
+# Writes a unit file only when the file's text changes. Returns 0 after a write, 1 for no change,
+# and 2 after a write that changed only the Description line. A new description needs a systemd
+# reload, never a restart, so a kit that renames its units leaves each service running.
 #   write_unit <file> <text>
 write_unit() {
-  [ "$(cat "$1" 2>/dev/null)" = "$2" ] && return 1
+  local old
+  old="$(cat "$1" 2>/dev/null)" || old=""
+  [ "$old" = "$2" ] && return 1
   printf '%s\n' "$2" | sudo tee "$1" >/dev/null
+  if [ -n "$old" ] && [ "$(grep -v '^Description=' <<<"$old")" = "$(grep -v '^Description=' <<<"$2")" ]; then return 2; fi
+  return 0
 }
 
 # A fingerprint of the files a service reads at the start. A missing file counts as empty. sudo
@@ -136,12 +142,12 @@ install_unit() {
   [ -n "${UNIT_SETTINGS:-}" ] && stamp="settings $(settings_fingerprint $UNIT_SETTINGS)"
   if [ "$OS" = Linux ]; then
     # SYSTEMD_UNIT_DIR is for the tests.
-    local units="${SYSTEMD_UNIT_DIR:-/etc/systemd/system}" changed=""
+    local units="${SYSTEMD_UNIT_DIR:-/etc/systemd/system}" changed="" relabel=""
     local unit="$units/$name.service" timer="$units/$name.timer"
     if [ "$sched" = boot ]; then
       write_unit "$unit" "$(cat <<UNIT
 [Unit]
-Description=$name (circlechat kit)
+Description=$name (agent cluster kit)
 After=network-online.target docker.service
 Wants=network-online.target
 ${stamp:+# $stamp
@@ -156,13 +162,13 @@ ExecStart=/bin/bash -lc '$cmd'
 [Install]
 WantedBy=multi-user.target
 UNIT
-)" && changed=1
-      if [ -n "$changed" ]; then sudo systemctl daemon-reload; fi
+)" && changed=1 || { [ $? != 2 ] || relabel=1; }
+      if [ -n "$changed$relabel" ]; then sudo systemctl daemon-reload; fi
       sudo systemctl enable --quiet "$name.service"
     elif [ -z "$sched" ]; then
       write_unit "$unit" "$(cat <<UNIT
 [Unit]
-Description=$name (circlechat kit)
+Description=$name (agent cluster kit)
 After=network-online.target docker.service
 Wants=network-online.target
 ${stamp:+# $stamp
@@ -177,7 +183,7 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 UNIT
-)" && changed=1
+)" && changed=1 || { [ $? != 2 ] || relabel=1; }
       if [ -n "$changed" ]; then
         sudo systemctl daemon-reload
         sudo systemctl enable --quiet "$name.service"
@@ -185,12 +191,14 @@ UNIT
         sudo systemctl restart "$name.service"
         echo "$name changed: restarted"; return 0
       fi
+      # A new description alone needs a reload, and the service keeps running.
+      if [ -n "$relabel" ]; then sudo systemctl daemon-reload; fi
       sudo systemctl enable --quiet --now "$name.service"
-      echo "$name is running and unchanged"; return 0
+      echo "$name is running and unchanged${relabel:+, with a new description}"; return 0
     else
       write_unit "$unit" "$(cat <<UNIT
 [Unit]
-Description=$name (circlechat kit)
+Description=$name (agent cluster kit)
 ${stamp:+# $stamp
 }
 [Service]
@@ -199,7 +207,7 @@ User=$user
 WorkingDirectory=$dir
 ExecStart=/bin/bash -lc '$cmd'
 UNIT
-)" && changed=1
+)" && changed=1 || { [ $? != 2 ] || relabel=1; }
       write_unit "$timer" "$(cat <<UNIT
 [Unit]
 Description=$name schedule
@@ -211,8 +219,8 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 UNIT
-)" && changed=1
-      if [ -n "$changed" ]; then sudo systemctl daemon-reload; fi
+)" && changed=1 || { [ $? != 2 ] || relabel=1; }
+      if [ -n "$changed$relabel" ]; then sudo systemctl daemon-reload; fi
       sudo systemctl enable --quiet --now "$name.timer"
     fi
     [ -n "$changed" ] || { echo "$name is unchanged"; return 0; }

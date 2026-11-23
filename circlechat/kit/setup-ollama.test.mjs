@@ -158,3 +158,18 @@ test("setup-ollama stops when the server never answers", () => {
   assert.equal(r.status, 1);
   assert.match(r.stdout, /The Ollama server does not answer on 127\.0\.0\.1:11434/);
 });
+
+test("setup-ollama gives an older unit the new description with a reload, and leaves Ollama running", () => {
+  const s = sandbox();
+  assert.equal(s.run().status, 0);
+  const unit = path.join(s.units, "recursica-ollama.service");
+  assert.match(fs.readFileSync(unit, "utf8"), /^Description=Ollama 0\.40\.15 \(agent cluster kit\)$/m);
+  fs.writeFileSync(unit, fs.readFileSync(unit, "utf8").replace("(agent cluster kit)", "(circlechat kit)"));
+  fs.writeFileSync(path.join(s.home, "calls.log"), "");
+  const r = s.run();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /recursica-ollama is running and unchanged, with a new description/);
+  assert.match(s.calls(), /^systemctl daemon-reload$/m);
+  assert.doesNotMatch(s.calls(), /^systemctl restart/m);
+  assert.match(fs.readFileSync(unit, "utf8"), /\(agent cluster kit\)/);
+});
