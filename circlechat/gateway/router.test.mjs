@@ -158,7 +158,7 @@ test("a change to the task's setting applies within a minute", async () => {
   assert.equal(seen.at(-1).model, "key/default");
 });
 
-test("with more than one running turn, the strictest setting among their tasks decides", async () => {
+test("with more than one running turn, the request stays on the cluster, whatever the tasks' settings", async () => {
   db.settings["t-now"] = { mode: "cloud_now" }; db.settings["t-now-2"] = { mode: "cloud_now" };
   db.settings["t-only"] = { mode: "cluster_only" };
   db.tasks.betty = ["t-now", "t-only"];
@@ -171,7 +171,9 @@ test("with more than one running turn, the strictest setting among their tasks d
   assert.equal(seen.at(-1).model, "local-large", "a turn outside a task counts as cluster only");
   db.tasks.betty = ["t-now", "t-now-2"];
   await ask(keys.betty);
-  assert.equal(seen.at(-1).model, "key/default", "every running task allows cloud now");
+  assert.equal(seen.at(-1).model, "local-large", "two cloud now tasks: the request can't be placed in one task, so no cloud");
+  const unplaced = await lastLog();
+  assert.deepEqual([unplaced.key, unplaced.reason, unplaced.switch], ["cluster", "the request could not be placed in one task", undefined]);
   db.tasks.betty = ["t-new-a", "t-new-b"];
   await ask(keys.betty);
   assert.ok(!(await clocks())["t-new-a"], "a request the router cannot place starts no task's clock");

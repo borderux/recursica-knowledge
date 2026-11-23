@@ -163,9 +163,14 @@ async function gateway({ clocks = {}, cfg = config, src = source(), switchRetryM
     method: "POST", headers: { authorization: `Bearer ${keys[agent]}`, "content-type": "application/json" },
     body: JSON.stringify({ model: "local-large", messages: [{ role: "user", content: "hi" }] }),
   }).then(async (r) => { await r.text(); return r.status; });
+  // A request the caller gives up on after `ms`: "waiting" while the gateway still waits for the cluster.
+  const askBrief = (agent, ms = 300) => fetch(`${base(server)}/v1/chat/completions`, {
+    method: "POST", headers: { authorization: `Bearer ${keys[agent]}`, "content-type": "application/json" },
+    body: JSON.stringify({ model: "local-large", messages: [{ role: "user", content: "hi" }] }), signal: AbortSignal.timeout(ms),
+  }).then(async (r) => { await r.text(); return r.status; }, () => "waiting");
   const logs = async () => { await sleep(50); return fs.existsSync(spendLog) ? fs.readFileSync(spendLog, "utf8").trim().split("\n").map((l) => JSON.parse(l)) : []; };
   const readClocks = async () => { await sleep(300); return JSON.parse(fs.readFileSync(path.join(dir, "clocks.json"), "utf8")); };
-  return { ask, logs, readClocks, handler, close: () => { server.closeAllConnections(); server.close(); } };
+  return { ask, askBrief, logs, readClocks, handler, close: () => { server.closeAllConnections(); server.close(); } };
 }
 const switchesOf = (task) => rc.switches.filter((s) => s.task === task);
 const postsOf = (task) => rc.posts.filter((s) => s.task === task);
@@ -248,6 +253,54 @@ test("local, then cloud has no time to finish: a long task the cluster answers n
   }
   await sleep(100);
   assert.deepEqual(postsOf("t-long"), []);
+  rc.running.designer = [];
+  g.close();
+});
+
+test("a changed choice starts the task's stall again: from cloud from the start to local, then cloud", async () => {
+  const g = await gateway();
+  choose("t-turn", "cloud_now");
+  rc.running.designer = ["t-turn"];
+  assert.equal(await g.ask("rc-designer"), 200);
+  assert.equal(seen.at(-1), "key/default");
+  assert.ok(await until(() => switchesOf("t-turn").length === 1));
+  // Turned down to local first: the next request tries the cluster again.
+  choose("t-turn", "local_then_cloud");
+  offset += 61_000;
+  const changedAt = now();
+  behavior["local-large"] = "hang";
+  assert.equal(await g.askBrief("rc-designer"), "waiting", "the request waits for the cluster");
+  assert.equal(seen.at(-1), "local-large");
+  const c = (await g.readClocks())["t-turn"];
+  assert.ok(c.firstRequestAt >= changedAt, "the clock starts again");
+  assert.deepEqual([c.startedAt, c.onCloud, c.switches, c.mode], [undefined, false, 1, "cloud_after_wait"], "the switch count keeps counting");
+  // 14 minutes later: still inside the fresh stall.
+  offset += 14 * 60_000;
+  assert.equal(await g.askBrief("rc-designer"), "waiting");
+  assert.equal(seen.at(-1), "local-large");
+  assert.equal(switchesOf("t-turn").length, 1);
+  // Past the fresh 15-minute stall, with no cluster answer: the cloud, as switch 2.
+  offset += 61_000;
+  assert.equal(await g.ask("rc-designer"), 200);
+  assert.equal(seen.at(-1), "key/default");
+  behavior["local-large"] = "ok";
+  assert.ok(await until(() => switchesOf("t-turn").length === 2));
+  assert.deepEqual(switchesOf("t-turn")[1], { task: "t-turn", n: 2, reason: "stalled" });
+  rc.running.designer = [];
+  g.close();
+});
+
+test("a request that can't be placed in one task stays local, even when every task is cloud from the start", async () => {
+  const g = await gateway();
+  choose("t-both-a", "cloud_now");
+  choose("t-both-b", "cloud_now");
+  rc.running.designer = ["t-both-a", "t-both-b"];
+  assert.equal(await g.ask("rc-designer"), 200);
+  assert.equal(seen.at(-1), "local-large");
+  const log = (await g.logs()).at(-1);
+  assert.deepEqual([log.key, log.reason, log.tasks, log.switch], ["cluster", "the request could not be placed in one task", ["t-both-a", "t-both-b"], undefined]);
+  await sleep(100);
+  assert.deepEqual([...postsOf("t-both-a"), ...postsOf("t-both-b")], [], "no switch, and no report");
   rc.running.designer = [];
   g.close();
 });

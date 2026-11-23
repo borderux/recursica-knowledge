@@ -332,7 +332,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     }
     // The request's task: the task key's task, or the task of the agent's running turn. With more
     // than one running turn the router cannot tell which task the request belongs to, so the
-    // strictest setting among those turns decides (strictest()). A program's key has no task.
+    // request stays on the cluster, whatever the tasks' settings say. A program's key has no task.
     let tasks = [who.task];
     if (agent.service) tasks = [null];
     else if (!who.task) { try { tasks = [...new Set(await db.runTasks(who.agent))]; } catch { tasks = [null]; } }
@@ -346,18 +346,29 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
       const setting = t ? await settingOf(t) : { mode: "cluster_only" };
       // A clock starts only for a request the router can place in its task.
       let clock = t ? clocks.data[t] ?? null : null;
-      if (t && !unsure && !clock) { clock = clocks.data[t] = { firstRequestAt: now() }; clocks.save(); }
+      if (t && !unsure && !clock) { clock = clocks.data[t] = { firstRequestAt: now(), mode: setting.mode }; clocks.save(); }
+      // A changed setting starts the task's clock again, so its stall counts from now and a task
+      // turned down to the cluster first tries the cluster again. The switch count keeps counting.
+      if (clock && !unsure && clock.mode !== setting.mode) {
+        if (clock.mode !== undefined) { clock.firstRequestAt = now(); delete clock.startedAt; clock.onCloud = false; }
+        clock.mode = setting.mode;
+        clocks.save();
+      }
       options.push({ task: t, clock, setting, d: decide({ task: t, setting, agent: view, clock, now: now() }) });
     }
-    const { task, clock, setting, d } = strictest(options);
-    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks } : {}) };
+    const picked = strictest(options);
+    const { task, clock, setting } = picked;
+    // A request the router cannot place in one task never goes to the cloud: every move to the
+    // cloud is a switch, and a switch belongs to one task.
+    const UNPLACED = "the request could not be placed in one task";
+    const d = !unsure ? picked.d : view.local ? { target: "cluster", reason: UNPLACED } : { target: "fail", reason: `no cluster model, and ${UNPLACED}` };
+    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks, reason: d.reason } : {}) };
     const gone = new AbortController();
     res.on("close", () => { if (!res.writableEnded) gone.abort(); });
 
     const toCloud = async (reason) => {
       const model = config.keys?.[view.key]?.model;
-      // Only a request the router places in its task makes a switch.
-      const sw = unsure ? null : switchTo(task, clock, setting?.mode);
+      const sw = switchTo(task, clock, setting?.mode);
       const up = await upstream(req, pathname, { ...body, model }, gone.signal);
       relay(res, up, { ...entry, key: view.key, reason, ...(sw ? { switch: sw } : {}) });
     };
@@ -456,7 +467,8 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   return handler;
 }
 
-// The strictest of several decisions, for a request the router cannot place in one task. Cluster
+// The strictest of several decisions, for a request the router cannot place in one task: the task the
+// spend log names. The request itself stays on the cluster (modelRequest). Cluster
 // only (or a failure for want of a cluster model) beats any cloud use; a later move to the cloud
 // beats an earlier one; cloud now comes last. Each option is { task, clock, setting, d }.
 export function strictest(options) {

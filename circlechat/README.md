@@ -646,11 +646,11 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 
 - **The stack's permission comes first.** With no permission for cloud models (a client or demo stack without `site.cloud_models.allowed`), with the agent's cloud switch off, or with no cloud key for the agent, every request uses the cluster, whatever the task's setting says.
 - **A request waits for the cluster as long as the cluster needs.** A busy or failing cluster is never a reason to call a cloud model. The gateway tries the cluster again until the cluster answers.
-- **The task's clock starts at the gateway's first request for the task.** The stall counts from the first request, and ends at the cluster's first answer. There is no time to finish: once the cluster has answered, a long task stays on the cluster.
+- **The task's clock starts at the gateway's first request for the task.** The stall counts from the first request, and ends at the cluster's first answer. There is no time to finish: once the cluster has answered, a long task stays on the cluster. A changed setting starts the clock again, so a task turned from Cloud from the start to Local, then cloud tries the cluster again for a fresh stall.
 - **An unknown setting, or a task source that does not answer, means the cluster only.**
 - **A request outside a task uses the cluster only,** such as a chat mention or a heartbeat.
 - **The gateway finds the task from the agent's running turn,** which the task source records. A port job's gateway key names the job's task.
-- **When the gateway cannot tell a request's task, the strictest setting decides.** An agent can have more than one running turn, or a turn outside a task. The gateway then uses the strictest setting among those turns, so Cluster only wins. Such a request starts no task's clock.
+- **When the gateway cannot tell a request's task, the request uses the cluster only.** An agent can have more than one running turn, or a turn outside a task. Every move to the cloud shows on one task, so a request the gateway cannot place in one task never goes to the cloud, whatever the settings say. The spend log gives the reason "the request could not be placed in one task". Such a request starts no task's clock.
 - **A stack with no cluster model fails a Cluster only task.** The gateway posts a comment on the task that says why, once per task.
 
 ### What reaches the gateway
