@@ -85,6 +85,8 @@ Each request that runs at once holds a context of its own in memory. Count the c
 
 **Every listed model stays loaded,** so agents can use several models at once. The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs.
 
+**An Ollama server with `max_loaded_models` keeps only that many models loaded.** For such a server, the config check counts only the server's largest `max_loaded_models` models. For example, a server lists two models of 5 GB and 3 GB, with `max_loaded_models` at 1. The check counts 5 GB for the server. Ollama unloads one model to load the other, so the first request to the other model waits for the load.
+
 **Name a model as `<node>/<server id>/<model id>`,** such as `machine-2/mlx/large-mlx`, in a route or in an agent's routes. Pull or download each model on its server first: the kit does not.
 
 ### Ollama on a Linux helper computer

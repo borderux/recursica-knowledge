@@ -355,14 +355,24 @@ function serverErrors(n, { leaveOut = false } = {}) {
   }
   errs.push(...linuxOllamaErrors(n));
   // Every model a node lists stays loaded, so agents can use several at once. The models must fit.
-  const loaded = [...servers.flatMap((sv) => (sv.models ?? []).map((m) => [`${sv.id}/${m.id}`, m.memory_gb])), ...(n.models ?? []).map((m) => [m.id, m.memory_gb])];
+  // An Ollama server with max_loaded_models keeps only that many models loaded at one time, so the
+  // check counts the server's largest max_loaded_models models.
+  const kept = [];
+  const held = (sv) => {
+    const ms = (sv.models ?? []).map((m) => [`${sv.id}/${m.id}`, m.memory_gb]);
+    const k = sv.kind === "ollama" && Number.isInteger(sv.max_loaded_models) && sv.max_loaded_models > 0 ? sv.max_loaded_models : null;
+    if (!k || k >= ms.length) return ms;
+    kept.push(`server ${sv.id} keeps ${k} of its ${ms.length} models loaded (max_loaded_models)`);
+    return [...ms].sort((a, b) => (b[1] > 0 ? b[1] : 0) - (a[1] > 0 ? a[1] : 0)).slice(0, k);
+  };
+  const loaded = [...servers.flatMap(held), ...(n.models ?? []).map((m) => [m.id, m.memory_gb])];
   if (servers.length && !(n.model_memory_gb > 0)) errs.push(`node ${n.name}: model_memory_gb must be the memory, in GB, this computer gives its models`);
   // A stack on picked computers leaves out each model that does not fit, instead (placeStack).
   if (n.model_memory_gb > 0 && !leaveOut) {
     const sized = loaded.filter(([, gb]) => gb > 0);
     const total = sized.reduce((a, [, gb]) => a + gb, 0);
     if (total > n.model_memory_gb) {
-      errs.push(`node ${n.name}: the loaded models need ${total} GB, and the node gives its models ${n.model_memory_gb} GB (model_memory_gb): ${sized.map(([id, gb]) => `${id} ${gb} GB`).join(", ")}`);
+      errs.push(`node ${n.name}: the loaded models need ${total} GB, and the node gives its models ${n.model_memory_gb} GB (model_memory_gb): ${sized.map(([id, gb]) => `${id} ${gb} GB`).join(", ")}${kept.length ? `. ${kept.join(", ")}` : ""}`);
     }
   }
   return errs;
