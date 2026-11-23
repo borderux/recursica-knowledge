@@ -40,6 +40,7 @@ CREATE TABLE task_settings (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
 CREATE TABLE task_setting_changes (id TEXT PRIMARY KEY, task_id TEXT, key TEXT, old_value TEXT, new_value TEXT, by_type TEXT, by_id TEXT, at INTEGER);
 CREATE TABLE task_cloud_switches (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE, n INTEGER, reason TEXT, at INTEGER, PRIMARY KEY (task_id, n));
 CREATE TABLE task_status_by (task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE, status TEXT NOT NULL, by_type TEXT NOT NULL, by_id TEXT NOT NULL, at INTEGER NOT NULL);
+CREATE TABLE task_comments (id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE, author_type TEXT NOT NULL CHECK (author_type IN ('user','agent')), author_id TEXT NOT NULL, body TEXT NOT NULL, created_at INTEGER NOT NULL, deleted_at INTEGER, deleted_by TEXT NOT NULL DEFAULT '');
 CREATE TABLE files (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT REFERENCES messages(id));
 CREATE TABLE file_texts (file_id TEXT PRIMARY KEY, text TEXT NOT NULL DEFAULT '');
 CREATE TABLE deliveries (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
@@ -71,6 +72,7 @@ INSERT INTO task_settings VALUES ('t_1', 'speed', 'fast');
 INSERT INTO task_setting_changes VALUES ('tc_1', 't_1', 'speed', 'slow', 'fast', 'user', 'u_1', 1);
 INSERT INTO task_cloud_switches VALUES ('t_1', 1, 'stalled', 2);
 INSERT INTO task_status_by VALUES ('t_1', 'cancelled', 'user', 'u_1', 3);
+INSERT INTO task_comments VALUES ('tcm_1', 't_1', 'user', 'u_1', 'Use the blue palette.', 4, NULL, ''), ('tcm_2', 't_1', 'agent', 'a_1', '', 5, 6, 'u_1');
 INSERT INTO files VALUES ('f_one', 'c_1', 'msg_1'), ('f_two', 'c_1', NULL);
 INSERT INTO file_texts VALUES ('f_one', 'the text of an upload');
 INSERT INTO deliveries VALUES ('d_1', 'c_1');
@@ -706,6 +708,22 @@ test("who last set a task's status is work: cleared before the task, and the per
   clear(db);
   assert.equal(count(db, "task_status_by"), 0);
   assert.equal(count(db, "users"), 2, "the person who set it stays");
+  db.close();
+});
+
+// The server keeps each task's comments in a table of its own. They go with their task, and the
+// people and agents who wrote them stay.
+test("a task's comments are work: cleared before the task, and their authors stay", () => {
+  const i = WORK.findIndex(([t]) => t === "task_comments");
+  assert.ok(i >= 0 && i < WORK.findIndex(([t]) => t === "tasks"), "task_comments is work, before tasks");
+  assert.deepEqual(unlistedTables(["tasks", "task_comments"]), []);
+  const db = makeDb(path.join(tmp(), "t.db"));
+  assert.deepEqual(refusals(db), []);
+  assert.equal(count(db, "task_comments"), 2);
+  clear(db);
+  assert.equal(count(db, "task_comments"), 0);
+  assert.equal(count(db, "users"), 2, "the person who wrote one stays");
+  assert.equal(count(db, "agents"), 1, "the agent who wrote one stays");
   db.close();
 });
 

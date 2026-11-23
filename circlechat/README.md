@@ -1344,7 +1344,7 @@ summary line, with the counts of what stays and the path of the copy. Each step'
 `/var/log/recursicachat/rc-clear.log`.
 
 - **The work:** every chat with its members and read marks, messages, tasks and plans with each
-  task's progress line and the person who last set its status, files and the text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
+  task's progress line, the person who last set its status and its comments, files and the text read from them, deliveries, service requests, approvals, engine sessions, chat memories and
   trigger runs.
 - **The work outside the database:** each agent's Watch view and working folder. The server keeps an
   agent's Watch view in `agents/<id>/session.log.jsonl` in its data folder, and reads the view back
