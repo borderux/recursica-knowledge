@@ -38,7 +38,7 @@ export function imagesWaitingPost(stack, tags, why, state) {
   const key = [...tags].sort().join(",");
   if (!tags.length || state.imagesWaiting?.[stack] === key) return "";
   state.imagesWaiting = { ...(state.imagesWaiting ?? {}), [stack]: key };
-  return `:hourglass: Stack ${stack}: new versions of ${tags.join(", ")} wait to install. Each move recreates the gateway, which interrupts work, so it waits until RecursicaChat is quiet, with no agent work queued and no one online. Now: ${why}.`;
+  return `:hourglass: Stack ${stack}: new versions of ${tags.join(", ")} wait to install. Each move recreates the gateway, which interrupts work, so it waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open. Now: ${why}.`;
 }
 
 // The stacks whose control computer is this computer. A helper computer keeps a copy of a stack's

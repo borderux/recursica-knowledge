@@ -56,7 +56,9 @@ test("a new kit reaches the root-owned copies: the secrets helper on any compute
 
 test("image pins that wait for a quiet RecursicaChat are announced once per set of pins", () => {
   const state = {};
-  assert.match(imagesWaitingPost("acme", ["node:22-alpine"], "2 agent message(s) queued or in a turn", state), /node:22-alpine wait to install.*Now: 2 agent message/);
+  const post = imagesWaitingPost("acme", ["node:22-alpine"], "2 agent message(s) queued or in a turn", state);
+  assert.match(post, /node:22-alpine wait to install.*no agent turn running or queued and no service run open\. Now: 2 agent message/);
+  assert.doesNotMatch(post, /online/, "a person online doesn't hold an update");
   assert.equal(imagesWaitingPost("acme", ["node:22-alpine"], "the same", state), "");
   assert.match(imagesWaitingPost("acme", ["node:22-alpine", "node:22"], "busy", state), /node:22-alpine, node:22/);
   assert.equal(imagesWaitingPost("acme", [], "busy", state), "");
