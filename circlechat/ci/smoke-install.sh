@@ -35,7 +35,7 @@ sleep 20
 names="$(docker ps --format '{{.Names}}')"
 for c in cc-gateway cc-litellm cc-jobs-egress; do check "container $c runs" "grep -qx -- '$c' <<<\"\$names\""; done
 check "no CircleChat 1.x container runs" "! grep -qE '(^|[-_])(caddy|api|worker|bridge|postgres|redis|minio)([-_]|\$)|^cc-(egress|slack-notify|cloud-requests)\$' <<<\"\$names\""
-check "the setup makes no CircleChat 1.x network" "! docker network ls --format '{{.Name}}' | grep -q '^circlechat_'"
+check "the setup makes no CircleChat 1.x network" "! grep -q '^circlechat_' <<<\"\$(docker network ls --format '{{.Name}}')\""
 GW="docker exec cc-gateway node -e"
 check "the model gateway answers" "$GW 'fetch(\"http://127.0.0.1:4000/health\").then((r) => process.exit(r.ok ? 0 : 1))'"
 check "the model gateway refuses a request without a gateway key" "$GW 'fetch(\"http://127.0.0.1:4000/v1/chat/completions\", { method: \"POST\", body: \"{}\" }).then((r) => process.exit(r.status === 401 ? 0 : 1))'"
@@ -45,7 +45,7 @@ check "the cloud key left .env" "! grep -q '^ANTHROPIC_API_KEY=' '$CC/.env' && !
 check "the cloud key is in the gateway's secrets file, which only root reads" "sudo grep -q '^MODEL_KEY_DEFAULT=$KEY\$' '$CC/model-keys.env' && [ \"\$(sudo stat -c '%U %a' '$CC/model-keys.env')\" = 'root 600' ]"
 check "no container shows the cloud key in docker inspect" "! docker inspect \$(docker ps -q) | grep -- '$KEY' >/dev/null"
 check "LiteLLM joins only the gateway's network" "[ \"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-litellm)\" = 'gateway-models ' ]"
-check "the gateway joins the gateway's network" "docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-gateway | grep -qw gateway-models"
+check "the gateway joins the gateway's network" "grep -qw gateway-models <<<\"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-gateway)\""
 check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
 check "the job runner runs" "systemctl is-active --quiet jobd"
 

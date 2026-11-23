@@ -82,6 +82,27 @@ function fakeRun(answers = {}) {
 }
 const env = (home) => ({ OWNER: "owner", OWNER_HOME: home, KIT: "/kit", PATH: "/usr/bin:/bin", COMPUTER: "machine-1" });
 
+test("after an upgrade, root runs no step of CircleChat 1.x", () => {
+  assert.deepEqual(afterUpgrade(), []);
+});
+
+// A stand-in for the owner's kit/upgrade.mjs: records stdin, and with ranSetup records a run of
+// setup-host.sh in the stack's upgrade state, as kit/upgrade.mjs does.
+function fakeSpawn(ccDir, { ranSetup }) {
+  const seen = {};
+  const spawnFn = (cmd, args) => {
+    Object.assign(seen, { cmd, args });
+    const child = new EventEmitter();
+    child.stdin = { end: (text) => {
+      seen.stdin = text;
+      if (ranSetup) fs.writeFileSync(path.join(ccDir, "kit-out/upgrade-state.json"), JSON.stringify({ setupRanAt: Date.now() }));
+      setImmediate(() => child.emit("close", 0));
+    } };
+    return child;
+  };
+  return { spawnFn, seen };
+}
+
 test("the upgrade runs as the owner with nothing on stdin", async () => {
   for (const ranSetup of [true, false]) {
     const { home, ccDir } = stack();

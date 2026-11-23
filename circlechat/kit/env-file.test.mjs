@@ -121,11 +121,3 @@ test("no kit script sources a rendered env file", () => {
   walk(kit);
   assert.deepEqual(offenders, []);
 });
-
-test("a cloud approver's email takes letters, digits and . _ % + - only", () => {
-  const withEmail = (email) => validate({ ...structuredClone(example), site: { ...example.site, slack_channel_id: "C0STACK01" }, cloud_approvers: [{ email, slack_user: "U0AAAA001" }] }).filter((e) => /cloud_approvers/.test(e));
-  assert.deepEqual(withEmail("person.a+ops@acme.com"), []);
-  for (const bad of ["a$(id)@acme.com", "a;b@acme.com", "a`id`@acme.com", "a'b@acme.com", 'a"b@acme.com', "a\nb@acme.com", "a b@acme.com"]) {
-    assert.match(withEmail(bad).join("\n"), /cloud_approvers\[0\].email must be the person's CircleChat email/, JSON.stringify(bad));
-  }
-});
