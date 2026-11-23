@@ -63,7 +63,8 @@ const SHAPES = {
  */
 export function programs(site) {
   const rc = site?.recursicachat ?? {};
-  const errs = rcServiceErrors(rc);
+  // The whole site: a service's gateway block names site.json's routes and needs its gateway port.
+  const errs = rcServiceErrors(rc, site ?? {});
   if (errs.length) return { value: "", errs };
   const value = (rc.services ?? [])
     .filter((s) => s.job !== undefined)

@@ -70,6 +70,21 @@ test("rc-clear gets each service that has a job: its name, job, account and stat
   }
 });
 
+// sudo recursicachat/install.sh stopped on a site.json that the kit's own setup accepted: "gateway.routes:
+// "judge" is not one of site.json's routes" and "needs site.gateway_local_port". The check got no site.
+test("a service with a gateway block passes when site.json has its routes and the gateway's port", () => {
+  const example = JSON.parse(readFileSync(join(here, "..", "site.example.json"), "utf8"));
+  const site = structuredClone(example);
+  site.site.gateway_local_port = 4005;
+  site.routes.judge = ["machine-2/ollama/large-local"];
+  site.recursicachat = { ...SITE.recursicachat, services: [{ name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token", job: "io.example.program", gateway: { routes: ["judge"], max_parallel: 4, daily_requests: 5000 } }] };
+  assert.deepEqual(programs(site), { value: "example-service:io.example.program:_program:", errs: [] });
+  assert.ok(render(site, DIRS)["rc-clear.sh"].includes('PROGRAMS="example-service:io.example.program:_program:"'));
+  // A route site.json lacks still fails, against the real site.
+  site.recursicachat.services[0].gateway.routes = ["no-such-route"];
+  assert.ok(programs(site).errs.some((e) => e.includes('"no-such-route" is not one of site.json\'s routes')));
+});
+
 test("the colima service is the kit's own script, not a second copy", () => {
   assert.equal(render(SITE, DIRS)["colima-service.sh"], readFileSync(join(here, "..", "kit", "colima-service.sh"), "utf8"));
 });
