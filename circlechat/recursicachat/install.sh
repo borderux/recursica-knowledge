@@ -19,9 +19,18 @@
 #                             build-pdftext.sh, which builds the PDF text reader's image
 #   /Library/LaunchDaemons/   the four io.recursica.recursicachat*.plist, and         root:wheel 644
 #                             io.recursica.stack-backup and -restore-test
+#   /etc/recursicachat/       task-settings.json, the task settings the server offers  root:wheel 644
+#                             on each task: the kit's "Model use" setting (kit/render.mjs
+#                             taskSettings)
+#                             gateway.key, the key of the server's gateway listener,   root:_recursicachat 440
+#                             copied from the gateway's own copy, which setup-host.sh
+#                             makes in $CC_DIR/gateway-state/rc-tasks.key. Until that
+#                             copy exists, the script says so and installs neither
+#                             file, and the server runs with no task settings.
 # It changes only the files whose text changed. A changed backup or restore-test job is loaded
 # again at once. A changed server or Colima job is not restarted: the script prints the command,
 # so the restart happens when you choose. A changed script takes effect at its next start.
+# A changed task-settings.json or gateway.key takes effect at the server's next start, as run.sh does.
 # It never touches the data, the vault key, the Google secret or the restic password.
 set -euo pipefail
 umask 022
@@ -58,6 +67,7 @@ if grep -l -E '@[A-Z_]+@' "$OUT"/* >/dev/null; then fail "a rendered file still 
 for f in "$OUT"/*.plist; do plutil -lint -s "$f" || fail "$(basename "$f") is not a valid plist"; done
 for f in "$OUT"/*.sh; do bash -n "$f" || fail "$(basename "$f") is not valid bash"; done
 for f in "$OUT"/*.mjs; do "$NODE" --check "$f" || fail "$(basename "$f") is not valid JavaScript"; done
+"$NODE" -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$OUT/task-settings.json" || fail "task-settings.json is not valid JSON"
 
 mkdir -p "$BIN" && chown root:wheel "$BIN" && chmod 755 "$BIN"
 mkdir -p /var/log/recursicachat && chown root:wheel /var/log/recursicachat && chmod 700 /var/log/recursicachat
@@ -71,6 +81,35 @@ for f in run.sh backup.sh restore-test.sh stack-backup.sh stack-restore-test.sh 
   install -m "$mode" -o root -g wheel "$OUT/$f" "$BIN/$f"
   echo "$f installed"
 done
+# The task settings and the key of the server's gateway listener (run.sh). The gateway's copy of the
+# key is in the owner's folder, so root reads it only from a plain file, never through a link, and
+# copies it only when it has a gateway key's shape: nothing else in a file root can read reaches
+# the server's account. The key is never printed or passed as an argument.
+ETC=/etc/recursicachat
+GW_KEY_SRC="$CC_DIR/gateway-state/rc-tasks.key"
+if [ ! -d "$ETC" ] || [ -L "$ETC" ]; then
+  echo "No $ETC folder yet: the server runs with no task settings. Set up the server's keys first, then run this script again."
+elif [ ! -d "$CC_DIR/gateway-state" ] || [ -L "$CC_DIR/gateway-state" ] || [ ! -f "$GW_KEY_SRC" ] || [ -L "$GW_KEY_SRC" ]; then
+  echo "No gateway key for the task settings in $GW_KEY_SRC yet: the server runs with no task settings. Run setup-host.sh, then this script again."
+else
+  gw_key="$(head -c 200 "$GW_KEY_SRC" | tr -d '\n')"
+  [[ "$gw_key" =~ ^rct_[0-9a-f]{48}$ ]] || fail "$GW_KEY_SRC does not hold a gateway key for the task settings. Remove it, and run setup-host.sh to make a new one"
+  printf '%s\n' "$gw_key" > "$OUT/gateway.key"
+  gw_key=""
+  if same "$OUT/gateway.key" "$ETC/gateway.key" && [ "$(stat -f %Su:%Sg:%Lp "$ETC/gateway.key")" = root:_recursicachat:440 ]; then
+    echo "gateway.key is unchanged"
+  else
+    install -m 440 -o root -g _recursicachat "$OUT/gateway.key" "$ETC/gateway.key"
+    echo "gateway.key installed. The server reads it at its next start."
+  fi
+  if same "$OUT/task-settings.json" "$ETC/task-settings.json"; then
+    echo "task-settings.json is unchanged"
+  else
+    install -m 644 -o root -g wheel "$OUT/task-settings.json" "$ETC/task-settings.json"
+    echo "task-settings.json installed. The server reads it at its next start."
+  fi
+fi
+
 # sudo rc-deploy and sudo rc-clear: links in /usr/local/bin, only when only root can change that
 # folder, so the name sudo runs always leads to the root-owned script.
 if [ "$(stat -f '%Su' /usr/local/bin 2>/dev/null)" = root ] && [ $((8#$(stat -f '%Lp' /usr/local/bin) & 8#022)) = 0 ]; then

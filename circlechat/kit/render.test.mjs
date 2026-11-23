@@ -98,6 +98,59 @@ test("each agent on the RecursicaChat 2.0 server gets a gateway handle of its ow
   assert.equal(g.agents["rc-betty"], undefined, "only agents with a recursicachat block");
 });
 
+// A task's Model use setting on the RecursicaChat 2.0 server: the gateway asks the server's gateway
+// listener for each task's choice, and the server's own key file holds the same key.
+test("gateway.json names the server's gateway listener, its key file, the stall and each agent's handle there", () => {
+  const s = clone();
+  s.site.gateway_local_port = 4005;
+  s.recursicachat = {};
+  s.agents.loki.recursicachat = { model: "local-small", budget_usd: 5 };
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(render(s).gateway.recursicachat_tasks, {
+    url: "http://host.docker.internal:3101",
+    key_file: "/state/rc-tasks.key",
+    stall_minutes: 15,
+    handles: { "rc-loki": "loki" },
+  });
+  s.site.cloud_models = { stall_minutes: 20 };
+  assert.deepEqual(validate(s), [], "the cluster's own stack may set the stall alone");
+  assert.equal(render(s).gateway.recursicachat_tasks.stall_minutes, 20);
+  assert.equal(render(example).gateway.recursicachat_tasks, undefined, "no RecursicaChat server: no task source");
+});
+
+test("gateway.json carries the stack's permission for cloud models", () => {
+  assert.equal(render(example).gateway.cloud_allowed, true, "the cluster's own stack");
+  const local = clientStack();
+  delete local.porter; delete local.model_keys;
+  for (const k of Object.keys(local.routes)) local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/"));
+  for (const k of Object.keys(local.routes)) if (!local.routes[k].length) delete local.routes[k];
+  assert.equal(render(local).gateway.cloud_allowed, false, "a client stack without the recorded permission");
+});
+
+test("site.cloud_models.stall_minutes is a whole number of minutes, and a client stack still records its permission", () => {
+  for (const v of [0, 1441, 2.5, "15", null]) {
+    const s = clone();
+    s.site.cloud_models = { stall_minutes: v };
+    assert.match(validate(s).join("\n"), /site\.cloud_models\.stall_minutes must be a whole number of minutes from 1 to 1440/, String(v));
+  }
+  const ok = clone();
+  ok.site.cloud_models = { stall_minutes: 1440 };
+  assert.deepEqual(validate(ok), []);
+  const c = clientStack();
+  c.site.cloud_models = { stall_minutes: 20 };
+  assert.match(validate(c).join("\n"), /site\.cloud_models must be an object with allowed: true or false/);
+  const internal = clone();
+  internal.site.cloud_models = {};
+  assert.match(validate(internal).join("\n"), /site\.cloud_models must be an object with allowed: true or false/, "an empty block is still a mistake");
+});
+
+test("site.gateway_local_port may not take the server's gateway listener's port", () => {
+  const s = clone();
+  s.recursicachat = {};
+  s.site.gateway_local_port = 3101;
+  assert.match(validate(s).join("\n"), /site\.gateway_local_port \(3101\) is already the RecursicaChat 2\.0 server's gateway listener/);
+});
+
 // A program in recursicachat.services with a gateway block: svc-<name> in gateway.json, with only its
 // routes, no cloud model, and its two caps.
 function withJudge() {

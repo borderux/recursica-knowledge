@@ -15,9 +15,22 @@
 // Every other path gets 404, whatever the key: LiteLLM's own endpoints, such as key and model
 // management, stay out of reach.
 //
-// A task's setting and an agent's running turns come from a task source (createGateway's db). No
-// task source runs today: CircleChat 1.x, the last one, is gone. So each request without a task key
-// is outside a task, and cluster only, and /task-key finds no task.
+// A task's setting and an agent's running turns come from a task source (createGateway's db). With a
+// recursicachat_tasks block in gateway.json, the source is the RecursicaChat 2.0 server's gateway
+// listener (rc-tasks.mjs): each task's "Model use" setting, for the agents named rc-<handle>. Without
+// the block, or for any other agent, no task source answers (noTasks()): each request without a task
+// key is outside a task, and cluster only, and /task-key finds no task.
+//
+// gateway.json's cloud_allowed is the stack's permission for cloud models (kit/render.mjs
+// cloudAllowed). Without it, every request stays on the cluster, whatever the task's setting says.
+//
+// Each move of a task to the cloud is a switch. When a request the router places in its task goes to
+// the agent's cloud key, and no cluster answer for the task came since its last switch, the router raises the task's switch
+// count n in clocks.json and reports the switch to the task source (db.cloudSwitch(task, n, reason),
+// reason "cloud_from_start" for cloud_now and "stalled" for cloud_after_wait). A report that fails
+// stays in clocks.json, and the router sends it again each minute; the server keeps one row per
+// switch, so a second report of one switch changes nothing. The spend log line of the request that
+// made the switch records it as switch: { n, reason }.
 //
 // The router listens on two ports. Port 4000 serves the stack's own containers. Port 4001 is the
 // port for port jobs on other computers, which setup-host.sh publishes only on the control
@@ -32,7 +45,7 @@
 //
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
-// request and first cluster answer) and service-counts.json (each capped key's day
+// request, first cluster answer, switches and unsent switch reports) and service-counts.json (each capped key's day
 // and the requests it sent that day, written at each request, so a restart keeps the count). The
 // spend log gets one line per request:
 // the time, the task, the agent, the key's name, the route, the server and the model that
@@ -45,6 +58,7 @@ import os from "node:os";
 import path from "node:path";
 import { decide, settingFromRow } from "./policy.mjs";
 import { loadKeys, taskKey, taskSecret, verify } from "./keys.mjs";
+import { SWITCH_REASONS, rcTasks } from "./rc-tasks.mjs";
 
 const MINUTE = 60_000;
 export const SETTING_CACHE_MS = MINUTE;
@@ -146,13 +160,15 @@ const capped = (agent) => agent?.max_parallel !== undefined || agent?.daily_requ
 //   db          the task source: { runTasks(handle) -> the task id of each of the agent's running
 //                 turns (null for a turn outside a task), onTask(handle, task) -> true when the
 //                 agent created or is assigned to the task, setting(task) -> row or null }. The
-//                 default, noTasks(), knows no task.
+//                 default, noTasks(), knows no task. An optional cloudSwitch(task, n, reason)
+//                 takes each switch report: "recorded", "duplicate" or "refused", or throws to be
+//                 asked again after switchRetryMs.
 //   litellm     LiteLLM's base URL, such as http://cc-litellm:4000
 //   litellmKey  LiteLLM's master key. Only the router holds the master key, never an agent.
 //   allow    the address ranges allowed to use a key (allowedSources)
 //   refreshAllow  reads the address ranges again (allowedSources), for a network the container
 //                 joined after the gateway started
-export function createGateway({ config, db = noTasks(), litellm, litellmKey = "", stateDir, spendLog, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000 }) {
+export function createGateway({ config, db = noTasks(), litellm, litellmKey = "", stateDir, spendLog, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000, switchRetryMs = MINUTE }) {
   // setup-host.sh starts the gateway on one network and connects its other networks after the
   // start. A source outside the ranges read so far makes the gateway
   // read its networks again, at most every 5 seconds, before it refuses the key.
@@ -187,6 +203,41 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     try { setting = settingFromRow(await db.setting(task)); } catch { setting = hit?.setting ?? { mode: "cluster_only" }; }
     settings.set(task, { setting, at: now() });
     return setting;
+  }
+
+  // Switch reports: each task's unsent reports wait in clocks.json (clock.reports) until the task
+  // source takes them. A report the source refuses, or one older than a week, is dropped.
+  const sending = new Set();
+  async function sendSwitches() {
+    if (typeof db.cloudSwitch !== "function") return;
+    for (const [task, clock] of Object.entries(clocks.data)) {
+      for (const r of [...(clock?.reports ?? [])]) {
+        const id = `${task}:${r.n}`;
+        if (sending.has(id)) continue;
+        sending.add(id);
+        let done = now() - r.at > 7 * 24 * 60 * MINUTE;
+        if (!done) { try { done = Boolean(await db.cloudSwitch(task, r.n, r.reason)); } catch { /* asked again later */ } }
+        sending.delete(id);
+        if (done) { clock.reports = clock.reports.filter((x) => x.n !== r.n); if (!clock.reports.length) delete clock.reports; clocks.save(); }
+      }
+    }
+  }
+  if (typeof db.cloudSwitch === "function") {
+    const timer = setInterval(() => { sendSwitches().catch(() => {}); }, switchRetryMs);
+    timer.unref?.();
+    // Reports a restart left unsent.
+    setImmediate(() => { sendSwitches().catch(() => {}); });
+  }
+  // A request for the task goes to the cloud: a new switch unless the task's last request did too.
+  function switchTo(task, clock, mode) {
+    if (!clock || clock.onCloud) return null;
+    const n = (clock.switches ?? 0) + 1;
+    const reason = SWITCH_REASONS[mode] ?? "stalled";
+    Object.assign(clock, { switches: n, onCloud: true });
+    (clock.reports ??= []).push({ n, reason, at: now() });
+    clocks.save();
+    setImmediate(() => { sendSwitches().catch(() => {}); });
+    return { n, reason };
   }
 
   function log(entry) {
@@ -287,24 +338,28 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     else if (!who.task) { try { tasks = [...new Set(await db.runTasks(who.agent))]; } catch { tasks = [null]; } }
     if (tasks.length === 0) tasks = [null];
     const unsure = tasks.length > 1;
-    const view = { cloud: agent.cloud !== false, key: agent.key ?? null, local: Boolean(config.routes?.[route]?.local) };
+    // The stack's permission for cloud models, the agent's cloud switch and the agent's key all
+    // decide before any task setting does (policy.mjs).
+    const view = { stack: config.cloud_allowed === true, cloud: agent.cloud !== false, key: agent.key ?? null, local: Boolean(config.routes?.[route]?.local) };
     const options = [];
     for (const t of tasks) {
       const setting = t ? await settingOf(t) : { mode: "cluster_only" };
       // A clock starts only for a request the router can place in its task.
       let clock = t ? clocks.data[t] ?? null : null;
       if (t && !unsure && !clock) { clock = clocks.data[t] = { firstRequestAt: now() }; clocks.save(); }
-      options.push({ task: t, clock, d: decide({ task: t, setting, agent: view, clock, now: now() }) });
+      options.push({ task: t, clock, setting, d: decide({ task: t, setting, agent: view, clock, now: now() }) });
     }
-    const { task, clock, d } = strictest(options);
+    const { task, clock, setting, d } = strictest(options);
     const entry = { task, agent: who.agent, route, ...(unsure ? { tasks } : {}) };
     const gone = new AbortController();
     res.on("close", () => { if (!res.writableEnded) gone.abort(); });
 
     const toCloud = async (reason) => {
       const model = config.keys?.[view.key]?.model;
+      // Only a request the router places in its task makes a switch.
+      const sw = unsure ? null : switchTo(task, clock, setting?.mode);
       const up = await upstream(req, pathname, { ...body, model }, gone.signal);
-      relay(res, up, { ...entry, key: view.key, reason });
+      relay(res, up, { ...entry, key: view.key, reason, ...(sw ? { switch: sw } : {}) });
     };
 
     if (d.target === "fail") {
@@ -330,7 +385,9 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
           const up = await upstream(req, pathname, { ...body, model: route }, stop.signal);
           if (timer) clearTimeout(timer);
           if (up.statusCode >= 500 || up.statusCode === 429) { up.resume(); throw new Error(`cluster answered ${up.statusCode}`); }
-          if (clock && !unsure && up.statusCode < 300 && !clock.startedAt) { clock.startedAt = now(); clocks.save(); }
+          // The cluster's answer starts the task, and ends the task's time on the cloud: the task's
+          // next move to the cloud is a new switch.
+          if (clock && !unsure && up.statusCode < 300 && (!clock.startedAt || clock.onCloud)) { clock.startedAt ??= now(); clock.onCloud = false; clocks.save(); }
           return relay(res, up, { ...entry, key: "cluster" });
         } catch {
           if (timer) clearTimeout(timer);
@@ -394,12 +451,14 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   const handler = (req, res) => serve(req, res, false);
   // The handler for port 4001, the port for port jobs.
   handler.jobs = (req, res) => serve(req, res, true);
+  // Sends each unsent switch report now, for the tests.
+  handler.sendSwitches = sendSwitches;
   return handler;
 }
 
 // The strictest of several decisions, for a request the router cannot place in one task. Cluster
 // only (or a failure for want of a cluster model) beats any cloud use; a later move to the cloud
-// beats an earlier one; cloud now comes last. Each option is { task, clock, d }.
+// beats an earlier one; cloud now comes last. Each option is { task, clock, setting, d }.
 export function strictest(options) {
   const late = ({ d }) => (d.target === "cloud" ? -Infinity : d.until ?? Infinity);
   return options.reduce((a, b) => (late(b) > late(a) || (late(b) === late(a) && b.d.target === "fail") ? b : a));
@@ -412,12 +471,28 @@ export function noTasks() {
   return { runTasks: none, setting: none, onTask: none };
 }
 
+// The task source gateway.json names: the RecursicaChat 2.0 server's gateway listener, with
+// recursicachat_tasks { url, key_file, stall_minutes, handles }, or none. RC_TASKS_URL and
+// RC_TASKS_KEY_FILE replace the block's url and key_file.
+export function taskSource(config, env = {}) {
+  const rc = config.recursicachat_tasks;
+  const url = env.RC_TASKS_URL || rc?.url;
+  const keyFile = env.RC_TASKS_KEY_FILE || rc?.key_file;
+  if (!rc || typeof rc !== "object" || !url || !keyFile) return Object.assign(noTasks(), { describe: "task source: none, so every request is outside a task, and cluster only" });
+  const source = rcTasks({ url, keyFile, handles: rc.handles ?? {}, stallMinutes: rc.stall_minutes });
+  let hasKey = false;
+  try { hasKey = fs.readFileSync(keyFile, "utf8").trim() !== ""; } catch { /* no key yet */ }
+  const note = hasKey ? "" : `; no key in ${keyFile} yet, so every request stays on the cluster until the key is there`;
+  return Object.assign(source, { describe: `task source: RecursicaChat at ${url}, for ${Object.keys(rc.handles ?? {}).length} agent(s)${note}` });
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
   const config = JSON.parse(fs.readFileSync(env.GATEWAY_CONFIG ?? "/etc/gateway/gateway.json", "utf8"));
   const allow = await allowedSources(config.nodes);
+  const db = taskSource(config, env);
   const handler = createGateway({
-    config, litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
+    config, db, litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
     litellmKey: fs.readFileSync(env.LITELLM_KEY_FILE ?? "/state/litellm-master.key", "utf8").trim(),
     stateDir: env.GATEWAY_STATE ?? "/state", spendLog: env.SPEND_LOG ?? "/logs/spend.jsonl", allow,
     refreshAllow: () => allowedSources(config.nodes),
@@ -429,4 +504,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     server.listen(port, "0.0.0.0");
   }
   console.log(`gateway on :4000, and :4001 for port jobs; ${Object.keys(config.agents ?? {}).length} agent(s) in site.json`);
+  console.log(db.describe);
 }

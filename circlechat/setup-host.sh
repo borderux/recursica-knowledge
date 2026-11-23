@@ -157,6 +157,10 @@ if [ "$HELPER" = false ]; then
   # LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
   # folder, never in .env. Agents use their own gateway keys.
   sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
+  # The key of the RecursicaChat 2.0 server's gateway listener: the gateway asks the server for each
+  # task's Model use setting with it (gateway/rc-tasks.mjs). The kit's recursicachat/install.sh
+  # copies it into the server's own key file, /etc/recursicachat/gateway.key.
+  sudo test -s "$GW_STATE/rc-tasks.key" || echo "rct_$(openssl rand -hex 24)" | sudo tee "$GW_STATE/rc-tasks.key" >/dev/null
   # On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
   own_for_docker "$MODEL_KEYS" "$GW_STATE"
 fi
@@ -290,12 +294,15 @@ start_gateway() {
   [ -z "${GATEWAY_LOCAL_PORT:-}" ] || publish+=(-p "127.0.0.1:$GATEWAY_LOCAL_PORT:4000")
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then publish+=(-p "127.0.0.1:$JOBS_LOCAL_PORT:4001")
   elif [ -n "$TAILNET_ADDRESS" ]; then publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001"); fi
+  # The router asks the RecursicaChat 2.0 server's gateway listener, on this computer's 127.0.0.1, for
+  # each task's Model use setting, at host.docker.internal: the way LiteLLM reaches the Mac's Ollama.
   # The router reads its networks when it starts, and allows a key from each one. So every network
   # joins before the start: the models' network, and the port jobs' network when it exists.
   docker create --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
     -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
     -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
     -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
+    --add-host host.docker.internal:host-gateway \
     "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
   [ "$NET" = "$MODEL_NET" ] || docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
   if [ "$EGRESS" = on ] && docker network inspect "$JOBS_NET" >/dev/null 2>&1; then

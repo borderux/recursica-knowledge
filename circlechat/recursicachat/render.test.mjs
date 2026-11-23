@@ -40,6 +40,56 @@ test("every template renders with no token left", () => {
   assert.equal(files["rc-clear.mjs"], readFileSync(join(here, "rc-clear.mjs"), "utf8"), "copied as it is");
 });
 
+// The contract between the kit and the server: the task-settings file's exact shape.
+test("task-settings.json declares the Model use setting, exactly as the server reads it, with the stall", () => {
+  const want = {
+    settings: [
+      {
+        key: "model_use", label: "Model use", default: "local_only",
+        choices: [
+          { value: "local_only", label: "Local only" },
+          { value: "local_then_cloud", label: "Local, then cloud if significantly delayed" },
+          { value: "cloud_now", label: "Cloud from the start" },
+        ],
+      },
+    ],
+    stall_minutes: 15,
+  };
+  assert.deepEqual(JSON.parse(render(SITE, DIRS)["task-settings.json"]), want);
+  const later = { ...SITE, site: { cloud_models: { stall_minutes: 20 } } };
+  assert.deepEqual(JSON.parse(render(later, DIRS)["task-settings.json"]), { ...want, stall_minutes: 20 }, "site.cloud_models.stall_minutes");
+  // The server's own checks (keys and values [a-z0-9_]{1,40}, labels at most 80, 2 to 10 choices, the default among them).
+  for (const st of want.settings) {
+    assert.match(st.key, /^[a-z0-9_]{1,40}$/);
+    assert.ok(st.label.length <= 80 && st.choices.length >= 2 && st.choices.length <= 10);
+    assert.ok(st.choices.some((c) => c.value === st.default));
+    for (const c of st.choices) { assert.match(c.value, /^[a-z0-9_]{1,40}$/); assert.ok(c.label.length <= 80); }
+  }
+  for (const v of [0, 2000, "15", 1.5]) assert.throws(() => render({ ...SITE, site: { cloud_models: { stall_minutes: v } } }, DIRS), /stall_minutes must be a whole number/, String(v));
+});
+
+test("run.sh gives the server its task settings and its gateway listener, on 127.0.0.1 only, when the key file is there", () => {
+  const run = render(SITE, DIRS)["run.sh"];
+  assert.match(run, /^TASK_SETTINGS_FILE=\/etc\/recursicachat\/task-settings\.json$/m);
+  assert.match(run, /^GATEWAY_KEY_FILE=\/etc\/recursicachat\/gateway\.key$/m);
+  assert.match(run, /^GATEWAY_PORT=3101$/m);
+  assert.match(run, /^  export CIRCLECHAT_TASK_SETTINGS_FILE="\$TASK_SETTINGS_FILE"$/m);
+  assert.match(run, /^  export CIRCLECHAT_GATEWAY_PORT="\$GATEWAY_PORT" CIRCLECHAT_GATEWAY_HOST=127\.0\.0\.1 CIRCLECHAT_GATEWAY_KEY_FILE="\$GATEWAY_KEY_FILE"$/m);
+  assert.match(run, /root:_recursicachat:440 \] \|\| fail "\$GATEWAY_KEY_FILE must be root:_recursicachat, mode 440"/);
+  assert.match(run, /if \[ -e "\$GATEWAY_KEY_FILE" \]; then/, "no key file: no task settings and no listener");
+  assert.doesNotMatch(run, /CIRCLECHAT_GATEWAY_KEY=/, "the key itself is never in the environment");
+});
+
+test("install.sh copies the gateway's key into the server's key file only from a plain file with a key's shape", () => {
+  const install = readFileSync(join(here, "install.sh"), "utf8");
+  assert.match(install, /GW_KEY_SRC="\$CC_DIR\/gateway-state\/rc-tasks\.key"/);
+  assert.match(install, /\[ -L "\$GW_KEY_SRC" \]/, "never through a link");
+  assert.match(install, /\^rct_\[0-9a-f\]\{48\}\$/, "only a gateway key's shape");
+  assert.match(install, /install -m 440 -o root -g _recursicachat "\$OUT\/gateway\.key" "\$ETC\/gateway\.key"/);
+  assert.match(install, /install -m 644 -o root -g wheel "\$OUT\/task-settings\.json" "\$ETC\/task-settings\.json"/);
+  assert.doesNotMatch(install, /echo "\$gw_key"/, "the key is never printed");
+});
+
 test("rc-clear gets each service that has a job: its name, job, account and state folder", () => {
   const services = [
     { name: "example-service", agents: ["designer"], account: "_program", file: "/opt/program/run/token", job: "io.example.program", state: "/opt/program/home/state" },

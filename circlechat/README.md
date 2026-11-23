@@ -636,16 +636,18 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 
 ### Which model answers
 
-**The task's "Cloud models" setting decides, for each request.** The gateway reads the setting from the task source, and keeps a copy for at most one minute. No task source runs today, so every request uses the cluster only. The rules below hold for a later task source.
+**The task's setting decides, for each request.** The gateway reads the setting from the task source, and keeps a copy for at most one minute. The task source is the RecursicaChat 2.0 server, whose tasks have a "Model use" setting ("Model use on RecursicaChat 2.0" below). Without a RecursicaChat 2.0 server, no task source runs, and every request uses the cluster only.
 
-| Setting            | Who answers                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| Cluster only       | A cluster model, every time                                                                                        |
-| Cloud after a wait | A cluster model, until the task passes the wait to start or the time to finish. Then the agent's cloud key answers |
-| Cloud now          | The agent's cloud key, from the first request, so the work runs beside the cluster's other work                    |
+| Setting            | Model use on RecursicaChat 2.0             | Who answers                                                                                                                           |
+| ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Cluster only       | Local only, the default                    | A cluster model, every time                                                                                                           |
+| Cloud after a wait | Local, then cloud if significantly delayed | A cluster model, unless the cluster gives the task no answer for the stall, 15 minutes by default. Then the agent's cloud key answers |
+| Cloud now          | Cloud from the start                       | The agent's cloud key, from the first request, so the work runs beside the cluster's other work                                       |
 
+- **The stack's permission comes first.** With no permission for cloud models (a client or demo stack without `site.cloud_models.allowed`), with the agent's cloud switch off, or with no cloud key for the agent, every request uses the cluster, whatever the task's setting says.
 - **A request waits for the cluster as long as the cluster needs.** A busy or failing cluster is never a reason to call a cloud model. The gateway tries the cluster again until the cluster answers.
-- **The task's clock starts at the gateway's first request for the task.** The wait to start ends at the cluster's first answer. The time to finish counts from the first request.
+- **The task's clock starts at the gateway's first request for the task.** The stall counts from the first request, and ends at the cluster's first answer. There is no time to finish: once the cluster has answered, a long task stays on the cluster.
+- **An unknown setting, or a task source that does not answer, means the cluster only.**
 - **A request outside a task uses the cluster only,** such as a chat mention or a heartbeat.
 - **The gateway finds the task from the agent's running turn,** which the task source records. A port job's gateway key names the job's task.
 - **When the gateway cannot tell a request's task, the strictest setting decides.** An agent can have more than one running turn, or a turn outside a task. The gateway then uses the strictest setting among those turns, so Cluster only wins. Such a request starts no task's clock.
@@ -698,6 +700,7 @@ Keep `site.gateway_port + 1` free on a Mac. The config check refuses `site.port`
 - the route, and the server and model that answered: `server` is `<node>/<server id>` for a cluster model, or the provider for a cloud model
 - `backend`: the model's name in `site.json`, such as `machine-2/mlx/large-mlx`
 - the status and the token counts
+- `switch`: `{ "n": <n>, "reason": "stalled" | "cloud_from_start" }` on the request that moved its task to the cloud, the task's n-th move
 
 The log holds no prompt and no answer.
 
@@ -1248,6 +1251,27 @@ in the agent's prompt. The hourly sync's fourth step removes each bundled skill 
   names, each a plain path inside the skills folder. `rc-sync.sh --check` lists what it would remove.
 - **To give a skill back,** add its name to `"skills"`, then remove its line from the agent's
   `.bundled_manifest`: Hermes seeds it again at the engine's next start.
+
+### Model use on RecursicaChat 2.0
+
+**Each task on the server has a "Model use" setting.** The task's creator or an admin picks one of three choices on the task: Local only, the default; Local, then cloud if significantly delayed; or Cloud from the start. The model gateway reads the choice for each request of the task's agent, and "Which model answers" above says what each choice does. The server knows only the setting's name and choices, from a file the kit writes. The gateway does the rest.
+
+- **The stall is `site.cloud_models.stall_minutes`, 15 minutes unless site.json sets another whole number from 1 to 1440.** The cluster's own stack can set it alone, as `"cloud_models": { "stall_minutes": 20 }`. The gateway and the server's text about a stalled task use the same number.
+- **The server offers the setting from `/etc/recursicachat/task-settings.json`.** `recursicachat/install.sh` writes it from site.json (`taskSettings` in `kit/render.mjs`).
+- **The gateway asks the server on a listener of the server's own, at `127.0.0.1:3101` on the control Mac.** The listener serves only the gateway's four routes and takes only the gateway's key. The gateway's container reaches the Mac's `127.0.0.1` at `host.docker.internal`, as LiteLLM reaches the Mac's Ollama. `gateway.json`'s `recursicachat_tasks` block names the address, the key file and each agent's handle on the server: the gateway's `rc-<handle>` is the server's `<handle>`.
+- **One key, made once.** `setup-host.sh` makes the key in the gateway's state folder, `<CC_DIR>/gateway-state/rc-tasks.key`, with the same owner and mode as LiteLLM's master key there. `recursicachat/install.sh` copies it to `/etc/recursicachat/gateway.key`, `root:_recursicachat`, mode 440. The server reads the key at its start. Without the key file, `run.sh` starts the server with no task settings and no listener.
+- **The gateway tells the server about each move to the cloud.** The first request of a task that goes to the cloud since the cluster last answered the task is a switch. The gateway raises the task's switch count in `clocks.json` and sends the switch to the server, which posts a line in the task's chat. A report that fails waits in `clocks.json`, and the gateway sends it again each minute. The server keeps one row per switch, so a second report changes nothing.
+- **A server without the listener keeps every task on the cluster.** The gateway's question fails, and each request counts as outside a task, as before the setting existed.
+- **`sudo rc-clear` empties the task's settings, their changes and its switches with the task** (`task_settings`, `task_setting_changes` and `task_cloud_switches`).
+
+**To turn the setting on,** after the kit change reaches root's kit checkout and `setup-host.sh` has made the key:
+
+```bash
+sudo circlechat/recursicachat/install.sh   # task-settings.json, gateway.key and run.sh
+sudo rc-deploy                             # a server with the listener; it starts with the new run.sh
+```
+
+With the server already at the latest commit, restart it instead: `sudo launchctl kickstart -k system/io.recursica.recursicachat`.
 
 ### The RecursicaChat 2.0 server's service, backup and restore test
 

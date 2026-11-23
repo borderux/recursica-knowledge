@@ -10,6 +10,12 @@
 //   WS                the agents' workspace                       stack-*.sh
 //   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
 //   PROGRAMS          site.json recursicachat.services            rc-clear.sh: each entry with a "job"
+//   GATEWAY_PORT      the server's gateway listener's port         run.sh (kit/render.mjs
+//                     RC_GATEWAY_LISTENER_PORT)
+//
+// It also writes task-settings.json, the task settings the server offers on each task
+// (CIRCLECHAT_TASK_SETTINGS_FILE): the kit's "Model use" setting and the stall, from site.json's
+// site.cloud_models.stall_minutes (kit/render.mjs taskSettings).
 //
 // Every value is checked against a strict shape, because it lands in a root script.
 //
@@ -17,7 +23,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { rcServiceErrors } from "../kit/render.mjs";
+import { RC_GATEWAY_LISTENER_PORT, rcServiceErrors, taskSettings } from "../kit/render.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -89,9 +95,13 @@ export function values(site, { ownerHome, kit, ccDir, ws }) {
     CC_DIR: ccDir,
     WS: ws,
     BUILD_NODE: rc.node,
+    GATEWAY_PORT: String(RC_GATEWAY_LISTENER_PORT),
   };
   const errs = [];
   for (const [k, [shape, msg]] of Object.entries(SHAPES)) if (typeof v[k] !== "string" || !shape.test(v[k])) errs.push(msg);
+  // The stall lands in task-settings.json, which the server refuses whole when a value is wrong.
+  const stall = site?.site?.cloud_models?.stall_minutes;
+  if (stall !== undefined && !(Number.isInteger(stall) && stall >= 1 && stall <= 1440)) errs.push("site.cloud_models.stall_minutes must be a whole number of minutes from 1 to 1440");
   const p = programs(site);
   v.PROGRAMS = p.value;
   errs.push(...p.errs);
@@ -113,6 +123,7 @@ export function render(site, dirs) {
   const files = {};
   for (const name of TEMPLATES) files[name] = fill(readFileSync(join(here, name), "utf8"), v);
   for (const [name, from] of Object.entries(COPIED)) files[name] = readFileSync(from, "utf8");
+  files["task-settings.json"] = JSON.stringify(taskSettings(site), null, 2) + "\n";
   return files;
 }
 

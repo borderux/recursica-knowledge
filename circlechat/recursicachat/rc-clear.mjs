@@ -30,6 +30,9 @@ export const WORK = [
   ["files"],
   ["messages"],
   ["task_progress"], // a task's progress line, such as "Step 17 of 43", which goes with the task
+  ["task_settings"], // a task's choice for each task setting, such as Model use
+  ["task_setting_changes"], // each change of a task's setting: who, when, from and to
+  ["task_cloud_switches"], // each move of a task to a cloud model, which the model gateway reports
   ["tasks"], // a plan is the tasks that share a plan_id
   ["chat_reads"],
   ["chat_members"],

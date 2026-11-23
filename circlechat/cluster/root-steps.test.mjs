@@ -24,8 +24,12 @@ test("root prepares the gateway's files once, keeps the master key, and writes n
   for (const f of ["db-password", "db.url"]) assert.equal(fs.existsSync(path.join(gw, f)), false, f);
   const key = fs.readFileSync(path.join(gw, "litellm-master.key"), "utf8");
   assert.match(key, /^sk-[0-9a-f]{48}\n$/);
+  const rcKey = fs.readFileSync(path.join(gw, "rc-tasks.key"), "utf8");
+  assert.match(rcKey, /^rct_[0-9a-f]{48}\n$/, "the key of the RecursicaChat server's gateway listener");
+  assert.equal(mode(path.join(gw, "rc-tasks.key")), 0o600);
   prepareGateway({ ccDir });
   assert.equal(fs.readFileSync(path.join(gw, "litellm-master.key"), "utf8"), key);
+  assert.equal(fs.readFileSync(path.join(gw, "rc-tasks.key"), "utf8"), rcKey, "made once");
   assert.deepEqual(fs.readdirSync(gw).filter((f) => f.startsWith(".new.")), [], "no file left half written");
 });
 
@@ -33,7 +37,7 @@ test("on a Mac, the owner gets the state folder and each file root writes", () =
   const { ccDir, gw } = stack();
   const ids = { uid: process.getuid(), gid: process.getgid() };
   prepareGateway({ ccDir, ids });
-  for (const f of [gw, path.join(gw, "litellm-master.key"), path.join(ccDir, "model-keys.env")]) assert.equal(fs.statSync(f).uid, ids.uid, f);
+  for (const f of [gw, path.join(gw, "litellm-master.key"), path.join(gw, "rc-tasks.key"), path.join(ccDir, "model-keys.env")]) assert.equal(fs.statSync(f).uid, ids.uid, f);
 });
 
 test("root never writes through a link", () => {
