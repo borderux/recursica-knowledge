@@ -284,4 +284,8 @@ test("rc-sync.sh's skills step waits while the server isn't quiet, and starts no
   assert.match(script, /dk run --rm --network none --read-only --user 0:0 -v "\$vol:\/v:ro" --entrypoint \/bin\/sh "\$HERMES_IMAGE"/);
   assert.match(script, /dk run --rm --network none --read-only --user 0:0 -v "\$vol:\/v" --entrypoint \/bin\/sh "\$HERMES_IMAGE" -c 'cd \/v\/home\/skills && rm -rf -- "\$@"' sh \$dirs/);
   assert.ok(script.indexOf("serverQuiet") < script.indexOf("rc-skills.mjs\" plan"), "the quiet check comes first");
+  // The plan is stdout only. With 2>&1, Node's SQLite warning became a plan line: "could not read :",
+  // with an empty volume.
+  const planLine = script.split("\n").find((l) => l.includes('rc-skills.mjs" plan'));
+  assert.doesNotMatch(planLine, /2>&1/);
 });

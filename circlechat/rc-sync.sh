@@ -140,7 +140,9 @@ skills_step() {
     process.stdout.write((await serverQuiet(site)).why);
   ' "$HERE/cluster/quiet.mjs" "$SITE")" || { echo "skills: FAILED: the quiet check could not run (the lines above say why)"; FAILED=1; return; }
   if [ -n "$why" ]; then echo "skills: not now, the server isn't quiet ($why); the next sync tries again"; return; fi
-  plan="$(as_root "$KIT_NODE" "$HERE/kit/rc-skills.mjs" plan "$RC_DATA/circlechat.db" "$SITE" 2>&1)" || { echo "skills: FAILED: $plan"; FAILED=1; return; }
+  # stdout only: Node's warnings, such as SQLite's ExperimentalWarning, go to the terminal, never into
+  # the plan, where a warning line read as an agent with no volume.
+  plan="$(as_root "$KIT_NODE" "$HERE/kit/rc-skills.mjs" plan "$RC_DATA/circlechat.db" "$SITE")" || { echo "skills: FAILED: the plan could not be made (the lines above say why)"; FAILED=1; return; }
   while IFS=$'\t' read -r -u 4 h vol allow; do
     [ -n "$h" ] || continue
     found="$(dk run --rm --network none --read-only --user 0:0 -v "$vol:/v:ro" --entrypoint /bin/sh "$HERMES_IMAGE" -c 'cd /v/home/skills 2>/dev/null || exit 0; cat .bundled_manifest 2>/dev/null; echo ---; find . -name SKILL.md' 2>&1)" ||
