@@ -3,14 +3,13 @@
 // the stack.
 //
 // The kit checkout this script runs from moves to each release: root runs that checkout, which
-// sits outside the agents' workspace. The setup runs from the kit checkout, and the agents' skills
-// and personas come from it. The script never runs git in the workspace's checkouts: agents can
-// change them, and the agents update their own checkouts from inside their containers.
+// sits outside the agents' workspace. The setup runs from the kit checkout. The script never runs
+// git in the workspace's checkouts: agents can change them.
 //
 //   - A release with the same first number installs once an approver approves the release in
 //     Slack, with an authenticator code (cluster/release-gate.mjs). The root process that starts
 //     this script passes the approved releases in KIT_APPROVED. The install checks out the release,
-//     reruns the setup, syncs the agents, and checks the stack. On a failure, the stack goes back to
+//     reruns the setup, and checks the stack. On a failure, the stack goes back to
 //     the version it ran, and Slack gets a message. Until an approval, the release is held.
 //   - A release with a higher first number (a major version) asks first, in Slack.
 //   - With updates.follow "main" in the cluster's site.json, no release installs, not even with
@@ -24,8 +23,9 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { kitProblem } from "../cluster/kit-check.mjs";
-import { circlechatRetired, followsMain } from "./render.mjs";
+import { followsMain } from "./render.mjs";
 import { stackSlack } from "./slack.mjs";
+import { siteFile } from "./stack-paths.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
 export const parse = (t) => { const m = String(t).match(TAG); return m ? m.slice(1).map(Number) : null; };
@@ -53,27 +53,6 @@ export function decide(current, tags, state = {}, approved = []) {
   return { action: "ask", tag };
 }
 
-function pickUpCircleChat(ccDir, say, state, saveState) {
-  const cc = (...a) => execFileSync("git", ["-C", ccDir, ...a], { encoding: "utf8" }).trim();
-  const branch = cc("rev-parse", "--abbrev-ref", "HEAD");
-  if (branch === "HEAD") return;
-  cc("fetch", "--quiet", "origin", branch);
-  const before = cc("rev-parse", "HEAD"), after = cc("rev-parse", `origin/${branch}`);
-  if (before === after || state.ccFailed === after) return;
-  const port = (fs.readFileSync(path.join(ccDir, ".env"), "utf8").match(/^CC_API_BASE=http:\/\/localhost:(\d+)/m) ?? [])[1] ?? "8080";
-  // Stored files move from the old containers onto the storage volume before compose recreates
-  // them (carry-storage.sh). When the copy fails, nothing is recreated.
-  const carry = () => spawnSync("bash", [path.join(path.dirname(new URL(import.meta.url).pathname), "carry-storage.sh")], { cwd: ccDir, env: { ...process.env, CC_DIR: ccDir }, stdio: "inherit" }).status === 0;
-  const rebuild = () => carry() && spawnSync("docker", ["compose", "up", "-d", "--build"], { cwd: ccDir, stdio: "inherit" }).status === 0
-    && spawnSync("bash", ["-c", `for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:${port}/ && exit 0; sleep 10; done; exit 1`]).status === 0;
-  cc("merge", "--ff-only", "--quiet", `origin/${branch}`);
-  if (rebuild()) { console.log(`CircleChat updated to ${after.slice(0, 7)}`); return; }
-  cc("reset", "--hard", "--quiet", before);
-  rebuild();
-  state.ccFailed = after; saveState();
-  say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}, and stays there until the next CircleChat commit.`);
-}
-
 // The release notes of a tag, on the GitHub repo the kit checkout came from, or nothing for a
 // checkout from somewhere else.
 export function releaseNotes(remote, tag) {
@@ -82,28 +61,24 @@ export function releaseNotes(remote, tag) {
 }
 
 // The setup for one release, as the owner. With KIT_ROOT_STEPS, the root process that started this
-// script (cluster/root-steps.mjs) prepared the gateway's files, and passed the database role's
-// password on stdin. The setup then takes only the Docker steps, and the owner needs no sudo. After
-// this script ends, the root process runs the skill sync as the owner, then the key check. Without
-// KIT_ROOT_STEPS, such as a run by hand in a terminal, the setup uses sudo as before, and the skill
-// sync runs here as the owner.
+// script (cluster/root-steps.mjs) prepared the gateway's files. The setup then takes only the Docker
+// steps, and the owner needs no sudo. The root process may pass one line on stdin, which the setup
+// reads and ignores: an older setup read the database role's password of CircleChat 1.x there.
+// Without KIT_ROOT_STEPS, such as a run by hand in a terminal, the setup uses sudo as before.
 //   record(): called before each run of setup-host.sh, so the root process knows the setup ran
 export function setupRunner({ kit, rootSteps, password = "", record = () => {}, run = spawnSync }) {
   return () => {
     record();
     const env = { ...process.env };
     if (!rootSteps) {
-      const opts = { env, stdio: "inherit" };
-      const a = run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], opts);
-      const b = a.status === 0 ? run("bash", [path.join(kit, "circlechat/sync-skills.sh")], opts) : a;
-      return a.status === 0 && b.status === 0;
+      return run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], { env, stdio: "inherit" }).status === 0;
     }
     const a = run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], { env: { ...env, KIT_ROOT_STEPS: "1" }, input: `${password}\n`, stdio: ["pipe", "inherit", "inherit"] });
     return a.status === 0;
   };
 }
 
-// The database role's password, which the root process passes on stdin with KIT_ROOT_STEPS.
+// The line the root process passes on stdin with KIT_ROOT_STEPS, passed on to the setup.
 const rootPassword = process.env.KIT_ROOT_STEPS && import.meta.url === `file://${process.argv[1]}` ? (() => { try { return fs.readFileSync(0, "utf8").split("\n")[0].trim(); } catch { return ""; } })() : "";
 
 async function main() {
@@ -123,16 +98,11 @@ async function main() {
     process.exit(1);
   }
   delete state.kitProblem;
-  // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
-  // failure. The weekly upstream sync brings the original project's changes to that branch. A
-  // retired CircleChat 1.x (site.circlechat) is never rebuilt, so it never starts again.
   const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
-  let site = {}; try { site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")); } catch { /* the setup reports a missing site.json */ }
-  if (!circlechatRetired(site)) try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
   // A kit that follows main never checks out a release tag.
-  let clusterSite = {}; try { clusterSite = JSON.parse(fs.readFileSync(path.join(os.homedir(), "circlechat/site.json"), "utf8")); } catch {}
+  let clusterSite = {}; try { clusterSite = JSON.parse(fs.readFileSync(siteFile(os.homedir()), "utf8")); } catch {}
   if (followsMain(clusterSite)) {
-    console.log(`The kit follows main (updates.follow in ${path.join(os.homedir(), "circlechat/site.json")}), so no release installs${process.argv[2] ? `, not even ${process.argv[2]}` : ""}.`);
+    console.log(`The kit follows main (updates.follow in ${siteFile(os.homedir())}), so no release installs${process.argv[2] ? `, not even ${process.argv[2]}` : ""}.`);
     return;
   }
   git("fetch", "--tags", "--quiet");
@@ -158,9 +128,6 @@ async function main() {
     // A release that changes the services or timers needs the full setup, which asks for sudo.
     const changed = git("diff", "--name-only", before, "HEAD", "--", "circlechat/kit/lib.sh", "circlechat/setup-node.sh", "circlechat/cluster/install-cluster.sh");
     if (changed || /install_unit/.test(git("diff", before, "HEAD", "--", "circlechat/setup-host.sh"))) say(`:information_source: Upgraded to ${d.tag.split("@").pop()}. This release changes the computer's services: run setup-host.sh, setup-node.sh and install-cluster.sh once by hand to apply them.`);
-    // The upgrade syncs only the agents' skills and personas. A release that changes the rest of an
-    // agent's setup, such as the agent's gateway access, needs setup-agent.sh by hand.
-    if (git("diff", "--name-only", before, "HEAD", "--", "circlechat/setup-agent.sh", "circlechat/gateway/hermes-access.mjs")) say(`:information_source: Upgraded to ${d.tag.split("@").pop()}. This release changes the agents' setup: run setup-agent.sh once by hand for each agent.`);
     console.log(`upgraded to ${d.tag}`);
     return;
   }

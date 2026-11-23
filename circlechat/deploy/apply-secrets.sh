@@ -28,6 +28,11 @@ CONF="${AGENT_STACKS_CONF:-/etc/agent-stacks.conf}"
 # shellcheck disable=SC1090
 . "$CONF"   # OWNER, OWNER_HOME, KIT, NODE_BIN
 MODE=apply
+# The stack's folder: the new name when the new folder exists, else CircleChat 1.x's old name when
+# that folder exists, else the new name. kit/stack-paths.sh holds the same rule. Root runs this copy
+# of the script, so the rule sits here and root runs no kit file for it.
+#   pick_dir <new folder> <old folder>
+pick_dir() { if [ -d "$1" ] || [ ! -d "$2" ]; then printf '%s' "$1"; else printf '%s' "$2"; fi; }
 case "${1:-}" in --unlock) MODE=unlock; shift ;; --lock) MODE=lock; shift ;; esac
 STACK="${1:?usage: agent-stacks-apply <stack> <computer> <restart>}"
 COMPUTER="${2:?usage: agent-stacks-apply <stack> <computer> <restart>}"
@@ -41,7 +46,7 @@ case "$STACK" in
     CLUSTER_STACK="$("$NODE_BIN" -e '
       let s = {}; try { s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); } catch {}
       process.stdout.write(s.site?.stack_name || "cluster");
-    ' "$OWNER_HOME/circlechat/site.json")"
+    ' "$(pick_dir "$OWNER_HOME/recursica-stack" "$OWNER_HOME/circlechat")/site.json")"
     [ "$STACK" = "$CLUSTER_STACK" ] || { echo "Stack \"$STACK\" must be $CLUSTER_STACK (site.stack_name in the cluster's site.json) or client-<name>."; exit 1; }
     TENANT="" ;;
 esac
@@ -53,10 +58,10 @@ if [ "$(id -un)" = "$OWNER" ]; then bash "$KIT/circlechat/kit/check-kit.sh" "$KI
 else sudo -u "$OWNER" -H bash "$KIT/circlechat/kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1; fi
 
 if [ -z "$TENANT" ]; then
-  CC_DIR="$OWNER_HOME/circlechat"; NODE_ENV="$OWNER_HOME/.recursica-node.env"; SUFFIX=""
+  CC_DIR="$(pick_dir "$OWNER_HOME/recursica-stack" "$OWNER_HOME/circlechat")"; NODE_ENV="$OWNER_HOME/.recursica-node.env"; SUFFIX=""
 else
   # A client's secrets file sits inside the client's encrypted disk image.
-  CC_DIR="$OWNER_HOME/tenants/$TENANT/circlechat"; NODE_ENV="$OWNER_HOME/tenants/$TENANT/node.env"; SUFFIX="-$TENANT"
+  CC_DIR="$(pick_dir "$OWNER_HOME/tenants/$TENANT/stack" "$OWNER_HOME/tenants/$TENANT/circlechat")"; NODE_ENV="$OWNER_HOME/tenants/$TENANT/node.env"; SUFFIX="-$TENANT"
 fi
 
 if [ "$MODE" != apply ]; then
@@ -129,6 +134,8 @@ CLOUD="$("$NODE_BIN" -e '
 # each one it finds.
 RETIRED="ALAN_GITHUB_PAT BETTY_GITHUB_PAT PORTER_GITHUB_PAT"
 for k in $RETIRED; do has "$k" && echo "  $k is retired: each agent gets a token from the agent's GitHub App. Delete the secret from the GitHub environment."; done
+# The agent check's account belonged to CircleChat 1.x, which is gone. The helper writes no password.
+has CC_CHECK_PASSWORD && echo "  CC_CHECK_PASSWORD is retired with CircleChat 1.x. Delete the secret from the GitHub environment."
 has KEV_DATA_GITHUB_PAT && echo "  KEV_DATA_GITHUB_PAT is retired: the Kev notes push gets a token from the push's GitHub App (data.github_app). Delete the secret from the GitHub environment, and revoke the token on GitHub."
 # The apps in site.json: each agent's app, and kev-data for the Kev notes push's app. Alan's app on
 # a client stack that uses the public knowledge repo is refused by the config check, so no client
@@ -155,10 +162,6 @@ done
 if [[ " $ROLES " == *" control "* ]] && { [ -L "$CC_DIR/model-keys.env" ] || [ -n "$(find "$CC_DIR/model-keys.env" -links +1 2>/dev/null)" ]; }; then
   echo "Refused: $CC_DIR/model-keys.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
-# The same for the agent check's password file.
-if [[ " $ROLES " == *" control "* ]] && has CC_CHECK_PASSWORD && { [ -L "$CC_DIR/agent-check.env" ] || [ -n "$(find "$CC_DIR/agent-check.env" -links +1 2>/dev/null)" ]; }; then
-  echo "Refused: $CC_DIR/agent-check.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
-fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
 set_kv() {
@@ -168,7 +171,7 @@ set_kv() {
   awk -v k="$k" 'index($0, k "=") != 1' "$f" > "$tmp"
   printf '%s=%s\n' "$k" "$v" >> "$tmp"
   cat "$tmp" > "$f"; rm -f "$tmp"
-  # New files are created 600. An existing file keeps its mode: an agent's container reads its .env.
+  # New files are created 600. An existing file keeps its mode.
   echo "  $k -> $f"
 }
 
@@ -182,7 +185,6 @@ drop_kv() {
 
 WROTE_CONTROL=false
 WROTE_APPS=false
-WROTE_CHECK=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
@@ -203,11 +205,6 @@ if [[ " $ROLES " == *" control "* ]]; then
     echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
   done
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
-  # A retired token leaves each agent's .env.
-  for home in "$CC_DIR"/hermes-homes/.hermes-*; do
-    [ -d "$home" ] && [ ! -L "$home" ] && [ ! -L "$home/.env" ] || continue
-    for k in $RETIRED; do drop_kv "$home/.env" "$k"; done
-  done
   # Each GitHub App's private key goes to a root-owned file, outside the stack's folder: no agent,
   # container, .env file or backup holds the key. Only the token service reads the file
   # (circlechat/github/token-service.mjs). GitHub keeps the key's line breaks in the secret, and the
@@ -234,14 +231,6 @@ if [[ " $ROLES " == *" control "* ]]; then
     if grep -q '^KEV_DATA_GITHUB_PAT=' "$KEV_ENV" 2>/dev/null; then echo "  KEV_DATA_GITHUB_PAT left in $KEV_ENV: the file is a symlink or has a second hard link. Replace the file with a plain file."; fi
   else
     drop_kv "$KEV_ENV" KEV_DATA_GITHUB_PAT
-  fi
-  # The agent check's password (kit/check-account.mjs, kit/agent-check.mjs) goes in a file of its
-  # own, which the owner reads and no agent and no container reads. The check signs in to
-  # CircleChat with the password, as an account that is a member and never an admin.
-  if has CC_CHECK_PASSWORD; then
-    CHECK_ENV="$CC_DIR/agent-check.env"
-    set_kv "$CHECK_ENV" CC_CHECK_PASSWORD "$(val CC_CHECK_PASSWORD)"; chmod 600 "$CHECK_ENV"; "$CHOWN" -h "$OWNER" "$CHECK_ENV"
-    WROTE_CHECK=true
   fi
 fi
 
@@ -280,7 +269,6 @@ fi
 
 if [ "$RESTART" != true ]; then
   echo "Secrets written. Nothing restarted."
-  [ "$WROTE_CHECK" = false ] || echo "The agent check's account keeps the old password until a deploy with restart."
   exit 0
 fi
 
@@ -300,15 +288,14 @@ if [ "$WROTE_CLUSTER" = true ]; then
   for u in cluster-agent cluster-bot; do restart_unit "$u" 2>/dev/null || true; done
 fi
 if [ "$WROTE_CONTROL" = true ]; then
-  # The gateway reads the secrets file and the notifier reads .env when they start, so the kit
-  # recreates both. Agents read their own .env at the start of each turn and need no restart.
+  # The gateway reads the secrets file when the gateway starts, so the kit recreates the gateway.
   # The owner needs no sudo for this: the helper takes each step that needs root, and the owner
   # takes only the Docker steps (setup-host.sh with KIT_ROOT_STEPS=1).
-  #   1. Root: the gateway's state folder, LiteLLM's master key, and the database role's password
-  #      and address (setup-host.sh does the same in the full setup). On a Mac, the owner owns each
-  #      one, so the gateway's containers can mount them. The owner can change the stack's folder:
-  #      the helper refuses a symlinked state folder, writes each file as a new file that replaces
-  #      the old one, and gives the owner only the files the helper writes.
+  #   1. Root: the gateway's state folder and LiteLLM's master key (setup-host.sh does the same in
+  #      the full setup). On a Mac, the owner owns each one, so the gateway's containers can mount
+  #      them. The owner can change the stack's folder: the helper refuses a symlinked state folder,
+  #      writes each file as a new file that replaces the old one, and gives the owner only the files
+  #      the helper writes.
   GW_STATE="$CC_DIR/gateway-state"
   [ ! -L "$GW_STATE" ] || { echo "Refused: $GW_STATE is a symlink. Replace the symlink with a folder."; exit 1; }
   mkdir -p "$GW_STATE"; chmod 700 "$GW_STATE"
@@ -321,50 +308,10 @@ if [ "$WROTE_CONTROL" = true ]; then
     mv -f "$tmp" "$GW_STATE/$1"
   }
   [ -s "$GW_STATE/litellm-master.key" ] && [ ! -L "$GW_STATE/litellm-master.key" ] || echo "sk-$(openssl rand -hex 24)" | put_state litellm-master.key
-  # A password the kit made is 48 hex digits. Anything else, such as a file the owner swapped in,
-  # is replaced, so the helper never copies another file's text into the database address.
-  DB_PASSWORD="$(cat "$GW_STATE/db-password" 2>/dev/null || true)"
-  if [ -L "$GW_STATE/db-password" ] || ! [[ "$DB_PASSWORD" =~ ^[0-9a-f]{48}$ ]]; then
-    DB_PASSWORD="$(openssl rand -hex 24)"; printf '%s\n' "$DB_PASSWORD" | put_state db-password
-  fi
-  printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$DB_PASSWORD" | put_state db.url
   if [ ! -f "$KEYS_FILE" ]; then install -m 600 /dev/null "$KEYS_FILE"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$KEYS_FILE"; fi
-  # The two secrets of cloud-model requests (cluster/cloud-requests.mjs), the same files
-  # setup-host.sh makes, so both exist before setup-host.sh runs docker compose. On Linux, root owns both, in a
-  # folder the owner can only pass through (711). On a Mac, Docker in Colima's VM reads the files
-  # as the owner, so the owner owns the folder (700) and both files (600). A file that is not 64 hex
-  # digits, or is a link, is replaced with a new file.
-  CLOUD_DIR="$CC_DIR/cloud-approvals"
-  [ ! -L "$CLOUD_DIR" ] || { echo "Refused: $CLOUD_DIR is a symlink. Replace the symlink with a folder."; exit 1; }
-  mkdir -p "$CLOUD_DIR"
-  if [ "$MAC" = true ]; then chmod 700 "$CLOUD_DIR"; "$CHOWN" -h "$OWNER" "$CLOUD_DIR"; else chmod 711 "$CLOUD_DIR"; fi
-  for f in approval-token webhook-secret; do
-    if [ ! -L "$CLOUD_DIR/$f" ] && [ -f "$CLOUD_DIR/$f" ] && [[ "$(cat "$CLOUD_DIR/$f")" =~ ^[0-9a-f]{64}$ ]]; then
-      chmod 600 "$CLOUD_DIR/$f"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$CLOUD_DIR/$f"
-      continue
-    fi
-    tmp="$(mktemp "$CLOUD_DIR/.new.XXXXXX")"
-    openssl rand -hex 32 > "$tmp"; chmod 600 "$tmp"
-    [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$tmp"
-    mv -f "$tmp" "$CLOUD_DIR/$f"
-  done
-  #   2. The owner: the gateway and the notifier, in Docker. The database role's password goes on
-  #      stdin, never on a command line, which every account can read in ps.
-  printf '%s\n' "$DB_PASSWORD" | sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
-    PATH="$(dirname "$NODE_BIN"):$PATH" bash "$KIT/circlechat/setup-host.sh" --secrets-only
-  #   3. Root: the key check (gateway/key-check.mjs), as in every mode of setup-host.sh. The owner
-  #      dumps CircleChat's database from Docker, and root reads the secrets file and the agent
-  #      homes. The kit passed the kit check above.
-  DCTX="$(sed -n 's/^DOCKER_CONTEXT=//p' "$CC_DIR/kit-out/tenant.env" 2>/dev/null || true)"
-  (sudo -u "$OWNER" -H env ${DCTX:+DOCKER_CONTEXT="$DCTX"} PATH="$(dirname "$NODE_BIN"):$PATH" \
-    bash -c 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat' _ "$CC_DIR" 2>/dev/null || true) |
-    "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --private-keys "${AGENT_STACKS_APP_KEYS:-/var/lib/agent-stacks/github-apps}/$STACK" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
-fi
-# The agent check's account: made when missing, kept a member of the agents' workspace, and
-# locked, so the delivered password signs in only while check-agent.sh runs a check. The owner
-# runs the step, in Docker.
-if [ "$WROTE_CHECK" = true ]; then
-  sudo -u "$OWNER" -H env TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" PATH="$(dirname "$NODE_BIN"):$PATH" \
-    "$NODE_BIN" "$KIT/circlechat/kit/check-account.mjs" </dev/null || { echo "The check's password is written, and the check's account is not ready: see the line above."; exit 1; }
+  #   2. The owner: the gateway, in Docker. setup-host.sh reads one line on stdin with
+  #      KIT_ROOT_STEPS, for an older caller, and ignores the line.
+  sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
+    PATH="$(dirname "$NODE_BIN"):$PATH" bash "$KIT/circlechat/setup-host.sh" --secrets-only </dev/null
 fi
 echo "Secrets written and applied for stack $STACK on $COMPUTER."

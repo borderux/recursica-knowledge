@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The key check: fails when a cloud model key or a private key is in a place that must hold none,
-// such as CircleChat's database, an agent's Hermes home or a backup. The check finds a key two ways:
+// such as a database dump, an agent's home or a backup. The check finds a key two ways:
 // the exact values in the gateway's secrets file and in the GitHub Apps' key files, when the check
 // can read them, and the shapes of the keys: the providers' keys (cloud-keys.mjs), and a private
 // key in PEM form, such as a GitHub App's. The check prints where a key is and which kind, never the

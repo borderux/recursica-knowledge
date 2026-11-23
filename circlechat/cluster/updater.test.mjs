@@ -21,6 +21,12 @@ test("only the stacks this computer controls; a helper's copy of a stack is left
   fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ nodes: [{ name: "machine-1", control: true }, { name: "machine-2" }] }));
   assert.equal(localStacks(home, "machine-2").length, 0);
   assert.deepEqual(localStacks(home, "machine-1").map((s) => s.name), ["cluster"], "the cluster's own stack, with no stack_name");
+  assert.equal(localStacks(home, "machine-1")[0].ccDir, cc, "an old layout keeps ~/circlechat");
+  // After circlechat/migrate-off-1x.sh, the stack's folder is ~/recursica-stack, and ~/circlechat links to it.
+  const moved = path.join(home, "recursica-stack");
+  fs.renameSync(cc, moved);
+  fs.symlinkSync(moved, cc);
+  assert.deepEqual(localStacks(home, "machine-1").map((s) => s.ccDir), [moved]);
 });
 
 test("a new kit reaches the root-owned copies: the secrets helper on any computer, the disk helper on Linux and WSL", () => {

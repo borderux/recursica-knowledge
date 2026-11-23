@@ -9,10 +9,11 @@
 # reach /etc/agent-cluster.env through the Deploy secrets workflow for the cluster's own stack.
 set -euo pipefail
 NODE="${1:?usage: install-cluster.sh <computer name>}"
-SITE="${SITE:-$HOME/circlechat/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 KIT="$(cd "$HERE/../.." && pwd)"
 . "$KIT/circlechat/kit/lib.sh"
+# ~/recursica-stack/site.json, or ~/circlechat/site.json before the move (kit/stack-paths.sh).
+SITE="${SITE:-$(stack_dir "$HOME")/site.json}"
 # Root runs the cluster's services from this checkout. The checkout must sit outside the agents'
 # workspace.
 require_kit "$KIT"

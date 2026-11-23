@@ -7,10 +7,9 @@
 //   litellm.yaml          the model gateway: every node's models, every route, fallbacks in order
 //   kev-engines.txt       Kev-engine URLs, best first, comma-separated (Kev fails over in order)
 //   services/<node>.json  the long-running services each node runs (setup-node.sh installs them)
-//   app.env               APP_REPO / APP_REPO_GITHUB, substituted into agent personas at install
+//   app.env               APP_REPO / APP_REPO_GITHUB: the app the preview serves
 //   job-nodes.txt         job runner URLs, best first (Porter sends each adapter port to the first with room)
 //   porter.env            PORTER_OWNER, JOBD_ALLOWED_REPOS
-//   watches.json          the releases the release watcher announces
 //   tenant.env            TENANT, SUFFIX, COMPOSE_PROJECT_NAME, ports and DOCKER_CONTEXT for this stack
 //   gateway.json          the gateway's front door: each agent's routes, cloud switch and cloud key
 //
@@ -18,7 +17,7 @@
 // which is kept outside the repository.
 //
 // One site.json is one stack. A computer can hold several stacks, one per client (a tenant), each
-// in its own folder with its own database, files, agents, secrets and Slack channel. site.tenant
+// in its own folder with its own files, secrets, model gateway and Slack channel. site.tenant
 // names the stack, and every container, volume, port and background job of the stack carries that
 // name, so two stacks never share one. A client or demo stack (site.kind "client" or "demo") must
 // also run in its own Docker VM (site.docker_context), so no stack shares a Docker socket or
@@ -26,7 +25,7 @@
 //
 // A client or demo stack runs on computers picked for it (site.computers): one computer from the
 // cluster's site.json, which is then the stack's control computer, or the whole cluster, whose
-// control computer then runs the stack's CircleChat. The stack's site.json lists only those
+// control computer then runs the stack's gateway. The stack's site.json lists only those
 // computers, so the stack's agents, jobs, models and Kev's model use only them. kit/stack-site.mjs
 // writes such a site.json from the cluster's. A chosen computer's limits (nodes[].limits) make it
 // act like a smaller computer, and placeStack() leaves out each model that does not fit.
@@ -36,7 +35,6 @@ import net from "node:net";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
-import { EMAIL, eventsLine, notifyWarnings, peopleLine, validateNotify } from "../notify/events.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -56,11 +54,16 @@ export const clusterStackName = (site) => site?.site?.stack_name || DEFAULT_STAC
 export const stackName = (site) => site?.site?.tenant || clusterStackName(site);
 // The stack's GitHub environment, which the "Deploy secrets" workflow names.
 export const githubEnvironment = (site) => (site?.site?.tenant ? `client-${site.site.tenant}` : clusterStackName(site));
-// site.circlechat "retired": the stack's CircleChat 1.x server is retired and never starts again.
-// The setup, the image refresh, the CircleChat update and the uptime check skip it, and the gateway
-// reads no CircleChat database. Everything else the stack runs stays: the gateway, the job filter,
-// the app preview, Kev's jobs, the GitHub token service and the RecursicaChat 2.0 jobs.
-export const circlechatRetired = (site) => site?.site?.circlechat === "retired";
+// Settings that served CircleChat 1.x, which the kit no longer runs. A site.json that still sets
+// one keeps loading: the config check warns, and nothing reads the setting.
+export const RETIRED_SETTINGS = [
+  ["site.circlechat", (s) => s.site?.circlechat],
+  ["site.check_account", (s) => s.site?.check_account],
+  ["cloud_approvers", (s) => s.cloud_approvers],
+  ["notify.slack", (s) => s.notify?.slack],
+  ["notify.events", (s) => s.notify?.events],
+  ["notify.people", (s) => s.notify?.people],
+];
 // updates.follow: how the kit checkout on each computer moves. "releases", the default, installs
 // only approved kit releases (cluster/release-gate.mjs). "main" fast-forwards the checkout to each
 // verified commit on main (cluster/follow-main.mjs). Only the cluster's own site.json sets updates.follow.
@@ -233,8 +236,6 @@ export function gatewayConfig(site) {
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
     nodes: (site.nodes ?? []).filter((n) => !n.control && n.address !== "host.docker.internal").map((n) => n.address),
-    // A retired CircleChat 1.x: the router reads no CircleChat database (gateway/router.mjs).
-    ...(circlechatRetired(site) ? { circlechat: "retired" } : {}),
   };
 }
 
@@ -275,7 +276,8 @@ export function envFile(lines) {
 
 // The config check's warnings: settings that still work, and that a later release removes. A
 // warning never stops the setup.
-export const warnings = (site = {}) => [...notifyWarnings(site.notify)];
+export const warnings = (site = {}) => RETIRED_SETTINGS.filter(([, get]) => get(site) !== undefined)
+  .map(([name]) => `${name} is no longer read, since the kit no longer runs CircleChat 1.x. Remove ${name} from site.json`);
 
 export function squidConf(site = {}) {
   return `# Written by circlechat/kit/render.mjs. Each stack's outgoing filter.
@@ -471,58 +473,16 @@ export function placeStack(site) {
   return { site: out, notes, errs };
 }
 
-// The people who answer the stack's cloud-model requests in Slack (cluster/cloud-requests.mjs).
-// Each entry holds the person's CircleChat email and Slack user ID.
-export function cloudApproverErrors(site) {
-  const list = site.cloud_approvers;
-  if (list === undefined) return [];
-  if (!Array.isArray(list)) return ["cloud_approvers must be a list of { \"email\", \"slack_user\" }"];
-  const errs = [], emails = new Set(), users = new Set();
-  list.forEach((a, i) => {
-    const where = `cloud_approvers[${i}]`;
-    if (typeof a !== "object" || a === null) { errs.push(`${where} must be an object with email and slack_user`); return; }
-    const extra = Object.keys(a).filter((k) => !["email", "slack_user"].includes(k));
-    if (extra.length) errs.push(`${where}: ${extra.join(", ")} is not a setting. Use email and slack_user`);
-    if (typeof a.email !== "string" || !EMAIL.test(a.email)) errs.push(`${where}.email must be the person's CircleChat email: letters, digits and . _ % + - only`);
-    else if (emails.has(a.email.toLowerCase())) errs.push(`${where}.email ${a.email} is listed twice`);
-    else emails.add(a.email.toLowerCase());
-    if (typeof a.slack_user !== "string" || !/^[UW][A-Z0-9]{6,}$/.test(a.slack_user)) errs.push(`${where}.slack_user must be a Slack user ID, such as U0123ABCD`);
-    else if (users.has(a.slack_user)) errs.push(`${where}.slack_user ${a.slack_user} is listed twice`);
-    else users.add(a.slack_user);
-  });
-  if (list.length && !site.site?.slack_channel_id) errs.push("cloud_approvers needs site.slack_channel_id: the requests go to the stack's own channel");
-  return errs;
-}
-
-// The CircleChat account the agent check signs in as (kit/check-account.mjs, kit/agent-check.mjs):
-// an account made only for the check, a member of the agents' workspace and never an admin. The
-// email is site.check_account, or agent-check@<site.public_host>. The account receives no mail, so
-// the address only has to be unique on the stack. The password is CC_CHECK_PASSWORD, in the
-// stack's GitHub environment.
-export function checkAccountEmail(site) {
-  const set = site?.site?.check_account;
-  if (set !== undefined) return String(set).toLowerCase();
-  const host = String(site?.site?.public_host ?? "").toLowerCase();
-  return host ? `agent-check@${host}` : "";
-}
-export function checkAccountErrors(site) {
-  const set = site?.site?.check_account;
-  if (set === undefined) return [];
-  if (typeof set !== "string" || !EMAIL.test(set)) return ["site.check_account must be an email address for the agent check's own CircleChat account, such as agent-check@circlechat.example.com"];
-  if ((site.cloud_approvers ?? []).some((a) => String(a?.email ?? "").toLowerCase() === set.toLowerCase())) return ["site.check_account must be an account made only for the agent check, not a cloud approver's account"];
-  return [];
-}
-
 // site.gateway_local_port: the gateway's agents' port (4000), published on 127.0.0.1 of the control
 // computer for a RecursicaChat 2.0 server that runs on the computer itself, outside Docker. The port
 // takes only an agent's gateway key, as port 4000 does for the agents. Only the cluster's own stack
-// sets the port: a client or demo stack's agents run in that stack's own CircleChat.
+// sets the port: the RecursicaChat 2.0 server serves only the cluster's own stack.
 export function gatewayLocalPortErrors(site = {}) {
   const t = site.site ?? {};
   const p = t.gateway_local_port;
   if (p === undefined) return [];
   if (!(Number.isInteger(p) && p >= 1024 && p <= 65535)) return ["site.gateway_local_port must be a port number from 1024 to 65535"];
-  if (t.tenant !== undefined) return ["site.gateway_local_port is for the cluster's own stack only. A client or demo stack's agents use the stack's own CircleChat"];
+  if (t.tenant !== undefined) return ["site.gateway_local_port is for the cluster's own stack only. The RecursicaChat 2.0 server serves only the cluster's own stack"];
   const gw = t.gateway_port ?? 4000;
   const used = [
     ["site.port", t.port ?? 8080],
@@ -736,23 +696,19 @@ export function validate(site, { cluster } = {}) {
     else if (!SLUG.test(t.stack_name) || t.stack_name.startsWith("client-")) errs.push(`site.stack_name "${t.stack_name}" must be lowercase letters, digits and hyphens, and must not start with "client-"`);
   }
   if (t.slack_channel_id !== undefined && !/^[CG][A-Z0-9]{6,}$/.test(t.slack_channel_id)) errs.push("site.slack_channel_id must be a Slack channel ID, such as C0123ABCD");
-  errs.push(...cloudApproverErrors(site));
-  errs.push(...checkAccountErrors(site));
   // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
   // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
   // Settings that differ by client: the git host, how agents get access to a repo, the HTTPS
-  // address in front of CircleChat, and automatic upgrades.
+  // address in front of the app preview, and automatic upgrades.
   if (site.git?.host !== undefined && !["github", "other"].includes(site.git.host)) errs.push('git.host must be "github" or "other"');
   if (site.repos?.access !== undefined && !["service-account", "github-app", "admin-token"].includes(site.repos.access)) errs.push('repos.access must be "service-account", "github-app" or "admin-token"');
   if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
-  if (site.site?.circlechat !== undefined && !circlechatRetired(site)) errs.push('site.circlechat must be "retired", or left out while CircleChat 1.x runs');
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.updates?.follow !== undefined && !["releases", "main"].includes(site.updates.follow)) errs.push('updates.follow must be "releases" or "main"');
   if (site.updates?.follow !== undefined && t.tenant !== undefined) errs.push("updates.follow is for the cluster's own site.json only. One kit checkout serves every stack on a computer");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
-  errs.push(...validateNotify(site.notify));
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
   if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push(`privacy.mask_pii applies to cloud model calls, and this ${kindWord(site)} stack has no recorded permission for cloud models`);
   if (site.egress !== undefined) {
@@ -974,7 +930,6 @@ export function render(site) {
     .map((n) => url(n.control && n.tailnet_address ? { ...n, address: n.tailnet_address } : n, n.jobs.port));
   const p = site.porter;
   const porterEnv = p ? envFile([`PORTER_OWNER=${p.owner ?? ""}`, `JOBD_ALLOWED_REPOS=${p.targets.join(",")}`]) : "";
-  const watches = p ? [{ repo: p.watch, hook: "PORTER" }] : [];
   // Port jobs send their model requests to the control computer's gateway: on the control computer
   // through the job network, and from another computer over Tailscale.
   const control = nodes.find((n) => n.control);
@@ -1004,6 +959,8 @@ export function render(site) {
     `STACK_NAME=${stackName(site)}`,
     `TENANT_KIND=${st.kind ?? "internal"}`,
     `SUFFIX=${tenant ? `-${tenant}` : ""}`,
+    // CircleChat 1.x's Compose project. Its networks keep the gateway on a computer that a person has
+    // not moved to the kit's own network yet (setup-host.sh, circlechat/migrate-off-1x.sh).
     `COMPOSE_PROJECT_NAME=${tenant ? `cc-${tenant}` : "circlechat"}`,
     `PREVIEW_PORT=${st.preview_port ?? 5173}`,
     `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
@@ -1017,15 +974,9 @@ export function render(site) {
     `REPO_ACCESS=${site.repos?.access ?? "service-account"}`,
     `PROXY=${site.site?.proxy ?? "tailscale"}`,
     `UPGRADE_AUTO=${site.upgrade?.auto === true ? "on" : "off"}`,
-    // site.circlechat: "retired" when the stack's CircleChat 1.x server never starts again.
-    `CIRCLECHAT=${circlechatRetired(site) ? "retired" : "on"}`,
     // Task details in Slack: on for the cluster's own stack and a demo; off for a client stack unless the client
     // allows details (notify.details), because Slack is an outside company.
     `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
-    // The CircleChat events the notifier posts (notify.events), and the people who get a DM for a
-    // mention (notify.people): email=Slack user ID (notify/events.mjs).
-    `NOTIFY_EVENTS=${eventsLine(site.notify)}`,
-    `NOTIFY_PEOPLE=${peopleLine(site.notify)}`,
     `PUBLIC_KNOWLEDGE=${PUBLIC_KNOWLEDGE.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     // The GitHub token service: on with a github_apps block, and its port.
     `GITHUB_APPS=${hasApps(site) ? "on" : "off"}`,
@@ -1036,11 +987,7 @@ export function render(site) {
     // The control computer's limits: the most the stack's Docker VM may have (setup-host.sh checks).
     `LIMIT_CPUS=${control?.limits?.cpus ?? ""}`,
     `LIMIT_MEMORY_GB=${control?.limits?.memory_gb ?? ""}`,
-    // The cloud approvers (cluster/cloud-requests.mjs): the emails for CircleChat's CLOUD_APPROVERS,
-    // each email with the person's Slack user ID for the Slack posts, and the stack's control
-    // computer, whose cluster agent sends each answer to CircleChat.
-    `CLOUD_APPROVERS=${(site.cloud_approvers ?? []).map((a) => a.email.toLowerCase()).join(",")}`,
-    `CLOUD_APPROVER_SLACK=${(site.cloud_approvers ?? []).map((a) => `${a.email.toLowerCase()}=${a.slack_user}`).join(",")}`,
+    // The stack's control computer.
     `CONTROL_COMPUTER=${control?.name ?? ""}`,
   ]);
   const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":");
@@ -1048,7 +995,7 @@ export function render(site) {
   const ips = hosts.filter(isIp);
   // Squid refuses an empty list, so each list holds a placeholder that never matches.
   const egress = { allow: (hosts.filter((h) => !isIp(h)).join("\n") || "nothing.invalid") + "\n", allowIps: (ips.join("\n") || "192.0.2.1") + "\n", conf: squidConf(site) };
-  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv, egress, gateway: gatewayConfig(site) };
+  return { litellm, kev, services, appEnv, jobNodes, porterEnv, tenantEnv, egress, gateway: gatewayConfig(site) };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -1075,15 +1022,15 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.writeFileSync(path.join(out, "app.env"), r.appEnv);
   fs.writeFileSync(path.join(out, "job-nodes.txt"), r.jobNodes.join(",") + "\n");
   fs.writeFileSync(path.join(out, "porter.env"), r.porterEnv);
-  fs.writeFileSync(path.join(out, "watches.json"), JSON.stringify(r.watches) + "\n");
   fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
   fs.writeFileSync(path.join(out, "gateway.json"), JSON.stringify(r.gateway, null, 2) + "\n");
   fs.mkdirSync(path.join(out, "egress"), { recursive: true });
   fs.writeFileSync(path.join(out, "egress", "allow.txt"), r.egress.allow);
   fs.writeFileSync(path.join(out, "egress", "allow-ips.txt"), r.egress.allowIps);
   fs.writeFileSync(path.join(out, "egress", "squid.conf"), r.egress.conf);
-  // One-time consents: the cluster agent rewrites this file. An empty list holds a name that
-  // never resolves, because Squid refuses an empty list.
+  // One-time consents. Only CircleChat 1.x's filter took them, so nothing writes the list now. The
+  // filter's settings still name the file, and Squid refuses an empty list, so the list holds a
+  // name that never resolves.
   const once = path.join(out, "egress", "allow-once.txt");
   if (!fs.existsSync(once)) fs.writeFileSync(once, "nothing.invalid\n");
   console.log(`rendered: ${site.nodes.length} node(s), ${Object.keys(site.routes ?? {}).length} route(s), ${r.kev.length} Kev engine(s), ${r.jobNodes.length} job runner(s)`);

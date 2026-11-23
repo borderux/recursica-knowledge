@@ -15,6 +15,10 @@
 // Every other path gets 404, whatever the key: LiteLLM's own endpoints, such as key and model
 // management, stay out of reach.
 //
+// A task's setting and an agent's running turns come from a task source (createGateway's db). No
+// task source runs today: CircleChat 1.x, the last one, is gone. So each request without a task key
+// is outside a task, and cluster only, and /task-key finds no task.
+//
 // The router listens on two ports. Port 4000 serves the stack's own containers. Port 4001 is the
 // port for port jobs on other computers, which setup-host.sh publishes only on the control
 // computer's Tailscale address. On port 4001 every request needs a task key, /health included.
@@ -28,7 +32,7 @@
 //
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
-// request and first cluster answer), notified.json and service-counts.json (each capped key's day
+// request and first cluster answer) and service-counts.json (each capped key's day
 // and the requests it sent that day, written at each request, so a restart keeps the count). The
 // spend log gets one line per request:
 // the time, the task, the agent, the key's name, the route, the server and the model that
@@ -71,8 +75,8 @@ export function inCidr(ip, cidr) {
   return a.n >> shift === b.n >> shift;
 }
 
-// Who may use a key: this container's own networks (the stack's agents, the job filter on this
-// computer), the computer itself, and the stack's other computers from site.json.
+// Who may use a key: this container's own networks (such as the job filter's on this computer),
+// the computer itself, and the stack's other computers from site.json.
 export async function allowedSources(nodeAddresses, resolve = (h) => dns.lookup(h, { all: true })) {
   const out = ["127.0.0.0/8", "::1/128"];
   for (const list of Object.values(os.networkInterfaces())) for (const i of list ?? []) if (i.cidr) out.push(i.cidr);
@@ -138,18 +142,19 @@ export function createCaps({ stateDir, timeZone = "UTC", now = Date.now }) {
 const capped = (agent) => agent?.max_parallel !== undefined || agent?.daily_requests !== undefined;
 
 // --- the gateway ---------------------------------------------------------------------------------
-// createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, apiBase, now, allow, refreshAllow })
-//   db          { runTasks(handle) -> the task id of each of the agent's running turns (null for a
-//                 turn outside a task), onTask(handle, task) -> true when the agent created
-//                 or is assigned to the task, setting(task) -> row or null, botToken(handle) }
+// createGateway({ config, db, litellm, litellmKey, stateDir, spendLog, now, allow, refreshAllow })
+//   db          the task source: { runTasks(handle) -> the task id of each of the agent's running
+//                 turns (null for a turn outside a task), onTask(handle, task) -> true when the
+//                 agent created or is assigned to the task, setting(task) -> row or null }. The
+//                 default, noTasks(), knows no task.
 //   litellm     LiteLLM's base URL, such as http://cc-litellm:4000
 //   litellmKey  LiteLLM's master key. Only the router holds the master key, never an agent.
 //   allow    the address ranges allowed to use a key (allowedSources)
 //   refreshAllow  reads the address ranges again (allowedSources), for a network the container
 //                 joined after the gateway started
-export function createGateway({ config, db, litellm, litellmKey = "", stateDir, spendLog, apiBase, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000 }) {
-  // setup-host.sh starts the gateway on one network and connects the agents' network and the
-  // models' network after the start. A source outside the ranges read so far makes the gateway
+export function createGateway({ config, db = noTasks(), litellm, litellmKey = "", stateDir, spendLog, now = Date.now, allow = ["127.0.0.0/8", "::1/128"], refreshAllow = null, retryMs = 5000 }) {
+  // setup-host.sh starts the gateway on one network and connects its other networks after the
+  // start. A source outside the ranges read so far makes the gateway
   // read its networks again, at most every 5 seconds, before it refuses the key.
   let allowed = allow, readAt = -Infinity;
   const listed = (ip) => allowed.some((c) => inCidr(ip, c.includes("/") ? c : `${c}/${net.isIPv4(c) ? 32 : 128}`));
@@ -163,13 +168,12 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   fs.mkdirSync(stateDir, { recursive: true });
   const secret = taskSecret(stateDir);
   const clocks = jsonFile(path.join(stateDir, "clocks.json"), {});
-  const notified = jsonFile(path.join(stateDir, "notified.json"), {});
   const caps = createCaps({ stateDir, timeZone: config.timezone ?? "UTC", now });
   const settings = new Map();
   let keys = {}, keysAt = null;
   const keyFile = path.join(stateDir, "agent-keys.json");
   const currentKeys = () => {
-    // setup-agent.sh and keys.mjs change the file while the gateway runs: a revoke applies at once.
+    // rc-gateway-key.mjs and keys.mjs change the file while the gateway runs: a revoke applies at once.
     // Each save replaces the file, so a new inode marks a change even within one clock tick.
     let m = ""; try { const st = fs.statSync(keyFile); m = `${st.ino}:${st.mtimeMs}:${st.size}`; } catch { /* no keys yet */ }
     if (m !== keysAt) { keys = loadKeys(stateDir); keysAt = m; }
@@ -188,19 +192,6 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   function log(entry) {
     if (!spendLog) return;
     fs.appendFile(spendLog, JSON.stringify({ time: new Date(now()).toISOString(), ...entry }) + "\n", () => {});
-  }
-
-  async function tellTask(task, agent, text) {
-    if (!task || notified.data[task] || !apiBase) return;
-    notified.data[task] = new Date(now()).toISOString(); notified.save();
-    try {
-      const token = await db.botToken(agent);
-      if (!token) return;
-      await fetch(`${apiBase}/agent-api/tasks/${encodeURIComponent(task)}/comments`, {
-        method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${token}` },
-        body: JSON.stringify({ bodyMd: text }),
-      });
-    } catch { /* the error also reaches the agent's turn */ }
   }
 
   // Send one request to LiteLLM. Resolves once LiteLLM answers with headers, or rejects.
@@ -318,7 +309,6 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
 
     if (d.target === "fail") {
       const text = `The model gateway cannot run this task: ${d.reason}. Add a cluster model to the stack's site.json, or change the task's Cloud models setting.`;
-      await tellTask(task, who.agent, text);
       log({ ...entry, key: null, model: null, status: 409, reason: d.reason });
       return fail(res, 409, "no_cluster_model", text);
     }
@@ -415,54 +405,21 @@ export function strictest(options) {
   return options.reduce((a, b) => (late(b) > late(a) || (late(b) === late(a) && b.d.target === "fail") ? b : a));
 }
 
-// CircleChat's database: the task each of an agent's running turns works on (CircleChat stores it
-// in agent_runs.context_json.runTask), the task's setting, and the agent's bot token. The router
-// signs in with a read-only role that reads only these columns (setup-host.sh, gateway-db.sql).
-export function pgDb(url, pg) {
-  const pool = new pg.Pool({ connectionString: url, max: 4 });
-  const one = async (sql, args) => (await pool.query(sql, args)).rows[0] ?? null;
-  return {
-    async runTasks(handle) {
-      const r = await pool.query(`select r.context_json->'runTask'->>'taskId' as task from agent_runs r join agents a on a.id = r.agent_id
-        where a.handle = $1 and r.status = 'running'`, [handle]);
-      return r.rows.map((x) => x.task ?? null);
-    },
-    async setting(task) {
-      // A CircleChat without the setting: cluster only. A table made after setup-host.sh gave the
-      // router its grants gives a permission error: settingOf() then keeps the last setting it read,
-      // or cluster only.
-      return one("select mode, max_start_wait_minutes, max_finish_minutes from task_cloud_models where task_id = $1", [task]).catch((e) => {
-        if (e.code === "42P01") return null;
-        throw e;
-      });
-    },
-    async onTask(handle, task) {
-      return Boolean(await one(`select 1 from tasks t
-        join members m on m.workspace_id = t.workspace_id and m.kind = 'agent'
-        join agents a on a.id = m.ref_id and a.handle = $1
-        where t.id = $2 and (t.created_by = m.id or exists (select 1 from task_assignees ta where ta.task_id = t.id and ta.member_id = m.id))`, [handle, task]));
-    },
-    async botToken(handle) { return (await one("select bot_token from agents where handle = $1 limit 1", [handle]))?.bot_token ?? null; },
-  };
-}
-
-// A retired CircleChat 1.x (site.circlechat "retired" in gateway.json): no database and no db.url.
-// Each lookup fails at once, as with a database the router cannot reach, so each request is cluster
-// only, with no task, and the router tells no task.
-export function retiredDb() {
-  const none = async () => { throw new Error("CircleChat 1.x is retired"); };
-  return { runTasks: none, setting: none, onTask: none, botToken: none };
+// The task source when none runs: each lookup fails at once, as with a source the router cannot
+// reach. So each request without a task key is outside a task, and cluster only.
+export function noTasks() {
+  const none = async () => { throw new Error("no task source"); };
+  return { runTasks: none, setting: none, onTask: none };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
   const config = JSON.parse(fs.readFileSync(env.GATEWAY_CONFIG ?? "/etc/gateway/gateway.json", "utf8"));
-  const { default: pg } = await import("pg");
   const allow = await allowedSources(config.nodes);
   const handler = createGateway({
-    config, db: config.circlechat === "retired" ? retiredDb() : pgDb(fs.readFileSync(env.DATABASE_URL_FILE ?? "/state/db.url", "utf8").trim(), pg), litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
+    config, litellm: env.LITELLM_URL ?? "http://cc-litellm:4000",
     litellmKey: fs.readFileSync(env.LITELLM_KEY_FILE ?? "/state/litellm-master.key", "utf8").trim(),
-    stateDir: env.GATEWAY_STATE ?? "/state", spendLog: env.SPEND_LOG ?? "/logs/spend.jsonl", apiBase: env.CC_API ?? "http://api:3000/api", allow,
+    stateDir: env.GATEWAY_STATE ?? "/state", spendLog: env.SPEND_LOG ?? "/logs/spend.jsonl", allow,
     refreshAllow: () => allowedSources(config.nodes),
   });
   // A turn can wait for the cluster for as long as the turn runs.

@@ -1,11 +1,11 @@
-// The gateway's front door, with stand-ins for LiteLLM, CircleChat's database and CircleChat's API.
+// The gateway's front door, with stand-ins for LiteLLM and a task source.
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { createGateway, inCidr, retiredDb, strictest } from "./router.mjs";
+import { createGateway, inCidr, noTasks, strictest } from "./router.mjs";
 import { issue, revoke } from "./keys.mjs";
 
 const listen = (handler) => new Promise((r) => { const s = http.createServer(handler); s.listen(0, "127.0.0.1", () => r(s)); });
@@ -35,14 +35,6 @@ const litellm = await listen(async (req, res) => {
   res.end(JSON.stringify({ model, choices: [{ message: { content: "secret answer text" } }], usage: { prompt_tokens: 11, completion_tokens: 3 } }));
 });
 
-// CircleChat's API stand-in, for the gateway's comment on a task.
-const comments = [];
-const api = await listen(async (req, res) => {
-  let b = ""; for await (const c of req) b += c;
-  comments.push({ url: req.url, auth: req.headers.authorization, body: JSON.parse(b) });
-  res.end("{}");
-});
-
 const config = {
   agents: {
     betty: { routes: ["local-large"], cloud: true, key: "default" },
@@ -67,15 +59,14 @@ const db = {
   async runTasks(h) { const t = this.tasks[h]; return Array.isArray(t) ? t : t == null ? [] : [t]; },
   async onTask(h, t) { return h === "porter" && t.startsWith("t-sub"); },
   async setting(t) { this.reads++; return this.settings[t] ?? null; },
-  async botToken(h) { return `cc_bot_${h}`; },
 };
 const state = fs.mkdtempSync(path.join(os.tmpdir(), "gw-"));
 const spendLog = path.join(state, "spend.jsonl");
 let offset = 0;
 const now = () => Date.now() + offset;
 const keys = Object.fromEntries(["betty", "loki", "porter", "nolocal"].map((h) => [h, issue(state, h)]));
-const gw = await listen(createGateway({ config, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, apiBase: `${base(api)}/api`, now, retryMs: 20 }));
-test.after(() => { gw.close(); litellm.close(); api.close(); });
+const gw = await listen(createGateway({ config, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, now, retryMs: 20 }));
+test.after(() => { gw.close(); litellm.close(); });
 
 const ask = (key, model = "local-large", extra = {}) => fetch(`${base(gw)}/v1/chat/completions`, {
   method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
@@ -277,17 +268,11 @@ test("Porter gets a key for a task Porter created or is assigned to, and for no 
   assert.equal((await askFor("../bad id")).status, 400);
 });
 
-test("with no cluster model, a cluster-only task fails with a clear message in the task, posted once", async () => {
+test("with no cluster model, a cluster-only task fails with a clear message", async () => {
   db.tasks.nolocal = "t-none";
   const r = await ask(keys.nolocal, "cloud-only");
   assert.equal(r.status, 409);
-  assert.match((await r.json()).error.message, /no cluster model, and the task is cluster only/);
-  await ask(keys.nolocal, "cloud-only");
-  await new Promise((r) => setTimeout(r, 50));
-  assert.equal(comments.length, 1);
-  assert.equal(comments[0].url, "/api/agent-api/tasks/t-none/comments");
-  assert.equal(comments[0].auth, "Bearer cc_bot_nolocal");
-  assert.match(comments[0].body.bodyMd, /cannot run this task/);
+  assert.match((await r.json()).error.message, /cannot run this task: no cluster model, and the task is cluster only/);
 });
 
 test("a streamed answer is passed through, and its model and token counts reach the spend log", async () => {
@@ -311,7 +296,7 @@ test("a key works only from inside the cluster", async () => {
 });
 
 test("a network the gateway joins after it starts counts, and an outside address still gets nothing", async () => {
-  // setup-host.sh connects the agents' network after the gateway starts.
+  // setup-host.sh connects the gateway's other networks after the gateway starts.
   let reads = 0;
   const joined = await listen(createGateway({ config, db, litellm: base(litellm), stateDir: state, spendLog, now, allow: ["100.64.0.5"], refreshAllow: async () => { reads++; return ["100.64.0.5", "127.0.0.0/8"]; } }));
   const r = await fetch(`${base(joined)}/v1/models`, { headers: { authorization: `Bearer ${keys.betty}` } });
@@ -331,9 +316,18 @@ test("a network the gateway joins after it starts counts, and an outside address
   outside.close();
 });
 
-test("a retired CircleChat 1.x gives the router no database: every lookup fails at once, as with a database it cannot reach", async () => {
-  const db = retiredDb();
-  for (const [name, args] of [["runTasks", ["agent-a"]], ["setting", ["task-1"]], ["onTask", ["agent-a", "task-1"]], ["botToken", ["agent-a"]]]) {
-    await assert.rejects(db[name](...args), /retired/, name);
+test("with no task source, each lookup fails at once, and a request is outside a task and cluster only", async () => {
+  const none = noTasks();
+  for (const [name, args] of [["runTasks", ["agent-a"]], ["setting", ["task-1"]], ["onTask", ["agent-a", "task-1"]]]) {
+    await assert.rejects(none[name](...args), /no task source/, name);
   }
+  const plain = await listen(createGateway({ config, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, now, retryMs: 20 }));
+  const r = await fetch(`${base(plain)}/v1/chat/completions`, { method: "POST", headers: { authorization: `Bearer ${keys.betty}`, "content-type": "application/json" },
+    body: JSON.stringify({ model: "local-large", messages: [{ role: "user", content: "x" }] }) });
+  assert.equal(r.status, 200);
+  const log = await lastLog();
+  assert.deepEqual([log.task, log.key], [null, "cluster"]);
+  const tk = await fetch(`${base(plain)}/task-key`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}` } });
+  assert.equal(tk.status, 409, "no task source, so no running task and no task key");
+  plain.close();
 });

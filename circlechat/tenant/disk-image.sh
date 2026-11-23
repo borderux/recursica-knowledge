@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One encrypted disk image per client stack, on a Mac, on Linux or in WSL. The image holds the
-# client's whole stack: ~/tenants/<client> (CircleChat, agent homes, workspace, job folder, secrets
+# client's whole stack: ~/tenants/<client> (the stack's folder, the workspace, the job folder, secrets
 # files, logs) and the client's Docker VM. The image's key lives in the client's GitHub environment
 # as STACK_DISK_KEY, and in the password manager, never on this computer.
 #

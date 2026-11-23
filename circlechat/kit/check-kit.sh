@@ -6,7 +6,8 @@
 #
 # The check refuses the kit checkout in three cases:
 #   - The checkout sits inside an agents' workspace, which every agent container mounts and can
-#     change: $WS, ~/circlechat-workspace, or ~/tenants/<stack>/workspace.
+#     change: $WS, ~/recursica-workspace, ~/circlechat-workspace (CircleChat 1.x's old name), or
+#     ~/tenants/<stack>/workspace.
 #   - The group or other accounts can change a file or folder in the checkout, or a folder above
 #     the checkout. A root-owned folder with the sticky bit, such as /tmp, passes: other accounts
 #     can add files there, but cannot rename or delete the owner's folder.
@@ -22,7 +23,7 @@ KIT="$(cd -P "$KIT_IN" && pwd -P)" || { echo "No kit checkout at $KIT_IN."; exit
 fail() { echo "Refusing the kit checkout $KIT: $1 Use a checkout outside the agents' workspace that only $OWNER can change, such as $OWNER_HOME/recursica-knowledge."; exit 1; }
 
 # The agents' workspaces, as real paths: a link to a workspace counts as the workspace.
-spaces=("$OWNER_HOME/circlechat-workspace")
+spaces=("$OWNER_HOME/recursica-workspace" "$OWNER_HOME/circlechat-workspace")
 [ -n "${WS:-}" ] && spaces+=("$WS")
 for d in "$OWNER_HOME"/tenants/*/workspace; do [ -e "$d" ] && spaces+=("$d"); done
 for w in "${spaces[@]}"; do

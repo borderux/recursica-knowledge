@@ -7,12 +7,13 @@
 //   OWNER_HOME        the owner's home folder                     backup.sh, restore-test.sh, stack-*.sh
 //   KIT               the kit's circlechat folder                 backup.sh, restore-test.sh, stack-*.sh
 //   CC_DIR            the stack's folder                          backup.sh, restore-test.sh, stack-*.sh
+//   WS                the agents' workspace                       stack-*.sh
 //   BUILD_NODE        site.json recursicachat.node                rc-deploy.sh: the owner's Node, which builds
 //   PROGRAMS          site.json recursicachat.services            rc-clear.sh: each entry with a "job"
 //
 // Every value is checked against a strict shape, because it lands in a root script.
 //
-//   node render.mjs --site <site.json> --out <dir> --owner-home <dir> --kit <dir> --cc-dir <dir>
+//   node render.mjs --site <site.json> --out <dir> --owner-home <dir> --kit <dir> --cc-dir <dir> --ws <dir>
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,7 +31,7 @@ export const TEMPLATES = [
   "io.recursica.recursicachat-colima.plist",
   "io.recursica.recursicachat-backup.plist",
   "io.recursica.recursicachat-restore-test.plist",
-  // the stack's own files: site.json and the workspace (CircleChat 1.x's backup held them)
+  // the stack's own files: site.json and the workspace
   "stack-backup.sh",
   "stack-restore-test.sh",
   "io.recursica.stack-backup.plist",
@@ -52,6 +53,7 @@ const SHAPES = {
   OWNER_HOME: [PATH, "the owner's home folder must be an absolute path"],
   KIT: [PATH, "the kit's folder must be an absolute path"],
   CC_DIR: [PATH, "the stack's folder must be an absolute path"],
+  WS: [PATH, "the agents' workspace must be an absolute path"],
   BUILD_NODE: [PATH, "recursicachat.node must be the owner's Node 24, such as /opt/node/v24.22.3/bin/node: rc-deploy builds the server with it"],
 };
 
@@ -76,7 +78,7 @@ export function programs(site) {
 }
 
 /** The token values, or the list of what is wrong. */
-export function values(site, { ownerHome, kit, ccDir }) {
+export function values(site, { ownerHome, kit, ccDir, ws }) {
   const rc = site?.recursicachat ?? {};
   const v = {
     GOOGLE_CLIENT_ID: rc.google_client_id,
@@ -85,6 +87,7 @@ export function values(site, { ownerHome, kit, ccDir }) {
     OWNER_HOME: ownerHome,
     KIT: kit,
     CC_DIR: ccDir,
+    WS: ws,
     BUILD_NODE: rc.node,
   };
   const errs = [];
@@ -120,7 +123,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   };
   try {
     const site = JSON.parse(readFileSync(arg("--site"), "utf8"));
-    const files = render(site, { ownerHome: arg("--owner-home"), kit: arg("--kit"), ccDir: arg("--cc-dir") });
+    const files = render(site, { ownerHome: arg("--owner-home"), kit: arg("--kit"), ccDir: arg("--cc-dir"), ws: arg("--ws") });
     const out = arg("--out");
     mkdirSync(out, { recursive: true, mode: 0o700 });
     for (const [name, text] of Object.entries(files)) writeFileSync(join(out, name), text, { mode: 0o600 });

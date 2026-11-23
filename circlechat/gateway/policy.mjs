@@ -1,7 +1,7 @@
 // Which model answers one request: the cluster's own models, or the agent's cloud key. Pure rules,
 // safe to import from tests; router.mjs does the reads and the waiting.
 //
-// A task's "Cloud models" setting (CircleChat's task_cloud_models table) has three modes:
+// A task's "Cloud models" setting, from the router's task source (router.mjs), has three modes:
 //   cluster_only      never a cloud model. The request waits for the cluster as long as needed.
 //   cloud_after_wait  the cluster first. The agent's cloud key answers once the task passes its
 //                     wait to start (no cluster answer yet) or its time to finish.

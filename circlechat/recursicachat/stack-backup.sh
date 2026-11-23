@@ -4,8 +4,8 @@
 # from site.json and installs it as /opt/recursicachat/bin/stack-backup.sh, root:wheel 755. Root runs it
 # from io.recursica.stack-backup at 04:00, after the RecursicaChat server's backup at 03:30.
 #
-# CircleChat 1.x's nightly backup was these files' only backup. With 1.x retired (site.circlechat), it
-# no longer runs, and the RecursicaChat server's backup holds only the server's data.
+# CircleChat 1.x's nightly backup held these files. 1.x is gone, and the RecursicaChat server's backup
+# holds only the server's data.
 #
 # 1. Root lists what goes in, with node_modules folders and .env files left out, and stops when a file
 #    is named like a key, or holds the value of the vault key or the restic password.
@@ -25,7 +25,11 @@ TAG=stack-files  # the restic repository and tag
 OWNER_HOME=@OWNER_HOME@
 KIT=@KIT@
 CC_DIR=@CC_DIR@
-WS="$OWNER_HOME/circlechat-workspace"
+WS=@WS@
+# migrate-off-1x.sh moves the stack's folder and the workspace to their new names, and leaves each old
+# name as a link to the new folder. A script installed before the move then follows the move here.
+[ -L "$CC_DIR" ] && [ -d "$OWNER_HOME/recursica-stack" ] && [ ! -L "$OWNER_HOME/recursica-stack" ] && CC_DIR="$OWNER_HOME/recursica-stack"
+[ -L "$WS" ] && [ -d "$OWNER_HOME/recursica-workspace" ] && [ ! -L "$OWNER_HOME/recursica-workspace" ] && WS="$OWNER_HOME/recursica-workspace"
 SITE="$CC_DIR/site.json"
 export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 HOST="$(hostname -s)"

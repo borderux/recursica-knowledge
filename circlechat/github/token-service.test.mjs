@@ -19,8 +19,7 @@ const apps = {
 
 function setup() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "tokens-"));
-  const cc = path.join(root, "circlechat"), keysRoot = path.join(root, "keys");
-  for (const a of ["alan", "porter"]) { fs.mkdirSync(path.join(cc, "hermes-homes", `.hermes-${a}`), { recursive: true }); fs.writeFileSync(path.join(cc, "hermes-homes", `.hermes-${a}`, ".env"), "KEEP=1\nALAN_GITHUB_PAT=old\n"); }
+  const cc = path.join(root, "recursica-stack"), keysRoot = path.join(root, "keys");
   fs.mkdirSync(path.join(keysRoot, "cluster"), { recursive: true });
   for (const a of ["alan", "porter"]) fs.writeFileSync(path.join(keysRoot, "cluster", `${a}.pem`), pem, { mode: 0o600 });
   let n = 0, t = NOW;
@@ -31,34 +30,15 @@ function setup() {
     return { ok: false, status: 404 };
   };
   const svc = new TokenService({ site: { github_apps: apps }, stack: "cluster", ccDir: cc, keysRoot, fetchFn, now: () => t, log: () => {} });
-  return { svc, cc, minted, advance: (ms) => { t += ms; }, env: (a) => fs.readFileSync(path.join(cc, "hermes-homes", `.hermes-${a}`, ".env"), "utf8") };
+  return { svc, cc, minted, advance: (ms) => { t += ms; } };
 }
 
-test("each agent's token goes to the agent's .env, with the bot identity, and is renewed 15 minutes before the token ends", async () => {
+test("no agent's token goes to a Hermes home of CircleChat 1.x, and no token is minted for an agent until a port job asks", async () => {
   const s = setup();
-  assert.deepEqual(await s.svc.tick(), ["alan", "porter"]);
-  assert.match(s.env("alan"), /^KEEP=1$/m);
-  assert.match(s.env("alan"), /^ALAN_GITHUB_TOKEN=ghs_1$/m);
-  assert.match(s.env("alan"), /^GIT_COMMITTER_NAME=acme-alan\[bot\]$/m);
-  assert.match(s.env("alan"), /^GIT_AUTHOR_EMAIL=51\+acme-alan\[bot\]@users\.noreply\.github\.com$/m);
-  assert.doesNotMatch(s.env("alan"), /PRIVATE KEY/, "the agent gets the token, never the key");
-  assert.deepEqual(s.minted[0].body, { repositories: ["knowledge"], permissions: apps.alan.permissions });
-  s.advance(40 * 60_000);
-  assert.deepEqual(await s.svc.tick(), [], "a token with more than 15 minutes left stays");
-  s.advance(10 * 60_000);
-  assert.deepEqual(await s.svc.tick(), ["alan", "porter"]);
-  assert.match(s.env("alan"), /^ALAN_GITHUB_TOKEN=ghs_3$/m);
-});
-
-test("the service never writes through a symlinked .env, and skips an agent with no .env", async () => {
-  const s = setup();
-  const outside = path.join(s.cc, "..", "outside.txt");
-  fs.writeFileSync(outside, "outside\n");
-  const env = path.join(s.cc, "hermes-homes", ".hermes-alan", ".env");
-  fs.rmSync(env); fs.symlinkSync(outside, env);
-  fs.rmSync(path.join(s.cc, "hermes-homes", ".hermes-porter", ".env"));
+  for (const a of ["alan", "porter"]) { fs.mkdirSync(path.join(s.cc, "hermes-homes", `.hermes-${a}`), { recursive: true }); fs.writeFileSync(path.join(s.cc, "hermes-homes", `.hermes-${a}`, ".env"), "KEEP=1\n"); }
   assert.deepEqual(await s.svc.tick(), []);
-  assert.equal(fs.readFileSync(outside, "utf8"), "outside\n");
+  assert.equal(s.minted.length, 0);
+  for (const a of ["alan", "porter"]) assert.equal(fs.readFileSync(path.join(s.cc, "hermes-homes", `.hermes-${a}`, ".env"), "utf8"), "KEEP=1\n");
 });
 
 test("a port job gets a token for one of Porter's repos with the job's task key, and nothing without one", async () => {

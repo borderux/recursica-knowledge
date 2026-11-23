@@ -21,7 +21,11 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ONCE=""
 [ "${1:-}" = --once ] && ONCE=1
-CC_DIR="${CC_DIR:-$HOME/circlechat}"
+# The stack's folder: ~/recursica-stack, or CircleChat 1.x's old name, ~/circlechat, before a
+# person moved it (kit/stack-paths.sh).
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/kit/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME")}"
 SITE="${SITE:-$CC_DIR/site.json}"
 EVERY="${RC_SESSION_EVERY:-2700}"
 RETRY="${RC_SESSION_RETRY:-60}"

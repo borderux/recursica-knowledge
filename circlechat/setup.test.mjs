@@ -11,90 +11,101 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "site.example.json"), "utf8"));
 import { stackSite } from "./kit/stack-site.mjs";
 
-// CircleChat's compose.yml, as docker compose config prints the file.
-const COMPOSE_CONFIG = JSON.stringify({ services: { caddy: { image: "caddy:2" }, postgres: { image: "postgres:16-alpine" }, redis: { image: "redis:7-alpine" }, api: { build: { context: "." } } } });
-
-// The docker stand-in reads what setup-host.sh pipes into psql, as the real psql does. A stand-in
-// that exits first leaves the writer with a closed pipe: the writer then dies of SIGPIPE, and the
-// setup exits 141 now and then.
-function sandbox(site, { tenant, system, dockerContext = "default" } = {}) {
+// A computer with stand-ins for docker, sudo and the rest.
+//   layout: "new", the stack's folder ~/recursica-stack, or "old", CircleChat 1.x's ~/circlechat
+//   networks: the Docker networks that exist, such as CircleChat 1.x's circlechat_models
+function sandbox(site, { tenant, system, dockerContext = "default", layout = "new", networks = [] } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "setup-"));
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "compose -f") echo '${COMPOSE_CONFIG}' ;; "compose config") cat "${home}/compose-config.json" 2>/dev/null ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; *psql*) cat >/dev/null ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect") exit 1 ;; "network inspect") case " ${networks.join(" ")} " in *" $3 "*) exit 0 ;; esac; exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
-  const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
+  const own = layout === "old" ? "circlechat" : "recursica-stack";
+  const cc = tenant ? path.join(home, "tenants", tenant, layout === "old" ? "circlechat" : "stack") : path.join(home, own);
   fs.mkdirSync(cc, { recursive: true });
   fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify(site));
-  fs.writeFileSync(path.join(cc, ".env.example"), "PG_PASSWORD=circlechat\nSESSION_SECRET=change-me-at-least-32-chars-long-string\nMINIO_ROOT_USER=minioadmin\nMINIO_ROOT_PASSWORD=minioadmin\n");
-  fs.writeFileSync(path.join(cc, "compose.yml"), 'services:\n  caddy:\n    ports:\n      - "80:80"\n      - "443:443"\n');
-  fs.writeFileSync(path.join(cc, "compose.agents.yml"), "services:\n  api:\n    environment:\n      CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api\n");
   const env = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}`, ...(tenant ? { TENANT: tenant } : {}) };
   // The cluster's own site.json, which a client or demo stack's computers are checked against.
-  if (tenant) { fs.mkdirSync(path.join(home, "circlechat"), { recursive: true }); fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(example)); }
+  if (tenant) { fs.mkdirSync(path.join(home, own), { recursive: true }); fs.writeFileSync(path.join(home, own, "site.json"), JSON.stringify(example)); }
   const run = (script, ...args) => spawnSync("bash", [path.join(here, script), ...args], { env, encoding: "utf8", cwd: home });
   const dotenv = () => Object.fromEntries(fs.readFileSync(path.join(cc, ".env"), "utf8").split("\n").filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
   return { home, cc, run, dotenv, stub, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""), units };
 }
 
-test("setup-host --secrets-only writes the stack's settings and starts the gateway on the stack's network", () => {
+test("setup-host --secrets-only starts the gateway on the gateway's own network, and writes no CircleChat setting", () => {
   const s = sandbox(example);
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const e = s.dotenv();
-  assert.equal(e.PUBLIC_BASE_URL, `https://${example.site.public_host}`);
-  assert.equal(e.CC_API_BASE, `http://localhost:${example.site.port ?? 8080}/api`);
-  assert.match(e.COMPOSE_FILE, /compose\.egress\.yml/);
-  assert.equal(e.APPROVE_RISK_AT, "high");
-  const mcp = JSON.parse(e.CC_AGENT_MCP_SERVERS);
-  // The knowledge server runs inside each agent's own container, from the copy in the agent's own
-  // home (/opt/data), never from the workspace, which every agent can change.
-  assert.deepEqual(Object.keys(mcp).sort(), ["barb", "betty"]);
-  for (const agent of ["betty", "barb"]) {
-    assert.deepEqual(mcp[agent]["recursica-knowledge"], { command: "node", args: ["/opt/data/knowledge-mcp/tools/knowledge-mcp/server.mjs"], enabled: true, timeout: 30 });
-  }
-  assert.doesNotMatch(e.CC_AGENT_MCP_SERVERS, /\$|recursica-mcp|\/workspace/);
-  assert.equal(e.CC_HERMES_RUNTIME, "docker", "Hermes and its MCP servers run in each agent's container");
-  assert.equal(fs.existsSync(path.join(s.home, "circlechat-workspace/.recursica-mcp-version")), false);
-  assert.equal(e.CC_AGENT_NETWORK, "circlechat_agents");
-  assert.equal(e.CC_AGENT_API_BASE, "http://api:3000/api");
-  assert.notEqual(e.SESSION_SECRET, "change-me-at-least-32-chars-long-string");
-  assert.notEqual(e.MINIO_ROOT_PASSWORD, "minioadmin");
-  assert.notEqual(e.PG_PASSWORD, "circlechat");
-  assert.match(fs.readFileSync(path.join(s.cc, "compose.egress.yml"), "utf8"), /internal: true/);
+  for (const k of ["COMPOSE_FILE", "COMPOSE_PROJECT_NAME", "PUBLIC_BASE_URL", "CC_API_BASE", "CC_AGENT_NETWORK", "CC_AGENT_MCP_SERVERS", "CC_HERMES_IMAGE", "SESSION_SECRET", "APPROVE_RISK_AT", "HERMES_HOMES_DIR"]) assert.equal(e[k], undefined, k);
+  assert.match(e.JOBD_TOKEN, /^[0-9a-f]{48}$/);
+  for (const f of ["compose.egress.yml", "compose.privacy.yml", "compose.images.yml", "compose.workspace.yml", "compose.cloud-approvals.yml", "hermes-homes", "notify-state"]) assert.equal(fs.existsSync(path.join(s.cc, f)), false, f);
   // The gateway: LiteLLM alone on the gateway's network, with the keys from the secrets file and no
-  // environment file; the router in front, on the stack's network, the gateway's network and the
-  // agents' network, reachable over Tailscale for port jobs on other computers.
+  // environment file; the router in front, on the same network, reachable over Tailscale for port
+  // jobs on other computers.
   const calls = s.calls();
+  // The setup looks for CircleChat 1.x's networks, and uses none.
+  const changes = calls.split("\n").filter((l) => !l.startsWith("docker network inspect ")).join("\n");
+  assert.doesNotMatch(changes, /docker compose|psql|cc-slack-notify|cc-cloud-requests|docker run -d --name cc-egress |circlechat_/);
   const litellm = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-litellm "));
-  assert.match(litellm, /--network circlechat_models /);
+  assert.match(litellm, /--network gateway-models /);
   assert.match(litellm, /-v .*\/model-keys\.env:\/run\/secrets\/model-keys\.env:ro/);
   assert.match(litellm, /--entrypoint python ghcr\.io\/berriai\/litellm:main-stable@sha256:0123abcd \/kit\/start-litellm\.py/);
   assert.doesNotMatch(litellm, /--env-file|-p /, "LiteLLM gets no environment file and publishes no port");
-  // LiteLLM reaches the model servers directly, not through the outgoing filter, which keeps every
-  // model server's port closed to agents.
+  // LiteLLM reaches the model servers directly, not through the outgoing filter.
   assert.match(litellm, /--add-host host\.docker\.internal:host-gateway /);
   assert.doesNotMatch(litellm, /_PROXY=|_proxy=/, "LiteLLM does not use the outgoing filter");
-  assert.match(calls, /docker network create circlechat_models\n/, "the gateway's network has a route out");
-  assert.doesNotMatch(calls, /docker network connect \S* ?circlechat_agents cc-litellm/, "LiteLLM is not on the agents' closed network");
+  assert.match(calls, /docker network create gateway-models\n/, "the gateway's network has a route out");
   const router = calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
   // With the filter on, only the port for port jobs is published, on the Tailscale address.
-  assert.match(router, /--network circlechat_default -p 100\.64\.0\.1:4000:4001 -v /);
+  assert.match(router, /--network gateway-models -p 100\.64\.0\.1:4000:4001 -v /);
   assert.match(router, /LITELLM_URL=http:\/\/cc-litellm:4000/);
   assert.doesNotMatch(router, /--env-file|ANTHROPIC|DATABASE_URL|postgres:\/\//);
-  // The router's read-only database role, made before the router starts; its address is in a file.
-  assert.match(calls, /docker compose exec -T postgres psql -q -U postgres -d circlechat\n(.*\n)*docker create --name cc-gateway /);
-  assert.match(fs.readFileSync(path.join(s.units, "db.url"), "utf8"), /^postgres:\/\/cc_gateway_read:.*@postgres:5432\/circlechat$/m);
-  assert.match(calls, /docker network connect circlechat_models cc-gateway/);
-  assert.match(calls, /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
-  // The router allows a key from each network it has when it starts, so both join before the start.
-  assert.match(calls, /docker create --name cc-gateway (.*\n)*docker network connect circlechat_models cc-gateway\n(.*\n)*docker network connect --alias cc-gateway circlechat_agents cc-gateway\n(.*\n)*docker start cc-gateway\n/);
+  assert.doesNotMatch(calls, /docker network connect/, "the router needs no second network, and no port jobs' network exists here");
   assert.ok(fs.existsSync(path.join(s.cc, "gateway-app/router.mjs")));
+  assert.equal(fs.existsSync(path.join(s.units, "db.url")), false, "no database role");
   assert.equal(e.LITELLM_MASTER_KEY, undefined, "no agent gets a master key");
   const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
   assert.equal(lock["ghcr.io/berriai/litellm:main-stable"].ref, "ghcr.io/berriai/litellm:main-stable@sha256:0123abcd");
+  assert.equal(lock["nousresearch/hermes-agent:latest"], undefined, "no Hermes image");
+});
+
+test("a computer set up while CircleChat 1.x ran keeps the gateway on 1.x's networks, in every mode", () => {
+  for (const mode of ["--secrets-only", "--upgrade"]) {
+    const s = sandbox(example, { layout: "old", networks: ["circlechat_default", "circlechat_models", "circlechat_agents"] });
+    const r = s.run("setup-host.sh", mode);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.equal(s.cc, path.join(s.home, "circlechat"));
+    assert.ok(fs.existsSync(path.join(s.cc, "kit-out/gateway.json")), `${mode}: the old folder holds the rendered files`);
+    const calls = s.calls();
+    assert.match(calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-litellm ")), /--network circlechat_models /, mode);
+    assert.match(calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway ")), /--network circlechat_default /, mode);
+    assert.match(calls, /docker create --name cc-gateway (.*\n)*docker network connect circlechat_models cc-gateway\n(.*\n)*docker start cc-gateway\n/, mode);
+    const changes = calls.split("\n").filter((l) => !l.startsWith("docker network inspect ")).join("\n");
+    assert.doesNotMatch(changes, /docker network (create|rm)|circlechat_agents|gateway-models/, `${mode}: no network moves or is made`);
+    assert.match(r.stdout, /The gateway keeps CircleChat 1\.x's networks circlechat_default and circlechat_models\. To move it, run circlechat\/migrate-off-1x\.sh\./);
+  }
+});
+
+test("once the kit's own network exists, the gateway uses it, though 1.x's networks are still there", () => {
+  const s = sandbox(example, { networks: ["gateway-models", "circlechat_default", "circlechat_models"] });
+  assert.equal(s.run("setup-host.sh", "--secrets-only").status, 0);
+  const calls = s.calls();
+  assert.match(calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway ")), /--network gateway-models /);
+  assert.doesNotMatch(calls, /circlechat_|docker network create/);
+});
+
+test("with the filter on, the router joins the port jobs' network on this computer as cc-gateway, before it starts", () => {
+  const s = sandbox(example, { networks: ["jobs-egress"] });
+  assert.equal(s.run("setup-host.sh", "--upgrade").status, 0);
+  assert.match(s.calls(), /docker create --name cc-gateway (.*\n)*docker network connect --alias cc-gateway jobs-egress cc-gateway\n(.*\n)*docker start cc-gateway\n/);
+  const off = structuredClone(example);
+  off.egress = { ...(off.egress ?? {}), enabled: false };
+  const t = sandbox(off, { networks: ["jobs-egress"] });
+  assert.equal(t.run("setup-host.sh", "--upgrade").status, 0);
+  assert.doesNotMatch(t.calls(), /jobs-egress/);
 });
 
 test("on a Mac, setup-host gives the gateway's secrets file and state folder to the owner, and on Linux leaves both to root", () => {
@@ -106,101 +117,17 @@ test("on a Mac, setup-host gives the gateway's secrets file and state folder to 
     const calls = s.calls().split("\n");
     const gw = path.join(s.cc, "gateway-state");
     assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${path.join(s.cc, "model-keys.env")} ${gw}`), owned, system);
-    assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${gw}/db.url`), owned, system);
     assert.equal(calls.some((l) => /^sudo \S*chown/.test(l)), owned, `${system}: no other chown`);
   }
 });
 
-test("setup-host runs CircleChat's caddy, postgres and redis and the file store from pinned images, in every stack", () => {
-  const s = sandbox(example);
-  fs.writeFileSync(path.join(s.cc, "compose.storage.yml"), "services: {}\n");
-  const r = s.run("setup-host.sh", "--secrets-only");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.images\.yml:compose\.workspace\.yml(:|$)/);
-  assert.ok(!fs.existsSync(path.join(s.cc, "compose.storage.yml")), "the older file store override goes");
-  const storage = fs.readFileSync(path.join(s.cc, "compose.images.yml"), "utf8");
-  assert.match(storage, /caddy:\n    image: caddy:2@sha256:0123abcd\n/);
-  assert.match(storage, /postgres:\n    image: postgres:16-alpine@sha256:0123abcd\n/);
-  assert.match(storage, /redis:\n    image: redis:7-alpine@sha256:0123abcd\n/);
-  assert.doesNotMatch(storage, /api:/, "a service CircleChat builds is not pinned");
-  assert.match(storage, /minio:\n    image: cgr\.dev\/chainguard\/minio:latest@sha256:0123abcd\n    user: "0:0"/);
-  assert.match(storage, /minio-setup:\n    image: cgr\.dev\/chainguard\/minio-client:latest-dev@sha256:0123abcd/);
-  const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
-  assert.ok(lock["cgr.dev/chainguard/minio:latest"]);
-  assert.ok(lock["cgr.dev/chainguard/minio-client:latest-dev"]);
-  for (const t of ["caddy:2", "postgres:16-alpine", "redis:7-alpine"]) assert.equal(lock[t].ref, `${t}@sha256:0123abcd`);
-});
-
-test("setup-host mounts the shared workspace read-only in CircleChat's api, worker and bridge, in every stack and mode", () => {
-  const tenantSite = structuredClone(example);
-  Object.assign(tenantSite.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
-  tenantSite.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "client-byok" };
-  delete tenantSite.data; delete tenantSite.porter;
-  for (const [site, opts, modes] of [[example, {}, ["--secrets-only", "--upgrade"]], [tenantSite, { tenant: "acme" }, ["--secrets-only"]]]) {
-    for (const mode of modes) {
-      const s = sandbox(site, opts);
-      // CircleChat's compose.agents.yml names the mount in a comment, and an older kit added a
-      // read-write line after each docker.sock line.
-      fs.writeFileSync(path.join(s.cc, "compose.agents.yml"), [
-        "services:",
-        "  api:",
-        "    environment:",
-        "      CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api",
-        "    volumes:",
-        "      - /var/run/docker.sock:/var/run/docker.sock",
-        "      - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
-        "  bridge:",
-        "    environment:",
-        "      # needs the same shared-workspace host path the api uses. If you set it, also add",
-        "      #   - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
-        "      CC_SHARED_WORKSPACE_DIR: ${CC_SHARED_WORKSPACE_DIR:-}",
-        "    volumes:",
-        "      - /var/run/docker.sock:/var/run/docker.sock",
-        "      - ${CC_SHARED_WORKSPACE_DIR}:/workspace",
-        "",
-      ].join("\n"));
-      const r = s.run("setup-host.sh", mode);
-      const what = `${opts.tenant ?? "cluster"} ${mode}`;
-      assert.equal(r.status, 0, what + r.stdout + r.stderr);
-      const e = s.dotenv();
-      assert.ok(e.COMPOSE_FILE.split(":").includes("compose.workspace.yml"), what);
-      assert.ok(e.CC_SHARED_WORKSPACE_DIR, what);
-      const ws = fs.readFileSync(path.join(s.cc, "compose.workspace.yml"), "utf8");
-      for (const svc of ["api", "worker", "bridge"]) {
-        assert.match(ws, new RegExp(`\\n  ${svc}:\\n    volumes:\\n      - \\$\\{CC_SHARED_WORKSPACE_DIR\\}:/workspace:ro\\n`), `${what}: ${svc}`);
-      }
-      assert.doesNotMatch(ws, /:\/workspace(:rw)?\n/, `${what}: no read-write mount`);
-      const agents = fs.readFileSync(path.join(s.cc, "compose.agents.yml"), "utf8");
-      assert.doesNotMatch(agents, /^      - \$\{CC_SHARED_WORKSPACE_DIR\}:\/workspace$/m, `${what}: the older read-write line goes`);
-      assert.match(agents, /^      #   - \$\{CC_SHARED_WORKSPACE_DIR\}:\/workspace$/m, `${what}: CircleChat's comment stays`);
-      assert.equal((agents.match(/docker\.sock:\/var\/run\/docker\.sock/g) ?? []).length, 2, what);
-    }
-  }
-});
-
-test("every setup-host mode pins the Hermes image that runs each agent turn, so the weekly refresh's --upgrade moves the agents too", () => {
-  for (const mode of ["--secrets-only", "--upgrade"]) {
-    const s = sandbox(example);
-    const r = s.run("setup-host.sh", mode);
-    assert.equal(r.status, 0, r.stdout + r.stderr);
-    assert.equal(s.dotenv().CC_HERMES_IMAGE, "nousresearch/hermes-agent:latest@sha256:0123abcd", mode);
-    const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
-    assert.equal(lock["nousresearch/hermes-agent:latest"].ref, "nousresearch/hermes-agent:latest@sha256:0123abcd", mode);
-    // A moved pin in images.lock reaches .env on the next --upgrade.
-    lock["nousresearch/hermes-agent:latest"].ref = "nousresearch/hermes-agent@sha256:4567cdef";
-    fs.writeFileSync(path.join(s.cc, "images.lock"), JSON.stringify(lock));
-    assert.equal(s.run("setup-host.sh", "--upgrade").status, 0);
-    assert.equal(s.dotenv().CC_HERMES_IMAGE, "nousresearch/hermes-agent@sha256:4567cdef", mode);
-  }
-});
-
-test("setup-host --upgrade also brings the containers and the filter up", () => {
+test("setup-host --upgrade recreates the gateway, and starts no CircleChat container and no agents' filter", () => {
   const s = sandbox(example);
   const r = s.run("setup-host.sh", "--upgrade");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(r.stdout, /Upgrade applied/);
-  assert.match(s.calls(), /docker compose up -d --remove-orphans/);
-  assert.match(s.calls(), /docker run -d --name cc-egress /);
+  assert.match(r.stdout, /Upgrade applied: gateway recreated\./);
+  assert.match(s.calls(), /^docker create --name cc-gateway /m);
+  assert.doesNotMatch(s.calls(), /docker compose|docker run -d --name cc-egress /);
 });
 
 test("a client stack with cloud models runs the masking services and passes them to the gateway", () => {
@@ -211,11 +138,13 @@ test("a client stack with cloud models runs the masking services and passes them
   const s = sandbox(site, { tenant: "acme" });
   const r = s.run("setup-host.sh", "--secrets-only");
   assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.dotenv().COMPOSE_FILE, /compose\.privacy\.yml/);
-  assert.equal(s.dotenv().COMPOSE_PROJECT_NAME, "cc-acme");
-  assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /presidio-analyzer/);
-  assert.match(s.calls(), /docker run -d --name cc-litellm-acme .*PRESIDIO_ANALYZER_API_BASE=http:\/\/presidio-analyzer:3000/);
-  assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /name: cc-acme_models\n    external: true/);
+  assert.equal(s.cc, path.join(s.home, "tenants/acme/stack"));
+  const calls = s.calls();
+  for (const svc of ["presidio-analyzer", "presidio-anonymizer"]) {
+    assert.match(calls, new RegExp(`^docker run -d --name cc-${svc}-acme --restart unless-stopped --network gateway-models-acme --network-alias ${svc} mcr\\.microsoft\\.com/${svc}:latest@sha256:0123abcd$`, "m"));
+  }
+  assert.match(calls, /docker run -d --name cc-litellm-acme .*--network gateway-models-acme .*PRESIDIO_ANALYZER_API_BASE=http:\/\/presidio-analyzer:3000/);
+  assert.equal(fs.existsSync(path.join(s.cc, "compose.privacy.yml")), false);
 });
 
 test("setup-host moves an old ANTHROPIC_API_KEY out of .env, and stops on another cloud key there", () => {
@@ -233,8 +162,8 @@ test("setup-host moves an old ANTHROPIC_API_KEY out of .env, and stops on anothe
 
 test("setup-host stops when TENANT and site.tenant disagree", () => {
   const s = sandbox(example);
-  fs.mkdirSync(path.join(s.home, "tenants/acme/circlechat"), { recursive: true });
-  fs.copyFileSync(path.join(s.cc, "site.json"), path.join(s.home, "tenants/acme/circlechat/site.json"));
+  fs.mkdirSync(path.join(s.home, "tenants/acme/stack"), { recursive: true });
+  fs.copyFileSync(path.join(s.cc, "site.json"), path.join(s.home, "tenants/acme/stack/site.json"));
   const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, TENANT: "acme" }, encoding: "utf8" });
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /TENANT=acme but .* has site.tenant <none>/);
@@ -297,10 +226,10 @@ test("a stack's job runner on its one computer gets its own port and the compute
   assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
 });
 
-// tailscale serve status --json after the full setup: CircleChat on 443 and the app preview on
-// 5173, each on 127.0.0.1, tailnet only.
+// tailscale serve status --json after the full setup: the app preview on 5173, on 127.0.0.1,
+// tailnet only.
 const host = example.site.public_host;
-const siteServe = (extra = {}) => ({ Web: { [`${host}:443`]: { Handlers: { "/": { Proxy: "http://127.0.0.1:8080" } } }, [`${host}:5173`]: { Handlers: { "/": { Proxy: "http://127.0.0.1:5173" } } } }, ...extra });
+const siteServe = (extra = {}) => ({ Web: { [`${host}:5173`]: { Handlers: { "/": { Proxy: "http://127.0.0.1:5173" } } } }, ...extra });
 // A stand-in for tailscale that records each call and answers serve status with the given status.
 const tailscaleStub = (s, status = siteServe()) => s.stub("tailscale", `[ "$1 $2" = "serve status" ] && echo '${JSON.stringify(status)}'; exit 0`);
 // A full setup, with stand-ins for git, so the run clones nothing, and for the Mac's model and VM
@@ -336,7 +265,7 @@ test("on a Mac with Colima, the gateway's port for port jobs is on 127.0.0.1, an
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const calls = s.calls();
   const router = calls.split("\n").find((l) => l.startsWith("docker create --name cc-gateway "));
-  assert.match(router, /--network circlechat_default -p 127\.0\.0\.1:4001:4001 -v /);
+  assert.match(router, /--network gateway-models -p 127\.0\.0\.1:4001:4001 -v /);
   assert.doesNotMatch(router, /100\.64\.0\.1/, "Docker publishes nothing on the Tailscale address");
   assert.match(calls, /^tailscale serve --bg --tcp=4000 tcp:\/\/127\.0\.0\.1:4001$/m);
   // A request without a task key is refused, and the office network gets no answer on either port.
@@ -383,10 +312,12 @@ test("the full setup-host.sh adds the tailnet addresses and records its kit comm
     const marker = path.join(s.home, ".recursica-kit/network-applied/setup-host.sh");
     if (hold) {
       assert.doesNotMatch(s.calls(), /^tailscale serve --bg/m);
-      assert.match(r.stdout, /tailscale serve for CircleChat and the app preview waits for a person: run setup-host\.sh by hand\./);
+      assert.match(r.stdout, /tailscale serve for the app preview waits for a person: run setup-host\.sh by hand\./);
+      assert.match(r.stdout, /^Held for a person, with KIT_HOLD_NETWORK=1: removing CircleChat 1\.x's jobs \(circlechat-boot, backup, restore-test, release-watch, agents-sync\), which can stop work that runs\.$/m);
       assert.equal(fs.existsSync(marker), false);
     } else {
-      assert.match(s.calls(), /^tailscale serve --bg --https=443 http:\/\/127\.0\.0\.1:8080$/m);
+      assert.match(s.calls(), /^tailscale serve --bg --https=5173 http:\/\/127\.0\.0\.1:5173$/m);
+      assert.doesNotMatch(s.calls(), /--https=443/, "CircleChat 1.x gets no address");
       assert.doesNotMatch(r.stdout, /Held for a person/);
       assert.equal(fs.readFileSync(marker, "utf8"), `${sha}\n`);
     }
@@ -452,19 +383,6 @@ test("the setup stops when the gateway's local port is down, answers without a k
   assert.match(wide.stdout, /answers on 192\.168\.1\.20:4002, not only on 127\.0\.0\.1/);
 });
 
-test("the hourly sync job runs sync-skills.sh as the owner, never as root, with no chown or git setting", () => {
-  const me = os.userInfo().username;
-  for (const [system, unit, user] of [["Darwin", "io.recursica.agents-sync.plist", `<key>UserName</key><string>${me}</string>`], ["Linux", "agents-sync.service", `User=${me}`]]) {
-    const s = sandbox(example, { system });
-    const r = fullSetup(s);
-    assert.equal(r.status, 0, r.stdout + r.stderr);
-    const text = fs.readFileSync(path.join(s.units, unit), "utf8");
-    assert.ok(text.includes(user), `${system}: ${text}`);
-    assert.match(text, /sync-skills\.sh/);
-    assert.doesNotMatch(text, /chown|safe\.directory|User=root|<string>root<\/string>/, system);
-  }
-});
-
 test("on a Mac, the full setup runs Colima and Ollama as the kit's services, with the Ollama settings from site.json", () => {
   const site = structuredClone(example);
   Object.assign(site.nodes.find((n) => n.control).servers.find((sv) => sv.kind === "ollama"), { context_length: 131072, parallel: 4, keep_alive: "-1" });
@@ -519,22 +437,27 @@ test("on a Mac, the full setup stops and changes nothing while a LaunchDaemon ou
   assert.ok(!fs.existsSync(path.join(s.cc, ".env")));
 });
 
-test("the full setup gives CircleChat and the app preview tailnet-only addresses with tailscale serve", () => {
+test("the full setup gives the app preview a tailnet-only address with tailscale serve, and starts no CircleChat", () => {
   const s = sandbox(example, { system: "Linux" });
   const r = fullSetup(s);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const calls = s.calls();
-  assert.match(calls, /^tailscale serve --bg --https=443 http:\/\/127\.0\.0\.1:8080$/m);
   assert.match(calls, /^tailscale serve --bg --https=5173 http:\/\/127\.0\.0\.1:5173$/m);
+  assert.doesNotMatch(calls, /^tailscale serve .*--https=443/m);
   assert.doesNotMatch(calls, /^tailscale funnel/m, "the setup never turns on Funnel");
-  assert.match(r.stdout, /tailscale serve, tailnet only: https:\/\/circlechat\.example\.ts\.net passes to http:\/\/127\.0\.0\.1:8080/);
+  assert.doesNotMatch(calls, /docker compose|kb-proposals/);
+  assert.match(calls, /^docker run -d --name betty-proto /m);
+  assert.match(r.stdout, /tailscale serve, tailnet only: https:\/\/stack\.example\.ts\.net:5173 passes to http:\/\/127\.0\.0\.1:5173 for the app preview\./);
+  assert.ok(fs.existsSync(path.join(s.home, "recursica-workspace", "recursica-knowledge", ".git")), "the workspace has the new name");
+  assert.equal(fs.existsSync(path.join(s.cc, "hermes-homes")), false);
+  for (const u of ["agents-sync.service", "release-watch.service", "circlechat-boot.service", "backup.service"]) assert.equal(fs.existsSync(path.join(s.units, u)), false, u);
 });
 
 test("the full setup stops when a serve rule is missing, or when Funnel serves a port to the internet", () => {
   const noPreview = siteServe(); delete noPreview.Web[`${host}:5173`];
   for (const [status, message] of [
     [noPreview, /HTTPS port 5173 does not pass to http:\/\/127\.0\.0\.1:5173/],
-    [siteServe({ AllowFunnel: { [`${host}:443`]: true } }), /Funnel serves HTTPS port 443 to the internet\. Turn Funnel off: tailscale funnel --https=443 off/],
+    [siteServe({ AllowFunnel: { [`${host}:5173`]: true } }), /Funnel serves HTTPS port 5173 to the internet\. Turn Funnel off: tailscale funnel --https=5173 off/],
   ]) {
     const r = fullSetup(sandbox(example, { system: "Linux" }), status);
     assert.equal(r.status, 1, r.stdout + r.stderr);
@@ -542,14 +465,14 @@ test("the full setup stops when a serve rule is missing, or when Funnel serves a
   }
 });
 
-test("with site.proxy other, the full setup leaves tailscale serve alone and names the two local ports", () => {
+test("with site.proxy other, the full setup leaves tailscale serve alone and names the preview's local port", () => {
   const site = structuredClone(example);
   site.site.proxy = "other";
   const s = sandbox(site, { system: "Linux" });
   const r = fullSetup(s);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.doesNotMatch(s.calls(), /^tailscale serve --bg --https/m);
-  assert.match(r.stdout, /Point an HTTPS reverse proxy on this computer at http:\/\/127\.0\.0\.1:8080 for CircleChat, and at http:\/\/127\.0\.0\.1:5173 for the app preview/);
+  assert.match(r.stdout, /Point an HTTPS reverse proxy on this computer at http:\/\/127\.0\.0\.1:5173 for the app preview\./);
 });
 
 test("with the secrets helper, --secrets-only takes only the Docker steps, and the owner needs no sudo", () => {
@@ -561,13 +484,12 @@ test("with the secrets helper, --secrets-only takes only the Docker steps, and t
     // KIT_SECRETS_HELPER, the older name of KIT_ROOT_STEPS, from a secrets helper installed before.
     const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_SECRETS_HELPER: "1" }, input: `${pw}\n`, encoding: "utf8", cwd: s.home });
     assert.equal(r.status, 0, system + r.stdout + r.stderr);
-    assert.match(r.stdout, /Secrets applied: gateway and Slack notifier recreated/);
+    assert.match(r.stdout, /Secrets applied: gateway recreated\./);
     const calls = s.calls();
     assert.doesNotMatch(calls, /^sudo /m, `${system}: no sudo`);
-    assert.match(calls, /^docker compose exec -T postgres psql -q -U postgres -d circlechat$/m, "the router's database role");
+    assert.doesNotMatch(calls, /psql|docker compose/, "no database role");
     assert.match(calls, /^docker create --name cc-gateway /m);
     assert.match(calls, /^docker run -d --name cc-litellm /m);
-    // The helper writes the role's address and runs the key check, as root.
     assert.ok(!fs.existsSync(path.join(s.units, "db.url")));
     assert.doesNotMatch(calls, /key-check\.mjs/);
   }
@@ -577,15 +499,15 @@ test("with root's steps, --upgrade takes only the Docker steps, and the owner ne
   for (const system of ["Linux", "Darwin"]) {
     const s = sandbox(example, { system });
     s.stub("sudo", `echo "sudo: a password is required" >&2; exit 1`);
-    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--upgrade"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_ROOT_STEPS: "1" }, input: "0123456789abcdef0123456789abcdef0123456789abcdef\n", encoding: "utf8", cwd: s.home });
+    // A root process from this kit passes nothing on stdin.
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--upgrade"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_ROOT_STEPS: "1" }, input: "", encoding: "utf8", cwd: s.home });
     assert.equal(r.status, 0, system + r.stdout + r.stderr);
-    assert.match(r.stdout, /Upgrade applied: gateway and Slack notifier recreated/);
+    assert.match(r.stdout, /Upgrade applied: gateway recreated\./);
     const calls = s.calls();
     assert.doesNotMatch(calls, /^sudo /m, `${system}: no sudo`);
-    assert.match(calls, /^docker compose up -d --remove-orphans$/m);
-    assert.match(calls, /^docker compose exec -T postgres psql -q -U postgres -d circlechat$/m);
-    assert.match(calls, /^docker run -d --name cc-egress /m);
-    assert.doesNotMatch(calls, /key-check\.mjs/, "root runs the key check after the upgrade");
+    assert.doesNotMatch(calls, /docker compose|psql|docker run -d --name cc-egress /);
+    assert.match(calls, /^docker create --name cc-gateway /m);
+    assert.doesNotMatch(calls, /key-check\.mjs/);
   }
 });
 
@@ -616,163 +538,6 @@ test("the job runner listens on loopback and the computer's Tailscale addresses,
     assert.match(unit, new RegExp(` JOBD_HOST=${want.replace(/\./g, "\\.")} JOBD_PORT=`));
     assert.equal(/listens on 127\.0\.0\.1 only/.test(r.stdout), want === "127.0.0.1");
   }
-});
-
-test("the Slack notifier shows the stack's name as the sender of each message", () => {
-  const site = structuredClone(example);
-  site.notify = { ...(site.notify ?? {}), slack: true };
-  Object.assign(site.site, { stack_name: "ops", slack_channel_id: "CSTACK01" });
-  const s = sandbox(site);
-  fs.appendFileSync(path.join(s.cc, ".env.example"), "SLACK_BOT_TOKEN=xoxb-1\n");
-  const r = s.run("setup-host.sh", "--secrets-only");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  const notifier = s.calls().split("\n").find((l) => l.startsWith("docker run -d --name cc-slack-notify "));
-  assert.ok(notifier, r.stdout);
-  assert.match(notifier, / -e STACK_NAME=ops /);
-  // The quiet default, and no person for a DM.
-  assert.match(notifier, / -e NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected,container_stopped /);
-  assert.match(notifier, / -e NOTIFY_PEOPLE= /);
-  assert.ok(fs.existsSync(path.join(s.cc, "notify", "events.mjs")), "the notifier's events file sits next to notify.mjs");
-  // The notifier signs in as cc_notify, from a file: no database password in docker inspect.
-  assert.doesNotMatch(notifier, /postgres:\/\/|DATABASE_URL=/);
-  assert.match(notifier, / -v [^ ]*\/notify-state\/db\.url:\/run\/notify\/db\.url:ro -e DATABASE_URL_FILE=\/run\/notify\/db\.url /);
-  const url = fs.readFileSync(path.join(s.cc, "notify-state", "db.url"), "utf8");
-  assert.match(url, /^postgres:\/\/cc_notify:[0-9a-f]{48}@postgres:5432\/circlechat\n$/);
-  assert.equal(fs.statSync(path.join(s.cc, "notify-state")).mode & 0o777, 0o700);
-  for (const f of ["db.url", "db-password"]) assert.equal(fs.statSync(path.join(s.cc, "notify-state", f)).mode & 0o777, 0o600, f);
-  // A rerun keeps the same password.
-  assert.equal(s.run("setup-host.sh", "--secrets-only").status, 0);
-  assert.equal(fs.readFileSync(path.join(s.cc, "notify-state", "db.url"), "utf8"), url);
-});
-
-// Cloud-model requests in Slack (cluster/cloud-requests.mjs).
-function cloudSite() {
-  const site = structuredClone(example);
-  Object.assign(site.site, { slack_channel_id: "C0STACK01" });
-  site.cloud_approvers = [{ email: "pat@example.com", slack_user: "U0PAT0001" }];
-  return site;
-}
-
-test("setup-host makes the service token and the webhook secret once, in root-only files", () => {
-  const s = sandbox(cloudSite());
-  // The sudo stand-in finds no secret yet, so the setup makes both.
-  s.stub("sudo", `case "$*" in "test -s "*cloud-approvals*) exit 1 ;; esac; if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; fi; exit 0`);
-  const r = s.run("setup-host.sh", "--secrets-only");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  const calls = s.calls();
-  const dir = path.join(s.cc, "cloud-approvals");
-  assert.match(calls, new RegExp(`sudo chmod 711 ${dir}\\n`));
-  for (const f of ["approval-token", "webhook-secret"]) {
-    assert.match(calls, new RegExp(`sudo install -m 600 /dev/null ${dir}/${f}\\nsudo tee ${dir}/${f}\\n`), "the file is root-only before the secret goes in");
-    assert.match(fs.readFileSync(path.join(s.units, f), "utf8"), /^[0-9a-f]{64}\n$/);
-  }
-  const e = s.dotenv();
-  assert.equal(e.CLOUD_APPROVAL_TOKEN, undefined);
-  assert.equal(e.CLOUD_REQUEST_WEBHOOK_SECRET, undefined);
-
-  // A second run finds both secrets, and keeps them.
-  const again = sandbox(cloudSite());
-  assert.equal(again.run("setup-host.sh", "--secrets-only").status, 0);
-  assert.doesNotMatch(again.calls(), /sudo install -m 600 \/dev\/null \S*cloud-approvals/);
-});
-
-test("with cloud_approvers, CircleChat's api gets the approvers, the webhook's address and both secret files", () => {
-  const s = sandbox(cloudSite());
-  fs.appendFileSync(path.join(s.cc, ".env.example"), "SLACK_BOT_TOKEN=xoxb-1\n");
-  const dir = path.join(s.cc, "cloud-approvals");
-  fs.mkdirSync(dir);
-  for (const f of ["approval-token", "webhook-secret"]) fs.writeFileSync(path.join(dir, f), "s3cret-value\n");
-  const r = s.run("setup-host.sh", "--secrets-only");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.dotenv().COMPOSE_FILE, /:compose\.cloud-approvals\.yml$/);
-  const yml = fs.readFileSync(path.join(s.cc, "compose.cloud-approvals.yml"), "utf8");
-  assert.match(yml, /CLOUD_APPROVERS: "pat@example\.com"/);
-  assert.match(yml, /CLOUD_REQUEST_WEBHOOK_URL: http:\/\/cloud-requests:8080\/cloud-request/);
-  assert.match(yml, new RegExp(`- ${dir}/approval-token:/run/secrets/cloud-approval-token:ro`));
-  assert.match(yml, new RegExp(`- ${dir}/webhook-secret:/run/secrets/cloud-request-webhook-secret:ro`));
-  assert.match(yml, /export CLOUD_APPROVAL_TOKEN="\$\$\(cat \/run\/secrets\/cloud-approval-token\)" CLOUD_REQUEST_WEBHOOK_SECRET="\$\$\(cat \/run\/secrets\/cloud-request-webhook-secret\)"; exec "\$\$@"/);
-  assert.doesNotMatch(yml, /s3cret-value/);
-  // The receiver: on the stack's own network, with no published port and no secret on its command line.
-  const calls = s.calls();
-  const rx = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-cloud-requests "));
-  assert.ok(rx, r.stdout);
-  assert.match(rx, /--network circlechat_default --network-alias cloud-requests /);
-  assert.match(rx, new RegExp(`-v ${dir}/webhook-secret:/run/secrets/webhook-secret:ro`));
-  assert.match(rx, / -e COMPUTER=machine-1 -e CLOUD_APPROVER_SLACK=pat@example\.com=U0PAT0001 /);
-  assert.match(rx, / node cloud-requests\.mjs serve$/);
-  assert.doesNotMatch(rx, / -p |s3cret-value/);
-  assert.doesNotMatch(calls, /docker network connect \S*( \S+)* cc-cloud-requests/, "the receiver joins no other network");
-  assert.ok(fs.existsSync(path.join(s.cc, "cloud-requests/cloud-requests.mjs")));
-});
-
-test("without cloud_approvers, the setup removes the api's settings and the receiver", () => {
-  const s = sandbox(example);
-  fs.writeFileSync(path.join(s.cc, "compose.cloud-approvals.yml"), "old\n");
-  const r = s.run("setup-host.sh", "--secrets-only");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.equal(fs.existsSync(path.join(s.cc, "compose.cloud-approvals.yml")), false);
-  assert.doesNotMatch(s.dotenv().COMPOSE_FILE, /cloud-approvals/);
-  assert.match(s.calls(), /docker rm -f cc-cloud-requests\n/);
-  assert.doesNotMatch(s.calls(), /docker run -d --name cc-cloud-requests /);
-});
-
-// A Mac with Colima: Docker runs in the VM, and reads the Mac's files as the owner.
-test("on a Mac, the owner owns the folder of the two secret files, and on Linux root keeps the folder", () => {
-  const me = os.userInfo().username;
-  for (const [system, mode, owned] of [["Darwin", "700", true], ["Linux", "711", false]]) {
-    const s = sandbox(cloudSite(), { system });
-    s.stub("sudo", `case "$*" in "test -s "*cloud-approvals*) exit 1 ;; esac; if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; fi; exit 0`);
-    const r = s.run("setup-host.sh", "--secrets-only");
-    assert.equal(r.status, 0, r.stdout + r.stderr);
-    const calls = s.calls().split("\n");
-    const dir = path.join(s.cc, "cloud-approvals");
-    assert.ok(calls.includes(`sudo chmod ${mode} ${dir}`), `${system}: ${calls.filter((c) => c.includes("cloud-approvals")).join("\n")}`);
-    for (const f of ["approval-token", "webhook-secret"]) assert.ok(calls.includes(`sudo install -m 600 /dev/null ${dir}/${f}`), f);
-    assert.equal(calls.includes(`sudo /usr/sbin/chown -h -R ${me} ${dir}`), owned, system);
-    // Both files exist before docker compose runs.
-    const made = calls.indexOf(`sudo install -m 600 /dev/null ${dir}/webhook-secret`);
-    const compose = calls.findIndex((c) => c.startsWith("docker compose config"));
-    assert.ok(made >= 0 && made < compose, `${system}: the files come before docker compose`);
-  }
-});
-
-test("on a Mac, a mount the owner can't read stops the setup before any container changes", () => {
-  const s = sandbox(cloudSite(), { system: "Darwin" });
-  const dir = path.join(s.cc, "cloud-approvals");
-  fs.mkdirSync(dir);
-  for (const f of ["approval-token", "webhook-secret"]) fs.writeFileSync(path.join(dir, f), "s3cret\n", { mode: 0o600 });
-  const token = path.join(dir, "approval-token");
-  // The api's mounts: the token in the owner's home, and the Docker socket, a path in Colima's VM.
-  fs.writeFileSync(path.join(s.home, "compose-config.json"), JSON.stringify({ services: { api: { volumes: [
-    { type: "bind", source: token, target: "/run/secrets/cloud-approval-token" },
-    { type: "bind", source: "/var/run/docker.sock", target: "/var/run/docker.sock" },
-    { type: "volume", source: "pgdata", target: "/data" },
-  ] } } }));
-  fs.chmodSync(token, 0o000);
-  let r = s.run("setup-host.sh", "--upgrade");
-  assert.equal(r.status, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, new RegExp(`Docker in the VM reads ${token} as ${os.userInfo().username}, and ${os.userInfo().username} can't read it\\.`));
-  assert.match(r.stdout, /Stopped before docker compose, so every running container keeps running/);
-  assert.doesNotMatch(r.stdout, /docker\.sock/, "a path in the VM is not checked on the Mac");
-  const touched = s.calls().split("\n").filter((c) => /^docker (compose up|rm|run|create|start|stop)/.test(c));
-  assert.deepEqual(touched, [], "no container changes");
-  fs.chmodSync(token, 0o600);
-  r = s.run("setup-host.sh", "--upgrade");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
-  assert.match(s.calls(), /^docker compose up -d --remove-orphans$/m);
-});
-
-test("on Linux, a missing mount source stops the setup before any container changes", () => {
-  const s = sandbox(example, { system: "Linux" });
-  const missing = path.join(s.cc, "Caddyfile");
-  fs.writeFileSync(path.join(s.home, "compose-config.json"), JSON.stringify({ services: { caddy: { volumes: [{ type: "bind", source: missing, target: "/etc/caddy/Caddyfile" }] } } }));
-  let r = s.run("setup-host.sh", "--upgrade");
-  assert.equal(r.status, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, new RegExp(`Docker mounts ${missing}, and ${missing} does not exist\\.`));
-  assert.deepEqual(s.calls().split("\n").filter((c) => /^docker (compose up|rm|run|create|start)/.test(c)), []);
-  fs.writeFileSync(missing, "");
-  r = s.run("setup-host.sh", "--upgrade");
-  assert.equal(r.status, 0, r.stdout + r.stderr);
 });
 
 test("setup-node.sh reads porter.env without running a value, whatever porter.owner holds", () => {

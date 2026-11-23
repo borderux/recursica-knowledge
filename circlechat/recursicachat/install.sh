@@ -4,8 +4,10 @@
 #
 #   sudo circlechat/recursicachat/install.sh
 #
-# CC_DIR (~/circlechat) and SITE ($CC_DIR/site.json) can be set before sudo's command, such as
-# sudo CC_DIR=/path circlechat/recursicachat/install.sh.
+# CC_DIR (the stack's folder), WS (the agents' workspace) and SITE ($CC_DIR/site.json) can be set
+# before sudo's command, such as sudo CC_DIR=/path circlechat/recursicachat/install.sh. Without
+# them, kit/stack-paths.sh picks each folder: ~/recursica-stack and ~/recursica-workspace, or
+# CircleChat 1.x's old names, ~/circlechat and ~/circlechat-workspace, before a person moved them.
 #
 # render.mjs fills each template with values from site.json. Then this script installs:
 #   /opt/recursicachat/bin/   run.sh, backup.sh, restore-test.sh, colima-service.sh,  root:wheel 755
@@ -37,16 +39,19 @@ OWNER="${SUDO_USER:-}"
 [ -n "$OWNER" ] && [ "$OWNER" != root ] || fail "run it with sudo from the owner's account"
 OWNER_HOME="$(dscl . -read "/Users/$OWNER" NFSHomeDirectory | awk '{ print $2 }')"
 [ -d "$OWNER_HOME" ] || fail "no home folder for $OWNER"
-CC_DIR="${CC_DIR:-$OWNER_HOME/circlechat}"
+# The installed root scripts run from this checkout's slack.mjs and env-file.sh.
+bash "$KIT/kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$KIT/kit/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$OWNER_HOME")}"
+WS="${WS:-$(workspace_dir "$OWNER_HOME")}"
 SITE="${SITE:-$CC_DIR/site.json}"
 [ -f "$SITE" ] || fail "no site.json at $SITE"
 [ -x "$NODE" ] || fail "no Node at $NODE"
-# The installed root scripts run from this checkout's slack.mjs and env-file.sh.
-bash "$KIT/kit/check-kit.sh" "$KIT" "$OWNER" "$OWNER_HOME" || exit 1
 
 OUT="$(mktemp -d /var/tmp/recursicachat-install.XXXXXX)"
 trap 'rm -rf "$OUT"' EXIT
-"$NODE" "$HERE/render.mjs" --site "$SITE" --out "$OUT" --owner-home "$OWNER_HOME" --kit "$KIT" --cc-dir "$CC_DIR"
+"$NODE" "$HERE/render.mjs" --site "$SITE" --out "$OUT" --owner-home "$OWNER_HOME" --kit "$KIT" --cc-dir "$CC_DIR" --ws "$WS"
 
 # A rendered file must not still hold a token.
 if grep -l -E '@[A-Z_]+@' "$OUT"/* >/dev/null; then fail "a rendered file still holds a token"; fi

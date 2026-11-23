@@ -33,7 +33,11 @@ elif [ -n "${1:-}" ]; then
   echo "usage: rc-service.sh [--rotate <name>]"
   exit 2
 fi
-CC_DIR="${CC_DIR:-$HOME/circlechat}"
+# The stack's folder: ~/recursica-stack, or CircleChat 1.x's old name, ~/circlechat, before a
+# person moved it (kit/stack-paths.sh).
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/kit/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME")}"
 SITE="${SITE:-$CC_DIR/site.json}"
 GW_STATE="${GW_STATE:-$CC_DIR/gateway-state}"
 ROOT_OWNER="${RC_SERVICE_ROOT_OWNER:-root}"

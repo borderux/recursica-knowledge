@@ -1,60 +1,55 @@
 #!/usr/bin/env bash
-# Set up (or update: safe to rerun) the CONTROL machine of a deployment: CircleChat, the agents'
-# shared workspace, the model gateway, the Slack notifier, and the background jobs that keep it
-# all current. Linux or macOS. Everything specific to the deployment comes from site.json.
+# Set up (or update: safe to rerun) the CONTROL machine of a deployment: the model gateway, the
+# agents' shared workspace with Kev and the app preview, and the background jobs that keep it all
+# current, the RecursicaChat 2.0 server's jobs included. Linux or macOS. Everything specific to the
+# deployment comes from site.json.
 #
-#   1. Clone CircleChat to $CC_DIR, and put your config at $CC_DIR/site.json
-#      (start from circlechat/site.example.json). Secrets go in $CC_DIR/.env.
+#   1. Put the config at $CC_DIR/site.json (start from circlechat/site.example.json). $CC_DIR is the
+#      stack's folder, ~/recursica-stack (kit/stack-paths.sh). Secrets go in $CC_DIR/.env.
 #   2. ./circlechat/setup-host.sh
-#   3. Install each agent in the CircleChat UI, then ./circlechat/setup-agent.sh <handle>.
-#   4. On every other machine in site.json: ./circlechat/setup-node.sh <node name>
+#   3. On every other machine in site.json: ./circlechat/setup-node.sh <node name>
 #
 # One computer can hold several stacks, one per client. Give each its own site.json with
 # site.tenant set, and run every kit script with TENANT=<name>: the stack then lives in
-# ~/tenants/<name>/ and every container, volume, port and job carries its name.
+# ~/tenants/<name>/ and every container, port and job carries its name.
 #
-# --secrets-only: after a secret changes, recreate only the model gateway and the Slack notifier,
-# which read their secrets when they start. CircleChat, the agents and the background jobs keep
-# running. The deploy-secrets workflow uses this mode; see circlechat/README.md, "Secrets in GitHub".
+# --secrets-only: after a secret changes, recreate only the model gateway, which reads its secrets
+# when it starts. The background jobs keep running. The deploy-secrets workflow uses this mode; see
+# circlechat/README.md, "Secrets in GitHub".
 #
-# Every mode ends with the key check (gateway/key-check.mjs): the setup fails when a cloud model key
-# is in CircleChat's database or in an agent's Hermes home.
+# CircleChat 1.x is gone from the kit. A computer set up while 1.x ran keeps 1.x's names: the folder
+# ~/circlechat, the workspace ~/circlechat-workspace, and the gateway's Docker networks
+# <project>_default and <project>_models. Every mode uses those names while they exist, and moves
+# nothing. A person moves them once with circlechat/migrate-off-1x.sh. Only the full setup removes
+# 1.x's jobs, in a held step.
 set -euo pipefail
 # --upgrade: the upgrade job's mode, after a new release is checked out. Changes only what needs
-# no sudo: the rendered config, the containers, the gateway, the notifier and the filter.
-#
-# site.circlechat "retired" (kit/render.mjs): CircleChat 1.x never starts again. Every mode then
-# skips CircleChat's containers, its database roles, its notifier, its cloud-request receiver and
-# its agents' filter, and the full setup removes its boot, backup, restore-test and release-watch
-# jobs and serves no address for it. The gateway, the job filter, the app preview, Kev's jobs, the
-# GitHub token service and the RecursicaChat 2.0 jobs stay.
+# no sudo: the rendered config, the gateway and the job filter's image.
 SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 [ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
 # KIT_ROOT_STEPS=1: a root process runs --secrets-only or --upgrade as the owner, who may have no
-# password-free sudo. The root process takes each step that needs root before and after this run,
-# and passes the database role's password on stdin. This run takes only the Docker steps. The
-# secrets helper (deploy/apply-secrets.sh) runs --secrets-only this way, and the upgrade job
-# (cluster/root-steps.mjs) runs --upgrade this way. KIT_SECRETS_HELPER=1 is the older name, from a
-# secrets helper installed before the upgrade job used the same mode.
+# password-free sudo. The root process takes each step that needs root before this run, and this
+# run takes only the Docker steps. The secrets helper (deploy/apply-secrets.sh) runs --secrets-only
+# this way, and the upgrade job (cluster/root-steps.mjs) runs --upgrade this way.
+# KIT_SECRETS_HELPER=1 is the older name, from a secrets helper installed before the upgrade job
+# used the same mode. An older root process passes one line on stdin, the password of CircleChat
+# 1.x's database role for the router. The line is read and dropped.
 HELPER=false
 if [ -n "${KIT_ROOT_STEPS:-${KIT_SECRETS_HELPER:-}}" ]; then
   [ "$SECRETS_ONLY" = true ] || { echo "KIT_ROOT_STEPS needs --secrets-only or --upgrade."; exit 1; }
-  HELPER=true; IFS= read -r HELPER_DB_PASSWORD || true; exec </dev/null
+  HELPER=true; IFS= read -r _ || true; exec </dev/null
 fi
 
-if [ -n "${TENANT:-}" ]; then
-  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
-  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
-fi
-
-CC_DIR="${CC_DIR:-$HOME/circlechat}"
-WS="${WS:-$HOME/circlechat-workspace}"
-SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/kit/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME" "${TENANT:-}")}"
+WS="${WS:-$(workspace_dir "$HOME" "${TENANT:-}")}"
+SITE="${SITE:-$CC_DIR/site.json}"
 . "$HERE/kit/lib.sh"
-# Every mode runs the key check as root, and the full setup installs jobs that root runs from this
-# checkout. The checkout must sit outside the agents' workspace.
+# Every mode installs jobs that root runs from this checkout. The checkout must sit outside the
+# agents' workspace.
 require_kit "$HERE/.."
 
 [ -f "$SITE" ] || { echo "No $SITE. Copy circlechat/site.example.json there and fill it in."; exit 1; }
@@ -88,7 +83,8 @@ fi
 # stack's computers are checked against the cluster's own site.json, and each model that does not
 # fit the stack's computers is left out, with a line that says so.
 KIT_OUT="$CC_DIR/kit-out"
-if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
+CLUSTER_SITE_FILE="$(stack_dir "$HOME")/site.json"
+if [ -n "${TENANT:-}" ] && [ -f "$CLUSTER_SITE_FILE" ]; then export CLUSTER_SITE="$CLUSTER_SITE_FILE"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 load_env_file "$KIT_OUT/app.env"
 WANT_TENANT="${TENANT:-}"
@@ -107,168 +103,47 @@ if [ -n "$DOCKER_CONTEXT" ]; then
   export DOCKER_CONTEXT
   check_vm_limits "$LIMIT_CPUS" "$LIMIT_MEMORY_GB" || exit 1
 fi
-DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
 # On a Mac whose Docker runs in Colima, tailscale serve gives the other computers the gateway's
 # port (gateway_serve). Linux keeps Docker's direct publish on the Tailscale address.
 GATEWAY_SERVE=false
 if [ "$OS" = Darwin ]; then case "${DOCKER_CONTEXT:-$(docker context show 2>/dev/null)}" in colima*) GATEWAY_SERVE=true ;; esac; fi
 JOBS_LOCAL_PORT=$((GATEWAY_PORT + 1))
 TS_HOST="$(site_get site.public_host)"
-PORT="$(site_get site.port)"; PORT="${PORT:-8080}"
 KNOWLEDGE_REPO="$(site_get repos.knowledge)"
 APP_REPO_URL="$(site_get repos.app)"
 
+mkdir -p "$CC_DIR"
 cd "$CC_DIR"
-# Add each default from .env.example that .env lacks. The secrets helper can create .env before
-# the first setup, and a plain copy would then skip CircleChat's defaults.
 touch .env
-if [ -f .env.example ]; then
-  while IFS= read -r line; do
-    case "$line" in ''|\#*) continue ;; esac
-    grep -q "^${line%%=*}=" .env || printf '%s\n' "$line" >> .env
-  done < .env.example
-fi
 set_env() { sedi "/^$1=/d" .env; echo "$1=$2" >> .env; }   # replace or append, never duplicate
 env_has() { grep -q "^$1=." .env; }
-set_env HERMES_HOMES_DIR "$CC_DIR/hermes-homes"
-set_env CC_REPO_HOST_DIR "$CC_DIR"
-# CircleChat's public address: the HTTPS address people use, which single sign-on (such as Google)
-# sends people back to. The api and the bridge reach CircleChat on this computer through
-# CC_API_BASE instead, so they never depend on the public address.
-if [ -n "$TENANT" ] && [ "$PROXY" = tailscale ]; then PUBLIC_URL="https://$TS_HOST:$PORT"; else PUBLIC_URL="https://$TS_HOST"; fi
-set_env PUBLIC_BASE_URL "$PUBLIC_URL"
-set_env CC_API_BASE "http://localhost:$PORT/api"
 # The stack's own Slack channel, for every post from this stack (the Slack app's bot token comes
 # from the secrets helper).
 SLACK_CHANNEL_ID="$(site_get site.slack_channel_id)"
 if [ -n "$SLACK_CHANNEL_ID" ]; then set_env SLACK_CHANNEL "$SLACK_CHANNEL_ID"; else sedi "/^SLACK_CHANNEL=/d" .env; fi
-set_env CC_SHARED_WORKSPACE_DIR "$WS"
-# Seconds. The api discards a reply that takes longer than this + 60s, and a full Barb review
-# does. 480 and 1200 both lost reviews. See agents/barb/runtime/hermes.md.
-set_env HERMES_TIMEOUT 4000
-# Docker Compose reads COMPOSE_FILE from .env, so a plain `docker compose up -d` in this folder
-# also loads the agents overlay. Without it the api loses Docker access and agents stop installing.
-set_env COMPOSE_FILE compose.yml:compose.agents.yml
-# Each stack is its own Compose project, so two stacks never share a container, network or volume.
-set_env COMPOSE_PROJECT_NAME "$COMPOSE_PROJECT_NAME"
-# The outgoing filter. Agent containers run on a closed network (no route out), where the only exit
-# is the stack's filter: Squid, with the allowlist from site.json. CircleChat's api and the model
-# gateway sit on the closed network too, so agents reach both directly.
-AGENT_NET="${COMPOSE_PROJECT_NAME}_agents"
-if [ "$EGRESS" = on ]; then
-  cat > compose.egress.yml <<YAML
-# Written by setup-host.sh: the closed network for agent containers.
-networks:
-  agents:
-    name: $AGENT_NET
-    internal: true
-services:
-  api:
-    networks: [default, agents]
-YAML
-  set_env CC_AGENT_NETWORK "$AGENT_NET"
-  set_env CC_AGENT_PROXY http://egress:3128
-  set_env CC_AGENT_NO_PROXY api,cc-gateway,localhost,127.0.0.1
-  # The api listens on port 3000 inside its container, and serves its routes under /api, as
-  # Caddy passes them through.
-  set_env CC_AGENT_API_BASE http://api:3000/api
+
+# The model gateway's Docker networks. LiteLLM, which holds the cloud keys, and the router in front
+# of LiteLLM share the models' network, gateway-models. Nothing else joins it, except the masking
+# services below. The router starts on the models' network and publishes its ports there.
+# A computer set up while CircleChat 1.x ran keeps 1.x's networks until a person runs
+# circlechat/migrate-off-1x.sh: the router then starts on <project>_default, and both containers
+# join <project>_models. A move to new networks interrupts model requests, so no setup moves them.
+MODEL_NET="gateway-models$SUFFIX"
+OLD_NET="${COMPOSE_PROJECT_NAME}_default"
+OLD_MODEL_NET="${COMPOSE_PROJECT_NAME}_models"
+if ! docker network inspect "$MODEL_NET" >/dev/null 2>&1 && docker network inspect "$OLD_MODEL_NET" >/dev/null 2>&1; then
+  MODEL_NET="$OLD_MODEL_NET"
+  NET="$OLD_NET"
+  docker network inspect "$NET" >/dev/null 2>&1 || NET="$MODEL_NET"
+  echo "The gateway keeps CircleChat 1.x's networks $NET and $MODEL_NET. To move it, run circlechat/migrate-off-1x.sh."
 else
-  rm -f compose.egress.yml
-  for k in CC_AGENT_NETWORK CC_AGENT_PROXY CC_AGENT_NO_PROXY CC_AGENT_API_BASE; do sedi "/^$k=/d" .env; done
+  docker network inspect "$MODEL_NET" >/dev/null 2>&1 || docker network create "$MODEL_NET" >/dev/null
+  NET="$MODEL_NET"
 fi
-# The model gateway's private network. Only the gateway's two containers join it: LiteLLM, which
-# holds the cloud keys, and the router in front of LiteLLM, which every agent and job talks to.
-MODEL_NET="${COMPOSE_PROJECT_NAME}_models"
-docker network inspect "$MODEL_NET" >/dev/null 2>&1 || docker network create "$MODEL_NET" >/dev/null
-# Personal information masking: Presidio's analyzer and anonymizer run beside the stack, and the
-# model gateway removes personal details from each request before the request reaches a cloud model.
-if [ "$MASK_PII" = on ]; then
-  cat > compose.privacy.yml <<YAML
-# Written by setup-host.sh: the masking services for the model gateway, on the gateway's network.
-networks:
-  models:
-    name: $MODEL_NET
-    external: true
-services:
-  presidio-analyzer:
-    image: mcr.microsoft.com/presidio-analyzer:latest
-    restart: unless-stopped
-    networks: [default, models]
-  presidio-anonymizer:
-    image: mcr.microsoft.com/presidio-anonymizer:latest
-    restart: unless-stopped
-    networks: [default, models]
-YAML
-else
-  rm -f compose.privacy.yml
-fi
-# CircleChat's file store: MinIO no longer publishes the images CircleChat's compose.yml names, so
-# each stack runs Chainguard's builds, pinned like every other image. Chainguard's MinIO runs as a
-# non-root user by default; the official image ran as root, so root keeps existing volumes writable.
-MINIO_IMAGE="$(pin_image cgr.dev/chainguard/minio:latest)"
-MC_IMAGE="$(pin_image cgr.dev/chainguard/minio-client:latest-dev)"
-# CircleChat's own caddy, postgres and redis run at the digest in images.lock, like every other image
-# the kit starts. The tags come from CircleChat's compose.yml. The weekly image job moves each pin.
-CC_IMAGES="$(docker compose -f compose.yml config --format json 2>/dev/null | node -e '
-  let j = {}; try { j = JSON.parse(require("fs").readFileSync(0, "utf8")); } catch {}
-  for (const s of ["caddy", "postgres", "redis"]) {
-    const i = j.services?.[s]?.image;
-    if (i && !i.includes("@")) console.log(`${s} ${i}`);
-    else if (!i) console.error(`CircleChat\u0027s compose.yml names no image for ${s}, so ${s} runs at an unpinned version.`);
-  }
-')"
-rm -f compose.storage.yml
-{
-  echo "# Written by setup-host.sh: the pinned images of CircleChat's own services and the file store."
-  echo "services:"
-  while read -r svc tag; do
-    [ -n "$svc" ] && printf '  %s:\n    image: %s\n' "$svc" "$(pin_image "$tag")"
-  done <<<"$CC_IMAGES"
-  printf '  minio:\n    image: %s\n    user: "0:0"\n  minio-setup:\n    image: %s\n' "$MINIO_IMAGE" "$MC_IMAGE"
-} > compose.images.yml
-# The shared workspace, read-only, in CircleChat's api, worker and bridge. The api reads each file an
-# agent attaches (share_to_task, share_files) from /workspace, and reads BRIEF.md, knowledge/ and
-# projects/ there for an agent's context. Agents write the workspace from their own containers, so
-# none of these three writes it. An older kit added a read-write line to compose.agents.yml, and
-# that line goes.
-sedi '/^      - ${CC_SHARED_WORKSPACE_DIR}:\/workspace$/d' compose.agents.yml
-cat > compose.workspace.yml <<'YAML'
-# Written by setup-host.sh: the shared workspace, read-only, in CircleChat's api, worker and bridge.
-services:
-  api:
-    volumes:
-      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
-  worker:
-    volumes:
-      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
-  bridge:
-    volumes:
-      - ${CC_SHARED_WORKSPACE_DIR}:/workspace:ro
-YAML
-CF="compose.yml:compose.agents.yml:compose.images.yml:compose.workspace.yml"
-[ "$EGRESS" = on ] && CF="$CF:compose.egress.yml"
-[ "$MASK_PII" = on ] && CF="$CF:compose.privacy.yml"
-set_env COMPOSE_FILE "$CF"
-# CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
-# action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
-set_env APPROVE_RISK_AT high
-# The Recursica knowledge MCP server for the agents in KNOWLEDGE_MCP_AGENTS (kit/lib.sh). Hermes
-# starts it inside each agent's own container, from the copy setup-agent.sh puts in the agent's own
-# home, never from the workspace's checkout, which every agent can change. Its component_api tool
-# reads the adapter installed in whichever project the agent names. The timeout stays under the
-# minute CircleChat waits for Hermes to start, so a server that never starts fails on its own.
-# The two files below started the old @recursica/mcp package, which this replaces.
-mkdir -p "$WS"
-SAFE="$HERE/kit/safe-files.mjs"
-rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
-KMCP="{\"command\":\"node\",\"args\":[\"$KNOWLEDGE_MCP_SERVER\"],\"enabled\":true,\"timeout\":$KNOWLEDGE_MCP_TIMEOUT}"
-MCP_MAP=""
-for a in $KNOWLEDGE_MCP_AGENTS; do MCP_MAP="$MCP_MAP${MCP_MAP:+,}\"$a\":{\"$KNOWLEDGE_MCP_NAME\":$KMCP}"; done
-set_env CC_AGENT_MCP_SERVERS "{$MCP_MAP}"
-# Hermes, and every MCP server it starts, runs in each agent's own container. CircleChat's host
-# mode would run them inside CircleChat's api container instead, with the api's access.
-set_env CC_HERMES_RUNTIME docker
-set_env ENFORCE_AGENT_SCOPES true
+# The port jobs' closed network on this computer (setup-node.sh), when it exists. The router joins
+# it, so this computer's port jobs reach the router as cc-gateway.
+JOBS_NET="jobs-egress$SUFFIX"
+
 # Cloud model keys live in one secrets file that only the gateway reads, owned by root. The
 # secrets helper writes the file from the stack's GitHub environment (MODEL_KEY_<NAME>). An older
 # stack kept its Claude key in .env as ANTHROPIC_API_KEY: that key moves to the secrets file as
@@ -280,10 +155,8 @@ if [ "$HELPER" = false ]; then
   sudo test -f "$MODEL_KEYS" || sudo install -m 600 /dev/null "$MODEL_KEYS"
   sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
   # LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
-  # folder, never in .env. Agents now use their own gateway keys.
+  # folder, never in .env. Agents use their own gateway keys.
   sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
-  # The password of the router's read-only database role (gateway/gateway-db.sql).
-  sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
   # On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
   own_for_docker "$MODEL_KEYS" "$GW_STATE"
 fi
@@ -300,186 +173,12 @@ fi
 for k in OPENAI_API_KEY XAI_API_KEY GEMINI_API_KEY AZURE_API_KEY AWS_SECRET_ACCESS_KEY OPENROUTER_API_KEY; do
   env_has "$k" && { echo "$k is in $CC_DIR/.env, which holds no cloud key. Put the key in the stack's GitHub environment as MODEL_KEY_<NAME>, name the key in site.json's model_keys, deploy the secrets, and remove $k from .env."; exit 1; }
 done
-# CircleChat ships with a default session secret and default passwords. Anyone who knows the
-# default session secret can forge a sign-in, so each default becomes a random value. Postgres
-# keeps the password the database started with, so PG_PASSWORD changes only before the database
-# exists.
-env_value() { sed -n "s/^$1=//p" .env | tail -1; }
-is_default() { local v; v="$(env_value "$1")"; [ -z "$v" ] || [ "$v" = "$2" ]; }
-is_default SESSION_SECRET change-me-at-least-32-chars-long-string && set_env SESSION_SECRET "$(openssl rand -hex 32)"
-if is_default MINIO_ROOT_PASSWORD minioadmin; then
-  set_env MINIO_ROOT_USER "cc-$(openssl rand -hex 4)"
-  set_env MINIO_ROOT_PASSWORD "$(openssl rand -hex 24)"
-fi
-if is_default PG_PASSWORD circlechat; then
-  if docker volume inspect "${COMPOSE_PROJECT_NAME}_pgdata" >/dev/null 2>&1; then
-    echo "Warning: the database still uses CircleChat's default password. Change the password inside postgres, then set PG_PASSWORD in .env."
-  else
-    set_env PG_PASSWORD "$(openssl rand -hex 24)"
-  fi
-fi
-# A local-only client stack never sends data to a cloud model, including CircleChat's own optional
-# planner and embeddings, which call the URL in .env.
-if [ "$CLOUD_MODELS" = local-only ]; then
-  for k in PLANNER_BASE_URL EMBEDDINGS_BASE_URL; do
-    u="$(env_value "$k")"
-    case "$u" in ""|http://localhost*|http://127.0.0.1*|http://host.docker.internal*|http://host.lima.internal*) ;;
-      *) echo "$k points to $u, outside this computer, and stack ${TENANT:-<none>} is local-only. Remove $k from .env, or record the client's permission in site.cloud_models."; exit 1 ;;
-    esac
-  done
-fi
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
-# Cloud-model requests in Slack (cluster/cloud-requests.mjs). Two secrets, each made once, like the
-# session secret: CircleChat's service token for the answer API, and the signing secret of
-# CircleChat's request webhook. Each file has the owner and mode of the stack's other secret files
-# that Docker mounts, such as model-keys.env:
-#   - Linux: root owns both files (600). The folder (711) lets the owner check that a file exists,
-#     and read neither. Docker runs as root and mounts both.
-#   - A Mac: Docker runs in Colima's VM, which reads the Mac's files as the owner, never as root.
-#     So the owner owns the folder (700) and both files (600), as with the gateway's state folder.
-# The full setup and --secrets-only without the helper make both here. With the helper, the root
-# process makes both first (deploy/apply-secrets.sh, cluster/root-steps.mjs). Either way, both
-# exist before docker compose runs.
-CLOUD_DIR="$CC_DIR/cloud-approvals"
-if [ "$HELPER" = false ]; then
-  sudo mkdir -p "$CLOUD_DIR"
-  if [ "$OS" = Darwin ]; then sudo chmod 700 "$CLOUD_DIR"; else sudo chmod 711 "$CLOUD_DIR"; fi
-  for f in approval-token webhook-secret; do
-    if ! sudo test -s "$CLOUD_DIR/$f"; then
-      sudo install -m 600 /dev/null "$CLOUD_DIR/$f"
-      openssl rand -hex 32 | sudo tee "$CLOUD_DIR/$f" >/dev/null
-    fi
-  done
-  # On a Mac, the owner gets the folder and both files (kit/lib.sh).
-  own_for_docker "$CLOUD_DIR"
-fi
-# With cloud_approvers in site.json, CircleChat's api gets the approvers' emails, the webhook's
-# address and both secrets. The api reads the secrets from the mounted files when it starts, so
-# neither secret is in .env or in the api's settings that docker inspect shows. The webhook's
-# address is the receiver's name on the stack's own network, which nothing outside the stack
-# reaches.
-CLOUD_REQUESTS=off
-if [ -n "$CLOUD_APPROVERS" ] && [ -f "$CLOUD_DIR/approval-token" ] && [ -f "$CLOUD_DIR/webhook-secret" ]; then
-  CLOUD_REQUESTS=on
-  cat > compose.cloud-approvals.yml <<YAML
-# Written by setup-host.sh: cloud-model requests in Slack (circlechat/README.md, "Cloud-model
-# requests in Slack").
-services:
-  api:
-    environment:
-      CLOUD_APPROVERS: "$CLOUD_APPROVERS"
-      CLOUD_REQUEST_WEBHOOK_URL: http://cloud-requests:8080/cloud-request
-    volumes:
-      - $CLOUD_DIR/approval-token:/run/secrets/cloud-approval-token:ro
-      - $CLOUD_DIR/webhook-secret:/run/secrets/cloud-request-webhook-secret:ro
-    entrypoint:
-      - sh
-      - -c
-      - 'export CLOUD_APPROVAL_TOKEN="\$\$(cat /run/secrets/cloud-approval-token)" CLOUD_REQUEST_WEBHOOK_SECRET="\$\$(cat /run/secrets/cloud-request-webhook-secret)"; exec "\$\$@"'
-      - cloud-secrets
-YAML
-  CF="$CF:compose.cloud-approvals.yml"
-else
-  rm -f compose.cloud-approvals.yml
-  [ -z "$CLOUD_APPROVERS" ] || echo "Cloud-model requests are off: $CLOUD_DIR has no service token or webhook secret yet. Run setup-host.sh in a terminal."
-fi
-set_env COMPOSE_FILE "$CF"
 
-# Before any container changes: Docker must be able to read each file and folder the stack's
-# compose files mount. A source Docker can't read stops the api from starting, and a missing
-# source becomes an empty folder. So a source that fails stops the setup here, while every
-# running container keeps running. On a Mac, Docker reads the files in the owner's home as the
-# owner, so each one there must be readable by the owner. Other sources, such as the Docker
-# socket, are paths inside Colima's VM. On Linux, Docker runs as root, so each source must exist.
-mount_check() {
-  local cfg src bad=0
-  cfg="$(docker compose config --format json)" || { echo "docker compose config failed, so no container was changed. Fix the compose files in $CC_DIR."; exit 1; }
-  while IFS= read -r src; do
-    [ -n "$src" ] || continue
-    if [ "$OS" = Darwin ]; then
-      case "$src" in "$HOME"/*) ;; *) continue ;; esac
-      if [ -d "$src" ]; then [ -r "$src" ] && [ -x "$src" ] && continue; else [ -r "$src" ] && continue; fi
-      echo "Docker in the VM reads $src as $(id -un), and $(id -un) can't read it."; bad=1
-    else
-      [ -e "$src" ] && continue
-      echo "Docker mounts $src, and $src does not exist."; bad=1
-    fi
-  done < <(printf '%s' "$cfg" | node -e '
-    let j = {}; try { j = JSON.parse(require("fs").readFileSync(0, "utf8") || "{}"); } catch {}
-    for (const s of Object.values(j.services ?? {})) for (const v of s.volumes ?? []) if (v.type === "bind" && v.source) console.log(v.source);
-  ' | sort -u)
-  [ "$bad" = 0 ] || { echo "Stopped before docker compose, so every running container keeps running. Rerun setup-host.sh in a terminal, which fixes the kit's own secret files."; exit 1; }
-}
-# The kit's own folders that the compose files mount exist before the check: a fresh stack has
-# neither yet.
-mkdir -p "$CC_DIR/hermes-homes" "$WS"
-[ "$CIRCLECHAT" = retired ] || mount_check
-NET="${COMPOSE_PROJECT_NAME}_default"
-
-start_egress() {
-  [ "$EGRESS" = on ] || { docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true; return 0; }
-  # A retired CircleChat has no agents to filter. The job runner's filter stays, on the kit's image.
-  if [ "$CIRCLECHAT" = retired ]; then
-    docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
-    refresh_egress "$(egress_image)"
-    return 0
-  fi
-  local image; image="$(egress_image)"
-  mkdir -p "$CC_DIR/egress-logs" && chmod 777 "$CC_DIR/egress-logs"
-  docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
-  docker run -d --name "cc-egress$SUFFIX" --restart unless-stopped --network "$NET" \
-    --add-host host.docker.internal:host-gateway \
-    -v "$KIT_OUT/egress":/etc/egress:ro -v "$CC_DIR/egress-logs":/var/log/egress \
-    "$image" >/dev/null
-  docker network connect --alias egress "$AGENT_NET" "cc-egress$SUFFIX"
-  docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  echo "Outgoing filter running: agents reach only the sites in $KIT_OUT/egress/allow.txt."
-  # The job runner's filter on this computer, from setup-node.sh, moves to the same image.
-  refresh_egress "$image"
-}
-
-# The router's database role: it reads only the columns the router needs, and writes nothing
-# (gateway/gateway-db.sql). The role's address, with its password, goes in a file in the gateway's
-# state folder, so `docker inspect` shows no database password. CircleChat's api makes the tables
-# when it starts, so this waits for them.
-gateway_db_role() {
-  local pw i
-  # A retired CircleChat has no database: the router reads none (gateway/router.mjs, retiredDb).
-  [ "$CIRCLECHAT" != retired ] || return 0
-  # The secrets helper passes the password, and writes the role's address itself.
-  if [ "$HELPER" = true ]; then
-    pw="$HELPER_DB_PASSWORD"
-    [ -n "$pw" ] || { echo "The secrets helper passed no password for the router's database role."; return 1; }
-  else pw="$(sudo cat "$GW_STATE/db-password")"; fi
-  for i in $(seq 90); do
-    [ "$(docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select to_regclass('public.agent_runs') is not null" 2>/dev/null)" = t ] && break
-    [ "$i" = 90 ] && { echo "CircleChat's tables are not there yet, so the gateway cannot read tasks and treats every request as cluster only. Run this script again once CircleChat is up."; return 0; }
-    sleep 2
-  done
-  { printf '\\set password %s\n' "$pw"; cat "$HERE/gateway/gateway-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null
-  [ "$HELPER" = false ] || return 0
-  printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$pw" | sudo tee "$GW_STATE/db.url" >/dev/null
-  sudo chmod 600 "$GW_STATE/db.url"
-  own_for_docker "$GW_STATE/db.url"
-}
-
-# The notifier's database role, cc_notify: it reads only the columns the notifier needs, and writes
-# only the code columns of CircleChat's Slack ID check (notify/notify-db.sql). The password stays in
-# an owner-only file in $CC_DIR/notify-state, outside the backup. The notifier reads the role's
-# address from a file there, so `docker inspect` shows no database password.
-notify_db_role() {
-  local dir="$CC_DIR/notify-state" pw
-  [ ! -L "$dir" ] || { echo "Refused: $dir is a symlink. Replace the symlink with a folder."; return 1; }
-  mkdir -p "$dir" && chmod 700 "$dir"
-  # A password the kit made is 48 hex digits. Anything else is replaced.
-  pw="$(cat "$dir/db-password" 2>/dev/null || true)"
-  if [ -L "$dir/db-password" ] || ! [[ "$pw" =~ ^[0-9a-f]{48}$ ]]; then
-    pw="$(openssl rand -hex 24)"; rm -f "$dir/db-password"; ( umask 077; printf '%s\n' "$pw" > "$dir/db-password" )
-  fi
-  { printf '\\set password %s\n' "$pw"; cat "$HERE/notify/notify-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null || return 1
-  rm -f "$dir/db.url"; ( umask 077; printf 'postgres://cc_notify:%s@postgres:5432/circlechat\n' "$pw" > "$dir/db.url" )
-}
+# The job filter's image: a new kit version of circlechat/egress moves the job runner's filter on
+# this computer (setup-node.sh) to the new image.
+refresh_job_filter() { [ "$EGRESS" = on ] || return 0; refresh_egress "$(egress_image)"; }
 
 # On a Mac with Colima: tailscale serve passes site.gateway_port on the Tailscale address to the
 # router's port for port jobs, on 127.0.0.1. The other modes run without a sudo password, so they
@@ -504,13 +203,13 @@ gateway_serve() {
 #   - That port refuses a request without a task key, /health included.
 #   - Neither gateway port answers on the Mac's other addresses, such as the office network.
 gateway_port_check() {
-  local code="" i a p
+  local code="" a p
   tailscale serve status --json 2>/dev/null | node -e '
     const s = JSON.parse(require("fs").readFileSync(0, "utf8") || "{}");
     process.exit(s.TCP?.[process.argv[1]]?.TCPForward === process.argv[2] ? 0 : 1);
   ' "$GATEWAY_PORT" "127.0.0.1:$JOBS_LOCAL_PORT" \
     || { echo "tailscale serve does not pass port $GATEWAY_PORT to 127.0.0.1:$JOBS_LOCAL_PORT. Run setup-host.sh in a terminal."; exit 1; }
-  for i in $(seq 45); do
+  for _ in $(seq 45); do
     code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$JOBS_LOCAL_PORT/health" || true)"
     [ "$code" = 401 ] && break
     sleep 2
@@ -529,8 +228,8 @@ gateway_port_check() {
 # The check of site.gateway_local_port: the port answers /health on 127.0.0.1, refuses a request
 # with no gateway key, and answers on no other address of this computer, Tailscale's included.
 gateway_local_check() {
-  local code="" i a
-  for i in $(seq 45); do
+  local code="" a
+  for _ in $(seq 45); do
     code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://127.0.0.1:$GATEWAY_LOCAL_PORT/health" || true)"
     [ "$code" = 200 ] && break
     sleep 2
@@ -546,11 +245,24 @@ gateway_local_check() {
   echo "Gateway's local port: 127.0.0.1:$GATEWAY_LOCAL_PORT only, and an agent's gateway key is required."
 }
 
-start_gateway_and_notifier() {
+# Personal information masking: Presidio's analyzer and anonymizer run on the models' network, and
+# LiteLLM removes personal details from each request before the request reaches a cloud model.
+start_masking() {
+  local s
+  for s in presidio-analyzer presidio-anonymizer; do
+    docker rm -f "cc-$s$SUFFIX" >/dev/null 2>&1 || true
+    [ "$MASK_PII" = on ] || continue
+    docker run -d --name "cc-$s$SUFFIX" --restart unless-stopped --network "$MODEL_NET" --network-alias "$s" \
+      "$(pin_image "mcr.microsoft.com/$s:latest")" >/dev/null
+  done
+}
+
+start_gateway() {
+  start_masking
   # The model gateway, in two containers.
   # LiteLLM (cc-litellm): one address for every cluster model, with fallbacks in route order, and
   # one model per cloud key (key/<name>). start-litellm.py reads the keys from the secrets file, so
-  # no key is in an environment variable. LiteLLM joins only the gateway's private network.
+  # no key is in an environment variable. LiteLLM joins only the models' network.
   docker rm -f "cc-litellm$SUFFIX" >/dev/null 2>&1 || true
   local mask=()
   [ "$MASK_PII" = on ] && mask=(-e PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000 -e PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000)
@@ -560,16 +272,13 @@ start_gateway_and_notifier() {
     -v "$MODEL_KEYS":/run/secrets/model-keys.env:ro -v "$GW_STATE/litellm-master.key":/run/secrets/litellm-master.key:ro \
     --entrypoint python "$(pin_image ghcr.io/berriai/litellm:main-stable)" \
     /kit/start-litellm.py /app/config.yaml /run/secrets/model-keys.env /run/secrets/litellm-master.key --port 4000
-  # The router (cc-gateway): each agent's and each port job's gateway key, the task's "Cloud
-  # models" setting from CircleChat's database, and the spend log in gateway-logs/. Agents reach the
-  # router on their closed network, on port 4000. Port jobs on other computers reach the router's
-  # port 4001 over Tailscale: site.gateway_port on the control computer's Tailscale address only,
-  # where every request needs a task key. With the filter off, this computer's agents use
-  # site.gateway_port on 127.0.0.1.
+  # The router (cc-gateway): each agent's and each port job's gateway key, and the spend log in
+  # gateway-logs/. Port jobs on other computers reach the router's port 4001 over Tailscale:
+  # site.gateway_port on the control computer's Tailscale address only, where every request needs
+  # a task key. With the filter off, this computer's port jobs use site.gateway_port on 127.0.0.1.
   # On Linux, Docker publishes port 4001 on the Tailscale address. On a Mac, Docker runs in Colima's
   # VM, which does not hold the Mac's Tailscale address. Docker then publishes port 4001 on
   # 127.0.0.1:<gateway port + 1>, and tailscale serve passes the Tailscale port to that local port.
-  gateway_db_role
   docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
   mkdir -p "$CC_DIR/gateway-app" "$CC_DIR/gateway-logs"
   cp "$HERE"/gateway/*.mjs "$HERE/gateway/package.json" "$CC_DIR/gateway-app/"
@@ -582,234 +291,81 @@ start_gateway_and_notifier() {
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then publish+=(-p "127.0.0.1:$JOBS_LOCAL_PORT:4001")
   elif [ -n "$TAILNET_ADDRESS" ]; then publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001"); fi
   # The router reads its networks when it starts, and allows a key from each one. So every network
-  # joins before the start: the models' network, and with the filter on, the agents' network.
+  # joins before the start: the models' network, and the port jobs' network when it exists.
   docker create --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
     -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
     -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
     -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
     "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
-  docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
-  [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
+  [ "$NET" = "$MODEL_NET" ] || docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
+  if [ "$EGRESS" = on ] && docker network inspect "$JOBS_NET" >/dev/null 2>&1; then
+    docker network connect --alias cc-gateway "$JOBS_NET" "cc-gateway$SUFFIX"
+  fi
   docker start "cc-gateway$SUFFIX" >/dev/null
   if [ -n "$TAILNET_ADDRESS" ] && [ "$GATEWAY_SERVE" = true ]; then gateway_serve; fi
   [ -z "${GATEWAY_LOCAL_PORT:-}" ] || gateway_local_check
-
-  # Slack notifier: the CircleChat events site.json's notify.events chooses, in the stack's channel,
-  # and a DM to each mentioned person with a Slack ID: the ID the person verified in CircleChat, or
-  # else the ID on notify.people (circlechat/notify/events.mjs). The notifier also sends the codes of
-  # CircleChat's Slack ID check. The notifier signs in as cc_notify, never as the database's owner.
-  docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
-  if [ "$CIRCLECHAT" = retired ]; then
-    echo "Slack notifier off: CircleChat 1.x is retired (site.circlechat)."
-  elif [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
-    if notify_db_role; then
-      mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/drops.mjs" "$HERE/notify/events.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
-      docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
-        -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
-        -v "$CC_DIR/notify-state/db.url":/run/notify/db.url:ro -e DATABASE_URL_FILE=/run/notify/db.url \
-        -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
-        -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e STACK_NAME="$STACK_NAME" \
-        -e NOTIFY_EVENTS="$NOTIFY_EVENTS" -e NOTIFY_PEOPLE="$NOTIFY_PEOPLE" \
-        -e CC_URL="https://$TS_HOST" \
-        "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
-      echo "Slack notifier running."
-    else
-      echo "Slack notifier off: the notifier's database role could not be set up. Run this script again once CircleChat is up."
-    fi
-  else
-    echo "Slack notifier off (needs notify.slack and site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env)."
-  fi
-
-  # The receiver of CircleChat's cloud-model requests (cluster/cloud-requests.mjs): on the stack's
-  # own network only, with no published port. The receiver checks each request's signature, then
-  # posts the request in the stack's channel with Approve and Deny buttons.
-  docker rm -f "cc-cloud-requests$SUFFIX" >/dev/null 2>&1 || true
-  if [ "$CIRCLECHAT" = retired ]; then
-    [ "$CLOUD_REQUESTS" != on ] || echo "Cloud-model requests off: CircleChat 1.x is retired (site.circlechat)."
-  elif [ "$CLOUD_REQUESTS" = on ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL; then
-    mkdir -p "$CC_DIR/cloud-requests" && cp "$HERE/cluster/cloud-requests.mjs" "$CC_DIR/cloud-requests/"
-    docker run -d --name "cc-cloud-requests$SUFFIX" --restart unless-stopped --network "$NET" --network-alias cloud-requests \
-      -v "$CC_DIR/cloud-requests":/app:ro -v "$CLOUD_DIR/webhook-secret":/run/secrets/webhook-secret:ro -w /app \
-      -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
-      -e STACK_NAME="$STACK_NAME" -e COMPUTER="$CONTROL_COMPUTER" -e CLOUD_APPROVER_SLACK="$CLOUD_APPROVER_SLACK" \
-      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" -e CC_URL="$PUBLIC_URL" \
-      "$(pin_image node:22-alpine)" node cloud-requests.mjs serve >/dev/null
-    echo "Cloud-model requests go to the stack's Slack channel."
-  elif [ "$CLOUD_REQUESTS" = on ]; then
-    echo "Cloud-model requests reach no Slack channel: the receiver needs site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env."
-  fi
 }
-
-# Every agent of the stack asks the gateway with the agent's own gateway key, and no agent's home
-# holds a cloud key. setup-agent.sh does the same for one agent.
-agents_to_gateway() {
-  local h
-  for h in "$CC_DIR"/hermes-homes/.hermes-*; do
-    sudo test -f "$h/config.yaml" || continue
-    # rc-<handle> keys belong to the RecursicaChat 2.0 server's agents (rc-sync.sh), never to a home.
-    case "${h##*/.hermes-}" in rc-*) continue ;; esac
-    gateway_access "${h##*/.hermes-}" "$h" || true
-  done
-}
-
-# The key check: no cloud key and no private key in CircleChat's database or in an agent's Hermes
-# home. The GitHub Apps' private keys sit in a root-owned folder for each stack's GitHub environment.
-key_check() {
-  local env_name; if [ -n "$TENANT" ]; then env_name="client-$TENANT"; else env_name="$STACK_NAME"; fi
-  (docker compose exec -T postgres pg_dump -U postgres circlechat 2>/dev/null || true) |
-    sudo "$(command -v node)" "$HERE/gateway/key-check.mjs" --secrets "$MODEL_KEYS" --private-keys "/var/lib/agent-stacks/github-apps/$env_name" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
-}
-
-# The agent image, pinned like every other image. CircleChat's api and bridge read CC_HERMES_IMAGE
-# from .env, and run every agent turn in that image. Every mode writes the pin: the weekly image
-# refresh (cluster/images.mjs) moves the pin in images.lock and runs --upgrade, whose compose up
-# below recreates the api and the bridge on the new image.
-set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
 
 if [ "$SECRETS_ONLY" = true ]; then
-  if [ "$UPGRADE_ONLY" = true ] && [ "$CIRCLECHAT" != retired ]; then
-    # Stored files move from the old containers onto the storage volume first (kit/carry-storage.sh).
-    CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
-    docker compose up -d --remove-orphans
-  fi
-  start_gateway_and_notifier
-  [ "$UPGRADE_ONLY" = true ] && start_egress
-  [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  # With KIT_ROOT_STEPS, the root process runs the key check after this run. A secrets deploy
-  # changes no agent's gateway key. After an upgrade, the root process runs sync-skills.sh as the
-  # owner, for the skills and personas. A release that changes an agent's setup asks for
-  # setup-agent.sh by hand (kit/upgrade.mjs).
-  if [ "$HELPER" = false ]; then
-    agents_to_gateway
-    key_check
-  fi
+  start_gateway
+  [ "$UPGRADE_ONLY" = true ] && refresh_job_filter
   if [ "$UPGRADE_ONLY" = true ]; then what="Upgrade applied"; else what="Secrets applied"; fi
-  echo "$what${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
+  echo "$what${TENANT:+ (stack: $TENANT)}: gateway recreated."
   exit 0
 fi
 
-# Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
-# Caddy listens on this computer only. Tailscale serve gives each person on the tailnet the HTTPS
-# address, and nobody on the office network reaches CircleChat directly.
-# The agents' compose file reads CircleChat's address from the public address; point it at
-# CC_API_BASE, on this computer.
-sedi 's|CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api|CC_API_BASE: ${CC_API_BASE:-http://localhost:8080/api}|' compose.agents.yml
-sedi "s|- \"80:80\"|- \"127.0.0.1:$PORT:80\"|; s|- \"$PORT:80\"|- \"127.0.0.1:$PORT:80\"|" compose.yml
-# CircleChat also publishes 443 and MinIO's console (9001). Two stacks on one computer cannot both
-# hold those, so a tenant stack drops 443 (Tailscale serve gives it HTTPS) and binds the console
-# to a random local port.
-if [ -n "$TENANT" ]; then
-  sedi '/- "443:443"/d; /- "443:443\/udp"/d; s|- "9001:9001"|- "127.0.0.1::9001"|' compose.yml
-fi
-mkdir -p hermes-homes "$WS" "$WS/reviews" "$WS/loki"
+mkdir -p "$WS"
 # The workspace's checkouts. The setup clones each one once, when nothing is at its path, and never
-# runs git in a checkout after that: agents can change each checkout, its git settings and hooks
-# included, and the agents update their own checkouts from inside their containers.
+# runs git in a checkout after that.
 clone_once() { [ -e "$2" ] || [ -L "$2" ] || git clone "${@:3}" "$1" "$2"; }
-# The checkout every agent reads.
+# The knowledge checkout, which Kev reads.
 clone_once "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
-# Alan's own clone, for his proposal branches. Kept apart so an unmerged rule never reaches
-# the checkout Betty builds from and Barb reviews against. The repo's commit hooks are set at the
-# clone, never later.
-clone_once "$KNOWLEDGE_REPO" "$WS/kb-proposals" -c core.hooksPath=.husky
-if [ -n "${LOCAL_REDACTIONS:-}" ] && [ -f "$LOCAL_REDACTIONS" ]; then
-  node "$SAFE" write "$WS" "$WS/kb-proposals/buzz-agents/local-redactions.json" < "$LOCAL_REDACTIONS"
-fi
-# The application Betty builds in and Barb reviews.
+# The application the app preview serves.
 clone_once "$APP_REPO_URL" "$WS/$APP_REPO"
 
-# Kev, Barb's quick first pass. Copied out of the kit's checkout so its cache and node_modules
-# never land in a repository. Agents can change the workspace, so the copy never follows a symlink
-# there (kit/safe-files.mjs). Its engines are listed in site.json.
+# Kev, the quick first pass of a design review. Copied out of the kit's checkout so its cache and
+# node_modules never land in a repository. The copy never follows a symlink in the workspace
+# (kit/safe-files.mjs). Its engines are listed in site.json.
 if [ -d "$HERE/../tools/kev" ]; then
   node "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/kev"
   node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$HERE/../tools/kev/."
   docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
 fi
-# Each agent's home belongs to the agent's own account, mode 700, with nothing inside open to other
-# accounts (give_home in kit/lib.sh): Hermes refuses a home that another account can write to. The
-# folder that holds the homes is the owner's. CircleChat's api and bridge reach it as root.
-chmod 755 "$CC_DIR/hermes-homes"
-for h in "$CC_DIR"/hermes-homes/.hermes-*; do
-  [ -d "$h" ] && [ ! -L "$h" ] || continue
-  give_home "$h" || echo "Could not give $h to the agent's account. Run setup-agent.sh ${h##*/.hermes-}."
-done
-lock_bridge_config "$CC_DIR/hermes-homes" || echo "Could not give bridge-config.json to root with mode 600."
-# Every real file and folder, never a file a symlink names (kit/safe-files.mjs).
-sudo "$(command -v node)" "$HERE/kit/safe-files.mjs" chmod "$WS" "$WS" 777
 
 # A port another stack already uses stops the setup here, before anything restarts.
-port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
-for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] && echo "$JOBS_LOCAL_PORT") ${GATEWAY_LOCAL_PORT:-}; do
+port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(betty-proto$SUFFIX|cc-gateway$SUFFIX)\$" || true; }
+for p in "$PREVIEW_PORT" "$GATEWAY_PORT" $([ "$GATEWAY_SERVE" = true ] && echo "$JOBS_LOCAL_PORT") ${GATEWAY_LOCAL_PORT:-}; do
   o="$(port_owner "$p")"
-  [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port, site.gateway_local_port)."; exit 1; }
+  [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.preview_port, site.gateway_port, site.gateway_local_port)."; exit 1; }
 done
 
-# Stored files move from the old containers onto the storage volume before the containers are
-# recreated (kit/carry-storage.sh). It does nothing once they have moved.
-if [ "$CIRCLECHAT" != retired ]; then
-  CC_DIR="$CC_DIR" bash "$HERE/kit/carry-storage.sh"
-  docker compose up -d --force-recreate
-fi
-
-# Always-on dev server for the application (hot-reloads as Betty edits)
+# Always-on dev server for the application (hot-reloads on each change)
 docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
 docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "127.0.0.1:$PREVIEW_PORT:5173" \
   -v "$WS/$APP_REPO":/app -w /app \
   -e __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="$TS_HOST" \
   "$(pin_image node:22)" sh -c "npm install && npx vite --host 0.0.0.0"
 
-start_gateway_and_notifier
-start_egress
-agents_to_gateway
-key_check
-# The agent check's own CircleChat account (kit/check-account.mjs), once the secrets deploy has
-# written the check's password: made when missing, kept a member, never an admin, and locked, so
-# its password signs in only while check-agent.sh runs a check. Before the
-# first agent is installed the step has no workspace to join, so the setup goes on; check-agent.sh
-# runs the same step again before each check.
-if [ -f "$CC_DIR/agent-check.env" ] && [ "$CIRCLECHAT" != retired ]; then
-  CC_DIR="$CC_DIR" SITE="$SITE" TENANT="$TENANT" node "$HERE/kit/check-account.mjs" \
-    || echo "The agent check's account is not ready yet (the line above says why). check-agent.sh makes the account when the check runs."
-fi
+start_gateway
+refresh_job_filter
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE OWNER=$(id -un) OWNER_HOME=$HOME"
 # A client stack's folder sits inside an encrypted disk image, which the "Unlock stack" workflow
-# opens after a restart. Until then the boot job finds no folder and does nothing.
+# opens after a restart.
 [ -n "$TENANT" ] && export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
-# A retired CircleChat gets no boot job, and no backup or test restore: both read its database.
-# Its last backup stays in the backup remote until someone deletes it.
-if [ "$CIRCLECHAT" = retired ]; then
-  for u in circlechat-boot backup restore-test; do uninstall_unit "$u$SUFFIX"; done
-else
-  install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose up -d" "$HOME" "$(id -un)" boot
+# network-step begin: remove CircleChat 1.x's jobs
+# CircleChat 1.x's jobs: its boot job, its backup and test restore, its release watcher and the
+# hourly sync of its agents' skills. Removing a job can stop work that runs, so the step waits for
+# a person. 1.x's last backup stays in the backup remote until someone deletes it.
+if ! network_held "removing CircleChat 1.x's jobs (circlechat-boot, backup, restore-test, release-watch, agents-sync), which can stop work that runs"; then
+  for u in circlechat-boot backup restore-test release-watch agents-sync; do uninstall_unit "$u$SUFFIX" >/dev/null; done
 fi
-# Nightly encrypted backup of this stack, and a test restore each quarter. Both run as root, which
-# can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
-if [ -n "$BACKUP_REMOTE" ] && [ "$CIRCLECHAT" != retired ]; then
-  for t in restic rclone; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
-  rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -x "${BACKUP_REMOTE%%:*}:" >/dev/null \
-    || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
-  # Root reads Docker's settings from the owner's ~/.docker: on a Mac, Colima's Docker belongs to
-  # the owner, and root has no settings of its own.
-  BENV="OWNER=$(id -un) OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS DOCKER_CONFIG=$HOME/.docker PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
-  install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
-  install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
-fi
+# network-step end
 # Earlier versions ran their own image and upgrade jobs; cluster-updater (install-cluster.sh)
 # now runs both, hourly.
 uninstall_unit "images$SUFFIX" >/dev/null
-# Updates of the knowledge repo: with upgrade.auto, each release (same first number) installs on
-# its own and a new major version asks in Slack; otherwise the hourly sync pulls main.
 uninstall_unit "upgrade$SUFFIX" >/dev/null
-if [ "$UPGRADE_AUTO" = on ]; then
-  # cluster-updater checks out each release; nothing pulls main.
-  uninstall_unit "agents-sync$SUFFIX" >/dev/null
-else
-  # As the owner, never as root: agents can change the workspace and their homes (sync-skills.sh).
-  install_unit "agents-sync$SUFFIX" "$ENVS $HERE/sync-skills.sh" "$CC_DIR" "$(id -un)" hourly
-fi
 # The agents on the stack's RecursicaChat 2.0 server, with a recursicachat block in site.json: each
 # agent's instructions, model, autonomy, sandbox and monthly budget, from the kit and site.json
 # (rc-sync.sh), through the server's root-only CLI. Now, then hourly. The job runs as root, because
@@ -837,14 +393,6 @@ if [ "$(site_get recursicachat.services)" != "" ] && [ "$(site_get recursicachat
   sudo OWNER="$(id -un)" CC_DIR="$CC_DIR" SITE="$SITE" KIT_NODE="$(command -v node)" "$HERE/rc-service.sh" ||
     echo "Setting up a RecursicaChat service failed (the lines above say why). Fix it, then run: sudo OWNER=\$(id -un) $HERE/rc-service.sh"
 fi
-if [ "$CIRCLECHAT" = retired ]; then
-  # Porter is an agent of CircleChat 1.x, so a retired CircleChat has no one to announce to.
-  uninstall_unit "release-watch$SUFFIX"
-elif [ -n "$(site_get porter.watch)" ]; then
-  # Announces each new release of the watched repository to Porter, through the workflow webhook
-  # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
-  install_unit "release-watch$SUFFIX" "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
-fi
 # Kev's review data, with data.repo in site.json: each hour, Barb's notes go to a new branch of
 # that private repo, with a pull request for a person to review. Each night, the reviewed notes
 # come from the repo's main branch, for Kev's training. Without data.repo, neither job runs.
@@ -857,11 +405,11 @@ else
 fi
 
 # Each agent's GitHub App, with github_apps in site.json, and the Kev notes push's app, with
-# data.github_app. The token service runs as root on this control computer, reads each app's private
-# key from a root-owned file, and writes each agent's token to the agent's own .env
-# (circlechat/github/token-service.mjs). The push's token goes to $CC_DIR/kev-data.env. The service
-# listens on loopback and this computer's Tailscale address, for port jobs on other computers.
-# Without an app, nothing has push access.
+# data.github_app. The token service runs as root on this control computer and reads each app's
+# private key from a root-owned file (circlechat/github/token-service.mjs). The push's token goes to
+# $CC_DIR/kev-data.env. A port job on another computer asks the service for a push token over
+# Tailscale, so the service listens on loopback and this computer's Tailscale address. Without an
+# app, nothing has push access.
 if [ "$GITHUB_APPS" = on ]; then
   if [ -n "$TENANT" ]; then GH_ENV="client-$TENANT"; else GH_ENV="$STACK_NAME"; fi
   TOKEN_HOSTS="127.0.0.1"
@@ -880,11 +428,12 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   echo "  powershell -ExecutionPolicy Bypass -File \\\\wsl.localhost\\${WSL_DISTRO_NAME:-Ubuntu}$(printf '%s' "$HERE/cluster/windows/install-wsl-boot.ps1" | tr / '\\')"
 fi
 
-# CircleChat's address and the app preview's address. Caddy and the preview listen on 127.0.0.1
-# only. With site.proxy "tailscale" (the default), tailscale serve gives each one an HTTPS address
-# on the tailnet: CircleChat on 443 for the cluster's own stack, or on site.port for a client or
-# demo stack, and the preview on site.preview_port. The setup never turns on Funnel, and stops when
-# Funnel serves either port, because Funnel opens the port to the internet.
+# The app preview's address. The preview listens on 127.0.0.1 only. With site.proxy "tailscale"
+# (the default), tailscale serve gives the preview an HTTPS address on the tailnet, on
+# site.preview_port. The setup never turns on Funnel, and stops when Funnel serves the port,
+# because Funnel opens the port to the internet. The setup never removes a rule: tailscale serve
+# reset would clear every rule, the gateway's too. CircleChat 1.x's old rule stays until a person
+# removes it, as in tailscale serve --https=443 off.
 #   site_serve_check <https port>:<local port> ...   prints each rule that is missing or public
 site_serve_check() {
   tailscale serve status --json 2>/dev/null | node -e '
@@ -898,35 +447,19 @@ site_serve_check() {
     }
   ' "$@"
 }
-# network-step begin: tailscale serve for CircleChat and the app preview
+# network-step begin: tailscale serve for the app preview
 if [ "$PROXY" = other ]; then
-  WHERE="https://<your address>"
-  ADDRESS="Point an HTTPS reverse proxy on this computer at http://127.0.0.1:$PORT for CircleChat, and at http://127.0.0.1:$PREVIEW_PORT for the app preview."
-elif network_held "tailscale serve for CircleChat and the app preview"; then
-  ADDRESS="tailscale serve for CircleChat and the app preview waits for a person: run setup-host.sh by hand."
+  ADDRESS="Point an HTTPS reverse proxy on this computer at http://127.0.0.1:$PREVIEW_PORT for the app preview."
+elif network_held "tailscale serve for the app preview"; then
+  ADDRESS="tailscale serve for the app preview waits for a person: run setup-host.sh by hand."
+elif ! command -v tailscale >/dev/null; then
+  ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
 else
-  if [ -z "$TENANT" ]; then CC_HTTPS=443; WHERE="https://$TS_HOST"; else CC_HTTPS="$PORT"; WHERE="https://$TS_HOST:$PORT"; fi
-  if [ "$CIRCLECHAT" = retired ]; then
-    # A retired CircleChat gets no address. Only the app preview's rule is added and checked. The
-    # setup never removes a rule: tailscale serve reset would clear every rule, the gateway's too.
-    if ! command -v tailscale >/dev/null; then
-      ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
-    else
-      ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
-        || { echo "tailscale serve failed, so the tailnet cannot reach the app preview. Run setup-host.sh in a terminal."; exit 1; }
-      problems="$(site_serve_check "$PREVIEW_PORT:$PREVIEW_PORT")"
-      [ -z "$problems" ] || { echo "$problems"; echo "Check tailscale serve status, then run setup-host.sh again."; exit 1; }
-      ADDRESS="CircleChat 1.x is retired, so it has no address. tailscale serve, tailnet only: https://$TS_HOST:$PREVIEW_PORT passes to http://127.0.0.1:$PREVIEW_PORT for the app preview."
-    fi
-  elif ! command -v tailscale >/dev/null; then
-    ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$CC_HTTPS http://127.0.0.1:$PORT && tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
-  else
-    ts_serve "--https=$CC_HTTPS" "http://127.0.0.1:$PORT" && ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
-      || { echo "tailscale serve failed, so the tailnet cannot reach CircleChat or the app preview. Run setup-host.sh in a terminal."; exit 1; }
-    problems="$(site_serve_check "$CC_HTTPS:$PORT" "$PREVIEW_PORT:$PREVIEW_PORT")"
-    [ -z "$problems" ] || { echo "$problems"; echo "Check tailscale serve status, then run setup-host.sh again."; exit 1; }
-    ADDRESS="tailscale serve, tailnet only: $WHERE passes to http://127.0.0.1:$PORT, and https://$TS_HOST:$PREVIEW_PORT to http://127.0.0.1:$PREVIEW_PORT for the app preview."
-  fi
+  ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
+    || { echo "tailscale serve failed, so the tailnet cannot reach the app preview. Run setup-host.sh in a terminal."; exit 1; }
+  problems="$(site_serve_check "$PREVIEW_PORT:$PREVIEW_PORT")"
+  [ -z "$problems" ] || { echo "$problems"; echo "Check tailscale serve status, then run setup-host.sh again."; exit 1; }
+  ADDRESS="tailscale serve, tailnet only: https://$TS_HOST:$PREVIEW_PORT passes to http://127.0.0.1:$PREVIEW_PORT for the app preview."
 fi
 # network-step end
 network_applied setup-host.sh
@@ -934,4 +467,3 @@ cat << MSG
 
 Done${TENANT:+ (stack: $TENANT)}. $ADDRESS
 MSG
-[ "$CIRCLECHAT" = retired ] || echo "Wait ~30s for the api, then install agents in the UI and run ${TENANT:+TENANT=$TENANT }setup-agent.sh for each."

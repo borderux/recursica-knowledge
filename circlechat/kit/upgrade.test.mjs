@@ -31,7 +31,7 @@ test("a release that failed once is skipped; a newer one is tried", () => {
   assert.deepEqual(decide("0.11.0", ["@recursica/knowledge@0.12.0", "@recursica/knowledge@0.12.1"], state, ["@recursica/knowledge@0.12.1"]), { action: "upgrade", tag: "@recursica/knowledge@0.12.1" });
 });
 
-test("with root's steps, the setup gets the password on stdin, needs no sudo, and leaves the skill sync to root", () => {
+test("with root's steps, the setup gets root's line on stdin and needs no sudo", () => {
   const calls = [];
   const run = (cmd, args, opts) => { calls.push({ line: [cmd, ...args].join(" "), opts }); return { status: 0 }; };
   let recorded = 0;
@@ -41,23 +41,26 @@ test("with root's steps, the setup gets the password on stdin, needs no sudo, an
   assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, "1");
   assert.equal(calls[0].opts.input, "pw48\n");
   calls.length = 0;
-  // Without root's steps, such as a run by hand, the setup and the skill sync run as before.
+  // Without root's steps, such as a run by hand, only the setup runs: CircleChat 1.x's skill sync is gone.
   assert.equal(setupRunner({ kit: "/kit", rootSteps: false, run })(), true);
-  assert.deepEqual(calls.map((c) => c.line), ["bash /kit/circlechat/setup-host.sh --upgrade", "bash /kit/circlechat/sync-skills.sh"]);
+  assert.deepEqual(calls.map((c) => c.line), ["bash /kit/circlechat/setup-host.sh --upgrade"]);
   assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, undefined);
   // A failed setup fails the release, which the upgrade then rolls back.
   assert.equal(setupRunner({ kit: "/kit", rootSteps: true, password: "x", run: () => ({ status: 1 }) })(), false);
 });
 
-test("a kit that follows main installs no release, not even with \"Upgrade now\"", () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), "upgrade-main-"));
-  const cc = path.join(home, "circlechat");
-  fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true });
-  fs.mkdirSync(path.join(home, "ws"));
-  fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ site: { circlechat: "retired" }, updates: { follow: "main" } }));
-  const script = fileURLToPath(new URL("./upgrade.mjs", import.meta.url));
-  const r = spawnSync(process.execPath, [script, "@recursica/knowledge@0.12.0"], { encoding: "utf8", env: { ...process.env, HOME: home, CC_DIR: cc, WS: path.join(home, "ws"), KIT_ROOT_STEPS: "" } });
-  assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /The kit follows main .*so no release installs, not even @recursica\/knowledge@0\.12\.0\./);
-  assert.equal(fs.existsSync(path.join(cc, "kit-out/upgrade-state.json")), false, "no setup ran");
-});
+for (const folder of ["circlechat", "recursica-stack"]) {
+  test(`a kit that follows main installs no release, not even with "Upgrade now" (site.json in ~/${folder})`, () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "upgrade-main-"));
+    const cc = path.join(home, folder);
+    fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true });
+    fs.mkdirSync(path.join(home, "ws"));
+    // site.circlechat "retired" still loads: a stack's site.json can keep the setting.
+    fs.writeFileSync(path.join(cc, "site.json"), JSON.stringify({ site: { circlechat: "retired" }, updates: { follow: "main" } }));
+    const script = fileURLToPath(new URL("./upgrade.mjs", import.meta.url));
+    const r = spawnSync(process.execPath, [script, "@recursica/knowledge@0.12.0"], { encoding: "utf8", env: { ...process.env, HOME: home, CC_DIR: cc, WS: path.join(home, "ws"), KIT_ROOT_STEPS: "" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, new RegExp(`The kit follows main \\(updates.follow in ${cc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/site\\.json\\), so no release installs, not even @recursica/knowledge@0\\.12\\.0\\.`));
+    assert.equal(fs.existsSync(path.join(cc, "kit-out/upgrade-state.json")), false, "no setup ran");
+  });
+}

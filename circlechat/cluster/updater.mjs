@@ -1,12 +1,12 @@
 // The one update job: hourly, as root, on each computer. One rule for everything:
 //
-//   - Recursica's own software, on a stack with upgrade.auto: each new commit on the CircleChat
-//     fork's branch right away (kit/upgrade.mjs). A new release of the knowledge repo (the kit)
-//     installs once an approver approves the release in Slack with an authenticator code
-//     (release-gate.mjs); a new major version asks first. With updates.follow "main" in the
-//     cluster's site.json, the kit checkout on every computer follows main instead: each verified
-//     commit, then the setups the change touches (follow-main.mjs). A change that can cut remote
-//     access, such as the firewall rules or a tailscale serve step, waits for a person.
+//   - Recursica's own software: a new release of the knowledge repo (the kit) installs once an
+//     approver approves the release in Slack with an authenticator code (release-gate.mjs); a new
+//     major version asks first. With updates.follow "main" in the cluster's site.json, the kit
+//     checkout on every computer follows main instead: each verified commit, then the setups the
+//     change touches (follow-main.mjs). A change that can cut remote access or interrupt running
+//     work, such as the firewall rules, a tailscale serve step or a step that removes a job, waits
+//     for a person.
 //   - Everything else: after 7 days, or right away for a flaw on CISA's Known Exploited
 //     Vulnerabilities list. Operating system packages are checked each hour (updates.mjs);
 //     container images once a day per stack (images.mjs).
@@ -20,6 +20,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { clusterStackName, followsMain } from "../kit/render.mjs";
+import { siteFile, stackDir, tenantOf, tenantStacks, workspaceDir } from "../kit/stack-paths.mjs";
 
 const DAY = 24 * 3600_000;
 
@@ -56,9 +57,8 @@ export function localStacks(home, computer) {
     const t = Object.fromEntries(fs.readFileSync(f, "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
     out.push({ name: name ?? clusterStackName(site), ccDir, upgradeAuto: t.UPGRADE_AUTO === "on" });
   };
-  add(null, path.join(home, "circlechat"));
-  const tenants = path.join(home, "tenants");
-  if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"));
+  add(null, stackDir(home));
+  for (const { tenant, dir } of tenantStacks(home)) add(tenant, dir);
   return out;
 }
 
@@ -88,14 +88,12 @@ export function refreshRootCopies({ kit, mac, run, fsx = { exists: fs.existsSync
 // computer only, so a helper has no server to wait for.
 async function followStep({ env, site, control, stacks, chat, state }) {
   const { followMain, realDeps } = await import("./follow-main.mjs");
-  const { afterUpgrade, ownerIds, prepareCloudApprovals, prepareGateway, stackPaths } = await import("./root-steps.mjs");
+  const { afterUpgrade, ownerIds, prepareGateway, stackPaths } = await import("./root-steps.mjs");
   const { serverQuiet } = await import("./quiet.mjs");
   const mac = process.platform === "darwin";
   const prepare = (ccDir) => {
     const ids = mac ? ownerIds(env.OWNER) : null;
-    const password = prepareGateway({ ccDir, ids });
-    prepareCloudApprovals({ ccDir, ids });
-    return password;
+    return prepareGateway({ ccDir, ids });
   };
   const local = stacks.map((st) => ({ ...st, ...stackPaths(env.OWNER_HOME, st.ccDir) }));
   const deps = realDeps({ env, stacks: local, afterUpgrade, prepare });
@@ -120,7 +118,7 @@ async function main() {
   const chat = makeChannel(env);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
   // The cluster's own site.json, for the quiet check and the kit's updates.follow setting.
-  let site = {}; try { site = JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME, "circlechat/site.json"), "utf8")); } catch {}
+  let site = {}; try { site = JSON.parse(fs.readFileSync(siteFile(env.OWNER_HOME), "utf8")); } catch {}
   // A new kit release: the cluster's control computer posts the release once, with an "Install" button.
   // A kit that follows main posts no release.
   const { isClusterControl, releaseCheck } = await import("./release-gate.mjs");
@@ -135,7 +133,7 @@ async function main() {
   // Whether RecursicaChat on this computer is quiet, read as root once, for the image refresh.
   const { serverQuiet } = await import("./quiet.mjs");
   const q = await serverQuiet(site);
-  const asOwner = (ccDir, script) => spawnSync("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`,
+  const asOwner = (ccDir, script) => spawnSync("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${workspaceDir(env.OWNER_HOME, tenantOf(env.OWNER_HOME, ccDir))}`,
     `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, `SERVER_QUIET=${q.quiet ? "yes" : "no"}`, `SERVER_BUSY=${q.why}`, process.execPath, script], { stdio: "inherit" });
   const { WAITING } = await import("./images.mjs");
   for (const p of plan(stacks, state)) {

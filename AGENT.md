@@ -23,7 +23,7 @@ Welcome! This repository holds the central skills and component documentation fo
 | `docs/` otherwise, including `docs/open-questions.md`         | Contribution guides and maintainer records                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/` | Packaging, tooling, and workflow configuration                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `buzz-agents/`                                                | Versioned definitions of the Buzz agents themselves — system prompts, settings, avatars, and, for an agent that runs one, its application source under `agents/<name>/app/`. Kept so they can be branched and rebuilt in a new Buzz community. Configuration and tooling, not design guidance. See [buzz-agents/README.md](buzz-agents/README.md), [buzz-agents/INSTALL.md](buzz-agents/INSTALL.md) to set them up on a machine, or [buzz-agents/ONBOARD_AN_OPERATOR.md](buzz-agents/ONBOARD_AN_OPERATOR.md) for the owner's side of handing them to a teammate. |
-| `circlechat/`                                                 | A third deployment surface for the same agents: setup scripts for running Betty, Barb and Alan on a self-hosted CircleChat with the Hermes runtime. Operational tooling, not design guidance. Each persona is the built `portable/circlechat/agents/<name>/SOUL.md`, so `agents/<name>/` stays the source of truth. See [circlechat/README.md](circlechat/README.md).                                                                                                                                                                                            |
+| `circlechat/` | The kit for the agents' cluster: the model gateway, the job runners, Kev, the RecursicaChat 2.0 server's scripts, the cluster's services and the update job. Operational tooling, not design guidance. The folder keeps the name of CircleChat 1.x, which the kit no longer runs. See [circlechat/README.md](circlechat/README.md). |
 | `nest/`                                                       | The other half of those agents: the scripts, fenced MCP servers, and runtime guides that get installed into `~/.buzz` by `scripts/bootstrap-nest.mjs`. Operational tooling, not design guidance. Contents are described by `nest/nest-manifest.json`.                                                                                                                                                                                                                                                                                                            |
 
 **Do not read a `DOCS.md` to answer a build question, and do not cite one.** Skill packages in `dist/` deliberately contain the `SKILL.md` and nothing else.
@@ -390,7 +390,7 @@ rules a running agent has. `npm run agents:versions:check` compares each changed
 version, an agent's version is raised by hand, because nothing releases agents.
 
 **Every place an agent runs keeps its own copy, and none of them updates when this repository
-does.** Buzz has `sync-prompts.mjs`, CircleChat has `circlechat/sync-skills.sh`, and Claude Code
+does.** Buzz has `sync-prompts.mjs`, RecursicaChat 2.0 has `circlechat/rc-sync.sh`, and Claude Code
 has this — run it after pulling a change to an agent:
 
 ```bash
@@ -415,7 +415,7 @@ Alan carry tokens, so they get a filled-in copy — the values come from where t
 sits — stamped so the check can say when it is stale. A project's own `.claude/agents` copy
 wins inside that project, and the check lists any under the workspace. Claire, Stu, Janice and
 Loki are never installed this way: their data fence cannot travel in a prompt, and Loki runs on
-CircleChat and RecursicaChat 2.0 only.
+RecursicaChat 2.0 only.
 
 `--check` **used to exit 0 whether or not anything had drifted.** It printed the drift and the
 status code said fine, which is invisible while a person reads the output and fatal the moment

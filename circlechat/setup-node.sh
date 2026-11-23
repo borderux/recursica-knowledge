@@ -8,22 +8,24 @@
 # ~/.recursica-node.env on this machine, never from site.json or the repository.
 set -euo pipefail
 NODE="${1:?usage: setup-node.sh <node name from site.json>}"
-# With TENANT=<name>, the stack's own site.json and secrets file: ~/tenants/<name>/circlechat/site.json
-# and ~/tenants/<name>/node.env, both inside the client's encrypted disk image on a Mac. A job
-# runner then serves that stack alone, with its job folder and logs inside the image too.
+HERE="$(cd "$(dirname "$0")" && pwd)"
+. "$HERE/kit/lib.sh"
+# The stack's site.json: ~/recursica-stack/site.json, or ~/circlechat/site.json on a computer that
+# keeps CircleChat 1.x's folder name (kit/stack-paths.sh). With TENANT=<name>, the stack's own
+# site.json and secrets file: ~/tenants/<name>/stack/site.json and ~/tenants/<name>/node.env, both
+# inside the client's encrypted disk image on a Mac. A job runner then serves that stack alone,
+# with its job folder and logs inside the image too.
 if [ -n "${TENANT:-}" ]; then
-  SITE="${SITE:-$HOME/tenants/$TENANT/circlechat/site.json}"
   SECRETS="${SECRETS:-$HOME/tenants/$TENANT/node.env}"
   export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
 fi
-SITE="${SITE:-$HOME/circlechat/site.json}"
+SITE="${SITE:-$(stack_dir "$HOME" "${TENANT:-}")/site.json}"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
-HERE="$(cd "$(dirname "$0")" && pwd)"
-. "$HERE/kit/lib.sh"
 [ -f "$SITE" ] || { echo "No $SITE. Copy this deployment's site.json here (it holds no secrets)."; exit 1; }
 
 OUT="$(mktemp -d)"; trap 'rm -rf "$OUT"' EXIT
-if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
+CLUSTER_SITE_FILE="$(stack_dir "$HOME")/site.json"
+if [ -n "${TENANT:-}" ] && [ -f "$CLUSTER_SITE_FILE" ]; then export CLUSTER_SITE="$CLUSTER_SITE_FILE"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$OUT" >/dev/null
 SPEC="$OUT/services/$NODE.json"
 load_env_file "$OUT/tenant.env"
