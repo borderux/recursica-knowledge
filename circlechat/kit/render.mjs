@@ -36,6 +36,7 @@ import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
+import { DEFAULT_STALL_MINUTES, MODEL_USE_SETTING } from "../gateway/rc-tasks.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -204,6 +205,31 @@ export function gatewayServices(site) {
   return (Array.isArray(list) ? list : []).filter((s) => s && typeof s === "object" && s.gateway !== undefined);
 }
 
+// A task's "Model use" setting on the RecursicaChat 2.0 server. The kit declares the setting to the
+// server in a task-settings file (taskSettings, which recursicachat/install.sh installs as
+// /etc/recursicachat/task-settings.json), and the gateway reads each task's choice from the server's
+// gateway listener (gateway/rc-tasks.mjs). "Local, then cloud if significantly delayed" moves a task
+// to the cloud after site.cloud_models.stall_minutes (15 by default) with no answer from the cluster.
+// The server's text about a stalled task names the same number.
+export const RC_GATEWAY_LISTENER_PORT = 3101;
+export const RC_GATEWAY_KEY = "rc-tasks.key";
+export const stallMinutes = (site = {}) => site.site?.cloud_models?.stall_minutes ?? DEFAULT_STALL_MINUTES;
+export function taskSettings(site = {}) {
+  return { settings: [structuredClone(MODEL_USE_SETTING)], stall_minutes: stallMinutes(site) };
+}
+// The gateway's side: the server's gateway listener, on the Mac's 127.0.0.1, as the gateway's
+// container reaches it (host.docker.internal, as LiteLLM reaches the Mac's Ollama), the key file in
+// the gateway's state folder, the stall, and each agent's gateway name and handle on the server.
+export function rcTaskSource(site = {}) {
+  if (!site.recursicachat || typeof site.recursicachat !== "object") return null;
+  return {
+    url: `http://host.docker.internal:${RC_GATEWAY_LISTENER_PORT}`,
+    key_file: `/state/${RC_GATEWAY_KEY}`,
+    stall_minutes: stallMinutes(site),
+    handles: Object.fromEntries(rcAgents(site).map((h) => [rcHandle(h), h])),
+  };
+}
+
 export function gatewayConfig(site) {
   const keys = modelKeys(site);
   const cluster = gatewayModels(site);
@@ -217,7 +243,11 @@ export function gatewayConfig(site) {
     ...gatewayServices(site).map((s) => [svcHandle(s.name), { routes: s.gateway.routes, cloud: false, key: null, service: true, max_parallel: s.gateway.max_parallel, daily_requests: s.gateway.daily_requests }]),
   ].sort(([a], [b]) => a.localeCompare(b)));
   const services = gatewayServices(site).length > 0;
+  const rcTasks = rcTaskSource(site);
   return {
+    // The stack's permission for cloud models. The gateway keeps every request on the cluster
+    // without it, whatever a task's setting says.
+    cloud_allowed: cloudAllowed(site),
     agents,
     // The day a service's daily_requests counts: midnight to midnight in the cluster's time zone,
     // site.timezone, or the control computer's own time zone, as for the cluster's reboot times.
@@ -236,6 +266,8 @@ export function gatewayConfig(site) {
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
     nodes: (site.nodes ?? []).filter((n) => !n.control && n.address !== "host.docker.internal").map((n) => n.address),
+    // Each task's Model use setting, from the RecursicaChat 2.0 server.
+    ...(rcTasks ? { recursicachat_tasks: rcTasks } : {}),
   };
 }
 
@@ -491,6 +523,7 @@ export function gatewayLocalPortErrors(site = {}) {
     ["site.gateway_port + 1, the gateway's port for port jobs on a Mac", gw + 1],
     ["site.github_token_port", tokenPort(site)],
     ...FILTER_PORTS.map((x) => ["a port of the outgoing filter", x]),
+    ...(site.recursicachat ? [["the RecursicaChat 2.0 server's gateway listener", RC_GATEWAY_LISTENER_PORT]] : []),
   ];
   for (const n of site.nodes ?? []) {
     for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) used.push([`node ${n.name}'s model server`, m.port]);
@@ -725,13 +758,19 @@ export function validate(site, { cluster } = {}) {
   // Cloud models on a client or demo stack need a recorded permission. Without the permission,
   // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
   // Claude).
+  // stall_minutes: the wait before "Local, then cloud if significantly delayed" moves a task to the
+  // cloud. The cluster's own stack may set it alone, since its permission needs no record.
   const cm = t.cloud_models;
   if (cm !== undefined) {
-    if (typeof cm !== "object" || cm === null || typeof cm.allowed !== "boolean") errs.push("site.cloud_models must be an object with allowed: true or false");
+    const needsAllowed = NEEDS_PERMISSION.includes(t.kind) || cm?.stall_minutes === undefined || cm?.allowed !== undefined;
+    if (typeof cm !== "object" || cm === null || Array.isArray(cm) || (needsAllowed && typeof cm.allowed !== "boolean")) errs.push("site.cloud_models must be an object with allowed: true or false");
     else if (cm.allowed) {
       if (!cm.granted_by || typeof cm.granted_by !== "string") errs.push("site.cloud_models.granted_by must name the person who granted the permission");
       if (!/^\d{4}-\d{2}-\d{2}$/.test(cm.granted_on ?? "")) errs.push("site.cloud_models.granted_on must be the date of the permission, as YYYY-MM-DD");
       if (!payerOk(cm.payer)) errs.push("site.cloud_models.payer must be operator or client-byok");
+    }
+    if (cm && typeof cm === "object" && cm.stall_minutes !== undefined && !(Number.isInteger(cm.stall_minutes) && cm.stall_minutes >= 1 && cm.stall_minutes <= 1440)) {
+      errs.push("site.cloud_models.stall_minutes must be a whole number of minutes from 1 to 1440");
     }
   }
   if (t.kind === "client" || t.kind === "demo") {

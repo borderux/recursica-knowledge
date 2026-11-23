@@ -3,8 +3,8 @@
 // the upgrade takes each step that needs root: the hourly update job (updater.mjs), or the cluster
 // agent's "Upgrade now" button (agent.mjs).
 //
-//   1. Before the upgrade, as root: the gateway's state folder, LiteLLM's master key and the
-//      secrets file of the cloud keys (prepareGateway). On a Mac, the owner owns each one, so the
+//   1. Before the upgrade, as root: the gateway's state folder, LiteLLM's master key, the key of the
+//      RecursicaChat server's gateway listener and the secrets file of the cloud keys (prepareGateway). On a Mac, the owner owns each one, so the
 //      Docker VM can mount the files.
 //   2. The upgrade, as the owner: kit/upgrade.mjs with KIT_ROOT_STEPS=1. setup-host.sh --upgrade
 //      then takes only the Docker steps.
@@ -46,6 +46,8 @@ export function prepareGateway({ ccDir, ids = null }) {
     try { return fs.lstatSync(f).isFile() ? fs.readFileSync(f, "utf8").trim() : ""; } catch { return ""; }
   };
   if (!read("litellm-master.key")) put("litellm-master.key", `sk-${crypto.randomBytes(24).toString("hex")}\n`);
+  // The key of the RecursicaChat 2.0 server's gateway listener (gateway/rc-tasks.mjs), as setup-host.sh makes it.
+  if (!read("rc-tasks.key")) put("rc-tasks.key", `rct_${crypto.randomBytes(24).toString("hex")}\n`);
   if (!fs.existsSync(keys)) {
     fs.writeFileSync(keys, "", { mode: 0o600, flag: "wx" });
     if (ids) fs.lchownSync(keys, ids.uid, ids.gid);

@@ -21,6 +21,13 @@ HERMES_IMAGE=circlechat/engine-hermes:latest
 # The PDF text reader for people's uploads (build-pdftext.sh), checked like the Hermes image
 PDF_ID_FILE=/opt/recursicachat/pdftext.image-id
 PDF_IMAGE=circlechat/pdftext:latest
+# Task settings (install.sh): the settings the server offers on each task, and the server's gateway
+# listener, which the model gateway asks for each task's settings and tells about each move to the
+# cloud. The listener is on 127.0.0.1 only, at GATEWAY_PORT, and takes only the key in its file.
+# With no key file, the server runs with neither.
+TASK_SETTINGS_FILE=/etc/recursicachat/task-settings.json
+GATEWAY_KEY_FILE=/etc/recursicachat/gateway.key
+GATEWAY_PORT=@GATEWAY_PORT@
 HOME_DIR=/opt/recursicachat/home
 # The server's own Colima VM's Docker socket, never the default VM's.
 SOCK="$HOME_DIR/.colima/recursicachat/docker.sock"
@@ -46,6 +53,15 @@ cd /
 [[ "$GOOGLE_CLIENT_ID" =~ ^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$ ]] || fail "GOOGLE_CLIENT_ID isn't a Google client ID"
 [ -f "$GOOGLE_SECRET_FILE" ] && [ ! -L "$GOOGLE_SECRET_FILE" ] && [ -r "$GOOGLE_SECRET_FILE" ] || fail "can't read $GOOGLE_SECRET_FILE"
 [ "$(stat -f %Su:%Sg:%Lp "$GOOGLE_SECRET_FILE")" = root:_recursicachat:440 ] || fail "$GOOGLE_SECRET_FILE must be root:_recursicachat, mode 440"
+
+task_settings=""
+if [ -e "$GATEWAY_KEY_FILE" ]; then
+  [ -f "$GATEWAY_KEY_FILE" ] && [ ! -L "$GATEWAY_KEY_FILE" ] && [ -r "$GATEWAY_KEY_FILE" ] || fail "can't read $GATEWAY_KEY_FILE"
+  [ "$(stat -f %Su:%Sg:%Lp "$GATEWAY_KEY_FILE")" = root:_recursicachat:440 ] || fail "$GATEWAY_KEY_FILE must be root:_recursicachat, mode 440"
+  [ -f "$TASK_SETTINGS_FILE" ] && [ ! -L "$TASK_SETTINGS_FILE" ] && [ -r "$TASK_SETTINGS_FILE" ] || fail "can't read $TASK_SETTINGS_FILE; run the kit's recursicachat/install.sh"
+  [[ "$GATEWAY_PORT" =~ ^[0-9]{4,5}$ ]] || fail "GATEWAY_PORT isn't a port"
+  task_settings=1
+fi
 
 # Wait up to 3 minutes for its Colima VM's Docker, such as right after boot.
 for i in $(seq 90); do
@@ -103,4 +119,10 @@ export CIRCLECHAT_MASTER_KEY="$key"
 # the PDF text reader by its recorded image ID, so the server runs exactly that image
 [ -z "$pdf_id" ] || export CIRCLECHAT_PDF_IMAGE="$pdf_id"
 [ -z "$use_seed" ] || export CIRCLECHAT_SEED="$SEED"
+# The task settings, and the gateway listener on 127.0.0.1 only. The listener reads its key from the
+# file: the key is never in the environment.
+if [ -n "$task_settings" ]; then
+  export CIRCLECHAT_TASK_SETTINGS_FILE="$TASK_SETTINGS_FILE"
+  export CIRCLECHAT_GATEWAY_PORT="$GATEWAY_PORT" CIRCLECHAT_GATEWAY_HOST=127.0.0.1 CIRCLECHAT_GATEWAY_KEY_FILE="$GATEWAY_KEY_FILE"
+fi
 exec "$NODE" server/src/index.ts

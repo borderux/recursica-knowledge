@@ -63,6 +63,8 @@ test("setup-host --secrets-only starts the gateway on the gateway's own network,
   assert.match(router, /--network gateway-models -p 100\.64\.0\.1:4000:4001 -v /);
   assert.match(router, /LITELLM_URL=http:\/\/cc-litellm:4000/);
   assert.doesNotMatch(router, /--env-file|ANTHROPIC|DATABASE_URL|postgres:\/\//);
+  // The router reaches the RecursicaChat server's gateway listener on the computer's 127.0.0.1, as LiteLLM reaches Ollama.
+  assert.match(router, /--add-host host\.docker\.internal:host-gateway /);
   assert.doesNotMatch(calls, /docker network connect/, "the router needs no second network, and no port jobs' network exists here");
   assert.ok(fs.existsSync(path.join(s.cc, "gateway-app/router.mjs")));
   assert.equal(fs.existsSync(path.join(s.units, "db.url")), false, "no database role");

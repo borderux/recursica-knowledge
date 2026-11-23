@@ -36,6 +36,9 @@ CREATE TABLE chat_reads (chat_id TEXT NOT NULL, user_id TEXT NOT NULL);
 CREATE TABLE messages (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), body TEXT NOT NULL DEFAULT '');
 CREATE TABLE tasks (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), plan_id TEXT NOT NULL DEFAULT '');
 CREATE TABLE task_progress (task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE, progress TEXT NOT NULL);
+CREATE TABLE task_settings (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE, key TEXT, value TEXT, PRIMARY KEY (task_id, key));
+CREATE TABLE task_setting_changes (id TEXT PRIMARY KEY, task_id TEXT, key TEXT, old_value TEXT, new_value TEXT, by_type TEXT, by_id TEXT, at INTEGER);
+CREATE TABLE task_cloud_switches (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE, n INTEGER, reason TEXT, at INTEGER, PRIMARY KEY (task_id, n));
 CREATE TABLE files (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT REFERENCES messages(id));
 CREATE TABLE file_texts (file_id TEXT PRIMARY KEY, text TEXT NOT NULL DEFAULT '');
 CREATE TABLE deliveries (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
@@ -63,6 +66,9 @@ INSERT INTO chat_reads VALUES ('c_1', 'u_1');
 INSERT INTO messages VALUES ('msg_1', 'c_1', 'hello'), ('msg_2', 'c_1', 'a plan'), ('msg_3', 'c_2', 'hi');
 INSERT INTO tasks VALUES ('t_1', 'c_1', 'p_1');
 INSERT INTO task_progress VALUES ('t_1', 'Step 17 of 43');
+INSERT INTO task_settings VALUES ('t_1', 'speed', 'fast');
+INSERT INTO task_setting_changes VALUES ('tc_1', 't_1', 'speed', 'slow', 'fast', 'user', 'u_1', 1);
+INSERT INTO task_cloud_switches VALUES ('t_1', 1, 'stalled', 2);
 INSERT INTO files VALUES ('f_one', 'c_1', 'msg_1'), ('f_two', 'c_1', NULL);
 INSERT INTO file_texts VALUES ('f_one', 'the text of an upload');
 INSERT INTO deliveries VALUES ('d_1', 'c_1');
@@ -667,6 +673,22 @@ test("a task's progress line is work: cleared with its task, before the task", (
   assert.equal(count(db, "task_progress"), 1);
   clear(db);
   assert.equal(count(db, "task_progress"), 0);
+  db.close();
+});
+
+// The server keeps each task's settings, their changes and the task's moves to a cloud model in
+// three tables of its own. Each goes with its task.
+test("a task's settings, their changes and its cloud switches are work: cleared before the task", () => {
+  const tasks = WORK.findIndex(([t]) => t === "tasks");
+  for (const t of ["task_settings", "task_setting_changes", "task_cloud_switches"]) {
+    const i = WORK.findIndex(([w]) => w === t);
+    assert.ok(i >= 0 && i < tasks, `${t} is work, before tasks`);
+  }
+  assert.deepEqual(unlistedTables(["tasks", "task_settings", "task_setting_changes", "task_cloud_switches"]), []);
+  const db = makeDb(path.join(tmp(), "t.db"));
+  assert.deepEqual(refusals(db), []);
+  clear(db);
+  for (const t of ["task_settings", "task_setting_changes", "task_cloud_switches"]) assert.equal(count(db, t), 0, t);
   db.close();
 });
 
