@@ -82,7 +82,7 @@ test("the checkout moves only by a fast-forward on main", () => {
 // A real origin and kit checkout in a temporary folder, and a stand-in for GitHub's compare view.
 // A kit with a lib.sh that defines network_held, as every kit after the hold does. hold: false
 // for a kit from before the hold.
-const HOLD_LIB = "#!/usr/bin/env bash\n# network-step begin: the hold on network steps\nnetwork_held() {\n  [ \"${KIT_HOLD_NETWORK:-}\" = 1 ] || return 1\n}\n# network-step end\nsedi() { :; }\n";
+const HOLD_LIB = "#!/usr/bin/env bash\n# network-step begin: the hold on network steps\nnetwork_held() {\n  [ \"${KIT_HOLD_NETWORK:-}\" = 1 ] || return 1\n}\n# network-step end\nsedi() { :; }\n# network-code begin: the job installer\ninstall_unit() {\n  write_unit a\n}\n# network-code end\n";
 function repos({ hold = true } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "follow-"));
   const sh = (cwd, ...a) => {
@@ -189,7 +189,9 @@ test("a failed setup posts the last lines, keeps the new commit, and runs again 
   const r = repos();
   let fail = true;
   const w = world(r, { setup: async (name) => { w.setups.push(name); return fail && name === "install-cluster.sh" ? { status: 1, output: "loading rules\nnft: syntax error in line 4\n" } : { status: 0, output: "" }; } });
-  const sha = r.push("circlechat/kit/lib.sh");
+  // Two setups, with no change to lib.sh, whose network_held lets setups run at all.
+  r.push("circlechat/setup-node.sh");
+  const sha = r.push("circlechat/cluster/install-cluster.sh");
   assert.equal(await followMain(w.deps), "failed");
   assert.equal(r.head(), sha, "the checkout stays at the new commit");
   assert.deepEqual(w.setups, ["setup-node.sh", "install-cluster.sh"]);
@@ -213,7 +215,7 @@ test("without password-free sudo, a setup runs only through root's own steps, an
   assert.deepEqual(w.setups, ["setup-host.sh --upgrade"]);
   assert.match(w.posts[0], /^:warning: .* Ran setup-host\.sh --upgrade again\. setup-host\.sh needs a person, because the owner has no password-free sudo\. Run \.\/circlechat\/setup-host\.sh by hand\.$/);
   w.setups.length = 0;
-  r.push("circlechat/kit/lib.sh", "echo lib\n");
+  r.push("circlechat/kit/lib.sh", `${HOLD_LIB}echo lib\n`);
   await followMain(w.deps);
   assert.deepEqual(w.setups, ["setup-host.sh --upgrade"], "a change with no service or job needs only setup-host.sh --upgrade");
   assert.match(w.posts[1], /setup-node\.sh and install-cluster\.sh need a person.*Run \.\/circlechat\/setup-node\.sh machine-2, then \.\/circlechat\/cluster\/install-cluster\.sh machine-2 by hand\.$/);
@@ -462,8 +464,7 @@ test("a kit with no network_held runs no setup: each setup the change touches wa
   const r = repos({ hold: false });
   const w = world(r, { kit: "/home/owner/kit", platform: "darwin" });
   r.push(FIREWALL, "rules v2\n");
-  r.push("circlechat/setup-node.sh", "echo node v2\n");
-  const to = r.head();
+  const to = r.push("circlechat/setup-node.sh", "echo node v2\n");
   assert.equal(await followMain(w.deps), "updated");
   assert.equal(r.head(), to, "the checkout still fast-forwards");
   assert.deepEqual(w.setups, [], "no setup ran, not even under the hold");
@@ -488,13 +489,14 @@ test("a kit with no network_held runs no setup: each setup the change touches wa
 });
 
 test("an edit to lib.sh's job installer is a network change for install-cluster.sh, applied by its run by hand", () => {
-  const lib = HOLD_LIB + "# network-code begin: the job installer\ninstall_unit() {\n  write_unit x\n}\n# network-code end\nsite_get() { :; }\n";
-  const job = changesOf("circlechat/kit/lib.sh", lib, edit(lib, "write_unit x", "write_unit y"));
+  const lib = HOLD_LIB + "site_get() { :; }\n";
+  const job = changesOf("circlechat/kit/lib.sh", lib, edit(lib, "write_unit a", "write_unit b"));
   assert.deepEqual(job, [{ setup: "install-cluster.sh", file: "circlechat/kit/lib.sh", what: ["the job installer"], whole: false, byHand: true }]);
   assert.deepEqual(changesOf("circlechat/kit/lib.sh", lib, edit(lib, "site_get() { :; }", "site_get() { true; }")), [], "an edit outside the job installer");
   assert.equal(changesOf("circlechat/kit/lib.sh", lib, edit(lib, "# network-code end\n", ""))[0].byHand, true, "an end line removed");
   // A lib.sh with no network-code lines: any edit counts.
-  assert.deepEqual(changesOf("circlechat/kit/lib.sh", HOLD_LIB, edit(HOLD_LIB, "sedi() { :; }", "sedi() { true; }")).map((c) => [c.setup, c.what, c.byHand]), [["install-cluster.sh", ["the job installer, which writes the firewall's start-up job"], true]]);
+  const bare = "#!/usr/bin/env bash\nsedi() { :; }\n";
+  assert.deepEqual(changesOf("circlechat/kit/lib.sh", bare, edit(bare, "sedi() { :; }", "sedi() { true; }")).map((c) => [c.setup, c.what, c.byHand]), [["install-cluster.sh", ["the job installer, which writes the firewall's start-up job"], true]]);
 });
 
 test("a job installer change: install-cluster.sh runs under the hold, the post adds the run by hand after --confirm, and new rules don't clear it", async () => {
@@ -502,12 +504,11 @@ test("a job installer change: install-cluster.sh runs under the hold, the post a
   let rules = "v1", mark = "";
   const w = world(r, { kit: "/home/owner/kit", platform: "darwin", installed: async () => rules, applied: async (s) => (s === "install-cluster.sh" ? mark : "") });
   r.push("circlechat/cluster/firewall/pf-apply-tailnet.sh", "#!/usr/bin/env bash\n");
-  r.push("circlechat/kit/lib.sh", HOLD_LIB.replace("sedi() { :; }", "sedi() { true; }"));
-  const to = r.head();
+  const to = r.push("circlechat/kit/lib.sh", HOLD_LIB.replace("write_unit a", "write_unit b"));
   await followMain(w.deps);
   assert.ok(w.setups.includes("install-cluster.sh"), "the setup's other steps still run");
   const p = w.posts.at(-1);
-  assert.match(p, /^• install-cluster\.sh: the network steps wait\. Steps: the firewall rules, the job installer, which writes the firewall's start-up job \(circlechat\/cluster\/firewall\/pf-apply-tailnet\.sh, circlechat\/kit\/lib\.sh\)\.$/m);
+  assert.match(p, /^• install-cluster\.sh: the network steps wait\. Steps: the firewall rules, the job installer \(circlechat\/cluster\/firewall\/pf-apply-tailnet\.sh, circlechat\/kit\/lib\.sh\)\.$/m);
   assert.match(p, /pf-apply-tailnet\.sh loads only the anchor's rule files, so after --confirm run `\/home\/owner\/kit\/circlechat\/cluster\/install-cluster\.sh machine-2` for lib\.sh, which has no automatic undo\.$/m);
   rules = "v2";
   await followMain(w.deps);
