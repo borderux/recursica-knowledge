@@ -9,6 +9,11 @@
 # computer holds no key to the stack's other backups. The backup goes to <remote>/<stack>-rustdesk.
 # The containers pause for the copy, so the database is copied whole. A pause keeps each
 # connection open.
+#
+# The archive sits at one fixed path, /var/lib/rustdesk-backup/rustdesk.tgz, on every run. restic
+# groups snapshots by computer and path. A fixed path puts every run in one group, and each new
+# snapshot names the one before as its parent. The keep policy groups by computer and tag instead,
+# so the policy also covers the snapshots from before the fixed path, each in a separate group.
 set -Eeuo pipefail
 : "${OWNER_HOME:?OWNER_HOME}" "${STACK:?STACK}" "${BACKUP_REMOTE:?BACKUP_REMOTE}"
 SECRETS="${SECRETS:-$OWNER_HOME/.recursica-node.env}"
@@ -29,10 +34,14 @@ export RESTIC_REPOSITORY="rclone:$BACKUP_REMOTE/$STACK-rustdesk"
 export RCLONE_CONFIG="${RCLONE_CONFIG:-$OWNER_HOME/.config/rclone/rclone.conf}"
 
 STEP="copy"
-STAGE="$(mktemp -d /var/tmp/rustdesk-backup.XXXXXX)"
+STAGE="${RUSTDESK_STAGE:-/var/lib/rustdesk-backup}"
+mkdir -p "$STAGE"
 chmod 700 "$STAGE"
+ARCHIVE="$STAGE/rustdesk.tgz"
+# The archive holds the server's private key, so the archive never stays on disk after a run.
+rm -f "$ARCHIVE"
 paused=""
-cleanup() { [ -z "$paused" ] || docker unpause $paused >/dev/null 2>&1 || true; rm -rf "$STAGE"; }
+cleanup() { [ -z "$paused" ] || docker unpause $paused >/dev/null 2>&1 || true; rm -f "$ARCHIVE"; }
 trap cleanup EXIT
 for c in $CONTAINERS; do docker pause "$c" >/dev/null 2>&1 && paused="$paused $c"; done
 docker run --rm -v "$VOLUME:/data:ro" -v "$STAGE:/out" alpine:3.20 tar czf /out/rustdesk.tgz -C /data .
@@ -41,16 +50,16 @@ docker unpause $paused >/dev/null 2>&1 || true; paused=""
 # first match, the program before grep then fails on a closed pipe, and pipefail counts the found
 # file as a failure.
 STEP="archive listing"
-listing="$(tar tzf "$STAGE/rustdesk.tgz")"
+listing="$(tar tzf "$ARCHIVE")"
 grep -qx './id_ed25519' <<<"$listing" || { STEP="the volume holds no id_ed25519"; false; }
 
 STEP="restic init"
 restic cat config >/dev/null 2>&1 || restic init
 STEP="restic backup"
-restic backup --tag rustdesk "$STAGE/rustdesk.tgz"
+restic backup --tag rustdesk "$ARCHIVE"
 STEP="restic check"
-snapshot="$(restic ls latest)"
-grep -q '/rustdesk.tgz$' <<<"$snapshot" || { STEP="the new snapshot has no rustdesk.tgz"; false; }
+snapshot="$(restic ls latest --tag rustdesk --path "$ARCHIVE")"
+grep -Fqx "$ARCHIVE" <<<"$snapshot" || { STEP="the new snapshot has no rustdesk.tgz"; false; }
 STEP="restic forget"
-restic forget --tag rustdesk --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+restic forget --tag rustdesk --group-by host,tags --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
 echo "Backup of the RustDesk server done."

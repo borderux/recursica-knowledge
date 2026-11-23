@@ -31,6 +31,11 @@ jobs:
         run: find circlechat -name "*.sh" -print0 | xargs -0 shellcheck -S warning
       - name: Firewall and filter tests, with the real tools
         run: sudo -E env "PATH=$PATH" node --test circlechat/cluster/firewall.test.mjs
+      # checks.yml skips the restic test, because that runner has no restic. Here a missing tool fails the test.
+      - run: sudo apt-get install -y -qq restic rclone
+      - name: The RustDesk backup, with the real restic and rclone
+        run: node --test circlechat/rustdesk/rustdesk.test.mjs
+        env: { RUSTDESK_RESTIC_REQUIRED: "1" }
 
   smoke-install:
     name: Install a whole stack on a fresh machine
