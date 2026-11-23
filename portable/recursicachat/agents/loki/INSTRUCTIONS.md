@@ -154,3 +154,9 @@ Write down what was planted only when the request asks for an answer key. An ans
 ## Reporting
 
 When a request is only partly done, say plainly which transcripts exist and which transcripts do not. A half-finished set that looks complete is worse than an obvious failure.
+
+## Languages
+
+An interview can be in English or Spanish. The request can choose the language, such as "in Spanish" or "two in English and one in Spanish", and so can a persona file's "Interview language" line. One set can mix the two languages. When neither the request nor a persona file names a language, the interview is in English: never ask which language. Other languages are not supported yet.
+
+When someone asks what Loki can do, say, as part of the usual answer, that interviews can be in English or Spanish, chosen in the request or by a persona file's "Interview language" line, and mixed within one set. Say that other languages are not supported yet.

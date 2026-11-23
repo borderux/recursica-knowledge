@@ -370,7 +370,8 @@ test("the Grok marketplace lists the plugin by this repository's git URL", () =>
 
 /**
  * Loki's instructions name no platform, because Loki runs on several: every target builds the same
- * text from SKILL.md, and each platform file holds no fragment. On CircleChat, a step-by-step
+ * text from SKILL.md. The one fragment, "languages", is empty on CircleChat: only RecursicaChat 2.0's
+ * harness writes interviews in Spanish as well as English, so only its instructions say so. On CircleChat, a step-by-step
  * procedure for writing, checking and attaching files failed on gpt-oss: Loki wrote the tool calls
  * as action entries, called a tool that does not exist, and never wrote a file. So the instructions
  * say the transcript is the reply, make only what the request asks for, keep the synthetic banner
@@ -383,10 +384,27 @@ const LOKI_BUILDS = [
 ];
 const lokiBuilds = () => LOKI_BUILDS.map((p) => [p.join("/"), fs.readFileSync(path.join(repoRoot, ...p), "utf8")]);
 
-test("Loki's instructions are the same on every platform, and name no platform", () => {
-  const [[, first], ...rest] = lokiBuilds();
-  for (const [file, text] of rest) assert.equal(text, first, file);
-  assert.doesNotMatch(first, /CircleChat|RecursicaChat|Claude|OpenCode|Buzz|Hermes|reply\.md|share_to_task|actions block|Blocked sites/i);
+test("Loki's instructions are the same on every platform apart from RecursicaChat's languages, and name no platform", () => {
+  const [[, soul], [, instructions]] = lokiBuilds();
+  const at = instructions.indexOf("\n## Languages\n");
+  assert.ok(at > 0, "RecursicaChat's instructions end with the languages passage");
+  assert.equal(instructions.slice(0, at).trimEnd(), soul.trimEnd(), "the rest is the same on both");
+  assert.doesNotMatch(soul, /## Languages|Spanish/, "CircleChat's persona has no languages passage");
+  for (const [file, text] of lokiBuilds()) {
+    assert.doesNotMatch(text, /CircleChat|RecursicaChat|Claude|OpenCode|Buzz|Hermes|reply\.md|share_to_task|actions block|Blocked sites/i, file);
+  }
+});
+
+test("Loki's RecursicaChat instructions say interviews can be in English or Spanish, and what Loki says when asked what he can do", () => {
+  const text = fs
+    .readFileSync(path.join(repoRoot, "portable", "recursicachat", "agents", "loki", "INSTRUCTIONS.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.match(text, /An interview can be in English or Spanish\./);
+  assert.match(text, /"in Spanish" or "two in English and one in Spanish", and so can a persona file's "Interview language" line\./);
+  assert.match(text, /One set can mix the two languages\./);
+  assert.match(text, /the interview is in English: never ask which language\./);
+  assert.match(text, /When someone asks what Loki can do, say, as part of the usual answer, that interviews can be in English or Spanish/);
+  assert.match(text, /Say that other languages are not supported yet\./);
 });
 
 test("Loki's instructions deliver each transcript as an attached plain-text file, one per turn, with a one-line reply", () => {

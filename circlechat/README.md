@@ -1186,9 +1186,9 @@ sync sets five settings, the agent's starters and a model key for each agent wit
   nothing to change restarts nothing.
 - **Starters are the suggestions an empty chat with the agent shows,** one tap each. List up to 8,
   each one line of up to 200 characters. With none, the server shows its generic ones. A starter with
-  a `[placeholder]` in square brackets fills the message box for editing instead of sending. A server
-  too old to keep starters prints none in `cli.ts agent-get`: the sync then sets the other settings
-  and notes that the starters wait for a newer RecursicaChat.
+  `[placeholders]` in square brackets opens a fill-in dialog, one field per placeholder, instead of
+  sending. A server too old to keep starters prints none in `cli.ts agent-get`: the sync then sets the
+  other settings and notes that the starters wait for a newer RecursicaChat.
 - **The sync never adds an agent.** Add the agent in RecursicaChat first, with the agent's handle
   from site.json. Until then, the sync fails for that agent, and the other agents still sync.
 - **No account is needed.** Earlier kits signed in as a builder account made for the sync. The sync

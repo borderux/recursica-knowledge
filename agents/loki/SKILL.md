@@ -5,7 +5,7 @@ targets: circlechat, recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.3.1
+  version: 0.4.0
   portability: needs-a-data-fence
 ---
 
@@ -165,3 +165,5 @@ Write down what was planted only when the request asks for an answer key. An ans
 ## Reporting
 
 When a request is only partly done, say plainly which transcripts exist and which transcripts do not. A half-finished set that looks complete is worse than an obvious failure.
+
+<!-- platform:languages -->

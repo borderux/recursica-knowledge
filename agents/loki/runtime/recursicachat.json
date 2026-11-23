@@ -6,9 +6,10 @@
   "$sandboxComment": "docker: each turn runs in a container, never on the server itself.",
   "starters": [
     "Quick test: one 15-minute interview about meal planning",
+    "One 15-minute interview in [English or Spanish] about [your subject]",
     "One 30-minute interview about [your subject], based on the attached persona",
     "Three 15-minute interviews with different people about [your subject]",
     "What can you do?"
   ],
-  "$startersComment": "The suggestions an empty chat with Loki shows, one tap each. A starter with a [placeholder] fills the message box for editing instead of sending. \"Quick test\" asks for no personas or sources; the others bring a persona or ask once for one."
+  "$startersComment": "The suggestions an empty chat with Loki shows, one tap each. A starter with [placeholders] opens a fill-in dialog, one field per placeholder, instead of sending. \"Quick test\" asks for no personas or sources; the others bring a persona or ask once for one. An interview can be in English or Spanish, so the second starter asks for the language."
 }
