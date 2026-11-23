@@ -126,7 +126,9 @@ export function ownerIds(owner, run = spawnSync) {
   return { uid: id("-u"), gid: id("-g") };
 }
 
-// Steps 1 to 3 for one stack. Resolves when the upgrade and the steps after it end.
+// Steps 1 to 3 for one stack. Resolves when the upgrade and the steps after it end. The upgrade
+// runs setup-host.sh --upgrade with KIT_HOLD_NETWORK=1, so it applies no network step, such as
+// tailscale serve (network_held, kit/lib.sh). A network step waits for setup-host.sh run by hand.
 //   ref: a release tag from the "Upgrade now" button, or empty for the hourly check
 //   approved: the releases an approver approved (release-gate.mjs), passed in KIT_APPROVED
 //   spawnFn and run: child_process.spawn and spawnSync, for the tests
@@ -142,7 +144,7 @@ export async function runUpgrade({ env, ccDir, ref = "", approved = Object.keys(
   const { ws } = stackPaths(env.OWNER_HOME, ccDir);
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
   const started = now();
-  const child = spawnFn("sudo", ["-u", env.OWNER, "-H", "env", "KIT_ROOT_STEPS=1", `KIT_APPROVED=${approved.filter((t) => TAG.test(t)).join(",")}`, `CC_DIR=${ccDir}`, `WS=${ws}`, `SITE=${path.join(ccDir, "site.json")}`,
+  const child = spawnFn("sudo", ["-u", env.OWNER, "-H", "env", "KIT_ROOT_STEPS=1", `KIT_APPROVED=${approved.filter((t) => TAG.test(t)).join(",")}`, "KIT_HOLD_NETWORK=1", `CC_DIR=${ccDir}`, `WS=${ws}`, `SITE=${path.join(ccDir, "site.json")}`,
     `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ...(ref ? [ref] : [])],
     { stdio: ["pipe", "inherit", "inherit"] });
   child.stdin.end(`${password}\n`);

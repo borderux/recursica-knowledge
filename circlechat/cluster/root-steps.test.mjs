@@ -134,6 +134,7 @@ test("the upgrade runs as the owner with the password on stdin, and root's steps
     assert.equal(s.seen.cmd, "sudo");
     assert.deepEqual(s.seen.args.slice(0, 5), ["-u", "owner", "-H", "env", "KIT_ROOT_STEPS=1"]);
     assert.equal(s.seen.args[5], "KIT_APPROVED=@recursica/knowledge@1.2.3", "only the approved release tags reach the upgrade");
+    assert.equal(s.seen.args[6], "KIT_HOLD_NETWORK=1", "the upgrade applies no network step");
     assert.ok(!s.seen.args.some((a) => a.includes(pw)), "the password is never an argument");
     assert.deepEqual(s.seen.args.slice(-2), ["/kit/circlechat/kit/upgrade.mjs", "@recursica/knowledge@1.2.3"]);
     assert.equal(r.ran, ranSetup);
