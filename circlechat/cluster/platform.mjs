@@ -32,6 +32,11 @@ export const pfAnchorUsed = (mainRules) => /^anchor "agentguard"(\s|$)/m.test(ma
 export const pfLockdownLoaded = (rules) => /^block (drop|return) out\b.*\ball$/m.test(rules);
 // The addresses in a table or a set, as pfctl -T show and nft list set print them.
 export const listedAddresses = (text) => [...String(text).matchAll(/(?<![\w:.])((?:\d{1,3}\.){3}\d{1,3}|[0-9a-f]*:[0-9a-f:]+)(?![\w:.])/gi)].map((m) => m[1]).filter((a) => a.includes(".") || a.split(":").length > 2);
+// The Linux lockdown rules the guard loads: the copy install-cluster.sh installs with the base rules,
+// or the kit's own file on a computer whose firewall rules predate the copy. The update job holds
+// the firewall rules for a person (follow-main.mjs), so the lockdown rules change only with them.
+export const NFT_LOCKDOWN = "/var/lib/agent-cluster/nft-lockdown.nft";
+export const nftLockdownFile = (exists = fs.existsSync) => (exists(NFT_LOCKDOWN) ? NFT_LOCKDOWN : path.join(here, "firewall/nft-lockdown.nft"));
 // The last line of a command's error output, for a Slack alert.
 const lastLine = (r) => (r.stderr || r.stdout || "").trim().split("\n").filter(Boolean).pop() ?? `exit ${r.code}`;
 
@@ -197,7 +202,7 @@ export function makePlatform(env = process.env) {
     async lockdownFirewall(on) {
       let r;
       if (IS_MAC) r = await run("pfctl", ["-a", "agentguard", "-f", `/var/lib/agent-cluster/pf-${on ? "lockdown" : "base"}.conf`]);
-      else if (on) r = await run("nft", ["-f", path.join(here, "firewall/nft-lockdown.nft")]);
+      else if (on) r = await run("nft", ["-f", nftLockdownFile()]);
       else r = await run("nft", ["delete", "table", "inet", "agentguard_lockdown"]);
       windowsRequest({ action: on ? "lockdown-on" : "lockdown-off" });
       return r.code === 0 ? { ok: true } : { ok: false, error: lastLine(r) };

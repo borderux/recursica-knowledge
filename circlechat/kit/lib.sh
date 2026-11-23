@@ -57,6 +57,33 @@ own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo "${CHOWN:-/usr/sbin/chow
 #   require_kit <kit folder> [<owner account>] [<owner home folder>]
 require_kit() { bash "$(dirname "${BASH_SOURCE[0]}")/check-kit.sh" "$@" || exit 1; }
 
+# network-step begin: the hold on network steps
+# A network step can cut remote access: the firewall rules, pf.conf, nftables and Tailscale's
+# settings. Each network step in a setup sits between a "network-step begin" line and a
+# "network-step end" line, and starts with network_held. With KIT_HOLD_NETWORK=1, network_held
+# skips the step and prints one line. The update job sets KIT_HOLD_NETWORK=1 for each setup it runs
+# (cluster/follow-main.mjs). A person who runs a setup by hand leaves KIT_HOLD_NETWORK unset, and
+# every step runs. Network code, such as the job installer below, runs in a network step but sits
+# outside the steps, between "network-code begin" and "network-code end" lines. The update job
+# counts an edit there as a network change for install-cluster.sh.
+#   network_held <what the step changes>   true when the step waits for a person
+network_held() {
+  [ "${KIT_HOLD_NETWORK:-}" = 1 ] || return 1
+  echo "Held for a person, with KIT_HOLD_NETWORK=1: $1."
+}
+# The last line of a setup's run with no hold. Records the kit commit the setup's network steps ran
+# from, in ~/.recursica-kit/network-applied/<setup>. The update job reads the file, and clears the
+# network change that waited for a person once the commit holds the change.
+#   network_applied <setup name, such as install-cluster.sh>
+network_applied() {
+  local dir="${NETWORK_APPLIED_DIR:-$HOME/.recursica-kit/network-applied}" commit
+  [ "${KIT_HOLD_NETWORK:-}" = 1 ] && return 0
+  commit="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse HEAD 2>/dev/null || true)"
+  [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || return 0
+  mkdir -p "$dir" && printf '%s\n' "$commit" > "$dir/$1"
+}
+# network-step end
+
 # Read one value from site.json: site_get '.repos.app'
 site_get() { node -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
@@ -64,6 +91,7 @@ site_get() { node -e '
   if (v !== undefined && v !== null) process.stdout.write(typeof v === "object" ? JSON.stringify(v) : String(v));
 ' "$SITE" "$1"; }
 
+# network-code begin: the job installer, which writes the firewall's start-up job
 # Turn a systemd calendar line ("Sun *-*-* 03:00", "*-*-01 03:30", "*-*-* 02:00") into launchd's
 # StartCalendarInterval. Only the weekday, the day of the month, the hour and the minute are read.
 launchd_calendar() {
@@ -78,6 +106,7 @@ launchd_calendar() {
   [ -n "$day" ] && keys="$keys<key>Day</key><integer>$((10#$day))</integer>"
   printf '<key>StartCalendarInterval</key><dict>%s<key>Hour</key><integer>%d</integer><key>Minute</key><integer>%d</integer></dict>' "$keys" "$((10#$hour))" "$((10#$min))"
 }
+# network-code end
 
 # A stack's limits make a large computer act like a smaller one (site.json, nodes[].limits). The
 # stack's Docker VM must be no bigger than the limits, or the stack runs faster than the smaller
@@ -97,6 +126,7 @@ check_vm_limits() {
   fi
 }
 
+# network-code begin: the job installer, which writes the firewall's start-up job
 # Writes a unit file only when the file's text changes. Returns 0 after a write, 1 for no change.
 #   write_unit <file> <text>
 write_unit() {
@@ -258,6 +288,7 @@ PLIST
   fi
   echo "installed $name${sched:+ ($sched)}"
 }
+# network-code end
 
 # The label of each LaunchDaemon outside the kit whose program runs <command>, such as local.colima
 # for colima. A daemon the kit installs has a label that starts with io.recursica.
@@ -428,6 +459,7 @@ refresh_egress() {
   done
 }
 
+# network-code begin: the job installer, which writes the firewall's start-up job
 # Remove a service or scheduled job that install_unit installed. Safe when the unit does not exist.
 uninstall_unit() {
   local name="$1"
@@ -445,6 +477,7 @@ uninstall_unit() {
   fi
   echo "removed $name"
 }
+# network-code end
 
 # Point one agent's Hermes home at the stack's gateway, with the agent's own gateway key, and clear
 # every cloud key out of the home (gateway/hermes-access.mjs). Reads $KIT_OUT and $CC_DIR. The agent

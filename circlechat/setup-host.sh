@@ -485,16 +485,19 @@ notify_db_role() {
 # router's port for port jobs, on 127.0.0.1. The other modes run without a sudo password, so they
 # try sudo only where sudo asks for nothing.
 # One tailscale serve rule: as the owner, then with sudo where sudo asks for nothing, then, in the
-# full setup only, with sudo.
+# full setup only, with sudo. Each caller starts with network_held (kit/lib.sh).
+# network-step begin: tailscale serve for the gateway's port for port jobs
 ts_serve() {
   tailscale serve --bg "$@" >/dev/null 2>&1 || sudo -n tailscale serve --bg "$@" >/dev/null 2>&1 \
     || { [ "$SECRETS_ONLY" = false ] && sudo tailscale serve --bg "$@" >/dev/null; }
 }
 gateway_serve() {
+  network_held "tailscale serve for the gateway's port for port jobs" && return 0
   ts_serve "--tcp=$GATEWAY_PORT" "tcp://127.0.0.1:$JOBS_LOCAL_PORT" \
     || { echo "tailscale serve failed, so port jobs on other computers cannot reach the gateway. Run setup-host.sh in a terminal."; exit 1; }
   gateway_port_check
 }
+# network-step end
 
 # The checks after tailscale serve, on a Mac with Colima:
 #   - tailscale serve passes site.gateway_port to the router's port for port jobs.
@@ -895,9 +898,12 @@ site_serve_check() {
     }
   ' "$@"
 }
+# network-step begin: tailscale serve for CircleChat and the app preview
 if [ "$PROXY" = other ]; then
   WHERE="https://<your address>"
   ADDRESS="Point an HTTPS reverse proxy on this computer at http://127.0.0.1:$PORT for CircleChat, and at http://127.0.0.1:$PREVIEW_PORT for the app preview."
+elif network_held "tailscale serve for CircleChat and the app preview"; then
+  ADDRESS="tailscale serve for CircleChat and the app preview waits for a person: run setup-host.sh by hand."
 else
   if [ -z "$TENANT" ]; then CC_HTTPS=443; WHERE="https://$TS_HOST"; else CC_HTTPS="$PORT"; WHERE="https://$TS_HOST:$PORT"; fi
   if [ "$CIRCLECHAT" = retired ]; then
@@ -922,6 +928,8 @@ else
     ADDRESS="tailscale serve, tailnet only: $WHERE passes to http://127.0.0.1:$PORT, and https://$TS_HOST:$PREVIEW_PORT to http://127.0.0.1:$PREVIEW_PORT for the app preview."
   fi
 fi
+# network-step end
+network_applied setup-host.sh
 cat << MSG
 
 Done${TENANT:+ (stack: $TENANT)}. $ADDRESS
