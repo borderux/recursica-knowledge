@@ -39,6 +39,7 @@ CREATE TABLE task_progress (task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DEL
 CREATE TABLE task_settings (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE, key TEXT, value TEXT, PRIMARY KEY (task_id, key));
 CREATE TABLE task_setting_changes (id TEXT PRIMARY KEY, task_id TEXT, key TEXT, old_value TEXT, new_value TEXT, by_type TEXT, by_id TEXT, at INTEGER);
 CREATE TABLE task_cloud_switches (task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE, n INTEGER, reason TEXT, at INTEGER, PRIMARY KEY (task_id, n));
+CREATE TABLE task_status_by (task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE, status TEXT NOT NULL, by_type TEXT NOT NULL, by_id TEXT NOT NULL, at INTEGER NOT NULL);
 CREATE TABLE files (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL REFERENCES chats(id), message_id TEXT REFERENCES messages(id));
 CREATE TABLE file_texts (file_id TEXT PRIMARY KEY, text TEXT NOT NULL DEFAULT '');
 CREATE TABLE deliveries (id TEXT PRIMARY KEY, chat_id TEXT NOT NULL);
@@ -69,6 +70,7 @@ INSERT INTO task_progress VALUES ('t_1', 'Step 17 of 43');
 INSERT INTO task_settings VALUES ('t_1', 'speed', 'fast');
 INSERT INTO task_setting_changes VALUES ('tc_1', 't_1', 'speed', 'slow', 'fast', 'user', 'u_1', 1);
 INSERT INTO task_cloud_switches VALUES ('t_1', 1, 'stalled', 2);
+INSERT INTO task_status_by VALUES ('t_1', 'cancelled', 'user', 'u_1', 3);
 INSERT INTO files VALUES ('f_one', 'c_1', 'msg_1'), ('f_two', 'c_1', NULL);
 INSERT INTO file_texts VALUES ('f_one', 'the text of an upload');
 INSERT INTO deliveries VALUES ('d_1', 'c_1');
@@ -689,6 +691,21 @@ test("a task's settings, their changes and its cloud switches are work: cleared 
   assert.deepEqual(refusals(db), []);
   clear(db);
   for (const t of ["task_settings", "task_setting_changes", "task_cloud_switches"]) assert.equal(count(db, t), 0, t);
+  db.close();
+});
+
+// The server keeps the person who last set each task's status in a table of its own. It goes with
+// its task, and the person stays.
+test("who last set a task's status is work: cleared before the task, and the person stays", () => {
+  const i = WORK.findIndex(([t]) => t === "task_status_by");
+  assert.ok(i >= 0 && i < WORK.findIndex(([t]) => t === "tasks"), "task_status_by is work, before tasks");
+  assert.deepEqual(unlistedTables(["tasks", "task_status_by"]), []);
+  const db = makeDb(path.join(tmp(), "t.db"));
+  assert.deepEqual(refusals(db), []);
+  assert.equal(count(db, "task_status_by"), 1);
+  clear(db);
+  assert.equal(count(db, "task_status_by"), 0);
+  assert.equal(count(db, "users"), 2, "the person who set it stays");
   db.close();
 });
 

@@ -33,6 +33,7 @@ export const WORK = [
   ["task_settings"], // a task's choice for each task setting, such as Model use
   ["task_setting_changes"], // each change of a task's setting: who, when, from and to
   ["task_cloud_switches"], // each move of a task to a cloud model, which the model gateway reports
+  ["task_status_by"], // the person who last set a task's status, and when
   ["tasks"], // a plan is the tasks that share a plan_id
   ["chat_reads"],
   ["chat_members"],
