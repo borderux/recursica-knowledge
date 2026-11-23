@@ -970,11 +970,24 @@ A computer with direct IP access can still run the server. Set the client's `dir
 
 **The backup runs each night as root, from `circlechat/rustdesk/backup-rustdesk.sh`.** The containers pause for the copy, so the database is copied whole, and each connection stays open. restic encrypts the copy with `RUSTDESK_RESTIC_PASSWORD` and sends it to `<backup.remote>/<stack>-rustdesk`. The backup checks that the copy holds the server's key, `id_ed25519`, and posts in Slack when any step fails. A lost key means every client must be set up again.
 
-**Each run backs up the same file, `/var/lib/rustdesk-backup/rustdesk.tgz`.** restic groups snapshots by computer and path. One fixed path puts every run in one group, and each new snapshot builds on the snapshot before. The run deletes the file afterward, because the file holds the server's key. After each backup, restic keeps one snapshot for each of the last 7 days, 4 weeks and 6 months, and removes every other snapshot. The keep policy groups snapshots by computer and tag, not by path. The policy then also covers the snapshots from before the fixed path. Each of those snapshots came from a new temp folder and sat in a separate group. So the policy never removed an old snapshot.
+**Each run backs up the same file, `/var/lib/rustdesk-backup/rustdesk.tgz`.** restic groups snapshots by computer and path. One fixed path puts every run in one group, and each new snapshot builds on the snapshot before. The run deletes the file afterward, because the file holds the server's key. After each backup, restic keeps one snapshot for each of the last 7 days, 4 weeks and 6 months. restic removes every other snapshot. The keep policy groups snapshots by computer and tag, not by path. The policy then also covers the snapshots from before the fixed path. Each of those snapshots came from a new temp folder and sat in a separate group. So the policy never removed an old snapshot.
 
 **The server's own computer needs `hostAddressLoopback` in WSL.** The computer's own RustDesk client runs on Windows, and reaches the server at the computer's Tailscale address. In mirrored networking, WSL holds the same address. So WSL keeps each reply from the server, and the reply never reaches Windows. The client shows online in the console, and a connection to the client by ID fails with "Failed to connect via rendezvous server". `hostAddressLoopback=true` sends that traffic through Windows and back, the way mirrored networking already sends `127.0.0.1`. The three firewalls stay unchanged. A second address for the client, such as `127.0.0.1`, can't work. A client gives a controller the client's own relay address, and the controller dials that address.
 
 **Move the license once to the server in the host's network.** A server that ran on Docker's own network holds the license for an old container. In RustDesk's license portal, move the license to the new server, then enter the license in the console again. After the move, a new container in the host's network keeps the license.
+
+**A restore test proves the backup each month.** On the 1st, one hour after the backup, root runs `circlechat/rustdesk/restore-test-rustdesk.sh`. The test restores the newest snapshot into a temp folder only root opens. The test then checks four facts:
+
+- The archive holds the server's key pair, `id_ed25519` and `id_ed25519.pub`, and the public key belongs to the private key.
+- The archive holds the server's database, `db.sqlite3` or `db_v2.sqlite3`, as a SQLite file.
+- The restored public key matches the public key of the running server, `rustdesk-hbbs`. The test compares the fingerprints of the two keys.
+- The newest snapshot is under 2 days old.
+
+The test posts pass or fail in the cluster's Slack channel, with the date of the newest snapshot. A pass also gives the fingerprint of the public key. The test never prints a key, and deletes the restored files at the end, after a failure too. The test only reads the backup repository. To run the test by hand:
+
+```sh
+sudo systemctl start rustdesk-restore-test.service && sudo journalctl -u rustdesk-restore-test -n 20
+```
 
 **To restore,** restore the newest snapshot with that password, and unpack `rustdesk.tgz` into the `rustdesk_data` volume before the server starts. In the restore folder, the archive sits at `var/lib/rustdesk-backup/rustdesk.tgz`.
 

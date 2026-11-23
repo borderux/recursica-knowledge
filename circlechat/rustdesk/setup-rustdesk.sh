@@ -27,7 +27,7 @@ load_env_file "$TENANT_ENV"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
 RD="node $HERE/rustdesk.mjs"
 spec() { node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).rustdesk?.[process.argv[2]] ?? ""))' "$SPEC" "$1"; }
-ADDRESS="$(spec address)"; CONSOLE_HOST="$(spec console_host)"; HTTPS_PORT="$(spec https_port)"; BACKUP_AT="$(spec backup_time)"
+ADDRESS="$(spec address)"; CONSOLE_HOST="$(spec console_host)"; HTTPS_PORT="$(spec https_port)"; BACKUP_AT="$(spec backup_time)"; RESTORE_AT="$(spec restore_test_time)"
 [ -n "$ADDRESS" ] || { echo "$SPEC has no rustdesk block."; exit 1; }
 WSL=false; grep -qi microsoft "${PROC_VERSION:-/proc/version}" 2>/dev/null && WSL=true
 # Tailscale runs on Windows when this is WSL.
@@ -161,12 +161,19 @@ fi
 UNIT_SETTINGS="/etc/agent-cluster.conf $SECRETS" install_unit rustdesk-backup \
   "set -a; . /etc/agent-cluster.conf; set +a; OWNER_HOME=$HOME STACK=$STACK_NAME BACKUP_REMOTE=$BACKUP_REMOTE $HERE/backup-rustdesk.sh" / root "*-*-* $BACKUP_AT"
 
+# 9. The monthly restore test of the backup, as root, one hour after the backup on the 1st.
+UNIT_SETTINGS="/etc/agent-cluster.conf $SECRETS" install_unit rustdesk-restore-test \
+  "set -a; . /etc/agent-cluster.conf; set +a; OWNER_HOME=$HOME STACK=$STACK_NAME BACKUP_REMOTE=$BACKUP_REMOTE $HERE/restore-test-rustdesk.sh" / root "*-*-01 $RESTORE_AT"
+
 cat <<MSG
 RustDesk server running.
   Console, tailnet only: https://$CONSOLE_HOST (passes to 127.0.0.1:21114)
   ID server: $ADDRESS (21115/tcp, 21116/tcp+udp), relay: $ADDRESS:21117
   Backup: each night at $BACKUP_AT, to $BACKUP_REMOTE/$STACK_NAME-rustdesk
+  Restore test: on the 1st of each month at $RESTORE_AT
 Run the first backup now and check it holds the key:
   sudo systemctl start rustdesk-backup.service && sudo journalctl -u rustdesk-backup -n 20
+Then run the restore test by hand:
+  sudo systemctl start rustdesk-restore-test.service && sudo journalctl -u rustdesk-restore-test -n 20
 Then sign in to the console, change the admin password, and follow "RustDesk server" in circlechat/README.md.
 MSG
