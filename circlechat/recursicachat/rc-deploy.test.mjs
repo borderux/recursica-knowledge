@@ -187,6 +187,45 @@ test("a build whose source isn't the server's: a warning that the check couldn't
   const s = setup({ tables: "CREATE TABLE IF NOT EXISTS example_only (id TEXT);\n" });
   const r = s.run();
   assert.equal(r.r.status, 0, r.out + r.log);
-  assert.match(r.out, /^rc-deploy: warning: the rc-clear tables check could not run on [0-9a-f]{7}\. .*rc-deploy\.log says why\.$/m);
+  assert.match(r.out, /^rc-deploy: warning: the rc-clear tables check could not run on [0-9a-f]{7} \(exit 2\): .*creates no chats table, so it is not the server's source\. The deploy goes on\. .*rc-deploy\.log has the whole error\.$/m);
   assert.equal(r.app, s.next);
+});
+
+// A deploy warned "creates tables rc-clear.mjs doesn't list (), so sudo rc-clear will refuse the
+// database" on a build that added no table. The owner couldn't open /opt/recursicachat, so Node
+// couldn't load rc-clear.mjs and exited 1, the code for unlisted tables. A check that fails now says
+// so, with its error, and the table warning needs a table.
+const SERVER_TABLES = "CREATE TABLE IF NOT EXISTS chats (id TEXT);\nCREATE TABLE IF NOT EXISTS task_progress (task_id TEXT);\n";
+function withCheck(text) {
+  const s = setup({ tables: SERVER_TABLES });
+  fs.writeFileSync(path.join(s.base, "bin", "rc-clear.mjs"), text);
+  return s;
+}
+
+test("a check that crashes: the warning says the check couldn't run, with its error, and names no table", () => {
+  const r = withCheck('throw new Error("example failure");\n').run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  assert.match(r.out, /^rc-deploy: warning: the rc-clear tables check could not run on [0-9a-f]{7} \(exit 1\): .*Error: example failure\. The deploy goes on\./m);
+  assert.doesNotMatch(r.out, /doesn't list/);
+  assert.match(r.log, /rc-clear tables check: .*example failure/, "the whole error is in the log");
+});
+
+test("a check that exits 1 with no table, or exits 0 with no result, couldn't run: no empty table list", () => {
+  let r = withCheck("process.exitCode = 1;\n").run();
+  assert.match(r.out, /could not run on [0-9a-f]{7} \(exit 1\): no error and no result\. The deploy goes on\./);
+  assert.doesNotMatch(r.out, /doesn't list/);
+  // A script Node never ran as its main module prints nothing and exits 0: no pass without the result line.
+  r = withCheck("// nothing\n").run();
+  assert.match(r.out, /could not run on [0-9a-f]{7} \(exit 0\): no error and no result\./);
+  assert.doesNotMatch(r.log, /rc-clear lists every table/);
+});
+
+test("rc-clear.mjs the check can't read: the warning says so, and the deploy goes on", { skip: process.getuid?.() === 0 ? "root reads every file" : false }, () => {
+  const s = setup({ tables: SERVER_TABLES });
+  fs.chmodSync(path.join(s.base, "bin", "rc-clear.mjs"), 0o000);
+  const r = s.run();
+  assert.equal(r.r.status, 0, r.out + r.log);
+  assert.equal(r.app, s.next);
+  assert.match(r.out, /could not run on [0-9a-f]{7} \(exit 2\): .*[Pp]ermission denied/);
+  assert.doesNotMatch(r.out, /doesn't list/);
 });

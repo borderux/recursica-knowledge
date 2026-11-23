@@ -120,21 +120,37 @@ log "built $(short "$NEW"): $(wc -l < "$WORK/manifest" | tr -d ' ') files"
 
 # rc-clear lists every table this build creates (rc-clear.mjs schema), or sudo rc-clear refuses the
 # server's database after the deploy. A warning only: the deploy goes on. The check reads the build's
-# source as the owner, with rc-clear.mjs as install.sh installed it beside this script.
+# source as the owner. The owner can't open $BASE, which only root and the server's group read, so
+# root hands the owner a copy of rc-clear.mjs in the build folder. Without the copy, Node couldn't
+# load the script and exited 1, the same code as unlisted tables, and the warning listed no table.
 CLEAR_MJS="${RC_DEPLOY_CLEAR_MJS:-$BASE/bin/rc-clear.mjs}"
 if [ -f "$CLEAR_MJS" ] && [ -d "$WORK/stage/server/src" ]; then
-  tables="$(as_owner "$BUILD_NODE" "$CLEAR_MJS" schema "$WORK/stage/server/src" 2>>"$LOG")"
-  code=$?
-  case "$code" in
-    0) log "rc-clear lists every table $(short "$NEW") creates" ;;
-    1)
-      unlisted="$(sed -n 's/^\([A-Za-z0-9_]*\): .*/\1/p' <<<"$tables" | paste -sd, - | sed 's/,/, /g')"
-      log "warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list: $unlisted"
-      echo "rc-deploy: warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list ($unlisted), so sudo rc-clear will refuse the database until the kit lists them. Update the kit, then run its recursicachat/install.sh." ;;
-    *)
-      log "warning: the rc-clear tables check could not run on $(short "$NEW") (exit $code)"
-      echo "rc-deploy: warning: the rc-clear tables check could not run on $(short "$NEW"). $LOG says why." ;;
-  esac
+  # The real folder: Node runs a script as its main module only under the script's real path.
+  check="$(cd "$WORK" && pwd -P)/rc-clear-check.mjs"
+  err="$WORK/rc-clear-check.err"
+  tables=""
+  if cat "$CLEAR_MJS" 2>"$err" | as_owner tee "$check" >/dev/null 2>>"$err"; then
+    tables="$(as_owner "$BUILD_NODE" "$check" schema "$WORK/stage/server/src" 2>>"$err")"
+    code=$?
+  else
+    code=2
+  fi
+  [ -s "$err" ] && sed 's/^/rc-clear tables check: /' "$err" >> "$LOG"
+  unlisted="$(sed -n 's/^\([A-Za-z0-9_]*\): .*/\1/p' <<<"$tables" | paste -sd, - | sed 's/,/, /g')"
+  if [ "$code" = 0 ] && grep -q '^rc-clear lists every table' <<<"$tables"; then
+    log "rc-clear lists every table $(short "$NEW") creates"
+  elif [ "$code" = 1 ] && [ -n "$unlisted" ]; then
+    log "warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list: $unlisted"
+    echo "rc-deploy: warning: $(short "$NEW") creates tables rc-clear.mjs doesn't list ($unlisted), so sudo rc-clear will refuse the database until the kit lists them. Update the kit, then run its recursicachat/install.sh."
+  else
+    # The check itself failed: say so, with the first line of its error.
+    # Node prints the error's source line first, then "Error: ..." on a line of its own.
+    why="$(grep -m1 -E '^[A-Za-z]*(Error|Exception)\b' "$err" 2>/dev/null || grep -m1 -E 'denied|[Cc]annot|[Nn]o such' "$err" 2>/dev/null \
+      || grep -v '^[[:space:]]*$' "$err" 2>/dev/null | tail -1)"
+    why="$(printf '%s' "${why:-no error and no result}" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//; s/\.$//' | cut -c1-300)"
+    log "warning: the rc-clear tables check could not run on $(short "$NEW") (exit $code): $why"
+    echo "rc-deploy: warning: the rc-clear tables check could not run on $(short "$NEW") (exit $code): $why. The deploy goes on. $LOG has the whole error."
+  fi
 else
   log "rc-clear tables check skipped: no $CLEAR_MJS, or no server/src in the build"
 fi
