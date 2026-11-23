@@ -12,9 +12,11 @@ set -euo pipefail
 CLIENT="${1:?client name}"
 [[ "$CLIENT" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "Client name \"$CLIENT\" must be a slug."; exit 1; }
 HERE="$(cd "$(dirname "$0")" && pwd)"
+. "$HERE/../kit/stack-paths.sh"
 STACK_DIR="$HOME/tenants/$CLIENT"
 CTX="colima-$CLIENT"
-SITE="$STACK_DIR/circlechat/site.json"
+# The stack's folder: ~/tenants/<client>/stack, or CircleChat 1.x's old name before a person moved it.
+SITE="$(stack_dir "$HOME" "$CLIENT")/site.json"
 fail=0
 row() { printf '%-52s %s\n' "$1" "$2"; [ "$2" = pass ] || fail=1; }
 printf '%-52s %s\n' "Check" "Result"
@@ -73,7 +75,10 @@ ports() { node -e '
 ' "$1"; }
 if [ -f "$SITE" ]; then
   mine="$(ports "$SITE")"; clash=""
-  for f in "$HOME/circlechat/site.json" "$HOME"/tenants/*/circlechat/site.json; do
+  # The cluster's own stack and each client stack, each by its folder's new or old name.
+  others=("$(stack_dir "$HOME")/site.json")
+  for t in "$HOME"/tenants/*/; do [ -d "$t" ] && others+=("$(stack_dir "$HOME" "$(basename "$t")")/site.json"); done
+  for f in "${others[@]}"; do
     [ -f "$f" ] && [ "$f" != "$SITE" ] || continue
     for p in $(ports "$f"); do [[ " $mine " == *" $p "* ]] && clash="$clash $p($f)"; done
   done

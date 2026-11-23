@@ -47,18 +47,22 @@ test("local stacks: the cluster's own, named by site.stack_name, open client sta
   fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
   fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ site: { port: 8080, slack_channel_id: "CB" } }));
   fs.mkdirSync(path.join(home, "tenants/acme"), { recursive: true });
-  let s = await localStacks(home, async () => true);
+  let s = await localStacks(home);
   assert.deepEqual(s, [{ name: "cluster", channel: "CB", state: "up" }, { name: "acme", state: "locked" }], "\"cluster\" with no stack_name");
   fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ site: { port: 8080, slack_channel_id: "CB", stack_name: "ops" } }));
-  s = await localStacks(home, async () => true);
+  s = await localStacks(home);
   assert.equal(s[0].name, "ops");
 });
 
-test("local stacks: a stack whose CircleChat 1.x is retired is left out, so it never reads as down", async () => {
+test("local stacks: the new stack folders win over CircleChat 1.x's old ones, and site.circlechat changes nothing", async () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "home-"));
   fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
-  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ site: { port: 8080, slack_channel_id: "CB", circlechat: "retired" } }));
-  const asked = [];
-  assert.deepEqual(await localStacks(home, async (port) => { asked.push(port); return false; }), []);
-  assert.deepEqual(asked, [], "the retired stack's port is never asked");
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ site: { slack_channel_id: "COLD", circlechat: "retired" } }));
+  fs.mkdirSync(path.join(home, "tenants/acme/circlechat"), { recursive: true });
+  fs.writeFileSync(path.join(home, "tenants/acme/circlechat/site.json"), JSON.stringify({ site: { slack_channel_id: "CACME" } }));
+  assert.deepEqual(await localStacks(home), [{ name: "cluster", channel: "COLD", state: "up" }, { name: "acme", channel: "CACME", state: "up" }]);
+  fs.mkdirSync(path.join(home, "recursica-stack"), { recursive: true });
+  fs.writeFileSync(path.join(home, "recursica-stack/site.json"), JSON.stringify({ site: { slack_channel_id: "CNEW" } }));
+  fs.mkdirSync(path.join(home, "tenants/acme/stack"), { recursive: true });
+  assert.deepEqual(await localStacks(home), [{ name: "cluster", channel: "CNEW", state: "up" }, { name: "acme", state: "locked" }]);
 });

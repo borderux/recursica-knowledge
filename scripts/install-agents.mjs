@@ -5,7 +5,7 @@
  * Each place an agent runs keeps its own copy, and a copy does not update when this repository
  * does. On the machine this was written for, three copies of Barb and Betty had drifted apart —
  * one behind by the object map, one reading a knowledge checkout six commits old — and nothing
- * said so. Buzz has `sync-prompts.mjs` and CircleChat has `circlechat/sync-skills.sh`; Claude
+ * said so. Buzz has `sync-prompts.mjs` and RecursicaChat 2.0 has `circlechat/rc-sync.sh`; Claude
  * Code had nothing.
  *
  * So, into ~/.claude/agents by default (every project on the machine):

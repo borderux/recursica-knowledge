@@ -16,6 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parse, releaseNotes } from "../kit/upgrade.mjs";
+import { siteFile } from "../kit/stack-paths.mjs";
 
 const DAY = 24 * 3600_000;
 export const TAG = /^@recursica\/knowledge@\d+\.\d+\.\d+$/;
@@ -51,7 +52,7 @@ export function waiting(current, tags, approved = {}) {
 
 // The cluster's control computer, from the cluster's own site.json. Only that computer posts.
 export function isClusterControl(home, computer) {
-  try { return JSON.parse(fs.readFileSync(path.join(home, "circlechat/site.json"), "utf8")).nodes?.find((n) => n.control)?.name === computer; } catch { return false; }
+  try { return JSON.parse(fs.readFileSync(siteFile(home), "utf8")).nodes?.find((n) => n.control)?.name === computer; } catch { return false; }
 }
 
 // The post for a release that waits, and the reminder once a day. The state, in release-gate.json,

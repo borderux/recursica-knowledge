@@ -20,6 +20,7 @@ import { promisify } from "node:util";
 import { stopColimaVms } from "./colima.mjs";
 import { IS_MAC, IS_WSL } from "./platform.mjs";
 import { disruptive, serverQuiet } from "./quiet.mjs";
+import { siteFile } from "../kit/stack-paths.mjs";
 
 const exec = promisify(execFile);
 const sh = async (cmd, args, opts = {}) => { try { return (await exec(cmd, args, { maxBuffer: 64 << 20, timeout: 30 * 60_000, ...opts })).stdout; } catch (e) { return e.stdout ?? ""; } };
@@ -125,7 +126,7 @@ export function holdUntilQuiet(due, { quiet, why }, seen, now) {
 
 const siteQuiet = (env) => {
   let site = {};
-  try { site = JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME ?? "", "circlechat/site.json"), "utf8")); } catch {}
+  try { site = JSON.parse(fs.readFileSync(siteFile(env.OWNER_HOME ?? ""), "utf8")); } catch {}
   return serverQuiet(site);
 };
 

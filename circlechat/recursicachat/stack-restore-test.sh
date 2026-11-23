@@ -20,7 +20,11 @@ TAG=stack-files  # the restic repository and tag stack-backup.sh writes
 OWNER_HOME=@OWNER_HOME@
 KIT=@KIT@
 CC_DIR=@CC_DIR@
-WS="$OWNER_HOME/circlechat-workspace"
+WS=@WS@
+# migrate-off-1x.sh moves the stack's folder and the workspace to their new names, and leaves each old
+# name as a link to the new folder. A script installed before the move then follows the move here.
+[ -L "$CC_DIR" ] && [ -d "$OWNER_HOME/recursica-stack" ] && [ ! -L "$OWNER_HOME/recursica-stack" ] && CC_DIR="$OWNER_HOME/recursica-stack"
+[ -L "$WS" ] && [ -d "$OWNER_HOME/recursica-workspace" ] && [ ! -L "$OWNER_HOME/recursica-workspace" ] && WS="$OWNER_HOME/recursica-workspace"
 SITE="$CC_DIR/site.json"
 export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 HOST="$(hostname -s)"

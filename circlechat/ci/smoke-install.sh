@@ -1,66 +1,63 @@
 #!/usr/bin/env bash
-# Install a whole stack on a fresh Ubuntu machine, then check it: CircleChat, the model gateway,
-# the outgoing filter and the security services. CI runs this on each change to circlechat/;
-# a person can run it on a spare VM. Needs Docker, Node 22 and passwordless sudo.
+# Install a whole stack on a fresh Ubuntu machine, then check it: the model gateway, the job runner
+# with its outgoing filter, and the security services. CircleChat 1.x is gone, so the stack has no
+# chat server of its own. CI runs this on each change to circlechat/; a person can run it on a
+# spare VM. Needs Docker, Node 22 and passwordless sudo.
 set -euo pipefail
 KIT="$(cd "$(dirname "$0")/../.." && pwd)"
-CC="$HOME/circlechat" WS="$HOME/circlechat-workspace"
+CC="$HOME/recursica-stack" WS="$HOME/recursica-workspace"
 fail=0; check() { if eval "$2"; then echo "pass: $1"; else echo "FAIL: $1"; fail=1; fi; }
 
-# CircleChat: Border UX's fork, which carries the agents' network setting. The original repo has no
-# such setting, so a failed clone stops the smoke install instead of testing the wrong CircleChat.
-git clone --quiet --depth 1 --branch recursica/local-fixes https://github.com/borderux/recursica-circlechat "$CC"
-mkdir -p "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
+mkdir -p "$CC" "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
 
 cat > "$CC/site.json" <<JSON
 {
-  "site": { "public_host": "ci.example.ts.net", "port": 8080, "proxy": "other", "check_account": "agent-check@ci.example.com" },
+  "site": { "public_host": "ci.example.ts.net", "port": 8080, "proxy": "other" },
   "repos": { "knowledge": "https://github.com/borderux/recursica-knowledge", "app": "https://github.com/octocat/Hello-World", "app_dir": "Hello-World", "app_github": "octocat/Hello-World" },
-  "nodes": [ { "name": "ci", "os": "linux", "control": true, "address": "host.docker.internal" } ],
-  "routes": { "claude-sonnet": ["anthropic/claude-sonnet-5-5"] },
-  "notify": { "slack": false }
+  "nodes": [ { "name": "ci", "os": "linux", "control": true, "address": "host.docker.internal", "jobs": { "port": 7400, "slots": 1, "memory_gb": 2 } } ],
+  "routes": { "claude-sonnet": ["anthropic/claude-sonnet-5-5"] }
 }
 JSON
-cp "$CC/.env.example" "$CC/.env"
 # An older stack's Claude key in .env: setup-host.sh moves the key to the gateway's secrets file.
 KEY="sk-ant-ci-placeholder-$(openssl rand -hex 8)"
-echo "ANTHROPIC_API_KEY=$KEY" >> "$CC/.env"
+echo "ANTHROPIC_API_KEY=$KEY" > "$CC/.env"
 
 bash "$KIT/circlechat/setup-host.sh"
+# The job runner on the control computer, with the port jobs' filter. JOBD_TOKEN comes from the
+# control computer's .env, as on a real stack.
+( umask 077; grep '^JOBD_TOKEN=' "$CC/.env" > "$HOME/.recursica-node.env" )
+bash "$KIT/circlechat/setup-node.sh" ci
 sudo apt-get install -y -qq tcpdump age python3-venv nftables >/dev/null
 bash "$KIT/circlechat/cluster/install-cluster.sh" ci
 
 sleep 20
 # shellcheck disable=SC2034  # read inside the check strings below
 names="$(docker ps --format '{{.Names}}')"
-for c in caddy api worker bridge postgres cc-gateway cc-litellm cc-egress; do check "container $c runs" "grep -q -- '$c' <<<\"\$names\""; done
-check "CircleChat answers on the computer" "curl -fsS -o /dev/null http://127.0.0.1:8080/"
-check "CircleChat does not answer on other addresses" "! curl -fsS -m 5 -o /dev/null http://\$(hostname -I | awk '{print \$1}'):8080/"
+for c in cc-gateway cc-litellm cc-jobs-egress; do check "container $c runs" "grep -qx -- '$c' <<<\"\$names\""; done
+check "no CircleChat 1.x container runs" "! grep -qE '(^|[-_])(caddy|api|worker|bridge|postgres|redis|minio)([-_]|\$)|^cc-(egress|slack-notify|cloud-requests)\$' <<<\"\$names\""
+check "the setup makes no CircleChat 1.x network" "! grep -q '^circlechat_' <<<\"\$(docker network ls --format '{{.Name}}')\""
 GW="docker exec cc-gateway node -e"
 check "the model gateway answers" "$GW 'fetch(\"http://127.0.0.1:4000/health\").then((r) => process.exit(r.ok ? 0 : 1))'"
 check "the model gateway refuses a request without a gateway key" "$GW 'fetch(\"http://127.0.0.1:4000/v1/chat/completions\", { method: \"POST\", body: \"{}\" }).then((r) => process.exit(r.status === 401 ? 0 : 1))'"
 check "the port for port jobs refuses every request without a task key" "$GW 'fetch(\"http://127.0.0.1:4001/health\").then((r) => process.exit(r.status === 401 ? 0 : 1))'"
-check "with the filter on, the gateway publishes no port on the computer" "[ -z \"\$(docker port cc-gateway)\" ]"
-check "the router signs in to the database with the read-only role, and docker inspect shows no database password" "sudo grep -q '^postgres://cc_gateway_read:' '$CC/gateway-state/db.url' && ! docker inspect cc-gateway | grep 'postgres://' >/dev/null"
-check "the router's role can only read the columns it needs" "[ \"\$(cd '$CC' && docker compose exec -T postgres psql -U postgres -d circlechat -Atc \"select (select count(*) from information_schema.table_privileges where grantee = 'cc_gateway_read') || ' ' || (select count(*) from information_schema.column_privileges where grantee = 'cc_gateway_read' and privilege_type <> 'SELECT') || ' ' || (select rolsuper or rolcreaterole or rolcreatedb from pg_roles where rolname = 'cc_gateway_read')\")\" = '0 0 false' ]"
-check "the router's role reads CircleChat's tables and writes nothing" "$GW 'const pg = require(\"/app/node_modules/pg\"); const c = new pg.Client(require(\"fs\").readFileSync(\"/state/db.url\", \"utf8\").trim()); c.connect().then(() => c.query(\"select count(*) from agent_runs where status = \x27running\x27\")).then(() => c.query(\"update agents set name = name\")).then(() => process.exit(1), (e) => process.exit(e.code === \"25006\" ? 0 : 1))'"
+check "the gateway publishes no port beyond 127.0.0.1" "[ -z \"\$(docker port cc-gateway | grep -v ' -> 127\.0\.0\.1:')\" ]"
 check "the cloud key left .env" "! grep -q '^ANTHROPIC_API_KEY=' '$CC/.env' && ! grep -q '^LITELLM_MASTER_KEY=' '$CC/.env'"
 check "the cloud key is in the gateway's secrets file, which only root reads" "sudo grep -q '^MODEL_KEY_DEFAULT=$KEY\$' '$CC/model-keys.env' && [ \"\$(sudo stat -c '%U %a' '$CC/model-keys.env')\" = 'root 600' ]"
 check "no container shows the cloud key in docker inspect" "! docker inspect \$(docker ps -q) | grep -- '$KEY' >/dev/null"
-check "LiteLLM joins only the gateway's network" "[ \"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-litellm)\" = 'circlechat_models ' ]"
-check "the key check passes" "(cd '$CC' && docker compose exec -T postgres pg_dump -U postgres circlechat) | sudo \"\$(command -v node)\" '$KIT/circlechat/gateway/key-check.mjs' --secrets '$CC/model-keys.env' --stdin database '$CC/hermes-homes' >/dev/null"
-CURL="docker run --rm --network circlechat_agents curlimages/curl:8.10.1"
-for svc in api worker bridge; do
-  check "CircleChat's $svc container has the agents' network setting" "[ \"\$(cd '$CC' && docker compose exec -T $svc printenv CC_AGENT_NETWORK)\" = circlechat_agents ]"
-  check "CircleChat's $svc container has the shared workspace at /workspace, read-only" "(cd '$CC' && docker compose exec -T $svc grep -q ' /workspace [^ ]* ro[, ]' /proc/mounts)"
-done
-check "an agent container reaches CircleChat's api directly" "[ \"\$($CURL -s -o /dev/null -w '%{http_code}' --noproxy '*' http://api:3000/api/ || true)\" != 000 ]"
+check "LiteLLM joins only the gateway's network" "[ \"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-litellm)\" = 'gateway-models ' ]"
+check "the gateway joins the gateway's network" "grep -qw gateway-models <<<\"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-gateway)\""
+check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
+check "the job runner runs" "systemctl is-active --quiet jobd"
+
+# The port jobs' closed network, whose only exit is the filter (setup-node.sh).
+CURL="docker run --rm --network jobs-egress curlimages/curl:8.10.1"
 check "the filter refuses a site that is not on the list" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://example.com || true)\" = 403 ]"
 check "the filter refuses a cloud model provider" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.anthropic.com || true)\" = 403 ]"
-check "an agent container reaches the gateway directly" "[ \"\$($CURL -s --noproxy '*' http://cc-gateway:4000/health || true)\" = '{\"ok\":true}' ]"
-# The filter's answer to a request for api.github.com from an agent container. The arguments go
-# to docker run, such as --dns 127.0.0.1.
-github_via_filter() { docker run --rm --network circlechat_agents "$@" curlimages/curl:8.10.1 -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true; }
+check "a job container reaches the gateway directly" "[ \"\$($CURL -s --noproxy '*' http://cc-gateway:4000/health || true)\" = '{\"ok\":true}' ]"
+# The filter's answer to a request for api.github.com from a job container. The arguments go to
+# docker run, such as --dns 127.0.0.1.
+github_via_filter() { docker run --rm --network jobs-egress "$@" curlimages/curl:8.10.1 -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true; }
+JOBS_LOG="$HOME/.recursica-jobs-egress/logs/access.log"
 # A check that asks for api.github.com through the filter, up to 4 tries, 30 seconds apart. When
 # one name lookup fails, Squid keeps the failed lookup for 1 minute (negative_dns_ttl). Both GitHub
 # checks then fail together, and a rerun passes. The tries cover 90 seconds, longer than that
@@ -73,38 +70,16 @@ github_check() {
     echo "  $name: try $try of 4, the filter answered ${code:-nothing}"
     [ "$try" = 4 ] || sleep 30
   done
-  sudo grep -F 'api.github.com' "$CC/egress-logs/access.log" | tail -n 3 || true
+  sudo grep -F 'api.github.com' "$JOBS_LOG" | tail -n 3 || true
   echo "FAIL: $name"; fail=1
 }
 github_check "the filter allows GitHub"
 check "the closed network has no way out but the filter" "! $CURL -s -m 10 -o /dev/null https://example.com"
-check "an agent container cannot look up outside names" "! docker run --rm --network circlechat_agents --dns 127.0.0.1 busybox:1.36 nslookup -timeout=3 example.com >/dev/null 2>&1"
-github_check "an agent container still finds the filter by name" --dns 127.0.0.1
-check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
-check "the refusal is in the filter's log" "sudo grep -q 'example.com:443 403 TCP_DENIED' '$CC/egress-logs/access.log'"
-check "the file store has CircleChat's bucket" "(cd '$CC' && docker compose run --rm --no-deps -T -e MU=\"\$(sed -n 's/^MINIO_ROOT_USER=//p' .env | tail -1)\" -e MP=\"\$(sed -n 's/^MINIO_ROOT_PASSWORD=//p' .env | tail -1)\" --entrypoint /bin/sh minio-setup -c 'mc alias set local http://minio:9000 \"\$MU\" \"\$MP\" >/dev/null && mc ls local/circlechat >/dev/null')"
-check "CircleChat's default secrets are gone" "! grep -qE '^(SESSION_SECRET=change-me|MINIO_ROOT_PASSWORD=minioadmin$)' '$CC/.env'"
-check "the approval gate is on" "grep -q '^APPROVE_RISK_AT=high' '$CC/.env'"
+check "a job container cannot look up outside names" "! docker run --rm --network jobs-egress --dns 127.0.0.1 busybox:1.36 nslookup -timeout=3 example.com >/dev/null 2>&1"
+github_check "a job container still finds the filter by name" --dns 127.0.0.1
+check "the refusal is in the filter's log" "sudo grep -q 'example.com:443 403 TCP_DENIED' '$JOBS_LOG'"
+
 check "the firewall rules are loaded" "sudo nft list table inet agentguard >/dev/null"
-# The agent check's own account (kit/check-account.mjs), against CircleChat's real tables: made in
-# the only workspace as a member and locked, so the delivered password signs in nowhere; unlocked
-# for a check, and able to sign in then; locked again, which ends the check's session; set back to
-# member after a change to admin.
-API=http://127.0.0.1:8080/api
-printf '%s' '{"email":"admin@example.com","password":"ci-admin-password-0123","name":"CI admin","handle":"ci-admin","workspaceName":"CI"}' |
-  curl -fsS -o /dev/null -H 'content-type: application/json' --data-binary @- "$API/auth/signup" || echo "FAIL: the first account could not sign up"
-CHECK_PW="ci-check-$(openssl rand -hex 12)"
-( umask 077; printf 'CC_CHECK_PASSWORD=%s\n' "$CHECK_PW" > "$CC/agent-check.env" )
-check_role() { (cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select string_agg(wm.role, ',') from workspace_members wm join users u on u.id = wm.user_id where u.email = 'agent-check@ci.example.com'"); }
-check_account() { CC_DIR="$CC" node "$KIT/circlechat/kit/check-account.mjs" "$@"; }
-check_login() { printf '{"email":"agent-check@ci.example.com","password":"%s"}' "$CHECK_PW" | curl -fsS -o /dev/null -c "$CC/check-cookies" -H 'content-type: application/json' --data-binary @- "$API/auth/login"; }
-check "the check's account is made as a member of the workspace, locked" "check_account | grep 'locked the account' >/dev/null && [ \"\$(check_role)\" = member ]"
-check "the locked account does not sign in with the delivered password" "! check_login"
-check "the unlocked account signs in with the delivered password" "check_account unlock | grep 'unlocked the account' >/dev/null && check_login"
-check "locking again ends the session, and the password signs in nowhere" "check_account lock | grep 'ended 1 session' >/dev/null && ! curl -fsS -o /dev/null -b '$CC/check-cookies' '$API/me' && ! check_login"
-rm -f "$CC/check-cookies"
-(cd "$CC" && docker compose exec -T postgres psql -U postgres -d circlechat -qc "update workspace_members set role = 'admin' where user_id = (select id from users where email = 'agent-check@ci.example.com')")
-check "a rerun sets an admin check account back to member, and locked" "check_account | grep 'set the role from admin back to member' >/dev/null && [ \"\$(check_role)\" = member ] && ! check_login"
 for u in cluster-agent opencanary; do check "service $u runs" "systemctl is-active --quiet $u"; done
 check "the decoy answers" "curl -s -m 5 -o /dev/null http://127.0.0.1:8088/ || nc -z 127.0.0.1 2222"
 [ "$fail" = 0 ] && echo "Smoke install passed." || { echo "Smoke install failed."; exit 1; }

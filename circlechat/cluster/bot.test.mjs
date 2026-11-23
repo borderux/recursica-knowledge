@@ -75,12 +75,13 @@ test("buttons carry the computer and the reference", () => {
   assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "machine-2", r: "upd-1" });
 });
 
-test("a button with a suffix, such as Stop for one agent, reaches its action", async () => {
+test("a button with a suffix reaches its action", async () => {
   const { bot, relays } = setup();
   await bot.handle({ type: "interactive", payload: { type: "block_actions", user: { id: "U1" }, trigger_id: "T", channel: { id: "C1" }, message: { ts: "1.1" },
-    actions: [{ action_id: "agents-stop:betty", value: JSON.stringify({ c: "machine-1", r: "cluster|betty" }) }] } });
-  assert.equal(relays[0][1].action, "agents-stop");
-  assert.equal(relays[0][1].ref, "cluster|betty");
+    actions: [{ action_id: "reboot-skip:upd-1", value: JSON.stringify({ c: "machine-1", r: "upd-1" }) }] } });
+  await flush();
+  assert.equal(relays[0][1].action, "reboot-skip");
+  assert.equal(relays[0][1].ref, "upd-1");
 });
 
 test("a click is acknowledged without waiting for the target computer", async () => {
@@ -135,54 +136,4 @@ test("the Install button carries the release tag", () => {
   const blocks = buttonBlocks("release", "Kit release 0.13.0 is ready.", "machine-1", "@recursica/knowledge@0.13.0");
   assert.deepEqual(blocks[1].elements.map((e) => e.text.text), ["Install"]);
   assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "machine-1", r: "@recursica/knowledge@0.13.0" });
-});
-
-// A cloud-model request (cloud-requests.mjs): the buttons carry the stack's cloud approvers. U1 is
-// one of the cluster's approvers too; U0SAM0001 is a cloud approver only, with the authenticator
-// secret under the Slack user ID.
-const cloudValue = { c: "machine-2", r: "acme|cmreq_abc123", a: ["U1", "U0SAM0001"] };
-const cloudClick = (user, id) => ({ type: "interactive", payload: { type: "block_actions", user: { id: user }, trigger_id: "T",
-  channel: { id: "C1" }, message: { ts: "2.2" }, actions: [{ action_id: id, value: JSON.stringify(cloudValue) }] } });
-const cloudCode = (code) => ({ callback_id: "two-factor", private_metadata: JSON.stringify({ id: "cloud-approve", value: cloudValue, channel: "C1", ts: "2.2" }),
-  state: { values: { code: { code: { value: code } } } } });
-
-test("Deny on a cloud-model request needs no code, and goes to the stack's control computer", async () => {
-  const { bot, calls, relays } = setup();
-  await bot.handle(cloudClick("U1", "cloud-deny"));
-  await flush();
-  assert.deepEqual(relays, [["machine-2", { action: "cloud-deny", ref: "acme|cmreq_abc123", extra: { slackUser: "U1" }, by: "person_a" }]]);
-  const reply = calls.find(([m, b]) => m === "chat.postMessage" && b.thread_ts === "2.2");
-  assert.match(reply[1].text, /^:white_check_mark: <@U1> pressed "Deny" for machine-2: done$/);
-});
-
-test("Approve on a cloud-model request asks for the approver's code, and answers only with the right code", async () => {
-  const sam = newSecret();
-  const { bot, calls, relays } = setup({ TOTP_SECRET_U0SAM0001: sam });
-  await bot.handle(cloudClick("U0SAM0001", "cloud-approve"));
-  assert.equal(calls[0][0], "views.open");
-  assert.equal(relays.length, 0);
-  assert.equal((await bot.handle(submit("U0SAM0001", cloudCode("000000")))).response_action, "errors");
-  assert.equal((await bot.handle(submit("U0SAM0001", cloudCode(totp(sam, NOW))))).response_action, "clear");
-  await flush();
-  assert.deepEqual(relays, [["machine-2", { action: "cloud-approve", ref: "acme|cmreq_abc123", extra: { slackUser: "U0SAM0001" }, by: "U0SAM0001" }]]);
-});
-
-test("only the stack's cloud approvers can press either button, even one of the cluster's approvers", async () => {
-  const { bot, calls, relays } = setup();
-  for (const id of ["cloud-approve", "cloud-deny"]) await bot.handle(cloudClick("U2", id));
-  await flush();
-  assert.equal(relays.length, 0);
-  assert.deepEqual(calls.map(([m, b]) => [m, b.text]), [
-    ["chat.postEphemeral", "Only the stack's cloud approvers can press these buttons."],
-    ["chat.postEphemeral", "Only the stack's cloud approvers can press these buttons."],
-  ]);
-  const r = await bot.handle(submit("U2", cloudCode("123456")));
-  assert.equal(r.response_action, "errors");
-  assert.equal(relays.length, 0);
-});
-
-test("a cloud approver is no approver for the cluster's other buttons", async () => {
-  const { bot, relays } = setup({ TOTP_SECRET_U0SAM0001: newSecret() });
-  await bot.handle(click("U0SAM0001", "cut-off-now"));
-  assert.equal(relays.length, 0);
 });

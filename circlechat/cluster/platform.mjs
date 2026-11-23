@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { stopColimaVms } from "./colima.mjs";
+import { stackDir, tenantStacks } from "../kit/stack-paths.mjs";
 
 const exec = promisify(execFile);
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -107,9 +108,10 @@ export function makePlatform(env = process.env) {
   const owner = env.OWNER, home = env.OWNER_HOME, kit = env.KIT;
   const sealFile = "/var/lib/agent-cluster/sealed.json";
   const secretFiles = () => {
-    const list = [`${home}/circlechat/.env`, `${home}/.recursica-node.env`];
-    const tenants = path.join(home, "tenants");
-    if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) list.push(path.join(tenants, t, "node.env"), path.join(tenants, t, "circlechat", ".env"));
+    // Each stack's folder is the new one or CircleChat 1.x's old one (kit/stack-paths.mjs), never
+    // both, so no file is listed twice through a link.
+    const list = [path.join(stackDir(home), ".env"), `${home}/.recursica-node.env`];
+    for (const { tenant, dir } of tenantStacks(home)) list.push(path.join(home, "tenants", tenant, "node.env"), path.join(dir, ".env"));
     return list.filter((f) => fs.existsSync(f));
   };
   return {

@@ -20,12 +20,13 @@
 // stack lists the same servers and models, with no services, so those servers serve both stacks.
 // They keep no data. The stack gets its own gateway, keys, job runner and ports: the first ports
 // no other stack in ~/tenants uses. The stack's routes and agents keep only the picked computers'
-// models. The result goes to stdout; check repos, notify and the rest before the first setup.
+// models. The result goes to stdout; check repos and the rest before the first setup.
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import readline from "node:readline";
 import { PROVIDERS, keySecret, payerOk } from "./render.mjs";
+import { OLD_STACK_FOLDER, TENANT_STACK_FOLDER, pick } from "./stack-paths.mjs";
 
 // The providers a demo can take here: one key and one model each. Azure and Bedrock need more
 // settings, so add them to site.json by hand.
@@ -69,7 +70,8 @@ function takenPorts(cluster, tenantsDir) {
   const sites = [cluster];
   if (fs.existsSync(tenantsDir)) {
     for (const t of fs.readdirSync(tenantsDir)) {
-      const f = path.join(tenantsDir, t, "circlechat", "site.json");
+      // The stack's folder by its new name, or by CircleChat 1.x's old one (stack-paths.mjs).
+      const f = path.join(pick(path.join(tenantsDir, t, TENANT_STACK_FOLDER), path.join(tenantsDir, t, OLD_STACK_FOLDER)), "site.json");
       try { sites.push(JSON.parse(fs.readFileSync(f, "utf8"))); } catch { /* a locked stack, or no site.json */ }
     }
   }
@@ -142,7 +144,7 @@ export function stackSite(cluster, { stack, kind, computers, limits = {}, cloud,
       "The model servers and Kev's model belong to the cluster's own stack, which starts them: they serve this stack too, and keep no data.",
       kind === "demo"
         ? (cloudPart.model_keys ? `Cloud keys: ${Object.entries(cloudPart.model_keys).map(([n, k]) => `${n} (${k.provider}, ${keySecret(n)})`).join(", ")}. Add each key's value with circlechat/deploy/set-model-keys.sh.` : "No cloud keys: this demo runs on local models only.")
-        : "Check repos and notify. Add model_keys only after the client's permission is in site.cloud_models (circlechat/README.md, \"Clients\").",
+        : "Check repos. Add model_keys only after the client's permission is in site.cloud_models (circlechat/README.md, \"Clients\").",
     ],
     site,
     repos: structuredClone(cluster.repos),
@@ -150,7 +152,6 @@ export function stackSite(cluster, { stack, kind, computers, limits = {}, cloud,
     routes,
     ...(cloudPart.model_keys ? { model_keys: cloudPart.model_keys } : {}),
     ...(Object.keys(agents).length ? { agents } : {}),
-    notify: { slack: false },
   };
 }
 

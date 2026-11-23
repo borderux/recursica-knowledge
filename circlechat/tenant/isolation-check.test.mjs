@@ -43,6 +43,18 @@ test("fails the ports row on a port another stack uses", () => {
   assert.match(run().stdout, /ports used by no other stack\s+FAIL: 9081\(.*tenants\/other/);
 });
 
+test("reads each stack's site.json under the new folder names, and under CircleChat 1.x's old ones", () => {
+  const { site, run } = setup();
+  site("recursica-stack", [8080, 8081, 8082]);
+  site("tenants/acme/stack", [9080, 9081, 9082]);
+  site("tenants/other/circlechat", [9180, 9181, 8082]);
+  assert.match(run().stdout, /ports 9080 9081 9082 used by no other stack\s+pass/);
+  const b = setup();
+  b.site("recursica-stack", [8080, 9081, 8082]);
+  b.site("tenants/acme/stack", [9080, 9081, 9082]);
+  assert.match(b.run().stdout, /ports used by no other stack\s+FAIL: 9081\(.*recursica-stack/);
+});
+
 test("fails the mount row when the Docker VM mounts the home folder", () => {
   const { home, site, run } = setup();
   site("tenants/acme/circlechat", [9080, 9081, 9082]);

@@ -73,14 +73,22 @@ test("Install for a kit release records the approval on the computer", async () 
   assert.equal((await agent.act({ action: "release-install", ref: "../etc/passwd" })).ok, false);
 });
 
-test("Approve and Deny on a cloud-model request reach the cloud answers, with the Slack user who pressed", async () => {
+test("the buttons of CircleChat 1.x are unknown actions", async () => {
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
-  const asked = [];
-  const cloud = { answer: async (ref, decision, user) => { asked.push([ref, decision, user]); return { ok: true, message: "answered" }; } };
-  const agent = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir, cloud });
-  await agent.act({ action: "cloud-approve", ref: "acme|cmreq_abc123", extra: { slackUser: "U0PAT0001" } });
-  await agent.act({ action: "cloud-deny", ref: "acme|cmreq_abc123", extra: { slackUser: "U0PAT0001" } });
-  assert.deepEqual(asked, [["acme|cmreq_abc123", "approve", "U0PAT0001"], ["acme|cmreq_abc123", "deny", "U0PAT0001"]]);
-  const without = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir });
-  assert.deepEqual(await without.act({ action: "cloud-approve", ref: "x" }), { ok: false, message: "no cloud-model requests on this computer" });
+  const agent = makeAgent({ env: { COMPUTER: "machine-1" }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir });
+  for (const action of ["cloud-approve", "cloud-deny", "agents-stop", "agents-resume", "egress-allow-once", "egress-deny"]) {
+    assert.deepEqual(await agent.act({ action, ref: "acme|x" }), { ok: false, message: `unknown action ${action}` });
+  }
+});
+
+test("Skip this version writes to the stack's folder, the old one until a person moves it", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "agent-home-"));
+  fs.mkdirSync(path.join(home, "circlechat/kit-out"), { recursive: true });
+  const agent = makeAgent({ env: { COMPUTER: "machine-1", OWNER_HOME: home }, platform: {}, guard: { state: {} }, post: async () => {}, stateDir, now: () => 5 });
+  await agent.act({ action: "upgrade-skip", ref: "@recursica/knowledge@1.0.0" });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, "circlechat/kit-out/upgrade-state.json"), "utf8")).skipped, { "@recursica/knowledge@1.0.0": 5 });
+  fs.mkdirSync(path.join(home, "recursica-stack/kit-out"), { recursive: true });
+  await agent.act({ action: "upgrade-skip", ref: "@recursica/knowledge@1.1.0" });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, "recursica-stack/kit-out/upgrade-state.json"), "utf8")).skipped, { "@recursica/knowledge@1.1.0": 5 });
 });

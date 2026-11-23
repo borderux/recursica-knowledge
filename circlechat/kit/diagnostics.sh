@@ -2,7 +2,7 @@
 # Collect a support bundle for Border UX, with no access to the client's computers. The bundle
 # holds versions, service status, container status, the rendered settings and recent errors.
 # Every value that looks like a key, token, password or email address is replaced with
-# [removed], and no client data (database, files, agent homes, workspace) is read.
+# [removed], and no client data (files, workspace) is read.
 #
 #   ./circlechat/kit/diagnostics.sh        writes ~/agent-diagnostics-<date>.tar.gz
 #
@@ -10,7 +10,10 @@
 # the rest.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-CC_DIR="${CC_DIR:-$HOME/circlechat}"
+# The stack's folder, by its new name or CircleChat 1.x's old one (stack-paths.sh).
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME")}"
 OUT="$(mktemp -d)/agent-diagnostics"; mkdir -p "$OUT"
 redact() {
   sed -E \
@@ -22,18 +25,18 @@ redact() {
 }
 run() { local name="$1"; shift; { echo "\$ $*"; "$@" 2>&1; } | redact > "$OUT/$name.txt"; }
 
-run versions bash -c 'uname -a; (sw_vers 2>/dev/null || cat /etc/os-release 2>/dev/null); node --version; docker --version; docker compose version; git --version; restic version 2>/dev/null; rclone version 2>/dev/null | head -1'
+run versions bash -c 'uname -a; (sw_vers 2>/dev/null || cat /etc/os-release 2>/dev/null); node --version; docker --version; git --version; restic version 2>/dev/null; rclone version 2>/dev/null | head -1'
 run kit-version bash -c "git -C '$HERE/../..' describe --tags --always; git -C '$HERE/../..' status --short | head -20"
-run circlechat-version bash -c "git -C '$CC_DIR' rev-parse --abbrev-ref HEAD; git -C '$CC_DIR' log --oneline -3"
 run containers docker ps -a --format '{{.Names}}\t{{.Status}}\t{{.Image}}'
-run services bash -c "(systemctl list-units --all --no-pager 2>/dev/null | grep -E 'circlechat|agents-sync|upgrade|release-watch|kev|jobd|cluster|opencanary|agentguard|backup|restore-test|images') || launchctl list | grep io.recursica"
+run services bash -c "(systemctl list-units --all --no-pager 2>/dev/null | grep -E 'upgrade|kev|jobd|cluster|opencanary|agentguard|backup|restore-test|images|rc-sync|rc-session|github-tokens|recursicachat') || launchctl list | grep io.recursica"
 run tenant-settings cat "$CC_DIR/kit-out/tenant.env"
 run env-names bash -c "sed 's/=.*//' '$CC_DIR/.env'"
 run site bash -c "node -e 'const s=require(process.argv[1]); console.log(JSON.stringify(s,null,2))' '$CC_DIR/site.json'"
 run egress-allow cat "$CC_DIR/kit-out/egress/allow.txt"
-# The filter's log keeps Squid's default permissions, because it holds the client's web addresses,
-# so the owner may need sudo to read it.
-EGRESS_LOG="$CC_DIR/egress-logs/access.log"
+# The port jobs' filter (setup-node.sh). The filter's log keeps Squid's default permissions, because
+# it holds the client's web addresses, so the owner may need sudo to read it.
+EGRESS_LOG="$HOME/.recursica-jobs-egress/logs/access.log"
+[ -z "${TENANT:-}" ] || EGRESS_LOG="$HOME/tenants/$TENANT/jobs-egress/logs/access.log"
 if [ ! -e "$EGRESS_LOG" ] || [ -r "$EGRESS_LOG" ]; then READ_LOG="cat"
 elif sudo -n true 2>/dev/null; then READ_LOG="sudo -n cat"
 else READ_LOG=""; echo "Run diagnostics.sh with sudo to include the filter's refusals."

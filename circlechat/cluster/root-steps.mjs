@@ -3,24 +3,22 @@
 // the upgrade takes each step that needs root: the hourly update job (updater.mjs), or the cluster
 // agent's "Upgrade now" button (agent.mjs).
 //
-//   1. Before the upgrade, as root: the gateway's state folder, LiteLLM's master key, and the
-//      password and address of the router's database role (prepareGateway). On a Mac, the owner
-//      owns each one, so the Docker VM can mount the files.
-//   2. The upgrade, as the owner: kit/upgrade.mjs with KIT_ROOT_STEPS=1, and the database role's
-//      password on stdin. setup-host.sh --upgrade then takes only the Docker steps.
-//   3. After an upgrade that ran setup-host.sh: the agents' skills and personas, with sync-skills.sh
-//      as the owner, never as root, because agents can change the workspace and their homes. Then
-//      the key check as root (gateway/key-check.mjs). A failure goes to the stack's Slack channel.
+//   1. Before the upgrade, as root: the gateway's state folder, LiteLLM's master key and the
+//      secrets file of the cloud keys (prepareGateway). On a Mac, the owner owns each one, so the
+//      Docker VM can mount the files.
+//   2. The upgrade, as the owner: kit/upgrade.mjs with KIT_ROOT_STEPS=1. setup-host.sh --upgrade
+//      then takes only the Docker steps.
 //
-// The secrets helper (deploy/apply-secrets.sh) takes the same steps for a secrets deploy.
+// The secrets helper (deploy/apply-secrets.sh) takes the same steps for a secrets deploy. CircleChat
+// 1.x's steps are gone: the router's database role, the cloud-request secrets, the skill sync and
+// the key check of 1.x's database and agent homes.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { stackSlack } from "../kit/slack.mjs";
+import { tenantOf, workspaceDir } from "../kit/stack-paths.mjs";
 import { TAG, approvals } from "./release-gate.mjs";
-
-const PASSWORD = /^[0-9a-f]{48}$/;
 
 // The owner can change the stack's folder. The state folder must be a real folder, and each file is
 // written as a new file that replaces the old one, so root never writes through a link. On a Mac,
@@ -48,76 +46,29 @@ export function prepareGateway({ ccDir, ids = null }) {
     try { return fs.lstatSync(f).isFile() ? fs.readFileSync(f, "utf8").trim() : ""; } catch { return ""; }
   };
   if (!read("litellm-master.key")) put("litellm-master.key", `sk-${crypto.randomBytes(24).toString("hex")}\n`);
-  // A password the kit made is 48 hex digits. Anything else, such as a file the owner swapped in,
-  // is replaced, so root never copies another file's text into the database address.
-  let password = read("db-password");
-  if (!PASSWORD.test(password)) { password = crypto.randomBytes(24).toString("hex"); put("db-password", `${password}\n`); }
-  put("db.url", `postgres://cc_gateway_read:${password}@postgres:5432/circlechat\n`);
   if (!fs.existsSync(keys)) {
     fs.writeFileSync(keys, "", { mode: 0o600, flag: "wx" });
     if (ids) fs.lchownSync(keys, ids.uid, ids.gid);
   }
-  return password;
+  // CircleChat 1.x's database role had a password. None is left to pass on.
+  return "";
 }
 
 function isLink(f) { try { return fs.lstatSync(f).isSymbolicLink(); } catch { return false; } }
 
-// The stack's workspace: ~/circlechat-workspace for the cluster's own stack, and
-// ~/tenants/<name>/workspace for a client or demo stack.
-// The two secrets of cloud-model requests (cloud-requests.mjs), the same files setup-host.sh
-// makes: the service token and the webhook's signing secret, each 64 hex digits. Both exist before
-// setup-host.sh runs docker compose. On Linux, root owns both, in a folder the owner can only pass
-// through (711). On a Mac, Docker in Colima's VM reads the files as the owner, so the owner owns
-// the folder (700) and both files (600). A file that is not 64 hex digits, or is a link, is
-// replaced with a new file.
-export function prepareCloudApprovals({ ccDir, ids = null }) {
-  const dir = path.join(ccDir, "cloud-approvals");
-  if (isLink(dir)) throw new Error(`${dir} is a symlink. Replace the symlink with a folder.`);
-  fs.mkdirSync(dir, { recursive: true });
-  fs.chmodSync(dir, ids ? 0o700 : 0o711);
-  if (ids) fs.lchownSync(dir, ids.uid, ids.gid);
-  for (const name of ["approval-token", "webhook-secret"]) {
-    const f = path.join(dir, name);
-    let text = "";
-    try { text = fs.lstatSync(f).isFile() ? fs.readFileSync(f, "utf8").trim() : ""; } catch {}
-    if (/^[0-9a-f]{64}$/.test(text)) {
-      fs.chmodSync(f, 0o600);
-      if (ids) fs.lchownSync(f, ids.uid, ids.gid);
-      continue;
-    }
-    const tmp = path.join(dir, `.new.${crypto.randomBytes(6).toString("hex")}`);
-    fs.writeFileSync(tmp, `${crypto.randomBytes(32).toString("hex")}\n`, { mode: 0o600, flag: "wx" });
-    if (ids) fs.lchownSync(tmp, ids.uid, ids.gid);
-    fs.renameSync(tmp, f);
-  }
-}
-
+// The stack's tenant and workspace: ~/recursica-workspace, or the older ~/circlechat-workspace, for
+// the cluster's own stack, and ~/tenants/<name>/workspace for a client or demo stack
+// (kit/stack-paths.mjs).
 export function stackPaths(ownerHome, ccDir) {
-  const tenant = path.dirname(path.dirname(ccDir)) === path.join(ownerHome, "tenants") ? path.basename(path.dirname(ccDir)) : "";
-  return { tenant, ws: tenant ? path.join(path.dirname(ccDir), "workspace") : path.join(ownerHome, "circlechat-workspace") };
+  const tenant = tenantOf(ownerHome, ccDir);
+  return { tenant, ws: workspaceDir(ownerHome, tenant) };
 }
 
-// Step 3: the agents' skills and personas as the owner, then the key check as root. Returns each
+// The steps after an upgrade that ran setup-host.sh. CircleChat 1.x's skill sync and key check were
+// the only ones, so none is left. follow-main.mjs and runUpgrade still call it. Returns each
 // problem, or [].
-//   run(cmd, args, opts): spawnSync's result
-export function afterUpgrade({ env, ccDir, run = spawnSync }) {
-  const { tenant, ws } = stackPaths(env.OWNER_HOME, ccDir);
-  const kit = path.join(env.KIT, "circlechat");
-  const problems = [];
-  const vars = { CC_DIR: ccDir, WS: ws, SITE: path.join(ccDir, "site.json"), OWNER: env.OWNER, OWNER_HOME: env.OWNER_HOME, ...(tenant ? { TENANT: tenant } : {}) };
-  const sync = run("sudo", ["-u", env.OWNER, "-H", "env", ...Object.entries({ ...vars, PATH: env.PATH }).map(([k, v]) => `${k}=${v}`),
-    "bash", path.join(kit, "sync-skills.sh")], { stdio: "inherit" });
-  if (sync.status !== 0) problems.push("the agents' skills and personas did not sync");
-  // The key check: the owner dumps CircleChat's database from Docker, and root reads the gateway's
-  // secrets file and the agent homes.
-  let dctx = "";
-  try { dctx = (fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").match(/^DOCKER_CONTEXT=(.*)$/m) ?? [])[1] ?? ""; } catch {}
-  const dump = run("sudo", ["-u", env.OWNER, "-H", "env", ...(dctx ? [`DOCKER_CONTEXT=${dctx}`] : []), `PATH=${env.PATH}`,
-    "bash", "-c", 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat', "_", ccDir], { encoding: "utf8", maxBuffer: 1 << 30 });
-  const check = run(process.execPath, [path.join(kit, "gateway/key-check.mjs"), "--secrets", path.join(ccDir, "model-keys.env"), "--stdin", "CircleChat's database", path.join(ccDir, "hermes-homes")],
-    { input: dump.stdout ?? "", stdio: ["pipe", "inherit", "inherit"] });
-  if (check.status !== 0) problems.push("the key check found a cloud key, or could not run");
-  return problems;
+export function afterUpgrade() {
+  return [];
 }
 
 // The owner's uid and gid, for a Mac.
@@ -126,7 +77,7 @@ export function ownerIds(owner, run = spawnSync) {
   return { uid: id("-u"), gid: id("-g") };
 }
 
-// Steps 1 to 3 for one stack. Resolves when the upgrade and the steps after it end. The upgrade
+// Steps 1 and 2 for one stack. Resolves when the upgrade and the steps after it end. The upgrade
 // runs setup-host.sh --upgrade with KIT_HOLD_NETWORK=1, so it applies no network step, such as
 // tailscale serve (network_held, kit/lib.sh). A network step waits for setup-host.sh run by hand.
 //   ref: a release tag from the "Upgrade now" button, or empty for the hourly check
@@ -134,11 +85,9 @@ export function ownerIds(owner, run = spawnSync) {
 //   spawnFn and run: child_process.spawn and spawnSync, for the tests
 export async function runUpgrade({ env, ccDir, ref = "", approved = Object.keys(approvals("/var/lib/agent-cluster")), mac = process.platform === "darwin", spawnFn = spawn, run = spawnSync, post = stackSlack(ccDir), now = Date.now }) {
   const say = (text) => post(text).catch(() => {});
-  let password;
   try {
     const ids = mac ? ownerIds(env.OWNER, run) : null;
-    password = prepareGateway({ ccDir, ids });
-    prepareCloudApprovals({ ccDir, ids });
+    prepareGateway({ ccDir, ids });
   }
   catch (e) { await say(`:x: The upgrade job stopped before the upgrade: ${e.message}`); return { ran: false, problems: [e.message] }; }
   const { ws } = stackPaths(env.OWNER_HOME, ccDir);
@@ -147,13 +96,13 @@ export async function runUpgrade({ env, ccDir, ref = "", approved = Object.keys(
   const child = spawnFn("sudo", ["-u", env.OWNER, "-H", "env", "KIT_ROOT_STEPS=1", `KIT_APPROVED=${approved.filter((t) => TAG.test(t)).join(",")}`, "KIT_HOLD_NETWORK=1", `CC_DIR=${ccDir}`, `WS=${ws}`, `SITE=${path.join(ccDir, "site.json")}`,
     `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ...(ref ? [ref] : [])],
     { stdio: ["pipe", "inherit", "inherit"] });
-  child.stdin.end(`${password}\n`);
+  child.stdin.end();
   await new Promise((resolve) => child.on("close", resolve));
   // kit/upgrade.mjs records each run of setup-host.sh in the stack's upgrade state.
   let ranAt = 0;
   try { ranAt = Number(JSON.parse(fs.readFileSync(stateFile, "utf8")).setupRanAt) || 0; } catch {}
   if (ranAt < started) return { ran: false, problems: [] };
-  const problems = afterUpgrade({ env, ccDir, run });
+  const problems = afterUpgrade();
   if (problems.length) await say(`:x: After the upgrade, ${problems.join(", and ")}. Run setup-host.sh once by hand to check the stack.`);
   return { ran: true, problems };
 }

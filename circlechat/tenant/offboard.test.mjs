@@ -29,6 +29,15 @@ test("fails on a leftover folder or a file naming the client", () => {
   assert.match(r.stdout, /files naming acme\s+FAIL/);
 });
 
+test("looks for files naming the client in the cluster's stack folder, by its new name or CircleChat 1.x's old one", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "off-"));
+  fs.mkdirSync(path.join(home, "recursica-stack"), { recursive: true });
+  fs.writeFileSync(path.join(home, "recursica-stack/notes.txt"), "acme was here");
+  const r = check(home);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /files naming acme\s+FAIL: .*recursica-stack/);
+});
+
 test("refuses a client name that is not a slug", () => {
   const r = spawnSync("bash", [path.join(here, "offboard.sh"), "remove", "../x"], { encoding: "utf8" });
   assert.notEqual(r.status, 0);

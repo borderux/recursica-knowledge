@@ -18,13 +18,12 @@ import { parsePairs } from "./bot.mjs";
 import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
-import { AgentControls } from "./agent-controls.mjs";
-import { CloudAnswers, apiCall, stackApprovers, stackToken } from "./cloud-requests.mjs";
 import { requireKit } from "./kit-check.mjs";
 import { TAG, approve } from "./release-gate.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
+import { siteFile, stackDir, tenantStacks } from "../kit/stack-paths.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network, cloud }) {
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, network }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -49,18 +48,11 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "shut-down": { if (["watching", "cut-off-failed"].includes(guard.state.status)) await guard.cutOff("shutting down"); await platform.shutDown(); return { ok: true, message: "shutting down in one minute" }; }
       case "release-lockdown": return guard.release(false);
       case "allow-source": return guard.release(true);
-      case "egress-allow-once": return egress ? egress.allowOnce(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
-      case "egress-deny": return egress ? egress.deny(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
-      case "agents-stop": return controls ? controls.stop(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
-      case "agents-resume": return controls ? controls.resume(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
-      // A cloud-model request's answer: CircleChat's answer API, as the cloud approver who pressed.
-      case "cloud-approve": return cloud ? cloud.answer(ref, "approve", extra.slackUser) : { ok: false, message: "no cloud-model requests on this computer" };
-      case "cloud-deny": return cloud ? cloud.answer(ref, "deny", extra.slackUser) : { ok: false, message: "no cloud-model requests on this computer" };
       case "upgrade-now": {
         if (!TAG.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         // The button needs an authenticator code, and the press counts as the release's approval.
         approve({ stateDir, tag: ref, by: extra.by ?? "an approver", computer: env.COMPUTER, now: now() });
-        const ccDir = path.join(env.OWNER_HOME, "circlechat");
+        const ccDir = stackDir(env.OWNER_HOME);
         // The upgrade runs as the owner, and the agent takes the steps that need root (root-steps.mjs).
         import("./root-steps.mjs").then(({ runUpgrade }) => runUpgrade({ env, ccDir, ref })).catch((e) => console.error(`upgrade to ${ref}: ${e.message}`));
         return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
@@ -69,7 +61,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       // next hourly check.
       case "release-install": return approve({ stateDir, tag: ref, by: extra.by ?? "an approver", computer: env.COMPUTER, now: now() });
       case "upgrade-skip": {
-        const f = path.join(env.OWNER_HOME, "circlechat/kit-out/upgrade-state.json");
+        const f = path.join(stackDir(env.OWNER_HOME), "kit-out/upgrade-state.json");
         let st = {}; try { st = JSON.parse(fs.readFileSync(f, "utf8")); } catch {}
         st.skipped = { ...(st.skipped ?? {}), [ref]: now() };
         fs.writeFileSync(f, JSON.stringify(st));
@@ -84,7 +76,6 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
     await guard.tick(canaryHits);
     if (monitor) await monitor.tick().catch((e) => console.error(`monitor: ${e.message}`));
     if (egress) await egress.tick().catch((e) => console.error(`egress: ${e.message}`));
-    if (controls) await controls.tick().catch((e) => console.error(`controls: ${e.message}`));
     if (network) await network.tick().catch((e) => console.error(`network check: ${e.message}`));
     const r = readReboot();
     if (r && r.at <= now()) {
@@ -134,7 +125,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const allowedChannels = async () => {
     let peers = [];
     try { peers = Object.values(JSON.parse(fs.readFileSync(path.join(stateDir, "monitor.json"), "utf8"))).flatMap((p) => (p.stacks ?? []).map((s) => s.channel)); } catch {}
-    return [env.SLACK_CHANNEL_ID, ...(await localStacks(env.OWNER_HOME, async () => true)).map((s) => s.channel), ...peers].filter(Boolean);
+    return [env.SLACK_CHANNEL_ID, ...(await localStacks(env.OWNER_HOME)).map((s) => s.channel), ...peers].filter(Boolean);
   };
   const chat = makeChannel(env, allowedChannels);
   const post = (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref).catch((e) => console.error(e.message));
@@ -143,62 +134,22 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const monitor = new Monitor({ self: env.COMPUTER, peers: parsePairs(env.AGENTS), token: env.CLUSTER_TOKEN, clusterChannel: env.SLACK_CHANNEL_ID,
     stateFile: path.join(stateDir, "monitor.json"), post: (channel, text) => chat.post(channel, "info", text) });
   // The cluster's own stack's name (site.stack_name), read at each use, so a changed site.json counts.
-  const clusterName = () => { try { return clusterStackName(JSON.parse(fs.readFileSync(path.join(env.OWNER_HOME, "circlechat/site.json"), "utf8"))); } catch { return DEFAULT_STACK_NAME; } };
-  // The stacks on this computer with an outgoing filter: the cluster's own, and each open client stack.
+  const clusterName = () => { try { return clusterStackName(JSON.parse(fs.readFileSync(siteFile(env.OWNER_HOME), "utf8"))); } catch { return DEFAULT_STACK_NAME; } };
+  // The port jobs' filters on this computer: the cluster's own stack's, and each open client
+  // stack's. Each refused site gets an alert, because a job cannot wait for a consent.
   const filterStacks = async () => {
-    const out = [];
-    const add = (name, ccDir, suffix) => {
-      if (!fs.existsSync(path.join(ccDir, "site.json"))) return;
-      const tenant = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
-      if (tenant.EGRESS !== "on") return;
-      const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
-      out.push({ name, ccDir, logFile: path.join(ccDir, "egress-logs/access.log"), channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID,
-        container: `cc-egress${suffix}`, network: `${tenant.COMPOSE_PROJECT_NAME}_agents`, context: tenant.DOCKER_CONTEXT });
-    };
-    add(clusterName(), path.join(env.OWNER_HOME, "circlechat"), "");
-    const tenants = path.join(env.OWNER_HOME, "tenants");
-    if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"), `-${t}`);
-    // The port jobs' filters: alerts only, because a job cannot wait for a consent.
-    const jobLogs = [[clusterName(), path.join(env.OWNER_HOME, ".recursica-jobs-egress/logs/access.log")]];
-    if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) jobLogs.push([t, path.join(tenants, t, "jobs-egress/logs/access.log")]);
-    for (const [name, logFile] of jobLogs) if (fs.existsSync(logFile)) out.push({ name: `${name}-jobs`, logFile, channel: out.find((x) => x.name === name)?.channel ?? env.SLACK_CHANNEL_ID, alertOnly: true });
-    return out;
+    const channelOf = (dir) => { try { return JSON.parse(fs.readFileSync(path.join(dir, "site.json"), "utf8")).site?.slack_channel_id || env.SLACK_CHANNEL_ID; } catch { return env.SLACK_CHANNEL_ID; } };
+    const logs = [{ name: clusterName(), logFile: path.join(env.OWNER_HOME, ".recursica-jobs-egress/logs/access.log"), channel: channelOf(stackDir(env.OWNER_HOME)) }];
+    for (const { tenant, dir } of tenantStacks(env.OWNER_HOME)) logs.push({ name: tenant, logFile: path.join(env.OWNER_HOME, "tenants", tenant, "jobs-egress/logs/access.log"), channel: channelOf(dir) });
+    return logs.filter((l) => fs.existsSync(l.logFile)).map((l) => ({ ...l, name: `${l.name}-jobs` }));
   };
-  const docker = (st, args) => new Promise((resolve) => execFile("docker", args, { env: { ...process.env, ...(st.context ? { DOCKER_CONTEXT: st.context } : {}) } }, (err, out) => resolve(err ? "" : out)));
-  const egress = new Egress({ stacks: filterStacks, stateFile: path.join(stateDir, "egress.json"), exec: docker,
-    post: (channel, kind, text, ref) => chat.post(channel, kind, text, ref),
-    // The agent behind a refused connection: the container with that address on the stack's agent network.
-    whoIs: async (st, ip) => {
-      const j = JSON.parse((await docker(st, ["network", "inspect", st.network])) || "[]");
-      const c = Object.values(j[0]?.Containers ?? {}).find((x) => String(x.IPv4Address).startsWith(`${ip}/`));
-      return c?.Name ?? "";
-    } });
-  // Each open stack's CircleChat database, read and changed through the stack's postgres container.
-  const controlStacks = async () => {
-    const out = [];
-    const add = (name, ccDir) => {
-      if (!fs.existsSync(path.join(ccDir, "kit-out/tenant.env"))) return;
-      const tenant = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
-      const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
-      out.push({ name, ccDir, context: tenant.DOCKER_CONTEXT, channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID, hermesHomes: path.join(ccDir, "hermes-homes"), details: tenant.NOTIFY_DETAILS !== "off" });
-    };
-    add(clusterName(), path.join(env.OWNER_HOME, "circlechat"));
-    const tenants = path.join(env.OWNER_HOME, "tenants");
-    if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"));
-    return out;
-  };
-  const sql = (st, query) => new Promise((resolve) => execFile("docker", ["compose", "exec", "-T", "postgres", "psql", "-U", "postgres", "circlechat", "-At", "-F", "\t", "-c", query],
-    { cwd: st.ccDir, env: { ...process.env, ...(st.context ? { DOCKER_CONTEXT: st.context } : {}) } }, (err, out) => resolve(err ? [] : out.split("\n").filter(Boolean).map((l) => l.split("\t")))));
-  const controls = new AgentControls({ stacks: controlStacks, sql, docker: (st, args) => docker(st, args), computer: env.COMPUTER,
-    stateFile: path.join(stateDir, "controls.json"), post: (channel, text, blocks) => chat.post(channel, "info", text, undefined, blocks) });
+  const egress = new Egress({ stacks: filterStacks, stateFile: path.join(stateDir, "egress.json"), post: (channel, kind, text, ref) => chat.post(channel, kind, text, ref) });
   // The network check, every 5 minutes: the router, github.com's addresses and the office address
   // (network.mjs). Its messages go to the cluster's channel.
   const run = (cmd, args) => new Promise((resolve) => execFile(cmd, args, { timeout: 30_000 }, (err, out) => resolve(err ? "" : out)));
   const network = new NetworkWatch({ computer: env.COMPUTER, expectedRouter: env.EXPECTED_ROUTER ?? "", post: (text) => post("info", text),
     stateFile: path.join(stateDir, "network.json"), read: () => readNetwork({ run, mac: IS_MAC, wsl: IS_WSL }) });
-  // The answers to cloud-model requests, for each open stack on this computer (cloud-requests.mjs).
-  const cloud = new CloudAnswers({ stacks: controlStacks, approversOf: stackApprovers, tokenOf: stackToken, call: apiCall });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network, cloud });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, network });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());

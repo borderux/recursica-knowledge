@@ -10,18 +10,10 @@ export const ACTIONS = {
   "shut-down": { label: "Shut down", twoFactor: false, style: "danger" },
   "release-lockdown": { label: "Release lockdown", twoFactor: true },
   "allow-source": { label: "Allow this source", twoFactor: true },
-  "egress-allow-once": { label: "Allow once (15 min)", twoFactor: true },
-  "egress-deny": { label: "Deny", twoFactor: false, style: "danger" },
   "upgrade-now": { label: "Upgrade now", twoFactor: true },
   "upgrade-skip": { label: "Skip this version", twoFactor: false },
-  "agents-stop": { label: "Stop", twoFactor: false, style: "danger" },
-  "agents-resume": { label: "Resume", twoFactor: true },
   // A kit release: the approval goes to every computer in the cluster (cluster: true).
   "release-install": { label: "Install", twoFactor: true, cluster: true },
-  // A cloud-model request from CircleChat (cloud-requests.mjs). Only the stack's cloud approvers
-  // press these (cloud: true), and the stack's control computer sends the answer to CircleChat.
-  "cloud-approve": { label: "Approve", twoFactor: true, cloud: true },
-  "cloud-deny": { label: "Deny", twoFactor: false, cloud: true, style: "danger" },
 };
 
 export const KINDS = {
@@ -29,7 +21,6 @@ export const KINDS = {
   lockdown: ["cut-off-now", "keep-watching", "shut-down", "release-lockdown", "allow-source"],
   // a cut-off that left the firewall open: try again, shut down, or release
   "cut-off-failed": ["cut-off-now", "shut-down", "release-lockdown"],
-  egress: ["egress-allow-once", "egress-deny"],
   upgrade: ["upgrade-now", "upgrade-skip"],
   release: ["release-install"],
 };

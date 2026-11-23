@@ -45,6 +45,8 @@ test("a checkout inside an agents' workspace is refused, through a link too", ()
   assert.match(check(tenant.kit, tenant.h).stdout, /inside the agents' workspace .*tenants\/acme\/workspace\./);
   const other = home("work/recursica-knowledge");
   assert.match(check(other.kit, other.h, { env: { WS: path.join(other.h, "work") } }).stdout, /inside the agents' workspace/, "the workspace in $WS");
+  const fresh = home("recursica-workspace/recursica-knowledge");
+  assert.match(check(fresh.kit, fresh.h).stdout, /the checkout sits inside the agents' workspace .*recursica-workspace\./, "the workspace's new name");
   const linked = home("circlechat-workspace/recursica-knowledge");
   fs.symlinkSync(linked.kit, path.join(linked.h, "kit-link"));
   assert.match(check(path.join(linked.h, "kit-link"), linked.h).stdout, /inside the agents' workspace/);
@@ -95,9 +97,6 @@ test("the root services' check reports the reason, and passes a clean checkout",
 test("each root script and each installer of one checks the kit first", () => {
   const scripts = {
     "circlechat/setup-host.sh": /require_kit "\$HERE\/\.\."/,
-    "circlechat/sync-skills.sh": /check-kit\.sh" "\$HERE\/\.\."/,
-    "circlechat/backup/backup.sh": /require_kit /,
-    "circlechat/backup/restore-test.sh": /check-kit\.sh" /,
     "circlechat/deploy/install-secrets-helper.sh": /check-kit\.sh" "\$KIT"/,
     "circlechat/deploy/apply-secrets.sh": /check-kit\.sh" "\$KIT"/,
     "circlechat/tenant/setup-pc.sh": /check-kit\.sh" "\$HERE\/\.\.\/\.\."/,

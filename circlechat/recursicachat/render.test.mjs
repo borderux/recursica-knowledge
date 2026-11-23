@@ -16,7 +16,7 @@ const SITE = {
     node: "/opt/node/v24.0.0/bin/node",
   },
 };
-const DIRS = { ownerHome: "/Users/owner", kit: "/Users/owner/kit/circlechat", ccDir: "/Users/owner/circlechat" };
+const DIRS = { ownerHome: "/Users/owner", kit: "/Users/owner/kit/circlechat", ccDir: "/Users/owner/recursica-stack", ws: "/Users/owner/recursica-workspace" };
 
 test("every template renders with no token left", () => {
   const files = render(SITE, DIRS);
@@ -32,8 +32,9 @@ test("every template renders with no token left", () => {
   for (const name of ["backup.sh", "restore-test.sh", "stack-backup.sh", "stack-restore-test.sh"]) {
     assert.match(files[name], /^OWNER_HOME=\/Users\/owner$/m, name);
     assert.match(files[name], /^KIT=\/Users\/owner\/kit\/circlechat$/m, name);
-    assert.match(files[name], /^CC_DIR=\/Users\/owner\/circlechat$/m, name);
+    assert.match(files[name], /^CC_DIR=\/Users\/owner\/recursica-stack$/m, name);
   }
+  for (const name of ["stack-backup.sh", "stack-restore-test.sh"]) assert.match(files[name], /^WS=\/Users\/owner\/recursica-workspace$/m, name);
   assert.match(files["rc-deploy.sh"], /^BUILD_NODE=\/opt\/node\/v24\.0\.0\/bin\/node$/m, "rc-deploy builds with the owner's Node");
   assert.match(files["rc-clear.sh"], /^PROGRAMS=""$/m, "no service has a job: rc-clear stops and starts the server alone");
   assert.equal(files["rc-clear.mjs"], readFileSync(join(here, "rc-clear.mjs"), "utf8"), "copied as it is");
@@ -119,6 +120,7 @@ test("a missing or badly shaped value is refused", () => {
   }
   assert.ok(values(SITE, { ...DIRS, kit: "/Users/owner/my kit" }).errs.length, "a path with a space");
   assert.ok(values(SITE, { ...DIRS, ccDir: "relative" }).errs.length, "a relative path");
+  assert.ok(values(SITE, { ...DIRS, ws: undefined }).errs.length, "no workspace");
   assert.throws(() => render({}, DIRS), /google_client_id/);
 });
 
@@ -187,8 +189,8 @@ test("bsdtar leaves out exactly the engine settings", { skip: !bsdtar && "no bsd
   }
 });
 
-// CircleChat 1.x's nightly backup was the only backup of site.json and the workspace. With 1.x
-// retired, stack-backup.sh backs them up, and stack-restore-test.sh proves the backup restores.
+// CircleChat 1.x's nightly backup held site.json and the workspace. 1.x is gone, so stack-backup.sh
+// backs them up, and stack-restore-test.sh proves the backup restores.
 test("the stack's files: their own repository, the server's restic password, and a restore test that reads the same repository", () => {
   const backup = readFileSync(join(here, "stack-backup.sh"), "utf8");
   const restore = readFileSync(join(here, "stack-restore-test.sh"), "utf8");
@@ -200,7 +202,10 @@ test("the stack's files: their own repository, the server's restic password, and
   for (const t of [backup, restore]) {
     assert.match(t, /^PW_FILE=\/etc\/recursicachat\/restic\.password$/m, "the server's password: one secret for both");
     assert.match(t, /^export RESTIC_REPOSITORY="rclone:\$BACKUP_REMOTE\/\$TAG"$/m);
-    assert.match(t, /^WS="\$OWNER_HOME\/circlechat-workspace"$/m);
+    assert.match(t, /^WS=@WS@$/m);
+    // A script installed before migrate-off-1x.sh moved the folders follows the move.
+    assert.ok(t.includes('[ -L "$WS" ] && [ -d "$OWNER_HOME/recursica-workspace" ] && [ ! -L "$OWNER_HOME/recursica-workspace" ] && WS="$OWNER_HOME/recursica-workspace"'));
+    assert.ok(t.includes('[ -L "$CC_DIR" ] && [ -d "$OWNER_HOME/recursica-stack" ] && [ ! -L "$OWNER_HOME/recursica-stack" ] && CC_DIR="$OWNER_HOME/recursica-stack"'));
     assert.match(t, /^SITE="\$CC_DIR\/site\.json"$/m);
   }
   assert.match(backup, /restic backup --tag "\$TAG" --host "\$HOST" "\$\{EXCLUDES\[@\]\}" "\$SITE" "\$WS"/);

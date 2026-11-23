@@ -7,9 +7,8 @@
 //   - Each minute, the service checks each agent's installation token. A token that ends within 15
 //     minutes is replaced. Each token covers only the agent's repos and permissions, and is valid
 //     for at most one hour.
-//   - The agent's token reaches the agent through the existing secrets path: the agent's own .env
-//     in the agent's Hermes home, as <AGENT>_GITHUB_TOKEN. Git's author and committer go in the same
-//     .env: the app's bot identity, <app-slug>[bot], with the app's noreply email address.
+//   - An agent's token reaches only a port job of the agent, through POST /token below. CircleChat
+//     1.x's agents also got a token in their Hermes homes. With 1.x gone, no home gets one.
 //   - The Kev notes push has an app of the push's own (site.json's data.github_app). The push's
 //     token covers only data.repo, and goes to $CC_DIR/kev-data.env as KEV_DATA_GITHUB_TOKEN, with
 //     the app's bot identity. The push's two jobs read that file (kit/kev-data-auth.sh).
@@ -43,11 +42,10 @@ export function fromCluster(address = "") {
 }
 
 export class TokenService {
-  // site: the stack's site.json; homes: the stack's hermes-homes folder; gatewayState: the
-  // gateway's state folder, for the task keys; fetchFn and api: GitHub's API, for the tests
+  // site: the stack's site.json; ccDir: the stack's folder, which holds the gateway's state folder
+  // (for the task keys) and kev-data.env; fetchFn and api: GitHub's API, for the tests
   constructor({ site, stack, ccDir, keysRoot = KEYS_ROOT, fetchFn = fetch, api = "https://api.github.com", now = () => Date.now(), log = console.log }) {
     Object.assign(this, { site, stack, ccDir, keysRoot, fetchFn, api, now, log });
-    this.homes = path.join(ccDir, "hermes-homes");
     this.gatewayState = path.join(ccDir, "gateway-state");
     this.tokens = {};       // agent -> { token, expiresAt }
     this.who = {};          // agent -> { name, email }
@@ -66,28 +64,12 @@ export class TokenService {
     return mintToken({ app, pem: this.pem(agent), repos, fetchFn: this.fetchFn, api: this.api, now: this.now() });
   }
 
-  // Each agent's token, renewed before the token ends, and written to the agent's .env.
+  // Each minute: the tokens that end within 15 minutes are renewed. Returns the names renewed.
   async tick() {
-    const done = [];
-    for (const agent of Object.keys(this.apps())) {
-      const home = path.join(this.homes, `.hermes-${agent}`);
-      if (!fs.existsSync(path.join(home, ".env"))) continue;   // setup-agent.sh makes the .env
-      const t = this.tokens[agent];
-      if (t && t.expiresAt - this.now() > RENEW_BEFORE) continue;
-      try {
-        const fresh = await this.mint(agent);
-        this.who[agent] ??= await botIdentity({ slug: this.apps()[agent].slug, token: fresh.token, fetchFn: this.fetchFn, api: this.api });
-        // The agent can change the agent's home, so the write never follows a symlink.
-        writeFile(home, path.join(home, ".env"), setLines(readFile(home, path.join(home, ".env")), envLines(agent, fresh.token, this.who[agent])));
-        this.tokens[agent] = fresh;
-        done.push(agent);
-      } catch (e) { this.log(`github token for ${agent}: ${e.message}`); }
-    }
-    if (await this.tickData()) done.push(KEV_DATA);
-    return done;
+    return (await this.tickData()) ? [KEV_DATA] : [];
   }
 
-  // The Kev notes push's token, renewed the same way, in $CC_DIR/kev-data.env. The stack's owner
+  // The Kev notes push's token, in $CC_DIR/kev-data.env. The stack's owner
   // can change the stack's folder, so the write never follows a symlink. A new file goes to the
   // folder's owner, who runs the push.
   async tickData() {

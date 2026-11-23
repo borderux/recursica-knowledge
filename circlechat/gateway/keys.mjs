@@ -2,8 +2,9 @@
 // Gateway keys: what an agent or a job shows the model gateway. A gateway key is not a cloud key:
 // the gateway holds the cloud keys, and a gateway key only lets its holder ask the gateway.
 //
-//   agent key  ccg_<random>, one per agent. setup-agent.sh puts the agent's key in the agent's
-//              Hermes home. The gateway keeps only the key's SHA-256 hash, in agent-keys.json.
+//   agent key  ccg_<random>, one per agent. rc-sync.sh issues the key (kit/rc-gateway-key.mjs) and
+//              gives it to the agent on the RecursicaChat 2.0 server. The gateway keeps only the
+//              key's SHA-256 hash, in agent-keys.json.
 //   task key   cct_<payload>.<signature>, one per agent and task. Porter gets one from the gateway
 //              (POST /task-key) and hands the key to the port job. The signature covers the agent
 //              key's hash, so revoking or replacing an agent's key also ends the agent's task keys.

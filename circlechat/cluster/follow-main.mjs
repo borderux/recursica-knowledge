@@ -25,7 +25,9 @@
 // the failed setup again, with each setup the newer change touches.
 //
 // The step never applies a change that can cut remote access: the firewall rules, the agentguard
-// anchor, pf.conf, nftables, Tailscale's settings and the guard's lockdown rules. Each setup runs
+// anchor, pf.conf, nftables, Tailscale's settings and the guard's lockdown rules. The same hold
+// covers each setup step that can interrupt running work, such as a step that removes the stack's
+// jobs. Each setup runs
 // with KIT_HOLD_NETWORK=1, which skips the setup's network steps (network_held, kit/lib.sh) and
 // runs the rest. A change to a network step (networkChanges) waits for a person, and the channel
 // hears once, with the command to run by hand. A newer network change posts again. The waiting
@@ -37,14 +39,15 @@ import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { siteFile } from "../kit/stack-paths.mjs";
 
 // The kit files each setup reads. A change to one of the listed files runs the setup again. A path that
 // ends in "/" is a folder.
 export const SETUPS = {
   "setup-host.sh": [
-    "circlechat/setup-host.sh", "circlechat/kit/", "circlechat/backup/", "circlechat/egress/", "circlechat/gateway/", "circlechat/github/",
-    "circlechat/notify/", "circlechat/rc-service.sh", "circlechat/rc-session.sh", "circlechat/rc-sync.sh", "circlechat/sync-skills.sh",
-    "circlechat/cluster/cloud-requests.mjs", "circlechat/cluster/windows/install-wsl-boot.ps1", "tools/kev/",
+    "circlechat/setup-host.sh", "circlechat/kit/", "circlechat/egress/", "circlechat/gateway/", "circlechat/github/",
+    "circlechat/rc-service.sh", "circlechat/rc-session.sh", "circlechat/rc-sync.sh",
+    "circlechat/cluster/windows/install-wsl-boot.ps1", "tools/kev/",
   ],
   "setup-node.sh": [
     "circlechat/setup-node.sh", "circlechat/kit/lib.sh", "circlechat/kit/render.mjs", "circlechat/egress/", "circlechat/jobd/porter-job/",
@@ -54,7 +57,8 @@ export const SETUPS = {
 };
 const ORDER = Object.keys(SETUPS);
 
-// The network steps: each step that can cut remote access. Two kinds of kit file hold network steps:
+// The network steps: each step that can cut remote access or interrupt running work. Two kinds of
+// kit file hold network steps:
 //   - a folder whose every file is a network file: the firewall rules
 //   - a shell script with network steps, each between a "# network-step begin: <what>" line and a
 //     "# network-step end" line, such as install-cluster.sh's firewall step or setup-host.sh's
@@ -236,7 +240,7 @@ export function networkCommands({ waiting, computer, kit, platform, applyScript 
 export function networkPost({ computer, from, to, commits, waiting, commands }) {
   const shown = commits.slice(0, 10);
   const lines = [
-    `:warning: Kit on ${computer}: network changes from ${short(from)} to ${short(to)} wait for a person. The update job never applies a change that can cut remote access.`,
+    `:warning: Kit on ${computer}: network changes from ${short(from)} to ${short(to)} wait for a person. The update job never applies a change that can cut remote access or interrupt running work.`,
     "Commits:",
     ...shown.map((c) => `• ${c}`),
     ...(commits.length > shown.length ? [`• and ${commits.length - shown.length} more`] : []),
@@ -466,7 +470,7 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
 export function realDeps({ env, stacks, afterUpgrade, prepare, platform = process.platform, spawn = spawnSync, read = (f) => fs.readFileSync(f) }) {
   const asOwner = (args, opts = {}) => spawn("sudo", ["-u", env.OWNER, "-H", ...args], { encoding: "utf8", maxBuffer: 64 << 20, ...opts });
   const kit = env.KIT;
-  const site = path.join(env.OWNER_HOME, "circlechat/site.json");
+  const site = siteFile(env.OWNER_HOME);
   const ownerEnv = (extra = {}) => ["env", ...Object.entries({ PATH: env.PATH, SITE: site, KIT_HOLD_NETWORK: "1", ...extra }).map(([k, v]) => `${k}=${v}`)];
   const tryRead = (f) => { try { return read(f); } catch { return ""; } };
   const output = (r) => `${r.stdout ?? ""}${r.stderr ?? ""}${r.error ? `\n${r.error.message}` : ""}`;

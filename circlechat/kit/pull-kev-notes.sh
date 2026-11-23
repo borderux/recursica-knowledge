@@ -7,9 +7,12 @@
 # from (tools/kev/evals/README.md). The file is read from origin/main with git show, never from a
 # working tree or another branch, so a notes branch that waits for review never reaches training.
 set -euo pipefail
-CC_DIR="${CC_DIR:-$HOME/circlechat}"
-SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# The stack's folder, by its new name or CircleChat 1.x's old one (stack-paths.sh).
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME")}"
+SITE="${SITE:-$CC_DIR/site.json}"
 . "$HERE/lib.sh"
 DATA_REPO="$(site_get data.repo)"; [ -n "$DATA_REPO" ] || exit 0
 . "$HERE/kev-data-auth.sh"

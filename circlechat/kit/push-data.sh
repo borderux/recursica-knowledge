@@ -9,9 +9,12 @@
 # own GitHub App, which has Contents and Pull requests on data.repo only (kev-data-auth.sh). The
 # commit's author is the app's bot.
 set -euo pipefail
-CC_DIR="${CC_DIR:-$HOME/circlechat}"; WS="${WS:-$HOME/circlechat-workspace}"
-SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# The stack's folder and the workspace, by their new names or CircleChat 1.x's old ones (stack-paths.sh).
+# shellcheck source=circlechat/kit/stack-paths.sh
+. "$HERE/stack-paths.sh"
+CC_DIR="${CC_DIR:-$(stack_dir "$HOME")}"; WS="${WS:-$(workspace_dir "$HOME")}"
+SITE="${SITE:-$CC_DIR/site.json}"
 . "$HERE/lib.sh"
 DATA_REPO="$(site_get data.repo)"; [ -n "$DATA_REPO" ] || exit 0
 KNOWLEDGE="$(site_get repos.knowledge)"

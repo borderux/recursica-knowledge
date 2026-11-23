@@ -82,3 +82,13 @@ test("only the cluster's control computer posts", () => {
   assert.equal(isClusterControl(home, "machine-2"), false);
   assert.equal(isClusterControl(dir(), "machine-1"), false, "a computer with no cluster site.json");
 });
+
+test("the control computer reads the new stack folder once it exists", () => {
+  const home = dir();
+  fs.mkdirSync(path.join(home, "circlechat"));
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify({ nodes: [{ name: "machine-1", control: true }] }));
+  fs.mkdirSync(path.join(home, "recursica-stack"));
+  fs.writeFileSync(path.join(home, "recursica-stack/site.json"), JSON.stringify({ nodes: [{ name: "machine-2", control: true }] }));
+  assert.equal(isClusterControl(home, "machine-2"), true);
+  assert.equal(isClusterControl(home, "machine-1"), false);
+});

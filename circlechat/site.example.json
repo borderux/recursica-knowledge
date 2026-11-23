@@ -44,9 +44,6 @@
     "token. See circlechat/README.md, \"A program that drives an agent\".",
     "recursicachat.public_url, google_client_id and google_domain: the server's https address and its",
     "Google sign-in, which circlechat/recursicachat/install.sh renders into the server's run.sh.",
-    "site.circlechat: \"retired\" once the stack's CircleChat 1.x server never starts again. The kit then skips it,",
-    "and keeps the gateway, the job runners' filter, the app preview and Kev's jobs. See circlechat/README.md,",
-    "\"Retiring CircleChat 1.x\".",
     "site.computers: the computers picked for a client or demo stack, [\"<computer>\"] or \"cluster\". The",
     "stack's site.json lists only those computers; circlechat/kit/stack-site.mjs writes it from this file.",
     "nodes[].limits: cpus, memory_gb and model_memory_gb for a picked computer, so a large computer acts",
@@ -67,9 +64,8 @@
     "agents: each agent's routes (all routes when left out) and cloud switch (on when left out). A route",
     "here can also name one cluster model, \"<node>/<server id>/<model id>\", to compare models. With",
     "the switch off, the gateway never calls a cloud model for the agent.",
-    "notify.events: the CircleChat events in Slack (circlechat/README.md, \"Notifications\"). Unset: the",
-    "quiet default. A mention of a person goes only as a DM, to the Slack ID the person verified in",
-    "CircleChat. notify.people, each person's CircleChat email and Slack user ID, is a fallback.",
+    "notify.details: false leaves task titles and names out of the stack's Slack posts. Unset: on, except",
+    "for a client stack.",
     "data.repo: a private repo for Barb's Kev disagreement notes, such as your-org/recursica-kev-data.",
     "Each hour, new notes go to a new branch there, with a pull request for a person to review. Kev's",
     "training reads only the notes merged into main. Never the knowledge repo or a public repo: the push",
@@ -82,7 +78,7 @@
     "false: every firewall refuses RustDesk's direct-address ports. See circlechat/README.md, \"The RustDesk server\"."
   ],
   "site": {
-    "public_host": "circlechat.example.ts.net",
+    "public_host": "stack.example.ts.net",
     "port": 8080
   },
   "repos": {
@@ -238,9 +234,6 @@
       "https://github.com/borderux/recursica-adapter-beam",
       "https://github.com/borderux/recursica-adapter-angular-material"
     ]
-  },
-  "notify": {
-    "slack": true
   },
   "data": {
     "repo": ""

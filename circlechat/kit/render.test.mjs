@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
-import { warnings, checkAccountEmail, circlechatRetired, clusterStackName, followsMain, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { warnings, clusterStackName, followsMain, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
@@ -10,20 +10,29 @@ const clone = () => structuredClone(example);
 
 test("the example is valid", () => assert.deepEqual(validate(example), []));
 
-test("site.circlechat \"retired\" marks CircleChat 1.x retired for the setup and the gateway; any other value is refused", () => {
-  assert.equal(circlechatRetired(example), false);
-  assert.match(render(example).tenantEnv, /^CIRCLECHAT=on$/m);
-  assert.equal(render(example).gateway.circlechat, undefined, "a running CircleChat leaves gateway.json as it was");
+test("a site.json with CircleChat 1.x's settings still loads, with a warning for each one", () => {
+  assert.deepEqual(warnings(example), []);
   const s = clone();
   s.site.circlechat = "retired";
+  s.site.check_account = "agent-check@example.com";
+  s.cloud_approvers = [{ email: "person-a@example.com", slack_user: "U0PERSONA1" }];
+  s.notify = { slack: true, events: ["approval_pending"], people: [{ email: "person-a@example.com", slack_user: "U0PERSONA1" }], details: false };
   assert.deepEqual(validate(s), []);
-  assert.equal(circlechatRetired(s), true);
-  assert.match(render(s).tenantEnv, /^CIRCLECHAT=retired$/m);
-  assert.equal(render(s).gateway.circlechat, "retired");
-  for (const v of [true, "off", "on"]) {
-    s.site.circlechat = v;
-    assert.match(validate(s).join("\n"), /site\.circlechat must be "retired"/, String(v));
-  }
+  const w = warnings(s).join("\n");
+  for (const name of ["site.circlechat", "site.check_account", "cloud_approvers", "notify.slack", "notify.events", "notify.people"]) assert.match(w, new RegExp(`${name.replace(".", "\\.")} is no longer read`), name);
+  assert.doesNotMatch(w, /notify\.details/);
+  const r = render(s);
+  assert.doesNotMatch(r.tenantEnv, /^(CIRCLECHAT|NOTIFY_EVENTS|NOTIFY_PEOPLE|CLOUD_APPROVERS|CLOUD_APPROVER_SLACK)=/m);
+  assert.match(r.tenantEnv, /^NOTIFY_DETAILS=off$/m);
+  assert.equal(r.gateway.circlechat, undefined);
+  assert.equal(r.watches, undefined);
+  const dir = fs.mkdtempSync(new URL("file:///tmp/").pathname + "render-warn-");
+  fs.writeFileSync(`${dir}/site.json`, JSON.stringify(s));
+  const out = spawnSync(process.execPath, [new URL("./render.mjs", import.meta.url).pathname, `${dir}/site.json`, `${dir}/out`], { encoding: "utf8" });
+  assert.equal(out.status, 0, out.stderr);
+  assert.match(out.stdout, /^Warning: site\.circlechat is no longer read/m);
+  assert.ok(fs.existsSync(`${dir}/out/tenant.env`));
+  assert.equal(fs.existsSync(`${dir}/out/watches.json`), false);
 });
 
 test("updates.follow is \"releases\" by default, or \"main\", and only in the cluster's own site.json", () => {
@@ -244,7 +253,6 @@ test("job runners are ordered by priority, and Porter gets its allowlist", () =>
   const r = render(example);
   assert.deepEqual(r.jobNodes, ["http://machine-2.example.ts.net:7400", "http://100.64.0.1:7400"], "the control computer's job runner over Tailscale");
   assert.match(r.porterEnv, /JOBD_ALLOWED_REPOS=https:\/\/github.com\/borderux\/recursica-adapter-mui-v7,/);
-  assert.deepEqual(r.watches, [{ repo: "borderux/recursica-adapter-mantine-v8", hook: "PORTER" }]);
   assert.equal(r.services["machine-2"].jobs.slots, 3);
 });
 
@@ -299,20 +307,6 @@ test("Kev's review data goes to a repo named owner/name, never the knowledge rep
   const kb = repoOf(clone().repos.knowledge);
   assert.match(check({ repo: kb.toUpperCase() }), /data.repo cannot be the knowledge repo/);
   assert.match(check({ kev_disagreements_branch: "data/kev" }), /data.kev_disagreements_branch is gone/);
-});
-
-test("the agent check's account: site.check_account, or agent-check@ the stack's host, and never a person's", () => {
-  const s = clone();
-  assert.equal(checkAccountEmail(s), `agent-check@${s.site.public_host}`);
-  s.site.check_account = "Person-A@Example.com";
-  assert.equal(checkAccountEmail(s), "person-a@example.com");
-  assert.deepEqual(validate(s), []);
-  s.site.check_account = "not an email";
-  assert.match(validate(s).join("\n"), /site.check_account must be an email address/);
-  s.site.check_account = "person-a@example.com";
-  s.site.slack_channel_id = "C0123ABCD";
-  s.cloud_approvers = [{ email: "Person-A@Example.com", slack_user: "U0123ABCD" }];
-  assert.match(validate(s).join("\n"), /site.check_account must be an account made only for the agent check/);
 });
 
 test("a stack's three ports must differ, and the tenant name is a slug", () => {
@@ -681,70 +675,6 @@ test("github_apps: a client stack that uses the public knowledge repo gets no ap
   s.repos.knowledge = "https://github.com/borderux/recursica-knowledge";
   s.github_apps = { alan: { app_id: 1, installation_id: 2, slug: "acme-alan", repos: ["acme/knowledge"], permissions: { contents: "write", pull_requests: "write", issues: "write" } } };
   assert.ok(validate(s).some((e) => /github_apps.alan: this client stack uses the public knowledge repo/.test(e)));
-});
-
-test("cloud_approvers gives CircleChat the emails, and the Slack receiver each email with its Slack user ID", () => {
-  const s = clone();
-  s.site.slack_channel_id = "C0STACK01";
-  s.cloud_approvers = [{ email: "Pat@Example.com", slack_user: "U0PAT0001" }, { email: "sam@example.com", slack_user: "W0SAM0001" }];
-  assert.deepEqual(validate(s), []);
-  const r = render(s);
-  assert.match(r.tenantEnv, /^CLOUD_APPROVERS=pat@example\.com,sam@example\.com$/m);
-  assert.match(r.tenantEnv, /^CLOUD_APPROVER_SLACK=pat@example\.com=U0PAT0001,sam@example\.com=W0SAM0001$/m);
-  assert.match(r.tenantEnv, /^CONTROL_COMPUTER=machine-1$/m);
-  const none = render(example);
-  assert.match(none.tenantEnv, /^CLOUD_APPROVERS=$/m);
-  assert.match(none.tenantEnv, /^CLOUD_APPROVER_SLACK=$/m);
-});
-
-test("cloud_approvers catches each mistake", () => {
-  const s = clone();
-  s.cloud_approvers = [
-    { email: "pat@example.com", slack_user: "U0PAT0001" },
-    { email: "PAT@example.com", slack_user: "pat" },
-    { email: "not-an-email", slack_user: "U0PAT0001", name: "Pat" },
-  ];
-  const errs = validate(s).join("\n");
-  assert.match(errs, /cloud_approvers\[1\]\.email PAT@example\.com is listed twice/);
-  assert.match(errs, /cloud_approvers\[1\]\.slack_user must be a Slack user ID/);
-  assert.match(errs, /cloud_approvers\[2\]: name is not a setting/);
-  assert.match(errs, /cloud_approvers\[2\]\.email must be the person's CircleChat email/);
-  assert.match(errs, /cloud_approvers\[2\]\.slack_user U0PAT0001 is listed twice/);
-  assert.match(errs, /cloud_approvers needs site\.slack_channel_id/);
-  s.cloud_approvers = { email: "pat@example.com" };
-  assert.match(validate(s).join("\n"), /cloud_approvers must be a list/);
-});
-
-test("notify.events and notify.people reach tenant.env, and the config check refuses a wrong one", () => {
-  // No notify.events: the quiet default. No notify.people: no DM.
-  let r = render(example);
-  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=comment_mention,approval_pending,task_review,reply_dropped,post_rejected,container_stopped$/m);
-  assert.match(r.tenantEnv, /^NOTIFY_PEOPLE=$/m);
-  const s = structuredClone(example);
-  s.notify = { slack: true, events: ["approval_pending", "chat_mention"], people: [{ email: "Person.A@acme.com", slack_user: "U0AAAA001" }] };
-  assert.deepEqual(validate(s), []);
-  r = render(s);
-  assert.match(r.tenantEnv, /^NOTIFY_EVENTS=approval_pending,chat_mention$/m);
-  assert.match(r.tenantEnv, /^NOTIFY_PEOPLE=person\.a@acme\.com=U0AAAA001$/m);
-  s.notify.events = ["approval_pending", "everything"];
-  s.notify.people = [{ email: "$(id)@acme.com", slack_user: "U0AAAA001" }];
-  const errs = validate(s).join("\n");
-  assert.match(errs, /notify.events: "everything" is not an event/);
-  assert.match(errs, /notify.people\[0\].email must be the person's CircleChat email address/);
-});
-
-test("notify.people gets a warning during the switch to verified Slack IDs, and the setup goes on", () => {
-  const s = structuredClone(example);
-  s.notify = { slack: true, people: [{ email: "person.a@acme.com", slack_user: "U0AAAA001" }] };
-  assert.deepEqual(validate(s), []);
-  assert.match(warnings(s).join("\n"), /notify.people is a fallback/);
-  assert.deepEqual(warnings(example), []);
-  const dir = fs.mkdtempSync(new URL("file:///tmp/").pathname + "render-warn-");
-  fs.writeFileSync(`${dir}/site.json`, JSON.stringify(s));
-  const r = spawnSync(process.execPath, [new URL("./render.mjs", import.meta.url).pathname, `${dir}/site.json`, `${dir}/out`], { encoding: "utf8" });
-  assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, /^Warning: notify.people is a fallback/m);
-  assert.ok(fs.existsSync(`${dir}/out/tenant.env`));
 });
 
 // A Linux helper computer with the kit's Ollama server (kit/ollama.mjs, kit/setup-ollama.sh).

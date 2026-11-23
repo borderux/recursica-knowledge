@@ -14,8 +14,12 @@ CMD="${1:?archive|remove|check}"; CLIENT="${2:?client name}"
 [[ "$CLIENT" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "Client name \"$CLIENT\" must be a slug."; exit 1; }
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/../kit/lib.sh"
+. "$HERE/../kit/stack-paths.sh"
 STACK_DIR="$HOME/tenants/$CLIENT"
-CC_DIR="$STACK_DIR/circlechat"
+# The stack's folder: ~/tenants/<client>/stack, or CircleChat 1.x's old name before a person moved it.
+CC_DIR="$(stack_dir "$HOME" "$CLIENT")"
+# The cluster's own stack's folder.
+CLUSTER_DIR="$(stack_dir "$HOME")"
 export RCLONE_CONFIG="${RCLONE_CONFIG:-$HOME/.config/rclone/rclone.conf}"
 
 case "$CMD" in
@@ -28,23 +32,16 @@ archive)
   [ "${#RESTIC_PASSWORD}" -ge 24 ] || { echo "The archive key must be at least 24 characters."; exit 1; }
   NAME="archive-$CLIENT-$(date -u +%Y-%m-%d)"
   export RESTIC_REPOSITORY="rclone:$BACKUP_REMOTE/$NAME"
-  STAGE="$STACK_DIR/archive-staging"; rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
-  grep -E '^(SESSION_SECRET|PG_PASSWORD|MINIO_ROOT_USER|MINIO_ROOT_PASSWORD|LITELLM_MASTER_KEY)=' "$CC_DIR/.env" > "$STAGE/generated.env" || true
-  chmod 600 "$STAGE/generated.env"
-  (cd "$CC_DIR" && docker compose exec -T postgres pg_dump -U postgres circlechat) | gzip > "$STAGE/db.sql.gz"
-  docker run --rm -v "${COMPOSE_PROJECT_NAME}_miniodata:/data:ro" -v "$STAGE:/out" alpine:3.20 tar czf /out/minio.tgz -C /data .
+  # The archive holds the stack's site.json and the agents' workspace. CircleChat 1.x's database,
+  # file store and agent homes are gone, so the archive holds none of them. Each .env stays out.
   restic init >/dev/null
-  restic backup --tag "$CLIENT" --tag final "$STAGE" "$CC_DIR/hermes-homes" "$STACK_DIR/workspace" "$CC_DIR/site.json" \
-    --exclude "$CC_DIR/hermes-homes/**/.env" >/dev/null
-  rm -rf "$STAGE"
+  restic backup --tag "$CLIENT" --tag final "$STACK_DIR/workspace" "$CC_DIR/site.json" --exclude "**/.env" >/dev/null
   # Prove the archive restores before anything is deleted.
   SCRATCH="$STACK_DIR/archive-test"; rm -rf "$SCRATCH"; mkdir -p "$SCRATCH"; chmod 700 "$SCRATCH"
   restic restore latest --target "$SCRATCH" >/dev/null
-  db="$(find "$SCRATCH" -name db.sql.gz | head -1)"
   ok=true
-  { [ -n "$db" ] && gzip -t "$db" && gzip -dc "$db" | grep "CREATE TABLE" >/dev/null; } || ok=false
-  [ -n "$(find "$SCRATCH" -name minio.tgz | head -1)" ] || ok=false
-  [ -d "$(find "$SCRATCH" -type d -name hermes-homes | head -1)" ] || ok=false
+  [ -n "$(find "$SCRATCH" -name site.json -path "*$CC_DIR/site.json" | head -1)" ] || ok=false
+  [ -d "$(find "$SCRATCH" -type d -path "*$STACK_DIR/workspace" | head -1)" ] || ok=false
   rm -rf "$SCRATCH"; unset RESTIC_PASSWORD
   [ "$ok" = true ] || { echo "The archive did not restore cleanly. Nothing was deleted."; exit 1; }
   echo "Archive $NAME written and test-restored."
@@ -66,9 +63,8 @@ remove)
   if [ -f "$CC_DIR/kit-out/tenant.env" ]; then
     load_env_file "$CC_DIR/kit-out/tenant.env"
     [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
-    (cd "$CC_DIR" && docker compose down -v --remove-orphans) || true
-    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-litellm-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true
-    docker volume rm "cc-notify-state-$CLIENT" >/dev/null 2>&1 || true
+    # The last three are CircleChat 1.x's containers, on a stack set up before 1.x was removed.
+    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-litellm-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" "cc-cloud-requests-$CLIENT" >/dev/null 2>&1 || true
     PORT="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).site?.port ?? "")' "$CC_DIR/site.json")"
     [ -n "$PORT" ] && { tailscale serve --https="$PORT" off >/dev/null 2>&1 || true; }
     # setup-host.sh gives the app preview a tailscale serve rule too.
@@ -79,6 +75,8 @@ remove)
     if [ -n "${BACKUP_REMOTE:-}" ]; then rclone purge "$BACKUP_REMOTE/$CLIENT" >/dev/null 2>&1 || true; fi
     unset DOCKER_CONTEXT
   fi
+  # circlechat-boot, agents-sync, release-watch, backup and restore-test are CircleChat 1.x's jobs,
+  # on a stack set up before 1.x was removed. A job that is not there needs no step.
   for u in circlechat-boot agents-sync release-watch kev-data-push kev-notes-pull backup restore-test images jobd; do uninstall_unit "$u-$CLIENT"; done
   docker rm -f "cc-jobs-egress-$CLIENT" >/dev/null 2>&1 || true
   docker network rm "jobs-egress-$CLIENT" >/dev/null 2>&1 || true
@@ -124,15 +122,15 @@ check)
   [ -n "$ctx" ] && row "Docker context colima-$CLIENT" "FAIL: still exists" || row "Docker context colima-$CLIENT" pass
   left="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E -- "(-|^cc-)$CLIENT(-|$)" || true; docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E -- "(^cc-${CLIENT}_|-${CLIENT}$)" || true)"
   [ -n "$left" ] && row "containers and volumes" "FAIL: $left" || row "containers and volumes" pass
-  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" "$HOME/.ssh/config" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
+  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$CLUSTER_DIR" "$HOME/.config/rclone" "$HOME/.ssh/config" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
   [ -n "$found" ] && row "files naming $CLIENT" "FAIL: $found" || row "files naming $CLIENT" pass
   # The cluster's own stack runs as before: its model servers, Kev's model, job runner and services
   # on this computer, and its gateway on the control computer.
   COMPUTER="${CLUSTER_COMPUTER:-$(sed -n 's/^COMPUTER=//p' /etc/agent-cluster.conf 2>/dev/null || true)}"
-  if [ -f "$HOME/circlechat/site.json" ] && [ -n "$COMPUTER" ]; then
-    while IFS=$'\t' read -r what result; do row "$what" "$result"; done < <(node "$HERE/cluster-intact.mjs" "$HOME/circlechat/site.json" "$COMPUTER")
+  if [ -f "$CLUSTER_DIR/site.json" ] && [ -n "$COMPUTER" ]; then
+    while IFS=$'\t' read -r what result; do row "$what" "$result"; done < <(node "$HERE/cluster-intact.mjs" "$CLUSTER_DIR/site.json" "$COMPUTER")
   else
-    echo "Skipped the cluster's own stack: no ~/circlechat/site.json, or no computer name in /etc/agent-cluster.conf."
+    echo "Skipped the cluster's own stack: no $CLUSTER_DIR/site.json, or no computer name in /etc/agent-cluster.conf."
   fi
   [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s), and the cluster's own stack runs as before." || { echo "A check failed on $(hostname -s): see each FAIL above."; exit 1; }
   ;;

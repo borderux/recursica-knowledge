@@ -1,28 +1,31 @@
-// The weekly container refresh for one stack. Runs as the account that owns the stacks.
+// The weekly image refresh for one stack. Runs as the account that owns the stacks.
 //
 //   node images.mjs            (with CC_DIR, and TENANT for a client stack)
 //
-// Each image tag the stack uses is pulled. A new version (a new digest) is used only after this
-// job has seen it for 7 days; until then the stack keeps the version it runs. CircleChat's own
-// images are rebuilt on fresh base images. Then the stack restarts and the health check runs:
-// every container running, and CircleChat answering. On a failure, every container goes back to
-// the version it ran before, and Slack gets a message.
+// The kit starts a few containers itself, each at the digest pinned in the stack's images.lock
+// (pin_image, kit/lib.sh): LiteLLM, the router, the app preview, Kev's install and, with
+// privacy.mask_pii, Presidio. Each pin of KIT_PINS moves to a newer version once this job has seen
+// that version for 7 days. Then setup-host.sh --upgrade recreates the gateway on the new pins. When
+// the --upgrade fails, every pin goes back, the failed versions are never used again, and Slack
+// gets a message.
 //
-// A stack whose CircleChat 1.x is retired (site.circlechat) starts no CircleChat container and
-// pulls none of CircleChat's images. Only the pins of RETIRED_PINS move, and the setup's --upgrade
-// then recreates the gateway on them.
+// images.lock can still hold the pins of CircleChat 1.x's images, such as caddy, postgres and the
+// Hermes image. Those pins never move, and no image of CircleChat 1.x is pulled.
 //
 // A pin that moves recreates the gateway, which interrupts work. When the update job finds
 // RecursicaChat 2.0 busy (SERVER_QUIET=no, cluster/quiet.mjs), each move waits: the pins stay,
 // kit-out/images-waiting.json names the waiting images, and the job exits WAITING, so the update
 // job tries again the next hour. Run by hand, with no SERVER_QUIET, the pins move as before.
+//
+// The job runs unattended, so its --upgrade runs with KIT_HOLD_NETWORK=1: each step that waits for
+// a person (network_held, kit/lib.sh) is skipped.
 import { execFile } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
 import { stackSlack } from "../kit/slack.mjs";
-import { circlechatRetired, stackName } from "../kit/render.mjs";
+import { stackName } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 export const WAITING = 75;
@@ -42,164 +45,62 @@ export function chooseDigests(tags, seen, now = Date.now()) {
   });
 }
 
-// The compose services whose tag this job pulls and holds for 7 days. A service CircleChat builds
-// is rebuilt instead. An image pinned by digest, such as caddy, postgres or redis (setup-host.sh),
-// moves with the pins in images.lock: docker refuses a tag with a digest.
-export const taggedServices = (services) => Object.entries(services).filter(([, s]) => s.image && !s.build && !s.image.includes("@sha256:"));
-
-// The Hermes image runs every agent turn, and the health check below cannot see a turn: a Hermes
-// version that refuses every turn leaves every container running and CircleChat answering. So the
-// Hermes pin moves only after a test turn (kit/hermes-turn.sh) answers on the newer version, for
-// each agent home whose turn answers on the current version. A home that already fails on the
-// current version says nothing about the newer one, and is skipped. Returns the homes that answer
-// on the current version and fail on the newer one.
-export const HERMES_TAG = "nousresearch/hermes-agent:latest";
-export async function hermesTurnFailures(homes, current, next, turn) {
-  const failed = [];
-  for (const home of homes) {
-    if (!(await turn(home, current))) continue;
-    if (!(await turn(home, next))) failed.push(home);
-  }
-  return failed;
-}
-// The images the kit still starts on a stack whose CircleChat 1.x is retired: LiteLLM, the
-// router (node:22-alpine) and the app preview and Kev's install (node:22), all in setup-host.sh.
-// CircleChat's own images, the file store's and the agent image (Hermes) stay where they are.
-export const RETIRED_PINS = ["ghcr.io/berriai/litellm:main-stable", "node:22-alpine", "node:22"];
-export const pinsToRefresh = (lock, retired) => Object.keys(lock).filter((tag) => !retired || RETIRED_PINS.includes(tag));
-
-// Each agent's Hermes home: a real .hermes-<handle> folder. The owner, who runs this, cannot see
-// inside a home, which belongs to the agent's account with mode 700, so the test turn itself looks
-// for the home's config.yaml (kit/hermes-turn.sh). A home with none fails on the current version,
-// and is skipped.
-export function agentHomes(ccDir) {
-  const dir = path.join(ccDir, "hermes-homes");
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((n) => n.startsWith(".hermes-") && fs.lstatSync(path.join(dir, n)).isDirectory()).sort().map((n) => path.join(dir, n));
-}
+// The images the kit starts, in setup-host.sh: LiteLLM, the router (node:22-alpine), the app
+// preview and Kev's install (node:22), and Presidio's two services.
+export const KIT_PINS = [
+  "ghcr.io/berriai/litellm:main-stable", "node:22-alpine", "node:22",
+  "mcr.microsoft.com/presidio-analyzer:latest", "mcr.microsoft.com/presidio-anonymizer:latest",
+];
+// The pins this job moves: the kit's own, in images.lock's order. Every other pin stays.
+export const pinsToRefresh = (lock) => Object.keys(lock).filter((tag) => KIT_PINS.includes(tag));
 
 async function main() {
   const ccDir = process.env.CC_DIR;
   const tenantEnv = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
   const env = { ...process.env, ...(tenantEnv.DOCKER_CONTEXT ? { DOCKER_CONTEXT: tenantEnv.DOCKER_CONTEXT } : {}) };
-  const dc = (args) => run("docker", ["compose", ...args], { cwd: ccDir, env });
+  const name = () => tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")));
+  const upgrade = () => run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir, KIT_HOLD_NETWORK: "1" } });
   const stateFile = path.join(ccDir, "kit-out/images-seen.json");
   let seen = {}; try { seen = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
-  const port = (fs.readFileSync(path.join(ccDir, "site.json"), "utf8").match(/"port"\s*:\s*(\d+)/) ?? [])[1] ?? "8080";
-
-  const retired = circlechatRetired(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")));
-
-  // What runs now: container -> image ID, so a rollback can return to it.
-  const before = {};
-  let tags = {}, choice = [];
-  if (!retired) {
-    for (const id of (await dc(["ps", "-q"])).split("\n").filter(Boolean)) {
-      const [svc, image] = (await run("docker", ["inspect", "-f", '{{index .Config.Labels "com.docker.compose.service"}} {{.Image}}', id], { env })).split(" ");
-      before[svc] = image;
-    }
-    tags = JSON.parse(await dc(["config", "--format", "json"])).services;
-    const pulledTags = [];
-    for (const [svc, s] of taggedServices(tags)) {
-      const current = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
-      await run("docker", ["pull", "-q", s.image], { env }).catch(() => "");
-      const pulled = await run("docker", ["image", "inspect", "-f", "{{.Id}}", s.image], { env }).catch(() => "");
-      pulledTags.push({ svc, tag: s.image, current, pulled });
-    }
-    choice = chooseDigests(pulledTags, seen);
-    for (const c of choice) if (!c.changed && c.use) await run("docker", ["tag", c.use, c.tag], { env });   // keep the old version under the tag
-    fs.writeFileSync(stateFile, JSON.stringify(seen));
-    await dc(["build", "--pull"]);
-    // Stored files move from the old containers onto the storage volume before compose recreates
-    // them (kit/carry-storage.sh). It does nothing once they have moved.
-    await run("bash", [path.join(here, "../kit/carry-storage.sh")], { cwd: ccDir, env: { ...env, CC_DIR: ccDir } });
-    await dc(["up", "-d"]);
-  }
-
-  const healthy = async () => {
-    for (let i = 0; i < 18; i++) {
-      await new Promise((r) => setTimeout(r, 10_000));
-      const states = (await dc(["ps", "--format", "{{.State}}"])).split("\n").filter(Boolean);
-      const ok = states.length > 0 && states.every((s) => s === "running");
-      const web = await fetch(`http://127.0.0.1:${port}/`, { signal: AbortSignal.timeout(5000) }).then((r) => r.status < 500).catch(() => false);
-      if (ok && web) return true;
-    }
-    return false;
-  };
-  // The images the kit starts directly (gateway, notifier, agent image), pinned in images.lock:
-  // each pin moves to a newer version after the newer version has been out for 7 days.
   const lockFile = path.join(ccDir, "images.lock");
-  let oldLock = null, moved = [], waiting = [];
-  if (fs.existsSync(lockFile)) {
-    const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
-    const pinned = [];
-    for (const tag of pinsToRefresh(lock, retired)) {
-      await run("docker", ["pull", "-q", tag], { env }).catch(() => "");
-      const pulled = await run("docker", ["image", "inspect", "-f", "{{index .RepoDigests 0}}", tag], { env }).catch(() => "");
-      pinned.push({ tag, current: lock[tag].ref, pulled });
-    }
-    let moves = chooseDigests(pinned, seen).filter((c) => c.changed);
-    const hermes = moves.find((m) => m.tag === HERMES_TAG);
-    if (hermes) {
-      const turn = (home, image) => run("bash", [path.join(here, "../kit/hermes-turn.sh"), home, image], { env: { ...env, CC_DIR: ccDir } }).then(() => true, () => false);
-      const failed = await hermesTurnFailures(agentHomes(ccDir), lock[HERMES_TAG].ref, hermes.use, turn);
-      if (failed.length) {
-        // Like a version that fails the health check: the job never moves to this version again,
-        // and a later version gets its own 7 days.
-        seen[`${HERMES_TAG}@${hermes.use}`] = Number.MAX_SAFE_INTEGER;
-        moves = moves.filter((m) => m !== hermes);
-        const agents = failed.map((h) => path.basename(h).replace(/^\.hermes-/, "")).join(", ");
-        const msg = `:warning: Weekly image refresh of stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: the newer Hermes image failed a test turn for ${agents}, so every agent stays on the current Hermes image. Hermes's reason: circlechat/kit/hermes-turn.sh <agent home> ${hermes.use}`;
-        console.error(msg);
-        await stackSlack(ccDir)(msg);
-      }
-    }
-    fs.writeFileSync(stateFile, JSON.stringify(seen));
-    waiting = waitingMoves(moves, process.env.SERVER_QUIET).map((m) => m.tag);
-    if (waiting.length) {
-      moves = [];
-      fs.writeFileSync(path.join(ccDir, "kit-out/images-waiting.json"), JSON.stringify(waiting) + "\n");
-      console.log(`${waiting.join(", ")}: the new pins wait for a quiet RecursicaChat (${process.env.SERVER_BUSY || "busy"})`);
-    }
-    if (moves.length) {
-      oldLock = lock;
-      const next = structuredClone(lock);
-      for (const m of moves) next[m.tag] = { ref: m.use, since: new Date().toISOString() };
-      moved = moves.map((m) => m.tag);
-      fs.writeFileSync(lockFile, JSON.stringify(next, null, 2) + "\n");
-      await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } });
-    }
+  if (!fs.existsSync(lockFile)) { console.log(`stack ${name()}: no images.lock yet, so no pin moves`); return; }
+
+  const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
+  const pinned = [];
+  for (const tag of pinsToRefresh(lock)) {
+    await run("docker", ["pull", "-q", tag], { env }).catch(() => "");
+    const pulled = await run("docker", ["image", "inspect", "-f", "{{index .RepoDigests 0}}", tag], { env }).catch(() => "");
+    pinned.push({ tag, current: lock[tag].ref, pulled });
   }
-  // A retired CircleChat has no health check here: the setup's --upgrade above fails when the
-  // gateway does not start, and this job then fails with it.
-  if (retired) {
-    console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: CircleChat 1.x is retired; ${moved.length ? `pins moved (${moved.join(", ")})` : "no pin moved"}`);
-    if (waiting.length) process.exit(WAITING);
-    return;
-  }
-  const changed = choice.filter((c) => c.changed).map((c) => c.tag);
-  if (await healthy()) {
-    console.log(`stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
-    if (waiting.length) process.exit(WAITING);
-    return;
-  }
-  // Roll back: tag each service's old image back, and recreate from it. Each new version that
-  // failed is marked so the job never moves to it again; a later version gets its own 7 days.
-  for (const c of choice.filter((x) => x.changed)) seen[`${c.tag}@${c.use}`] = Number.MAX_SAFE_INTEGER;
-  if (oldLock) for (const [tag, v] of Object.entries(JSON.parse(fs.readFileSync(lockFile, "utf8")))) if (oldLock[tag]?.ref !== v.ref) seen[`${tag}@${v.ref}`] = Number.MAX_SAFE_INTEGER;
+  let moves = chooseDigests(pinned, seen).filter((c) => c.changed);
   fs.writeFileSync(stateFile, JSON.stringify(seen));
-  for (const [svc, image] of Object.entries(before)) {
-    const tag = tags[svc]?.image ?? `${tenantEnv.COMPOSE_PROJECT_NAME}-${svc}`;
-    await run("docker", ["tag", image, tag], { env }).catch(() => {});
+  const waiting = waitingMoves(moves, process.env.SERVER_QUIET).map((m) => m.tag);
+  if (waiting.length) {
+    moves = [];
+    fs.writeFileSync(path.join(ccDir, "kit-out/images-waiting.json"), JSON.stringify(waiting) + "\n");
+    console.log(`${waiting.join(", ")}: the new pins wait for a quiet RecursicaChat (${process.env.SERVER_BUSY || "busy"})`);
   }
-  await dc(["up", "-d", "--no-build"]);
-  if (oldLock) {
-    fs.writeFileSync(lockFile, JSON.stringify(oldLock, null, 2) + "\n");
-    await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } }).catch(() => "");
+  if (moves.length) {
+    const next = structuredClone(lock);
+    for (const m of moves) next[m.tag] = { ref: m.use, since: new Date().toISOString() };
+    fs.writeFileSync(lockFile, JSON.stringify(next, null, 2) + "\n");
+    try {
+      await upgrade();
+    } catch (e) {
+      // Roll back: each failed version is marked, so the job never moves to it again. A later
+      // version gets its own 7 days.
+      for (const m of moves) seen[`${m.tag}@${m.use}`] = Number.MAX_SAFE_INTEGER;
+      fs.writeFileSync(stateFile, JSON.stringify(seen));
+      fs.writeFileSync(lockFile, JSON.stringify(lock, null, 2) + "\n");
+      await upgrade().catch(() => "");
+      const msg = `:x: Weekly image refresh of stack ${name()}: setup-host.sh --upgrade failed on the new versions of ${moves.map((m) => m.tag).join(", ")}. Every pin is back on its previous version.`;
+      console.error(`${msg}\n${e.message}`);
+      await stackSlack(ccDir)(msg);
+      process.exit(1);
+    }
   }
-  const msg = `:x: Weekly image refresh of stack ${tenantEnv.STACK_NAME || stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8")))} failed its health check. Every container is back on its previous version.`;
-  console.error(msg);
-  await stackSlack(ccDir)(msg);
-  process.exit(1);
+  console.log(`stack ${name()}: ${moves.length ? `pins moved (${moves.map((m) => m.tag).join(", ")})` : "no pin moved"}`);
+  if (waiting.length) process.exit(WAITING);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(e); process.exit(1); });

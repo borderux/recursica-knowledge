@@ -1,5 +1,5 @@
 // The caps on a program's gateway key (svc-<name>, from recursicachat.services in site.json):
-// requests at once and requests per day. Stand-ins for LiteLLM and CircleChat's database; each test
+// requests at once and requests per day. Stand-ins for LiteLLM and a task source; each test
 // has its own gateway and state folder.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -41,13 +41,12 @@ const config = (caps = { max_parallel: 2, daily_requests: 5 }) => ({
   models: { "m1/ollama/large": { server: "m1/ollama", kind: "ollama", model: "example-model" } },
   timezone: "America/New_York",
 });
-// The database stand-in fails the test if the gateway looks up a program's running turns.
+// The task source's stand-in fails the test if the gateway looks up a program's running turns.
 const db = {
   looked: [],
   async runTasks(h) { this.looked.push(h); return []; },
   async onTask() { return true; },
   async setting() { return null; },
-  async botToken() { return null; },
 };
 
 async function gateway({ caps, state = fs.mkdtempSync(path.join(os.tmpdir(), "gw-caps-")), now = Date.now } = {}) {

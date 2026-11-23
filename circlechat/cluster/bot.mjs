@@ -1,17 +1,14 @@
 // The cluster's Slack app, connected in Socket Mode: the app opens a connection out to Slack, so no
 // port opens to the internet. The app turns button clicks into actions on one computer, through
 // that computer's cluster agent. Only the approvers can press a button. The buttons that weaken
-// security ask for a 6-digit authenticator code first. The Approve and Deny buttons of a cloud-model
-// request (cloud-requests.mjs) take the stack's cloud approvers instead, from site.json's
-// cloud_approvers.
+// security ask for a 6-digit authenticator code first.
 //
 // Settings, from the environment:
 //   SLACK_APP_TOKEN    app-level token (xapp-...), with the connections:write scope
 //   SLACK_BOT_TOKEN    bot token (xoxb-...), with chat:write
 //   SLACK_CHANNEL_ID   the ID of the cluster's channel for alerts
 //   APPROVERS          Slack user IDs and names: "U012=person_a,U034=person_b"
-//   TOTP_SECRET_<NAME> each approver's authenticator secret. A cloud approver who is not on
-//                      APPROVERS has the secret under the Slack user ID: TOTP_SECRET_<SLACK USER ID>
+//   TOTP_SECRET_<NAME> each approver's authenticator secret
 //   CLUSTER_TOKEN      the token each cluster agent requires
 //   AGENTS             computer names and agent URLs: "machine-1=http://127.0.0.1:7500,machine-2=http://machine-2:7500"
 //   STATE_DIR          where the wrong-code count is kept
@@ -37,9 +34,8 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
   const lockout = new Lockout(path.join(stateDir, "two-factor-lockout.json"));
   const channel = env.SLACK_CHANNEL_ID;
   const secretOf = (user) => env[`TOTP_SECRET_${String(approvers[user] ?? user).toUpperCase().replace(/-/g, "_")}`];
-  // Who may press a button: the approvers, or, for a cloud-model request, the stack's cloud
-  // approvers that the button carries. The stack's cluster agent checks the cloud approvers again.
-  const mayPress = (user, actionId, value) => (ACTIONS[actionId]?.cloud ? Array.isArray(value?.a) && value.a.includes(user) : Boolean(approvers[user]));
+  // Only the approvers may press a button.
+  const mayPress = (user) => Boolean(approvers[user]);
 
   async function reply(meta, text) {
     await api("chat.postMessage", { channel: meta.channel ?? channel, thread_ts: meta.ts, text, ...sender });
@@ -55,7 +51,7 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
     const all = Object.keys(parsePairs(env.AGENTS));
     const computers = ACTIONS[actionId]?.cluster && all.length ? all : [value.c];
     for (const c of computers) {
-      const result = await relay(c, { action: actionId, ref: value.r, extra: ACTIONS[actionId]?.cloud ? { ...extra, slackUser: user } : extra, by: approvers[user] ?? user });
+      const result = await relay(c, { action: actionId, ref: value.r, extra, by: approvers[user] ?? user });
       await reply(meta, `${result.ok ? ":white_check_mark:" : ":x:"} <@${user}> pressed "${ACTIONS[actionId]?.label ?? actionId}" for ${c}: ${result.message}`);
     }
   }
@@ -87,14 +83,13 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
     const user = p.user?.id;
     if (p.type === "block_actions") {
       const raw = p.actions?.[0];
-      // One action can have several buttons in a message, such as "agents-stop:betty".
+      // One action can have several buttons in a message, as "<action>:<item>".
       const a = raw && { ...raw, action_id: String(raw.action_id).split(":")[0] };
       if (!a || !ACTIONS[a.action_id]) return undefined;
       const value = JSON.parse(a.value);
       const meta = { id: a.action_id, value, channel: p.channel?.id, ts: p.message?.ts };
-      if (!mayPress(user, a.action_id, value)) {
-        const text = ACTIONS[a.action_id].cloud ? "Only the stack's cloud approvers can press these buttons." : "Only the approvers can press these buttons.";
-        await api("chat.postEphemeral", { channel: meta.channel, user, text });
+      if (!mayPress(user)) {
+        await api("chat.postEphemeral", { channel: meta.channel, user, text: "Only the approvers can press these buttons." });
         return undefined;
       }
       if (ACTIONS[a.action_id].twoFactor) {
@@ -114,7 +109,7 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
     }
     if (p.type === "view_submission") {
       const meta = JSON.parse(p.view?.private_metadata ?? "{}");
-      if (!mayPress(user, meta.id, meta.value)) return { response_action: "errors", errors: { code: "Only the approvers can do this." } };
+      if (!mayPress(user)) return { response_action: "errors", errors: { code: "Only the approvers can do this." } };
       if (p.view.callback_id === "two-factor") {
         if (lockout.locked(user, now())) return { response_action: "errors", errors: { code: "Locked for an hour after three wrong codes." } };
         const code = p.view.state?.values?.code?.code?.value;
