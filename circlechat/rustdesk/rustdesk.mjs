@@ -19,6 +19,7 @@
 //   node rustdesk.mjs web-port-check <ss -Hlntp file> <Windows listeners file> < RustDesk client settings
 //   node rustdesk.mjs guard-check windows|hyperv < "<protocol>|<ports>|<action>|<enabled>|<direction>" lines
 // Each check prints one line per problem and nothing when all is well.
+import crypto from "node:crypto";
 import fs from "node:fs";
 
 export const PORTS = { console: 21114, nat: 21115, id: 21116, relay: 21117 };
@@ -72,7 +73,14 @@ export function rustdeskErrors(site) {
 export function rustdeskSpec(site, n) {
   if (!n.rustdesk) return null;
   return { image: n.rustdesk.image, address: n.address, console_host: n.rustdesk.console_host,
-    https_port: HTTPS_PORT, backup_time: n.rustdesk.backup_time ?? "03:30" };
+    https_port: HTTPS_PORT, backup_time: n.rustdesk.backup_time ?? "03:30", restore_test_time: restoreTestTime(n.rustdesk.backup_time ?? "03:30") };
+}
+
+// The monthly restore test runs one hour after the nightly backup, so the test never meets the
+// backup's prune, which locks the restic repository.
+export function restoreTestTime(backupTime) {
+  const [h, m] = backupTime.split(":").map(Number);
+  return `${String((h + 1) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 // The Compose file. hbbs is the ID server and the console; hbbr is the relay. Both keep their key,
@@ -231,6 +239,40 @@ export function webPortProblems({ ss = "", windows = null, clients = "" } = {}) 
   return problems;
 }
 
+// The server's key pair, as hbbs writes the pair: id_ed25519 holds the 64-byte Ed25519 secret key in
+// base64, and id_ed25519.pub holds the 32-byte public key in base64. The secret key ends with the
+// public key. Each function returns a short reason or a fingerprint, never a key.
+const decodeKey = (text, bytes) => {
+  const t = String(text).trim();
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(t)) return null;
+  const b = Buffer.from(t, "base64");
+  return b.length === bytes ? b : null;
+};
+
+/** The public key's fingerprint: SHA256: and the first 16 hex digits of the key's SHA-256. Null for a text that is no public key. */
+export function keyFingerprint(publicText) {
+  const pk = decodeKey(publicText, 32);
+  return pk ? `SHA256:${crypto.createHash("sha256").update(pk).digest("hex").slice(0, 16)}` : null;
+}
+
+/** Why the two files are no key pair, or null for a key pair. */
+export function keyPairProblem(privateText, publicText) {
+  const sk = decodeKey(privateText, 64);
+  const pk = decodeKey(publicText, 32);
+  if (!sk) return "id_ed25519 holds no Ed25519 secret key";
+  if (!pk) return "id_ed25519.pub holds no Ed25519 public key";
+  if (!sk.subarray(32).equals(pk)) return "id_ed25519.pub is not the public key of id_ed25519";
+  return null;
+}
+
+/** The newest snapshot in restic snapshots --json: its ID, its time as YYYY-MM-DD HH:MM UTC, and its age in hours. Null with no snapshot. */
+export function newestSnapshot(list, now = Date.now()) {
+  const times = (Array.isArray(list) ? list : []).map((x) => ({ id: x.id, at: Date.parse(x.time) })).filter((x) => x.id && Number.isFinite(x.at));
+  if (!times.length) return null;
+  const n = times.reduce((a, b) => (b.at > a.at ? b : a));
+  return { id: n.id, date: new Date(n.at).toISOString().slice(0, 16).replace("T", " "), ageHours: Math.floor((now - n.at) / 3600_000) };
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, a, b] = process.argv.slice(2);
   const stdin = () => { try { return fs.readFileSync(0, "utf8"); } catch { return ""; } };
@@ -249,8 +291,23 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     for (const p of webPortProblems({ ss: read(a) ?? "", windows: read(b), clients: stdin() })) console.log(p);
   } else if (cmd === "guard-check" && GUARD_NAME[a]) {
     for (const p of guardProblems(a, stdin())) console.log(p);
+  } else if (cmd === "fingerprint") {
+    // The public key on stdin. Prints the fingerprint, or exits 1 with no output.
+    const f = keyFingerprint(stdin());
+    if (!f) process.exit(1);
+    console.log(f);
+  } else if (cmd === "key-pair") {
+    const p = keyPairProblem(fs.readFileSync(a, "utf8"), fs.readFileSync(b, "utf8"));
+    if (p) { console.log(p); process.exit(1); }
+  } else if (cmd === "newest-snapshot") {
+    // restic snapshots --json on stdin. Prints "<id> <age in hours> <YYYY-MM-DD HH:MM>", or exits 1.
+    let list = [];
+    try { list = JSON.parse(stdin() || "[]"); } catch {}
+    const n = newestSnapshot(list);
+    if (!n) process.exit(1);
+    console.log(`${n.id} ${n.ageHours} ${n.date}`);
   } else {
-    console.error("usage: rustdesk.mjs compose <spec> | serve-check <https port> <local port> | listen-check | web-port-check <ss> <windows|-> | guard-check nft|windows|hyperv");
+    console.error("usage: rustdesk.mjs compose <spec> | serve-check <https port> <local port> | listen-check | web-port-check <ss> <windows|-> | guard-check nft|windows|hyperv | fingerprint | key-pair <private> <public> | newest-snapshot");
     process.exit(2);
   }
 }

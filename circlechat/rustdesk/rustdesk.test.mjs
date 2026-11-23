@@ -8,7 +8,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { validate, render } from "../kit/render.mjs";
 import { stackSite } from "../kit/stack-site.mjs";
-import { NFT_RULES, RELAY_KEY_WAIT, nftRuleKey, composeFile, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
+import crypto from "node:crypto";
+import { NFT_RULES, RELAY_KEY_WAIT, nftRuleKey, composeFile, keyFingerprint, keyPairProblem, newestSnapshot, restoreTestTime, directAccessPorts, guardProblems, listenProblems, rustdeskErrors, serveProblems, webPortProblems } from "./rustdesk.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
@@ -26,7 +27,7 @@ test("a RustDesk server on Linux or WSL, at its Tailscale address, with a pinned
   assert.deepEqual(rustdeskErrors(withServer()), []);
   assert.deepEqual(validate(withServer()).filter((e) => /rustdesk|remote_access/.test(e)), []);
   const spec = render(withServer()).services["machine-3"].rustdesk;
-  assert.deepEqual(spec, { image: IMAGE, address: TS, console_host: "machine-3.example.ts.net", https_port: 443, backup_time: "03:30" });
+  assert.deepEqual(spec, { image: IMAGE, address: TS, console_host: "machine-3.example.ts.net", https_port: 443, backup_time: "03:30", restore_test_time: "04:30" });
   assert.equal(render(withServer()).services["machine-1"].rustdesk, null);
 });
 
@@ -250,6 +251,11 @@ test("the setup starts the server, checks it, gives the console its HTTPS addres
   assert.match(unit, /User=root/);
   assert.match(unit, /BACKUP_REMOTE=offsite:backups .*backup-rustdesk\.sh/);
   assert.match(fs.readFileSync(path.join(r.units, "rustdesk-backup.timer"), "utf8"), /OnCalendar=\*-\*-\* 03:30/);
+  const restoreUnit = fs.readFileSync(path.join(r.units, "rustdesk-restore-test.service"), "utf8");
+  assert.match(restoreUnit, /User=root/);
+  assert.match(restoreUnit, /BACKUP_REMOTE=offsite:backups .*restore-test-rustdesk\.sh/);
+  assert.match(fs.readFileSync(path.join(r.units, "rustdesk-restore-test.timer"), "utf8"), /OnCalendar=\*-\*-01 04:30/);
+  assert.match(r.stdout, /sudo systemctl start rustdesk-restore-test\.service/);
   assert.match(r.stdout, /Console, tailnet only: https:\/\/machine-3\.example\.ts\.net/);
 });
 
@@ -538,4 +544,152 @@ esac; exit 0
   const listing = spawnSync("tar", ["tzf", path.join(target, archive)], { encoding: "utf8" });
   assert.equal(listing.status, 0, listing.stderr);
   assert.match(listing.stdout, /^\.\/id_ed25519$/m);
+});
+
+// restore-test-rustdesk.sh. Each key pair is a real Ed25519 pair, written as hbbs writes the pair.
+function keyPair() {
+  const jwk = crypto.generateKeyPairSync("ed25519").privateKey.export({ format: "jwk" });
+  const seed = Buffer.from(jwk.d, "base64url"), pub = Buffer.from(jwk.x, "base64url");
+  return { secret: Buffer.concat([seed, pub]).toString("base64"), public: pub.toString("base64") };
+}
+
+test("the restore test runs one hour after the backup", () => {
+  assert.equal(restoreTestTime("03:30"), "04:30");
+  assert.equal(restoreTestTime("23:05"), "00:05");
+});
+
+test("the key checks give a fingerprint or a reason, never a key", () => {
+  const a = keyPair(), b = keyPair();
+  assert.match(keyFingerprint(a.public), /^SHA256:[0-9a-f]{16}$/);
+  assert.equal(keyFingerprint(`${a.public}\n`), keyFingerprint(a.public));
+  assert.notEqual(keyFingerprint(a.public), keyFingerprint(b.public));
+  assert.equal(keyFingerprint("not a key"), null);
+  assert.equal(keyFingerprint(a.secret), null, "a secret key is no public key");
+  assert.equal(keyPairProblem(a.secret, a.public), null);
+  assert.equal(keyPairProblem(a.secret, b.public), "id_ed25519.pub is not the public key of id_ed25519");
+  assert.equal(keyPairProblem("", a.public), "id_ed25519 holds no Ed25519 secret key");
+  assert.equal(keyPairProblem(a.secret, ""), "id_ed25519.pub holds no Ed25519 public key");
+});
+
+test("the newest snapshot is the latest by time, with its age in hours", () => {
+  const now = Date.parse("2026-11-22T12:00:00Z");
+  const n = newestSnapshot([{ id: "old", time: "2026-11-20T03:30:00Z" }, { id: "new", time: "2026-11-22T03:30:12.5-00:00" }, { id: "mid", time: "2026-11-21T03:30:00Z" }], now);
+  assert.deepEqual(n, { id: "new", date: "2026-11-22 03:30", ageHours: 8 });
+  assert.equal(newestSnapshot([], now), null);
+  assert.equal(newestSnapshot(null, now), null);
+});
+
+// The restore test with stand-ins for restic, docker, id and the cluster's Slack post.
+function restoreRun({ ageHours = 5, withDb = true, live = null, pair = null, root = true, snapshots = true, running = true } = {}) {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-restore-"));
+  const bin = path.join(tmp, "bin"), data = path.join(tmp, "data"), work = path.join(tmp, "work"), log = path.join(tmp, "calls.log");
+  const kit = path.join(tmp, "kit"), posts = path.join(tmp, "posts.log");
+  for (const d of [bin, data, work, path.join(kit, "circlechat", "cluster")]) fs.mkdirSync(d, { recursive: true });
+  const keys = keyPair();
+  const restoredPair = pair ?? keys;
+  fs.writeFileSync(path.join(data, "id_ed25519"), restoredPair.secret);
+  fs.writeFileSync(path.join(data, "id_ed25519.pub"), restoredPair.public);
+  if (withDb) fs.writeFileSync(path.join(data, "db_v2.sqlite3"), Buffer.concat([Buffer.from("SQLite format 3\0"), Buffer.alloc(100)]));
+  const fixture = path.join(tmp, "fixture.tgz");
+  assert.equal(spawnSync("tar", ["czf", fixture, "-C", data, "."]).status, 0);
+  const livePub = path.join(tmp, "live.pub");
+  fs.writeFileSync(livePub, (live ?? keys).public);
+  const time = new Date(Date.now() - ageHours * 3600_000).toISOString();
+  fs.writeFileSync(path.join(tmp, "snapshots.json"), JSON.stringify(snapshots ? [{ id: "abc123", time }] : []));
+  const stub = (name, body) => fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`, { mode: 0o755 });
+  stub("restic", `case "$1" in
+  snapshots) cat ${tmp}/snapshots.json ;;
+  restore) while [ $# -gt 0 ]; do [ "$1" = --target ] && target="$2"; shift; done
+    stat -c 'work folder mode %a' "$(dirname "$target")" >> ${log}
+    mkdir -p "$target/var/lib/rustdesk-backup"; cp ${fixture} "$target/var/lib/rustdesk-backup/rustdesk.tgz" ;;
+esac`);
+  stub("docker", `case "$1" in
+  inspect) echo ${running} ;;
+  exec) cat ${livePub} ;;
+esac`);
+  stub("id", `[ "$1" = -u ] && echo ${root ? 0 : 1000}`);
+  fs.writeFileSync(path.join(kit, "circlechat", "cluster", "post.mjs"), `import fs from "node:fs";\nfs.appendFileSync(${JSON.stringify(posts)}, process.argv[2] + " " + process.argv[3] + "\\n");\n`);
+  const secrets = path.join(tmp, "node.env");
+  fs.writeFileSync(secrets, "RUSTDESK_RESTIC_PASSWORD=pw\n");
+  const r = spawnSync("bash", [path.join(here, "restore-test-rustdesk.sh")], { encoding: "utf8",
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: "offsite:backups", SECRETS: secrets, KIT: kit, RUSTDESK_RESTORE_TMP: work } });
+  const read = (f) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8") : "");
+  const out = r.stdout + r.stderr + read(posts);
+  const secretsSeen = [keys.secret, keys.public, restoredPair.secret, restoredPair.public, (live ?? keys).public].filter((k) => out.includes(k));
+  return { r, posts: read(posts), calls: read(log), left: fs.readdirSync(work), secretsSeen, date: time.slice(0, 16).replace("T", " ") };
+}
+
+test("the restore test passes, posts the snapshot's date and the fingerprint, and deletes the restored files", () => {
+  const t = restoreRun();
+  assert.equal(t.r.status, 0, t.r.stdout + t.r.stderr);
+  assert.match(t.posts, new RegExp(`^info :white_check_mark: Test restore of the RustDesk server's backup passed on \\S+\\. Newest snapshot: ${t.date} UTC\\. .*matches the running server's public key, SHA256:[0-9a-f]{16}\\.$`, "m"));
+  assert.match(t.calls, /^restic restore abc123 --target /m);
+  assert.match(t.calls, /^work folder mode 700$/m);
+  assert.match(t.calls, /^docker exec rustdesk-hbbs cat \/root\/id_ed25519\.pub$/m);
+  assert.doesNotMatch(t.calls, /^restic (forget|prune|backup|init|unlock)/m, "the test only reads the backup repository");
+  assert.deepEqual(t.left, []);
+  assert.deepEqual(t.secretsSeen, []);
+});
+
+test("the restore test fails on each check, posts the snapshot's date, and still deletes the restored files", () => {
+  const cases = [
+    [{ withDb: false }, /rustdesk\.tgz holds no database/],
+    [{ pair: { ...keyPair(), public: keyPair().public } }, /id_ed25519\.pub is not the public key of id_ed25519/],
+    [{ live: keyPair() }, /the restored public key, SHA256:[0-9a-f]{16}, is not the running server's public key, SHA256:[0-9a-f]{16}/],
+    [{ running: false }, /the server's container, rustdesk-hbbs, is not running/],
+    [{ ageHours: 50 }, /the newest snapshot is 50 hours old, and the limit is 48 hours/],
+  ];
+  for (const [opts, why] of cases) {
+    const t = restoreRun(opts);
+    assert.equal(t.r.status, 1, JSON.stringify(opts));
+    assert.match(t.posts, /^info :x: Test restore of the RustDesk server's backup failed on \S+: /m);
+    assert.match(t.posts, why);
+    assert.ok(t.posts.includes(`Newest snapshot: ${t.date} UTC.`), t.posts);
+    assert.deepEqual(t.left, [], `the restored files are gone after: ${why}`);
+    assert.deepEqual(t.secretsSeen, [], `no key in the output after: ${why}`);
+  }
+});
+
+test("the restore test stops without root or without a snapshot", () => {
+  let t = restoreRun({ root: false });
+  assert.equal(t.r.status, 1);
+  assert.match(t.posts, /failed on \S+: the test must run as root\. Newest snapshot: unknown UTC\./);
+  assert.doesNotMatch(t.calls, /^restic /m);
+  t = restoreRun({ snapshots: false });
+  assert.equal(t.r.status, 1);
+  assert.match(t.posts, /the backup repository holds no snapshot/);
+  assert.deepEqual(t.left, []);
+});
+
+test("the restore test passes on a snapshot from the real backup, with the real restic", { skip: !realRestic && !process.env.RUSTDESK_RESTIC_REQUIRED, timeout: 180_000 }, () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-restic-restore-"));
+  const bin = path.join(tmp, "bin"), data = path.join(tmp, "data"), work = path.join(tmp, "work");
+  for (const d of [bin, data, work]) fs.mkdirSync(d);
+  const keys = keyPair();
+  fs.writeFileSync(path.join(data, "id_ed25519"), keys.secret);
+  fs.writeFileSync(path.join(data, "id_ed25519.pub"), keys.public);
+  fs.writeFileSync(path.join(data, "db_v2.sqlite3"), Buffer.concat([Buffer.from("SQLite format 3\0"), Buffer.alloc(100)]));
+  const fixture = path.join(tmp, "fixture.tgz");
+  assert.equal(spawnSync("tar", ["czf", fixture, "-C", data, "."]).status, 0);
+  fs.writeFileSync(path.join(bin, "docker"), `#!/usr/bin/env bash
+case "$1" in
+  run) for a in "$@"; do case "$a" in *:/out) out="\${a%%:/out}" ;; esac; done; cp ${fixture} "$out/rustdesk.tgz" ;;
+  inspect) echo true ;;
+  exec) cat ${path.join(data, "id_ed25519.pub")} ;;
+esac; exit 0
+`, { mode: 0o755 });
+  fs.writeFileSync(path.join(bin, "id"), `#!/usr/bin/env bash\n[ "$1" = -u ] && echo 0\n`, { mode: 0o755 });
+  const rcloneConf = path.join(tmp, "rclone.conf");
+  fs.writeFileSync(rcloneConf, "[offsite]\ntype = local\n");
+  const secrets = path.join(tmp, "node.env");
+  fs.writeFileSync(secrets, "RUSTDESK_RESTIC_PASSWORD=pw\n");
+  const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, OWNER_HOME: tmp, STACK: "cluster", BACKUP_REMOTE: `offsite:${tmp}/remote`,
+    SECRETS: secrets, KIT: "", RUSTDESK_STAGE: path.join(tmp, "stage"), RUSTDESK_RESTORE_TMP: work, RCLONE_CONFIG: rcloneConf, RESTIC_CACHE_DIR: path.join(tmp, "cache") };
+  const backup = spawnSync("bash", [path.join(here, "backup-rustdesk.sh")], { encoding: "utf8", env });
+  assert.equal(backup.status, 0, backup.stdout + backup.stderr);
+  const r = spawnSync("bash", [path.join(here, "restore-test-rustdesk.sh")], { encoding: "utf8", env });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /passed on \S+\. Newest snapshot: \d{4}-\d\d-\d\d \d\d:\d\d UTC\. .*public key, SHA256:[0-9a-f]{16}\.$/m);
+  assert.ok(!(r.stdout + r.stderr).includes(keys.secret) && !(r.stdout + r.stderr).includes(keys.public), "the test prints no key");
+  assert.deepEqual(fs.readdirSync(work), []);
 });
