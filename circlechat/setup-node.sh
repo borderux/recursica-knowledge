@@ -119,4 +119,5 @@ if [ -n "$JOBS" ]; then
   # jobd restarts when the secrets file or the kit's version changes.
   UNIT_SETTINGS="$SECRETS $ROOT/package.json" install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_HOST=$JOBD_HOST JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_GITHUB_TOKEN_URL=$(jget github_token_url) JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
+network_applied setup-node.sh
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

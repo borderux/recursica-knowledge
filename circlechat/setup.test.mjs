@@ -359,6 +359,40 @@ test("on a Mac with Colima, the setup stops when the gateway answers on the offi
   assert.match(unserved.stdout, /tailscale serve does not pass port 4000 to 127\.0\.0\.1:4001/);
 });
 
+// With KIT_HOLD_NETWORK=1, as the update job runs the setups (cluster/follow-main.mjs), no tailscale
+// serve rule changes. Every other step runs.
+test("with KIT_HOLD_NETWORK=1, setup-host.sh on a Mac with Colima starts the gateway and changes no tailscale serve rule", () => {
+  const s = colimaMac({ serveStatus: {} });
+  const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_HOLD_NETWORK: "1" }, encoding: "utf8", cwd: s.home });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^Held for a person, with KIT_HOLD_NETWORK=1: tailscale serve for the gateway's port for port jobs\.$/m);
+  assert.ok(s.calls().split("\n").some((l) => l.startsWith("docker create --name cc-gateway ")));
+  assert.doesNotMatch(s.calls(), /^tailscale serve --bg/m);
+  assert.doesNotMatch(r.stdout, /Gateway for port jobs/);
+});
+
+test("the full setup-host.sh adds the tailnet addresses and records its kit commit, and with KIT_HOLD_NETWORK=1 does neither", () => {
+  const sha = "0123456789abcdef0123456789abcdef01234567";
+  for (const hold of [false, true]) {
+    const s = sandbox(example, { system: "Linux" });
+    s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; [ "$3" = rev-parse ] && echo ${sha}; exit 0`);
+    for (const t of ["ollama", "colima", "brew"]) s.stub(t, "exit 0");
+    tailscaleStub(s);
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh")], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, ...(hold ? { KIT_HOLD_NETWORK: "1" } : {}) }, encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const marker = path.join(s.home, ".recursica-kit/network-applied/setup-host.sh");
+    if (hold) {
+      assert.doesNotMatch(s.calls(), /^tailscale serve --bg/m);
+      assert.match(r.stdout, /tailscale serve for CircleChat and the app preview waits for a person: run setup-host\.sh by hand\./);
+      assert.equal(fs.existsSync(marker), false);
+    } else {
+      assert.match(s.calls(), /^tailscale serve --bg --https=443 http:\/\/127\.0\.0\.1:8080$/m);
+      assert.doesNotMatch(r.stdout, /Held for a person/);
+      assert.equal(fs.readFileSync(marker, "utf8"), `${sha}\n`);
+    }
+  }
+});
+
 test("on Linux, and on a Mac with another Docker, Docker publishes the port for port jobs on the Tailscale address", () => {
   for (const [system, dockerContext] of [["Linux", "default"], ["Darwin", "orbstack"]]) {
     const s = sandbox(example, { system, dockerContext });

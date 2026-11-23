@@ -1,0 +1,79 @@
+// install-cluster.sh with KIT_HOLD_NETWORK=1 and without, run with stand-ins. The sudo stand-in
+// records each call and runs nothing, so no test loads a firewall rule or installs a service.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { NFT_LOCKDOWN, nftLockdownFile } from "./platform.mjs";
+
+const here = path.dirname(new URL(import.meta.url).pathname);
+const kitRoot = path.join(here, "../..");
+const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
+const SHA = "0123456789abcdef0123456789abcdef01234567";
+
+// A copy of the kit files install-cluster.sh reads, a home folder with site.json, and a stand-in for
+// each outside command. The copy sits outside the repository, so the kit check (kit/check-kit.sh)
+// reads only the copy.
+function sandbox(system) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "install-cluster-"));
+  const kit = path.join(dir, "kit"), home = path.join(dir, "home"), bin = path.join(dir, "bin"), log = path.join(dir, "calls.log");
+  for (const d of ["circlechat/kit", "circlechat/cluster/firewall"]) fs.cpSync(path.join(kitRoot, d), path.join(kit, d), { recursive: true });
+  fs.copyFileSync(path.join(here, "install-cluster.sh"), path.join(kit, "circlechat/cluster/install-cluster.sh"));
+  fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify(example));
+  fs.mkdirSync(bin);
+  const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
+  // sudo runs nothing. tee and install read their input, as the real commands do, and cat finds no file.
+  stub("sudo", `case "$1" in tee) cat >/dev/null ;; cat) exit 1 ;; esac; exit 0`);
+  for (const t of ["nft", "pfctl", "launchctl", "systemctl", "tcpdump", "age"]) stub(t, "exit 0");
+  stub("tailscale", `[ "$1 $2" = "ip -4" ] && echo 100.64.0.1; exit 0`);
+  stub("git", `[ "$3" = rev-parse ] && echo ${SHA}; exit 0`);
+  stub("uname", `echo ${system}`);
+  const run = (env = {}) => spawnSync("bash", [path.join(kit, "circlechat/cluster/install-cluster.sh"), example.nodes[0].name], {
+    env: { ...process.env, HOME: home, PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin`, SYSTEMD_UNIT_DIR: path.join(dir, "units"), LAUNCHD_DIR: path.join(dir, "daemons"), ...env },
+    encoding: "utf8", cwd: home,
+  });
+  const calls = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
+  const marker = path.join(home, ".recursica-kit/network-applied/install-cluster.sh");
+  return { run, calls, marker };
+}
+
+// The calls that change the firewall: a rule load, a write to pf.conf or the rule files, and the
+// start-up job that loads the rules.
+const FIREWALL = /nft -f|pfctl|\/etc\/pf\.conf|\/etc\/agentguard\.nft|pf-(base|lockdown|main)\.conf|nft-lockdown\.nft|agentguard-firewall/;
+
+test("with KIT_HOLD_NETWORK=1, install-cluster.sh changes no firewall rule, and installs every other service", () => {
+  for (const system of ["Linux", "Darwin"]) {
+    const s = sandbox(system);
+    const r = s.run({ KIT_HOLD_NETWORK: "1" });
+    assert.equal(r.status, 0, `${system}: ${r.stdout}${r.stderr}`);
+    assert.match(r.stdout, /^Held for a person, with KIT_HOLD_NETWORK=1: the firewall rules, pf\.conf and the agentguard-firewall start-up job\.$/m, system);
+    const calls = s.calls().split("\n");
+    assert.deepEqual(calls.filter((l) => FIREWALL.test(l)), [], system);
+    assert.ok(!calls.some((l) => /^(nft|pfctl) /.test(l)), `${system}: no firewall command runs`);
+    for (const unit of ["opencanary", "cluster-agent", "cluster-updater"]) assert.ok(calls.some((l) => l.startsWith("sudo tee") && l.includes(unit)), `${system}: ${unit}`);
+    assert.ok(calls.some((l) => l.startsWith("sudo tee /etc/agent-cluster.conf")), system);
+    assert.equal(fs.existsSync(s.marker), false, `${system}: a held run records no applied commit`);
+  }
+});
+
+test("without KIT_HOLD_NETWORK, install-cluster.sh loads the Linux firewall rules and records the kit commit it applied", () => {
+  const s = sandbox("Linux");
+  const r = s.run();
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(r.stdout, /Held for a person/);
+  const calls = s.calls();
+  assert.match(calls, /^sudo tee \/etc\/agentguard\.nft$/m);
+  assert.match(calls, /^sudo nft -f \/etc\/agentguard\.nft$/m);
+  assert.match(calls, /^sudo install -m 644 -o root \S+\/firewall\/nft-lockdown\.nft \/var\/lib\/agent-cluster\/nft-lockdown\.nft$/m);
+  assert.match(calls, /^sudo tee \S+\/agentguard-firewall\.service$/m);
+  assert.equal(fs.readFileSync(s.marker, "utf8"), `${SHA}\n`);
+});
+
+test("the guard loads the installed Linux lockdown rules, or the kit's own file on a computer without the copy", () => {
+  assert.equal(NFT_LOCKDOWN, "/var/lib/agent-cluster/nft-lockdown.nft");
+  assert.equal(nftLockdownFile(() => true), NFT_LOCKDOWN);
+  assert.equal(nftLockdownFile(() => false), path.join(here, "firewall/nft-lockdown.nft"));
+});

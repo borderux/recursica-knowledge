@@ -63,10 +63,16 @@ PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/us
 CONF
 [ -f /etc/agent-cluster.env ] || sudo install -m 600 -o root /dev/null /etc/agent-cluster.env
 
-# Firewall rules, loaded now and at every start-up.
-if [ "$OS" = Linux ]; then
+# Firewall rules, loaded now and at every start-up. With KIT_HOLD_NETWORK=1 the rules wait for a
+# person (network_held, kit/lib.sh).
+# network-step begin: the firewall rules
+if network_held "the firewall rules, pf.conf and the agentguard-firewall start-up job"; then :
+elif [ "$OS" = Linux ]; then
   sed "s/@CANARY_PORTS@/$CANARY_PORTS/; s/^@RUSTDESK_DIRECT@\$/$NFT_DIRECT/" "$HERE/firewall/nft-base.nft" | sudo tee /etc/agentguard.nft >/dev/null
   sudo nft -f /etc/agentguard.nft
+  # The guard's lockdown rules (platform.mjs) load from this copy, so a kit update changes the
+  # lockdown rules only when a person applies the firewall rules.
+  sudo install -m 644 -o root "$HERE/firewall/nft-lockdown.nft" /var/lib/agent-cluster/nft-lockdown.nft
   install_unit agentguard-firewall "nft -f /etc/agentguard.nft" / root boot
   if grep -qi microsoft /proc/version; then
     echo "Windows side: run circlechat/cluster/windows/install-windows-guard.ps1 once in an Administrator PowerShell."
@@ -91,6 +97,7 @@ else
   PF_BOOT=/var/lib/agent-cluster/pf-main.conf
   install_unit agentguard-firewall "bash /var/lib/agent-cluster/pf-main.sh < /etc/pf.conf > $PF_BOOT.new && mv $PF_BOOT.new $PF_BOOT; pfctl -E -f $PF_BOOT; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf" / root boot
 fi
+# network-step end
 
 # Decoys: fake SSH, FTP and web services that nobody legitimate ever touches.
 # The Python found before sudo: on a Mac, sudo's own python3 is Apple's install stub.
@@ -127,4 +134,5 @@ else
   # Only the control computer runs the Slack app; a computer that becomes a helper drops it.
   uninstall_unit cluster-bot >/dev/null
 fi
+network_applied install-cluster.sh
 echo "Cluster services installed on $NODE ($ROLE). Deploy the secrets of the cluster's own stack, so the agent and the Slack app can reach Slack."

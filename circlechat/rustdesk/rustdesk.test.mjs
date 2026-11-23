@@ -192,7 +192,7 @@ test("the web port check refuses each conflict that would break direct access or
 });
 
 // setup-rustdesk.sh with stand-ins. Each stand-in logs its call.
-function sandbox({ ss = goodSs, secret = true, nftRule = true, nftChain = null, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117" } = {}) {
+function sandbox({ ss = goodSs, secret = true, nftRule = true, nftChain = null, windowsRules = winRules, hypervRules = winRules, windowsListeners = "end", clientSettings = "", winClientSettings = "", serve = true, console = "303", wsl = false, relayLog = "INFO Listening on tcp :21117", env = {} } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "rustdesk-"));
   const bin = path.join(home, "bin"), units = path.join(home, "units"), log = path.join(home, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(units);
@@ -233,7 +233,7 @@ function sandbox({ ss = goodSs, secret = true, nftRule = true, nftChain = null, 
     stub("powershell.exe", `case "$*" in *Get-NetFirewallHyperVRule*) cat "${home}/hv.txt" ;; *Get-NetFirewallRule*) cat "${home}/fw.txt" ;; *Get-NetTCPConnection*) cat "${home}/listeners.txt" ;; *RustDesk2.toml*) cat "${home}/client.toml" ;; esac`);
   }
   const run = spawnSync("bash", [path.join(here, "setup-rustdesk.sh"), path.join(out, "services", "machine-3.json"), path.join(out, "tenant.env")], {
-    env: { ...process.env, HOME: home, SECRETS: secrets, PROC_VERSION: path.join(home, "version"), SYSTEMD_UNIT_DIR: units, RUSTDESK_LISTEN_TRIES: "2", PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin` },
+    env: { ...process.env, HOME: home, SECRETS: secrets, PROC_VERSION: path.join(home, "version"), SYSTEMD_UNIT_DIR: units, RUSTDESK_LISTEN_TRIES: "2", PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin`, ...env },
     encoding: "utf8",
   });
   return { ...run, home, units, calls: () => fs.readFileSync(log, "utf8") };
@@ -392,6 +392,17 @@ test("the setup stops when tailscale serve does not pass HTTPS 443 to the consol
   assert.equal(r.status, 1);
   assert.match(r.stdout, /HTTPS port 443 does not pass to http:\/\/127\.0\.0\.1:21114/);
   assert.ok(!fs.existsSync(path.join(r.units, "rustdesk-backup.service")));
+});
+
+// With KIT_HOLD_NETWORK=1, as the update job runs setup-node.sh (cluster/follow-main.mjs), the
+// console's tailscale serve rule waits for a person. The server and the backup still start.
+test("with KIT_HOLD_NETWORK=1, the setup starts the server and changes no tailscale serve rule", () => {
+  const r = sandbox({ serve: false, env: { KIT_HOLD_NETWORK: "1" } });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /^Held for a person, with KIT_HOLD_NETWORK=1: tailscale serve for the RustDesk console\.$/m);
+  assert.doesNotMatch(r.calls(), /^tailscale serve --bg/m);
+  assert.match(r.calls(), /^docker compose -f \S+compose\.json up -d --remove-orphans$/m);
+  assert.ok(fs.existsSync(path.join(r.units, "rustdesk-backup.service")));
 });
 
 // The Windows guard's block ranges: everything outside Tailscale and loopback.

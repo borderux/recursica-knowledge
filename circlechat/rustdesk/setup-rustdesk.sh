@@ -135,13 +135,18 @@ if [ -n "$public" ]; then
   echo "hbbr runs in public relay mode: hbbr found no key in the volume. Stopped the RustDesk server. Run this script again, which starts hbbr after hbbs has made the key."; exit 1
 fi
 
-# 6. The console's HTTPS address, tailnet only.
-ts serve --bg "--https=$HTTPS_PORT" "http://127.0.0.1:21114" >/dev/null 2>&1 || true
-problems="$(ts serve status --json 2>/dev/null | $RD serve-check "$HTTPS_PORT" 21114)"
-if [ -n "$problems" ]; then
-  echo "$problems"
-  echo "Run in an Administrator PowerShell on Windows, or with sudo on Linux: tailscale serve --bg --https=$HTTPS_PORT http://127.0.0.1:21114. Then run this script again."; exit 1
+# 6. The console's HTTPS address, tailnet only. With KIT_HOLD_NETWORK=1 the address waits for a
+#    person (network_held, kit/lib.sh).
+# network-step begin: tailscale serve for the RustDesk console
+if ! network_held "tailscale serve for the RustDesk console"; then
+  ts serve --bg "--https=$HTTPS_PORT" "http://127.0.0.1:21114" >/dev/null 2>&1 || true
+  problems="$(ts serve status --json 2>/dev/null | $RD serve-check "$HTTPS_PORT" 21114)"
+  if [ -n "$problems" ]; then
+    echo "$problems"
+    echo "Run in an Administrator PowerShell on Windows, or with sudo on Linux: tailscale serve --bg --https=$HTTPS_PORT http://127.0.0.1:21114. Then run this script again."; exit 1
+  fi
 fi
+# network-step end
 
 # 7. The console answers on 127.0.0.1:21114, where tailscale serve passes each request. Any HTTP
 #    status counts; no answer at all means a firewall or Docker drops the connection.

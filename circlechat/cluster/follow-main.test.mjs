@@ -4,7 +4,10 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { checkVerified, decide, followMain, githubRepo, lastLines, networkChanges, realDeps, resultPost, touchedSetups } from "./follow-main.mjs";
+import { SETUPS, checkVerified, decide, followMain, githubRepo, lastLines, networkChanges, networkCode, networkSteps, realDeps, resultPost, strayNetworkLines, touchedSetups } from "./follow-main.mjs";
+
+const here = path.dirname(new URL(import.meta.url).pathname);
+const kitRoot = path.join(here, "../..");
 
 test("each setup runs again only for a change to a file the setup reads, and a helper runs no setup-host.sh", () => {
   assert.deepEqual(touchedSetups(["README.md", "skills/button/SKILL.md"], { control: true }), []);
@@ -299,6 +302,58 @@ test("a setup waits whole when a change moves the hold itself or adds a network 
   const held = changesOf("circlechat/kit/lib.sh", lib, edit(lib, "= 1 ] || return 1", "= yes ] || return 1"));
   assert.deepEqual(held.map((c) => [c.setup, c.whole]), [["setup-host.sh", true], ["setup-node.sh", true], ["install-cluster.sh", true]]);
   assert.deepEqual(changesOf("circlechat/kit/lib.sh", lib, edit(lib, "sedi() { :; }", "sedi() { true; }")), [], "an ordinary lib.sh change");
+});
+
+// Every shell script a setup reads.
+function setupScripts() {
+  const out = [];
+  const walk = (rel) => {
+    const abs = path.join(kitRoot, rel);
+    if (!fs.existsSync(abs)) return;
+    if (fs.statSync(abs).isDirectory()) { for (const f of fs.readdirSync(abs)) if (f !== "node_modules") walk(path.join(rel, f)); return; }
+    if (rel.endsWith(".sh")) out.push(rel);
+  };
+  for (const p of new Set(Object.values(SETUPS).flat())) walk(p.replace(/\/$/, ""));
+  return [...new Set(out)];
+}
+
+test("every network command in the setups sits in a network step, and each step starts with network_held", () => {
+  const scripts = setupScripts();
+  for (const f of ["circlechat/cluster/install-cluster.sh", "circlechat/setup-host.sh", "circlechat/setup-node.sh", "circlechat/rustdesk/setup-rustdesk.sh", "circlechat/kit/lib.sh"]) assert.ok(scripts.includes(f), f);
+  let steps = 0;
+  for (const f of scripts) {
+    if (f.startsWith("circlechat/cluster/firewall/")) continue;
+    const text = fs.readFileSync(path.join(kitRoot, f), "utf8");
+    assert.deepEqual(strayNetworkLines(text), [], `${f}: a network command outside a network step`);
+    const lines = text.split("\n");
+    for (const s of networkSteps(text)) {
+      steps++;
+      assert.notEqual(s.last, Infinity, `${f}: ${s.what} has an end line`);
+      if (f === "circlechat/kit/lib.sh") continue;
+      const body = lines.slice(s.first, s.last - 1).filter((l) => l.trim() && !l.trim().startsWith("#"));
+      assert.ok(body.some((l) => /\bnetwork_held\b/.test(l)), `${f}: ${s.what} calls network_held`);
+    }
+  }
+  assert.ok(steps >= 5, "the firewall rules, three tailscale serve steps and the hold itself");
+  const install = fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8");
+  const fw = networkSteps(install).find((s) => s.what === "the firewall rules");
+  const inStep = (re) => install.split("\n").findIndex((l) => re.test(l)) + 1;
+  for (const re of [/sudo nft -f/, /sudo tee \/etc\/pf\.conf/, /install_unit agentguard-firewall/, /nft-lockdown\.nft/]) {
+    const n = inStep(re);
+    assert.ok(n >= fw.first && n <= fw.last, `${re} sits in the firewall step`);
+  }
+});
+
+test("lib.sh's job installer sits in network code, so an edit to it waits for a person", () => {
+  const text = fs.readFileSync(path.join(kitRoot, "circlechat/kit/lib.sh"), "utf8");
+  const parts = networkCode(text);
+  const lines = text.split("\n");
+  for (const fn of ["launchd_calendar", "write_unit", "settings_fingerprint", "install_unit", "uninstall_unit"]) {
+    const n = lines.findIndex((l) => l.startsWith(`${fn}() {`)) + 1;
+    assert.ok(n > 0, fn);
+    assert.ok(parts.some((p) => n > p.first && n < p.last), `${fn} sits in network code`);
+  }
+  for (const p of parts) assert.equal(p.what, "the job installer, which writes the firewall's start-up job");
 });
 
 test("follow-main runs each setup and setup-host.sh --upgrade with KIT_HOLD_NETWORK=1", async () => {
