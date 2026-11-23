@@ -106,10 +106,10 @@ Environment=OLLAMA_HOST=$ADDR
 Environment=OLLAMA_MODELS=$STATE/models"
 while IFS= read -r kv; do [ -n "$kv" ] && env_lines="$env_lines
 Environment=$kv"; done <<<"$(get env)"
-changed=""
+changed=""; relabel=""
 write_unit "$UNITS/$NAME.service" "$(cat <<UNIT
 [Unit]
-Description=Ollama $VERSION (circlechat kit)
+Description=Ollama $VERSION (agent cluster kit)
 After=network-online.target
 Wants=network-online.target
 
@@ -129,15 +129,17 @@ ReadWritePaths=$STATE
 [Install]
 WantedBy=multi-user.target
 UNIT
-)" && changed=1
+)" && changed=1 || { [ $? != 2 ] || relabel=1; }
 if [ -n "$changed" ]; then
   sudo systemctl daemon-reload
   sudo systemctl enable --quiet "$NAME.service"
   sudo systemctl restart "$NAME.service"
   echo "$NAME changed: restarted"
 else
+  # A new description alone needs a reload, and the service keeps running.
+  if [ -n "$relabel" ]; then sudo systemctl daemon-reload; fi
   sudo systemctl enable --quiet --now "$NAME.service"
-  echo "$NAME is running and unchanged"
+  echo "$NAME is running and unchanged${relabel:+, with a new description}"
 fi
 
 # The server answers on its address, with the pinned version.

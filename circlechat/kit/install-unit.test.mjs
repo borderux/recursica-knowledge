@@ -95,8 +95,49 @@ RestartSec=10
 WantedBy=multi-user.target
 `);
   const r = s.run(`install_unit kev-engine "exec kev.serve" /kev owner`);
-  assert.match(r.out, /kev-engine is running and unchanged/);
-  assert.ok(!r.calls.some((c) => c.includes("restart")));
+  assert.match(r.out, /kev-engine is running and unchanged, with a new description/);
+  assert.ok(!r.calls.some((c) => c.includes("restart")), "a new description alone never restarts the service");
+  assert.ok(r.calls.includes("systemctl daemon-reload"), "systemd reloads the new description");
+  assert.match(fs.readFileSync(path.join(s.units, "kev-engine.service"), "utf8"), /^Description=kev-engine \(agent cluster kit\)$/m);
+});
+
+test("Linux: a new description with a new command still restarts the service", () => {
+  const s = sandbox("Linux");
+  fs.writeFileSync(path.join(s.units, "kev-engine.service"), `[Unit]
+Description=kev-engine (circlechat kit)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=owner
+WorkingDirectory=/kev
+ExecStart=/bin/bash -lc 'exec kev.serve --old'
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+`);
+  const r = s.run(`install_unit kev-engine "exec kev.serve" /kev owner`);
+  assert.match(r.out, /kev-engine changed: restarted/);
+  assert.ok(r.calls.includes("systemctl restart kev-engine.service"));
+});
+
+test("Linux: a scheduled job and a start-up job from an earlier kit get the new description with a reload", () => {
+  const s = sandbox("Linux");
+  s.run(`install_unit nightly "exec backup" / root "*-*-* 02:00"`);
+  s.run(`install_unit firewall "exec fw" / root boot`);
+  for (const f of ["nightly.service", "firewall.service"]) {
+    const p = path.join(s.units, f);
+    fs.writeFileSync(p, fs.readFileSync(p, "utf8").replace("(agent cluster kit)", "(circlechat kit)"));
+  }
+  fs.writeFileSync(path.join(s.dir, "calls.log"), "");
+  for (const [name, args] of [["nightly", `"exec backup" / root "*-*-* 02:00"`], ["firewall", `"exec fw" / root boot`]]) {
+    const r = s.run(`install_unit ${name} ${args}`);
+    assert.ok(r.calls.includes("systemctl daemon-reload"), `${name}: ${r.calls.join("\n")}`);
+    assert.ok(!r.calls.some((c) => c.includes("restart")), name);
+    assert.match(fs.readFileSync(path.join(s.units, `${name}.service`), "utf8"), new RegExp(`^Description=${name} \\(agent cluster kit\\)$`, "m"));
+  }
 });
 
 test("Linux: a scheduled job's change rewrites the job, and runs nothing at once", () => {
