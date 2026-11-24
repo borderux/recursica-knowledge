@@ -520,7 +520,14 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
 6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
-7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
+7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret. With "restart" on, the workflow then restarts each service that reads a changed value.
+
+**A deploy restarts a service only for a changed value, and never restarts kev-engine.**
+
+- A secret with the same value as the file's line stays as the line is, and the log says `<name> unchanged`.
+- With "restart" on, a service restarts only when a value that the service reads changed. jobd reads `JOBD_TOKEN`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. Each service in site.json reads the service's `secret_env`.
+- kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person.
+- The log names the real result for each service: `restarted <service>`, `<service> is not installed`, `<service> failed to restart`, or a restart and then a stop. A failed restart fails the workflow.
 
 **A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that writes a control computer's secrets, the helper takes two steps:
 
