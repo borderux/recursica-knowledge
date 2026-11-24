@@ -13,12 +13,13 @@ export function freePort() {
 }
 
 // Starts jobd (script) with env on a free port, and waits for jobd's line that says jobd listens.
+// Docker's own socket is a path that doesn't exist, so jobd's check of direct Docker access passes.
 // Another program can take the port between the probe and jobd's start. Then jobd exits, and the
 // next try uses a new port, up to 5 tries.
 export async function startJobd(script, env) {
   for (let i = 0; i < 5; i++) {
     const port = await freePort();
-    const proc = spawn(process.execPath, [script], { env: { ...env, JOBD_PORT: String(port), JOBD_HOST: "127.0.0.1" }, stdio: ["ignore", "pipe", "pipe"] });
+    const proc = spawn(process.execPath, [script], { env: { JOBD_DIRECT_SOCKET: "/nonexistent/docker.sock", ...env, JOBD_PORT: String(port), JOBD_HOST: "127.0.0.1" }, stdio: ["ignore", "pipe", "pipe"] });
     proc.stderr.resume();
     const ready = await new Promise((resolve) => {
       let out = "";

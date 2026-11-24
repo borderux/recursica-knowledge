@@ -42,6 +42,13 @@ test("restarts a job that a restart cut off", () => {
   assert.equal(m.status, "running");
   assert.equal(m.restarts, 1);
   assert.match(fs.readFileSync(path.join(state, "job-aaaa1-aaaaaa"), "utf8"), /^running/);
+  // An older jobd's job gets a work folder with a copy of the package, and the job's own folder
+  // becomes private.
+  const dir = path.join(jobs, "job-aaaa1-aaaaaa");
+  assert.equal(fs.readFileSync(path.join(dir, "work", "package.md"), "utf8"), "# Port the new prop");
+  assert.equal(fs.statSync(dir).mode & 0o777, 0o700);
+  const args = fs.readFileSync(path.join(state, "job-aaaa1-aaaaaa.args"), "utf8").split("\n");
+  assert.equal(args[args.indexOf("-v") + 1], `${path.join(dir, "work")}:/work`);
 });
 
 test("reports a failure after the last allowed restart", () => {

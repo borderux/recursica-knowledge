@@ -31,6 +31,11 @@ jobs:
         run: find circlechat -name "*.sh" -print0 | xargs -0 shellcheck -S warning
       - name: Firewall and filter tests, with the real tools
         run: sudo -E env "PATH=$PATH" node --test circlechat/cluster/firewall.test.mjs
+      # jobd and jobd's Docker filter with real Docker: a job runs to the end through the filter, and
+      # the filter refuses the docker CLI's other calls. checks.yml skips the test.
+      - name: jobd's Docker filter, with real Docker
+        run: node --test circlechat/jobd/docker-gate.docker.test.mjs
+        env: { JOBD_GATE_DOCKER_TEST: "1" }
       # checks.yml skips the restic test, because that runner has no restic. Here a missing tool fails the test.
       - run: sudo apt-get install -y -qq restic rclone
       - name: The RustDesk backup, with the real restic and rclone

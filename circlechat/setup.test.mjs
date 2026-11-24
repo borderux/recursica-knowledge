@@ -19,9 +19,13 @@ function sandbox(site, { tenant, system, dockerContext = "default", layout = "ne
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect") exit 1 ;; "network inspect") case " ${networks.join(" ")} " in *" $3 "*) exit 0 ;; esac; exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect") exit 1 ;; "network inspect") case " ${networks.join(" ")} " in *" $3 "*) exit 0 ;; esac; exit 1 ;; "context inspect") exit 0 ;; "context show") echo ${dockerContext} ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; "info ") [ -z "\${FAKE_DOCKER_DOWN:-}" ]; exit ;; "ps -q") cat "${home}/fake-docker-ps" 2>/dev/null; exit 0 ;; esac; exit 0`);
   if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
+  // jobd's accounts on Linux (jobd/setup-jobd.sh): no account exists before useradd, and the group
+  // recursica-jobd has the id 990.
+  stub("getent", `[ "$1" = group ] && { echo "$2:x:990:"; exit 0; }; exit 2`);
+  stub("systemctl", `[ "$1" = show ] && cat "${home}/fake-jobd-user" 2>/dev/null; exit 0`);
   const own = layout === "old" ? "circlechat" : "recursica-stack";
   const cc = tenant ? path.join(home, "tenants", tenant, layout === "old" ? "circlechat" : "stack") : path.join(home, own);
   fs.mkdirSync(cc, { recursive: true });
@@ -187,6 +191,8 @@ test("setup-node gives a client stack its own job runner, filter, job folder and
   assert.match(unit, new RegExp(`JOBD_DIR=${s.home}/tenants/acme/jobs`));
   assert.match(unit, /tenants\/acme\/node\.env/);
   assert.match(unit, /DOCKER_CONTEXT=colima-acme/);
+  assert.match(unit, /JOBD_DOCKER_DIRECT=allowed /, "a client stack's jobd on Linux keeps direct Docker access for now");
+  assert.ok(!fs.existsSync(path.join(s.units, "jobd-gate.service")));
   assert.match(s.calls(), /docker run -d --name cc-jobs-egress-acme /);
   assert.match(unit, node === "machine-1" ? /JOBD_GATEWAY_URL=http:\/\/cc-gateway:4000 / : /JOBD_GATEWAY_URL=http:\/\/100\.64\.0\.1:4000 /);
 });
@@ -553,4 +559,68 @@ test("setup-node.sh reads porter.env without running a value, whatever porter.ow
   const r = s.run("setup-node.sh", site.nodes.find((n) => n.jobs).name);
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.ok(!fs.existsSync(ran), "a value in porter.env ran");
+});
+
+test("setup-node runs the cluster's own jobd on Linux as jobd's own account, behind jobd's Docker filter", () => {
+  const s = sandbox(example, { system: "Linux" });
+  fs.writeFileSync(path.join(s.home, ".recursica-node.env"), "JOBD_TOKEN=t0ken\nPORTER_HOOK_URL=http://127.0.0.1:9/hook\nKEV_API_KEY=never-in-jobd\nPORTER_MODEL=sonnet\n");
+  const node = example.nodes.find((n) => n.jobs && n.os === "linux");
+  const r = s.run("setup-node.sh", node.name);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls();
+  for (const a of ["recursica-jobd", "recursica-jobd-gate"]) {
+    assert.match(calls, new RegExp(`sudo useradd --system --user-group --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin ${a}\n`));
+  }
+  assert.match(calls, /sudo chown -h recursica-jobd-gate:recursica-jobd \/var\/lib\/recursica-jobd-work\n/);
+  assert.match(calls, /sudo chmod 2750 \/var\/lib\/recursica-jobd-work\n/);
+  assert.match(calls, /sudo chmod 700 \/var\/lib\/recursica-jobd\n/);
+  assert.match(calls, /sudo install -o root -g root -m 644 \S+\/jobd\/jobd\.mjs \S+\/jobd\/docker-gate\.mjs \/usr\/local\/lib\/recursica-jobd\//);
+
+  // jobd: jobd's account, no docker group, and Docker through the filter only.
+  const jobd = fs.readFileSync(path.join(s.units, "jobd.service"), "utf8");
+  assert.match(jobd, /^User=recursica-jobd$/m);
+  assert.doesNotMatch(jobd, /^(Group|SupplementaryGroups)=/m);
+  assert.match(jobd, /DOCKER_HOST=unix:\/\/\/run\/recursica-jobd-gate\/docker\.sock /);
+  assert.match(jobd, /JOBD_DIR=\/var\/lib\/recursica-jobd\/jobs JOBD_WORK_ROOT=\/var\/lib\/recursica-jobd-work /);
+  assert.match(jobd, /\. \/etc\/recursica-jobd\/jobd\.env;/);
+  assert.doesNotMatch(jobd, /recursica-node\.env|JOBD_DOCKER_DIRECT/, "jobd never reads the owner's secrets file, and never reaches Docker directly");
+  assert.match(jobd, /^ProtectHome=yes$/m);
+  assert.match(jobd, /^ReadWritePaths=\/var\/lib\/recursica-jobd \/var\/lib\/recursica-jobd-work$/m);
+  assert.match(jobd, /^NoNewPrivileges=yes$/m);
+
+  // The filter: the docker group for this service only, and no network.
+  const gate = fs.readFileSync(path.join(s.units, "jobd-gate.service"), "utf8");
+  for (const line of ["User=recursica-jobd-gate", "Group=recursica-jobd", "SupplementaryGroups=docker", "RuntimeDirectory=recursica-jobd-gate",
+    "RuntimeDirectoryMode=0750", "PrivateNetwork=yes", "RestrictAddressFamilies=AF_UNIX", "ReadWritePaths=/var/lib/recursica-jobd-work", "CapabilityBoundingSet="]) {
+    assert.ok(gate.split("\n").includes(line), line);
+  }
+  assert.match(gate, /docker-gate\.mjs \/etc\/recursica-jobd\/gate\.json'$/m);
+
+  // jobd's secrets: only the names jobd uses.
+  assert.equal(fs.readFileSync(path.join(s.units, "jobd.env"), "utf8"), "JOBD_TOKEN=t0ken\nPORTER_HOOK_URL=http://127.0.0.1:9/hook\nPORTER_MODEL=sonnet\n");
+  assert.match(calls, /sudo install -o root -g recursica-jobd -m 640 \/dev\/null \/etc\/recursica-jobd\/jobd\.env\n/);
+
+  const cfg = JSON.parse(fs.readFileSync(path.join(s.units, "gate.json"), "utf8"));
+  const { envNames, ...rest } = cfg;
+  assert.deepEqual(rest, { listen: "/run/recursica-jobd-gate/docker.sock", docker: "/var/run/docker.sock", image: "recursica/porter-job",
+    network: "jobs-egress", memoryBytes: node.jobs.memory_gb * 2 ** 30, nanoCpus: 0, pidsLimit: 4096, workRoot: "/var/lib/recursica-jobd-work", groupId: 990 });
+  for (const n of ["TARGET_REPO", "PORTER_REPORT", "ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN", "GITHUB_TOKEN_URL", "PORTER_MODEL", "HTTPS_PROXY", "NO_PROXY"]) assert.ok(envNames.includes(n), n);
+  assert.ok(!envNames.includes("KEV_API_KEY"));
+});
+
+test("setup-node moves jobd to jobd's own account only when no port job runs", () => {
+  const s = sandbox(example, { system: "Linux" });
+  fs.writeFileSync(path.join(s.home, ".recursica-node.env"), "JOBD_TOKEN=t\n");
+  fs.writeFileSync(path.join(s.home, "fake-docker-ps"), "0123456789ab\nba9876543210\n");
+  const node = example.nodes.find((n) => n.jobs && n.os === "linux").name;
+  const busy = s.run("setup-node.sh", node);
+  assert.notEqual(busy.status, 0);
+  assert.match(busy.stdout, /2 port job\(s\) run on this computer\. jobd moves to the account recursica-jobd only when no port job runs\. Wait until every port job ends, then run setup-node\.sh again\./);
+  assert.ok(!fs.existsSync(path.join(s.units, "jobd.service")));
+  assert.doesNotMatch(s.calls(), /useradd/);
+  // After the move, a rerun leaves running jobs alone: a new jobd picks the jobs up.
+  fs.writeFileSync(path.join(s.home, "fake-jobd-user"), "recursica-jobd\n");
+  const again = s.run("setup-node.sh", node);
+  assert.equal(again.status, 0, again.stdout + again.stderr);
+  assert.match(fs.readFileSync(path.join(s.units, "jobd.service"), "utf8"), /^User=recursica-jobd$/m);
 });
