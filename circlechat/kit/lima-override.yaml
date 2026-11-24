@@ -1,0 +1,29 @@
+# The stack's own Colima VM, the one the gateway's containers run in: the ports Lima forwards from the
+# VM to the Mac. The rules are the RecursicaChat 2.0 server VM's (recursicachat/lima-override.yaml),
+# and kit/lima-override.test.mjs keeps the two files' rules the same.
+#
+# kit/lima-override.sh installs this file, as the owner, at ~/.colima/_lima/_config/override.yaml
+# (under $COLIMA_HOME when set). Lima reads the file at each start of a VM in that folder and puts
+# these rules before the rules Colima writes. Lima uses the first rule that matches, so these rules
+# win. A client stack's VM keeps its own COLIMA_HOME in the client's disk image, and gets no rules.
+#
+# Without these rules, a port a container publishes with no address, such as docker run -p 8080:80,
+# opens on every address in the VM, and Colima's rule forwards it to 0.0.0.0 on the Mac: every
+# network the Mac is on. The gateway publishes each port on 127.0.0.1 in the VM, which goes to
+# 127.0.0.1 on the Mac by Colima's own rule, and tailscale serve passes the Tailscale ports there,
+# so the gateway's ports are unchanged. The VM's own sshd (port 22) and DNS server (port 53) are
+# never forwarded.
+portForwards:
+  # Ports 1 to 1023, port 53 included, on any address in the VM, TCP and UDP: never forwarded.
+  - guestIP: "0.0.0.0"
+    guestIPMustBeZero: false
+    guestPortRange: [1, 1023]
+    proto: any
+    ignore: true
+  # Ports 1024 and up that the VM opens on every address: to 127.0.0.1 on the Mac only.
+  # A port the VM opens on 127.0.0.1 or ::1 goes to 127.0.0.1 by Colima's own rule.
+  - guestIP: "0.0.0.0"
+    guestIPMustBeZero: true
+    guestPortRange: [1024, 65535]
+    hostIP: "127.0.0.1"
+    proto: any

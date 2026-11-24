@@ -366,6 +366,9 @@ mac_services() {
       colima stop --profile "$profile" || true
       brew services stop colima
     fi
+    # The ports the VM forwards to the Mac: 127.0.0.1 only, and none below 1024 (kit/lima-override.yaml).
+    # Lima reads the file at each start of the VM; a running VM keeps its forwards until it restarts.
+    "$kit/lima-override.sh" || return 1
     # colima stop can take a minute, and launchd's default wait is 20 seconds.
     UNIT_EXIT_TIMEOUT=150 install_unit colima "HOME=$HOME PATH=$(dirname "$bin"):/usr/bin:/bin:/usr/sbin:/sbin exec $kit/colima-service.sh $profile" "$HOME" "$(id -un)"
     # The wait is for the service's own VM. A VM that runs outside the service answers until the

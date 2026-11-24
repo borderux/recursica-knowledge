@@ -302,6 +302,48 @@ To hand a Mac's Colima and Ollama to the kit:
 
 A client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts that VM. The VM gets no daemon.
 
+#### The ports the stack's VM forwards to the Mac
+
+**The stack's VM forwards a port to the Mac only on `127.0.0.1`, and never a port below 1024.** Without a rule, Colima forwards a port a container publishes with no address, such as `docker run -p 8080:80`, to every address of the Mac, and so to every network the Mac is on. `kit/lima-override.yaml` holds the same two rules as the RecursicaChat 2.0 server's VM (`recursicachat/lima-override.yaml`), and a test keeps the two the same:
+
+- Ports 1 to 1023, on any address in the VM: never forwarded. The VM's sshd (22) and DNS server (53) are among them.
+- Ports 1024 and up that the VM opens on every address: to `127.0.0.1` only.
+- A port the VM opens on `127.0.0.1` still goes to `127.0.0.1`, by Colima's own rule. The gateway publishes each of its ports there, and `tailscale serve` passes the Tailscale ports to those local ports, so the gateway's ports don't change.
+
+`kit/lima-override.sh` installs the file as the owner, never as root, at `~/.colima/_lima/_config/override.yaml` (under `$COLIMA_HOME` when set), mode 600. `setup-host.sh` runs it before it installs Colima's daemon. A link, changed text or a wrong mode installs the file again, through a new file renamed over the old one, so a link is replaced, never followed. Lima reads the file at each start of a VM in that folder. The script never restarts the VM. A client stack's VM keeps its own `COLIMA_HOME` in the client's disk image, and gets no rules.
+
+To apply it on a Mac set up before the file existed:
+
+1. **Install the file,** as the owner, from the kit's checkout once it holds this change:
+
+   ```sh
+   circlechat/kit/lima-override.sh
+   ```
+
+2. **Restart the VM, at a time when no run needs the gateway.** Every container of the stack stops while the VM restarts, and each one with a restart policy starts again with the VM:
+
+   ```sh
+   sudo launchctl kickstart -k system/io.recursica.colima
+   ```
+
+3. **Check the forwards.** Each line the VM's forwarder opens on the Mac must be `127.0.0.1`, at port 1024 or above, and the gateway must answer as before:
+
+   ```sh
+   lsof -nP -iTCP -sTCP:LISTEN | awk '$1 == "ssh" || $1 == "limactl"'
+   curl -s http://127.0.0.1:<site.gateway_local_port>/health    # {"ok":true}
+   curl -s -o /dev/null -w '%{http_code}\n' "http://$(tailscale ip -4):<site.gateway_port>/health"   # 401: served, and a key is needed
+   tailscale serve status    # unchanged
+   ```
+
+4. **Check a bare publish.** A container published with no address must reach `127.0.0.1` only:
+
+   ```sh
+   docker run -d --rm --name forward-check -p 18080:8080 node:22 node -e 'require("http").createServer((q, s) => s.end("ok")).listen(8080)'
+   sleep 5; lsof -nP -iTCP:18080 -sTCP:LISTEN    # 127.0.0.1:18080, not *:18080
+   docker rm -f forward-check
+   ```
+
+
 ## The job runners and port jobs
 
 A port is too long and too heavy for an agent turn, so each port runs as a **job** on a **job
