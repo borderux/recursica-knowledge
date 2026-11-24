@@ -1342,6 +1342,7 @@ This is the start of phase 5: the kit installs the server that rc-sync.sh alread
 | `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`                   | Puts the latest commit of the server's branch into service                  |
 | `rc-clear.sh` with `rc-clear.mjs`, linked as `/usr/local/bin/rc-clear` | Empties the server's work, and keeps a copy of what it removes              |
 | `build-pdftext.sh`                                                     | Builds the PDF text reader's image for people's uploads, and records its ID |
+| `lima-override.yaml`                                                   | The ports the server's Colima VM forwards to the Mac: `127.0.0.1` only, none below 1024 |
 
 **Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
 `render.mjs` fills each template from site.json (`recursicachat.public_url`, `google_client_id`,
