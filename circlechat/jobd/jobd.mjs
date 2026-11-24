@@ -21,6 +21,13 @@
 // JOBD_REPORT_MAX_BYTES. A job that an older jobd started has one folder for both. jobd reads and
 // writes that folder without following a link, and gives the job a work folder at a restart.
 //
+// On Linux, jobd reaches Docker only through jobd's Docker filter (docker-gate.mjs), as an account
+// outside the docker group (setup-jobd.sh). The work folders then sit in JOBD_WORK_ROOT, which the
+// filter owns, and the filter makes each job's work folder when jobd creates the job's container.
+// jobd stops at the start on Linux when jobd runs as root, or when jobd's account can open
+// Docker's own socket. JOBD_DOCKER_DIRECT=allowed turns the check off for a client or demo
+// stack's job runner, which keeps direct Docker access until a later change.
+//
 //   GET    /health                 { node, slots, running }
 //   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
 //   GET    /jobs/:id               { id, label, repo, status, exit_code, oom }
@@ -56,6 +63,7 @@ const C = {
   hookSecret: env.PORTER_HOOK_SECRET ?? "",
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
   reportMax: Number(env.JOBD_REPORT_MAX_BYTES ?? 1 << 20),
+  workRoot: env.JOBD_WORK_ROOT ?? "",
 };
 const TYPES = { porter: { image: env.JOBD_PORTER_IMAGE ?? "recursica/porter-job" } };
 if (!C.token) { console.error("JOBD_TOKEN is required"); process.exit(1); }
@@ -68,7 +76,9 @@ const jobDir = (id) => path.join(C.dir, id);
 // The work folder the container sees. A job that an older jobd started has no work folder, and
 // the container saw the job's own folder.
 const isDir = (p) => { try { return fs.lstatSync(p).isDirectory(); } catch { return false; } };
-const workDir = (id) => (isDir(path.join(jobDir(id), "work")) ? path.join(jobDir(id), "work") : jobDir(id));
+const workDir = (id) => (C.workRoot ? path.join(C.workRoot, id) : isDir(path.join(jobDir(id), "work")) ? path.join(jobDir(id), "work") : jobDir(id));
+// The work folder that a new container mounts.
+const mountDir = (id) => (C.workRoot ? path.join(C.workRoot, id) : path.join(jobDir(id), "work"));
 
 // Reads a plain file without following a link. O_NONBLOCK keeps a named pipe from blocking the
 // read. Returns null for a missing file, a link or any other kind of file, and { tooLarge } for a
@@ -136,11 +146,23 @@ function networkArgs() {
 }
 
 function containerArgs(id, repo, image) {
-  return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
+  return ["create", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
     ...(C.cpus ? ["--cpus", C.cpus] : []),
-    "-v", `${path.join(jobDir(id), "work")}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
+    "-v", `${mountDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
     "--env-file", path.join(jobDir(id), "gateway.env"),
     ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];
+}
+
+// Creates a job's container, writes the package into the work folder when one is given, and
+// starts the container. With the Docker filter, the work folder exists only once the filter has
+// created the container.
+async function launch(id, repo, image, pkg) {
+  const c = await run(containerArgs(id, repo, image));
+  if (!c.ok) return c;
+  if (pkg !== null) writePlain(path.join(mountDir(id), "package.md"), pkg, 0o644);
+  const s = await run(["start", id]);
+  if (!s.ok) await run(["rm", "-f", id]);
+  return s;
 }
 
 async function start(body) {
@@ -152,14 +174,16 @@ async function start(body) {
   if (!C.gateway) return [500, { error: "no_gateway", detail: "JOBD_GATEWAY_URL is not set. Rerun setup-node.sh." }];
   if (running().length >= C.slots) return [429, { error: "full", slots: C.slots }];
   const id = `job-${Date.now().toString(36)}-${crypto.randomBytes(3).toString("hex")}`;
-  const dir = jobDir(id), work = path.join(dir, "work");
-  fs.mkdirSync(work, { recursive: true });
+  const dir = jobDir(id);
+  fs.mkdirSync(dir, { recursive: true });
   fs.chmodSync(dir, 0o700);
-  fs.chmodSync(work, 0o777);  // the container's user writes here
-  writePlain(path.join(work, "package.md"), body.package, 0o644);
+  if (!C.workRoot) {
+    fs.mkdirSync(path.join(dir, "work"));
+    fs.chmodSync(path.join(dir, "work"), 0o777);  // the container's user writes here
+  }
   writePlain(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`);
   const label = String(body.label ?? "").slice(0, 120);
-  const r = await run(containerArgs(id, body.repo, type.image));
+  const r = await launch(id, body.repo, type.image, body.package);
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }
   writeMeta({ id, type: body.type, repo: body.repo, label, status: "running", started: new Date().toISOString(), node: C.node });
   console.log(`started ${id} ${label}`);
@@ -171,7 +195,7 @@ async function start(body) {
 // has no package to start from.
 function giveWorkFolder(id) {
   const dir = jobDir(id), work = path.join(dir, "work");
-  if (isDir(work)) return true;
+  if (C.workRoot || isDir(work)) return true;
   const pkg = readPlain(path.join(dir, "package.md"), 300_000);
   if (!pkg?.text) return false;
   fs.rmSync(work, { force: true });
@@ -197,7 +221,7 @@ async function reap() {
     // still be on the allowlist.
     const interrupted = !reported && oom !== "true" && Date.parse(m.started) < STARTED;
     if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && TYPES[m.type] && C.repos.has(m.repo) && giveWorkFolder(m.id)) {
-      const again = await run(containerArgs(m.id, m.repo, TYPES[m.type].image));
+      const again = await launch(m.id, m.repo, TYPES[m.type].image, null);
       if (again.ok) {
         m.restarts = (m.restarts ?? 0) + 1;
         m.started = new Date().toISOString();
@@ -249,7 +273,20 @@ export const handle = async (req, res) => {
 };
 export const server = http.createServer(handle);
 
+// jobd never reaches Docker directly on Linux: Docker's own socket gives root on the computer.
+function checkDockerAccess() {
+  if (process.platform !== "linux" || env.JOBD_DOCKER_DIRECT === "allowed") return;
+  const direct = env.JOBD_DIRECT_SOCKET ?? "/var/run/docker.sock";
+  let open = false;
+  try { fs.accessSync(direct, fs.constants.W_OK); open = true; } catch {}
+  if (process.getuid() === 0 || open) {
+    console.error(`jobd runs as ${process.getuid() === 0 ? "root" : "an account that can open " + direct}. On Linux, jobd runs as recursica-jobd and reaches Docker through jobd's Docker filter. Run setup-node.sh on this computer.`);
+    process.exit(1);
+  }
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
+  checkDockerAccess();
   // One server for each address. A missing address, such as Tailscale's before Tailscale starts,
   // stops jobd, and the service starts jobd again.
   for (const [i, host] of C.hosts.entries()) {

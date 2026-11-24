@@ -54,6 +54,17 @@ check "LiteLLM joins only the gateway's network" "[ \"\$(docker inspect -f '{{ra
 check "the gateway joins the gateway's network" "grep -qw gateway-models <<<\"\$(docker inspect -f '{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}' cc-gateway)\""
 check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway cc-litellm | grep -c '@sha256:' | grep -x 2 >/dev/null"
 check "the job runner runs" "systemctl is-active --quiet jobd"
+# On Linux, jobd runs as jobd's own account, and reaches Docker only through jobd's Docker filter.
+GATE_SOCK=unix:///run/recursica-jobd-gate/docker.sock
+check "jobd runs as recursica-jobd" "[ \"\$(systemctl show -p User --value jobd)\" = recursica-jobd ]"
+check "jobd's account is outside the docker group" "[[ \" \$(id -nG recursica-jobd) \" != *' docker '* ]]"
+check "jobd's Docker filter runs" "systemctl is-active --quiet jobd-gate"
+check "jobd answers on the jobs port" "curl -fsS http://127.0.0.1:7400/health >/dev/null"
+check "jobd's account cannot open Docker's own socket" "! sudo -u recursica-jobd docker -H unix:///var/run/docker.sock ps >/dev/null 2>&1"
+check "the owner cannot open the filter's socket" "! docker -H $GATE_SOCK ps >/dev/null 2>&1"
+check "jobd's Docker filter refuses a list of containers" "grep -q 'refused by jobd.s Docker filter' <<<\"\$(sudo -u recursica-jobd docker -H $GATE_SOCK ps 2>&1)\""
+check "jobd's Docker filter refuses privileged mode" "grep -q 'refused by jobd.s Docker filter' <<<\"\$(sudo -u recursica-jobd docker -H $GATE_SOCK create --name job-smoke-aaaaaa --privileged recursica/porter-job 2>&1)\""
+check "the filter logs each refusal" "grep -q 'refused GET .*/containers/json' <<<\"\$(sudo journalctl -u jobd-gate --no-pager)\""
 
 # The port jobs' closed network, whose only exit is the filter (setup-node.sh).
 CURL="docker run --rm --network jobs-egress curlimages/curl:8.10.1"

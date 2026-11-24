@@ -135,6 +135,8 @@ settings_fingerprint() {
 # package.json. A change to one of the files counts as a change to the unit. The unit holds only
 # a fingerprint of the files, never the files' contents.
 # On macOS, UNIT_EXIT_TIMEOUT sets the seconds launchd waits for the service to stop, 20 by default.
+# On Linux, UNIT_EXTRA holds more lines for a service's [Service] section, such as Group= or
+# ProtectSystem=. A service unit without UNIT_EXTRA stays the same.
 # On macOS, launchd gives a job no HOME. A root job gets HOME=/var/root, root's home folder, so a
 # program that keeps a cache in the home folder, such as restic in the backup, finds one.
 install_unit() {
@@ -179,7 +181,8 @@ WorkingDirectory=$dir
 ExecStart=/bin/bash -lc '$cmd'
 Restart=on-failure
 RestartSec=10
-
+${UNIT_EXTRA:+$UNIT_EXTRA
+}
 [Install]
 WantedBy=multi-user.target
 UNIT

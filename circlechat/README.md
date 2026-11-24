@@ -316,7 +316,7 @@ runner** (`circlechat/jobd`): one container per job, capped at the node's `jobs.
 2. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
    `JOBD_TOKEN` (copied from the control machine's `.env`), and, when a webhook takes the job's
    result, `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. The file holds no cloud key and no GitHub
-   token. The machine's user needs Docker access. Then run `setup-node.sh <node>`: it builds the
+   token. The machine's user needs Docker access to build the job image. Then run `setup-node.sh <node>`: it builds the
    `recursica/porter-job` image and starts the job runner on `jobs.port`. On the control computer,
    run `setup-host.sh` first, so the gateway exists.
 
@@ -332,6 +332,19 @@ reported; the machine keeps running.
 - `<job>/work/` is the container's `/work`, with `package.md` and the job's `report.md`.
 
 The job runner reads `report.md` without following a link, up to 1 MB (`JOBD_REPORT_MAX_BYTES`). A larger report gets a 413 answer. A link or a named pipe at `report.md` counts as no report.
+
+**On Linux, the cluster's own job runner runs as the account `recursica-jobd`, behind jobd's Docker filter.** Docker runs as root, so an account that can open Docker's socket can take over the computer. `setup-node.sh` sets up the job runner this way (`jobd/setup-jobd.sh`):
+
+- `recursica-jobd` has no login shell and no home folder, and belongs to no docker group.
+- jobd reaches Docker only through the filter's socket, `/run/recursica-jobd-gate/docker.sock`. Only jobd's account and the filter's account can open the socket.
+- The filter (`jobd/docker-gate.mjs`) runs as `recursica-jobd-gate`, with no network. Only the filter's service gets the docker group.
+- The filter creates a container from the job image only, with jobd's fixed settings. The settings are the closed network, the memory cap, a 4096-process cap and no-new-privileges. The job's own work folder is the container's only host folder.
+- The filter starts, inspects, waits for, removes and reads the logs of the containers that the filter created, and nothing else. Every other Docker call gets a 403 answer.
+- Each refusal writes one line to the filter's log. Read the lines with `journalctl -u jobd-gate`.
+- jobd keeps jobs in `/var/lib/recursica-jobd/jobs`. The work folders sit in `/var/lib/recursica-jobd-work`, which the filter owns.
+- jobd stops at the start when jobd runs as root or can open Docker's own socket. Run `setup-node.sh` to set up the accounts.
+
+The move to `recursica-jobd` waits until no port job runs. `setup-node.sh` stops while a port job runs, and asks to wait until every port job ends. A client or demo stack's job runner keeps direct Docker access until a later change, and so does a job runner on macOS. The job image is still built by `setup-node.sh`, which a person runs.
 
 **A job runner listens on `127.0.0.1` and the computer's Tailscale addresses, never on the office network.** `setup-node.sh` reads the Tailscale addresses with `tailscale ip`. Without Tailscale, the job runner listens on `127.0.0.1` only, and other computers cannot reach the job runner. The control computer's job runner listens at the control computer's `tailnet_address`. On Linux, `host.docker.internal` is Docker's bridge address, where no job runner listens.
 

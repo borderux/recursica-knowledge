@@ -63,7 +63,7 @@ export const SETUPS = {
     "circlechat/cluster/windows/install-wsl-boot.ps1", "tools/kev/",
   ],
   "setup-node.sh": [
-    "circlechat/setup-node.sh", "circlechat/kit/lib.sh", "circlechat/kit/render.mjs", "circlechat/egress/", "circlechat/jobd/porter-job/",
+    "circlechat/setup-node.sh", "circlechat/kit/lib.sh", "circlechat/kit/render.mjs", "circlechat/egress/", "circlechat/jobd/",
     "circlechat/rustdesk/",
   ],
   "install-cluster.sh": ["circlechat/cluster/install-cluster.sh", "circlechat/kit/lib.sh", "circlechat/cluster/firewall/", "circlechat/cluster/canary-keys.sh"],
