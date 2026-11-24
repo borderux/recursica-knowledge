@@ -26,18 +26,19 @@ function sandbox(system) {
   fs.mkdirSync(bin);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   // sudo runs nothing. tee and install read their input, as the real commands do, and cat finds no file.
-  stub("sudo", `case "$1" in tee) cat >/dev/null ;; cat) exit 1 ;; esac; exit 0`);
+  stub("sudo", `case "$1" in tee) cat > "${dir}/tee-$(basename "$2")" ;; cat) exit 1 ;; esac; exit 0`);
   for (const t of ["nft", "pfctl", "launchctl", "systemctl", "tcpdump", "age"]) stub(t, "exit 0");
   stub("tailscale", `[ "$1 $2" = "ip -4" ] && echo 100.64.0.1; exit 0`);
   stub("git", `[ "$3" = rev-parse ] && echo ${SHA}; exit 0`);
   stub("uname", `echo ${system}`);
-  const run = (env = {}) => spawnSync("bash", [path.join(kit, "circlechat/cluster/install-cluster.sh"), example.nodes[0].name], {
+  const run = (env = {}, node = example.nodes[0].name) => spawnSync("bash", [path.join(kit, "circlechat/cluster/install-cluster.sh"), node], {
     env: { ...process.env, HOME: home, PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin`, SYSTEMD_UNIT_DIR: path.join(dir, "units"), LAUNCHD_DIR: path.join(dir, "daemons"), ...env },
     encoding: "utf8", cwd: home,
   });
   const calls = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
   const marker = path.join(home, ".recursica-kit/network-applied/install-cluster.sh");
-  return { run, calls, marker };
+  const written = (name) => { try { return fs.readFileSync(path.join(dir, `tee-${name}`), "utf8"); } catch { return ""; } };
+  return { run, calls, marker, written };
 }
 
 // The calls that change the firewall: a rule load, a write to pf.conf or the rule files, and the
@@ -78,4 +79,12 @@ test("the guard loads the installed Linux lockdown rules, or the kit's own file 
   assert.equal(NFT_LOCKDOWN, "/var/lib/agent-cluster/nft-lockdown.nft");
   assert.equal(nftLockdownFile(() => true), NFT_LOCKDOWN);
   assert.equal(nftLockdownFile(() => false), path.join(here, "firewall/nft-lockdown.nft"));
+});
+
+test("install-cluster.sh writes each computer's cluster agent at the computer's Tailscale address", () => {
+  const s = sandbox("Linux");
+  const r = s.run({ KIT_HOLD_NETWORK: "1" }, example.nodes[1].name);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(s.written("agent-cluster.conf"), new RegExp(`^AGENTS=${example.nodes[0].name}=http://${example.nodes[0].tailnet_address}:7500,${example.nodes[1].name}=http://127\\.0\\.0\\.1:7500$`, "m"));
+  assert.doesNotMatch(s.written("agent-cluster.conf"), /host\.docker\.internal/);
 });

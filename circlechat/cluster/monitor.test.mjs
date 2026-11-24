@@ -66,3 +66,55 @@ test("local stacks: the new stack folders win over CircleChat 1.x's old ones, an
   fs.mkdirSync(path.join(home, "tenants/acme/stack"), { recursive: true });
   assert.deepEqual(await localStacks(home), [{ name: "cluster", channel: "CNEW", state: "up" }, { name: "acme", state: "locked" }]);
 });
+
+const up = (services) => ({ stacks: [{ name: "cluster", channel: "CSTACK", state: "up" }], services });
+
+test("a peer's kit service down for 3 minutes posts once in the cluster channel, and once when the service answers again", async () => {
+  const { m, posts, advance, set } = setup();
+  set(up([{ name: "kev-engine", state: "up" }, { name: "rustdesk-hbbs", state: "up" }]));
+  await m.tick();
+  set(up([{ name: "kev-engine", state: "down" }, { name: "rustdesk-hbbs", state: "up" }]));
+  await m.tick();
+  advance(2 * 60_000); await m.tick();
+  assert.equal(posts.length, 0, "down for 2 minutes: no post");
+  advance(60_000); await m.tick();
+  advance(60_000); await m.tick();
+  assert.deepEqual(posts, [["CCLUSTER", ":red_circle: kev-engine on machine-1 has been down or not answering for 3 minutes."]]);
+  set(up([{ name: "kev-engine", state: "up" }, { name: "rustdesk-hbbs", state: "up" }]));
+  advance(60_000); await m.tick();
+  assert.deepEqual(posts.at(-1), ["CCLUSTER", ":white_check_mark: kev-engine on machine-1 answers again."]);
+  assert.equal(posts.length, 2);
+});
+
+test("a service down for less than 3 minutes posts nothing, and a service the report drops leaves without a post", async () => {
+  const { m, posts, advance, set } = setup();
+  set(up([{ name: "jobd", state: "down" }]));
+  await m.tick();
+  advance(2 * 60_000); set(up([{ name: "jobd", state: "up" }])); await m.tick();
+  advance(2 * 60_000); set(up([{ name: "jobd", state: "down" }])); await m.tick();
+  advance(2 * 60_000); await m.tick();
+  assert.equal(posts.length, 0, "each outage was shorter than 3 minutes");
+  advance(2 * 60_000); await m.tick();
+  assert.equal(posts.length, 1);
+  set(up([]));
+  advance(60_000); await m.tick();
+  assert.equal(posts.length, 1, "the service left the report: no post");
+});
+
+test("a peer's report can't put other text in a post", async () => {
+  const { m, posts, advance, set } = setup();
+  set(up([{ name: "<!channel> pay now", state: "down" }, { name: "jobd", state: "broken" }]));
+  await m.tick(); advance(5 * 60_000); await m.tick();
+  assert.deepEqual(posts, []);
+});
+
+test("the peer list is read at each check, so a new address counts at once", async () => {
+  const urls = [];
+  let peers = { "machine-2": "http://127.0.0.1:7500", "machine-1": "http://host.docker.internal:7500" };
+  const m = new Monitor({ self: "machine-2", peers: () => peers, clusterChannel: "C", stateFile: path.join(fs.mkdtempSync(path.join(os.tmpdir(), "mon-")), "m.json"),
+    post: async () => {}, fetchStatus: async (url) => { urls.push(url); return { stacks: [] }; }, now: () => 0 });
+  await m.tick();
+  peers = { ...peers, "machine-1": "http://100.64.0.1:7500" };
+  await m.tick();
+  assert.deepEqual(urls, ["http://host.docker.internal:7500", "http://100.64.0.1:7500"], "this computer is never asked");
+});

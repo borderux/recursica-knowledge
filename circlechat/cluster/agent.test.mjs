@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { makeAgent, readCanary } from "./agent.mjs";
+import { filterStacks, makeAgent, readCanary } from "./agent.mjs";
 
 function setup(t0 = Date.UTC(2026, 9, 20, 15, 0)) {
   let t = t0;
@@ -91,4 +91,40 @@ test("Skip this version writes to the stack's folder, the old one until a person
   fs.mkdirSync(path.join(home, "recursica-stack/kit-out"), { recursive: true });
   await agent.act({ action: "upgrade-skip", ref: "@recursica/knowledge@1.1.0" });
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, "recursica-stack/kit-out/upgrade-state.json"), "utf8")).skipped, { "@recursica/knowledge@1.1.0": 5 });
+});
+
+test("/status lists each kit service's name and state, and nothing else", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const services = async () => [{ name: "kev-engine", state: "up", key: "sk-secret", log: "loaded model", port: 8009 }, { name: "jobd", state: "down" }];
+  const agent = makeAgent({ env: { COMPUTER: "machine-2", CLUSTER_TOKEN: "t0ken" }, platform: {}, guard: { state: { status: "ok" } }, post: async () => {}, stateDir, services });
+  const srv = agent.server().listen(0, "127.0.0.1");
+  await new Promise((r) => srv.once("listening", r));
+  try {
+    const url = `http://127.0.0.1:${srv.address().port}/status`;
+    assert.equal((await fetch(url)).status, 401, "no token, no status");
+    const body = await (await fetch(url, { headers: { authorization: "Bearer t0ken" } })).text();
+    assert.deepEqual(JSON.parse(body).services, [{ name: "kev-engine", state: "up" }, { name: "jobd", state: "down" }]);
+    assert.doesNotMatch(body, /sk-secret|loaded model|8009/);
+  } finally { srv.close(); }
+});
+
+test("each minute runs the restart check, and a failed check stops nothing else", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const ran = [];
+  const guard = { state: {}, tick: async () => ran.push("guard") };
+  const restarts = { tick: async () => { ran.push("restarts"); throw new Error("systemctl missing"); } };
+  const network = { tick: async () => ran.push("network") };
+  const agent = makeAgent({ env: { COMPUTER: "machine-1", KIT: "/nonexistent" }, platform: {}, guard, post: async () => {}, stateDir, network, restarts });
+  await agent.minute();
+  assert.deepEqual(ran, ["guard", "network", "restarts"]);
+});
+
+test("on a helper with no stack folder and no filter log, the egress step has nothing to read and no error", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "helper-"));
+  fs.mkdirSync(path.join(home, "circlechat"));
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), "{}");
+  assert.deepEqual(filterStacks({ home, clusterChannel: "C", clusterName: "border" }), []);
+  fs.mkdirSync(path.join(home, ".recursica-jobs-egress/logs"), { recursive: true });
+  fs.writeFileSync(path.join(home, ".recursica-jobs-egress/logs/access.log"), "");
+  assert.deepEqual(filterStacks({ home, clusterChannel: "C", clusterName: "border" }).map((s) => [s.name, s.channel]), [["border-jobs", "C"]]);
 });

@@ -1051,7 +1051,24 @@ Operating system packages are checked each hour, and each stack's container imag
 
 ### Uptime
 
-Each computer asks the other computers for the health of their stacks every minute. A computer silent for 3 minutes gets one alert in each affected stack's channel. A stack counts as up while the stack's site.json can be read, and as locked while the stack's disk image is closed.
+**Each computer's cluster agent asks every other computer's agent for a report every minute.** The agent asks at the other computer's Tailscale address: the node's `tailnet_address` in site.json, or the node's `address`. The control computer's `address` is often `host.docker.internal`, which only the control computer's containers can reach, so give the control computer a `tailnet_address`. The config check warns about a computer that no other agent can reach.
+
+A computer silent for 3 minutes gets one alert in the cluster's channel and in each affected stack's channel. One more alert follows when the computer answers again. A stack counts as up while the stack's site.json can be read, and as locked while the stack's disk image is closed.
+
+**Each report also lists the state of the computer's own kit services.** A watching computer posts in the cluster's channel when a service has been down for 3 minutes. The computer posts once more when the service answers again:
+
+| Service                          | Up when                                                                                             |
+| -------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `kev-engine`                     | The node's `kev` port answers, on `127.0.0.1` or the computer's Tailscale address                   |
+| `jobd`                           | The node's `jobs` port answers, on `127.0.0.1` or the computer's Tailscale address                  |
+| `rustdesk-hbbs`, `rustdesk-hbbr` | The container runs, and the container's port answers on `127.0.0.1`: 21116 for hbbs, 21117 for hbbr |
+| `ollama`                         | The node's Ollama server answers, once a route names one of the server's models                     |
+
+A trial Ollama server that no route names isn't watched. The report holds each service's name and state, `up` or `down`, and nothing else. The report never holds a key, a setting's value or a log line. A watching computer drops any name or state outside that list. So a report can't put other text in a post.
+
+**A kit service that restarts more than 3 times in an hour gets one post** in the cluster's channel. The computer itself posts. The count comes from systemd's `NRestarts`, launchd's `runs` or Docker's `RestartCount`. After the count of the last hour drops back to 3 or fewer, a new run of restarts posts again.
+
+A running cluster agent keeps the agent's old code until the agent restarts. `install-cluster.sh` restarts the agent, and so does a new kit release.
 
 **Each computer checks the computer's own network every 5 minutes.** The check posts in the cluster's channel, `SLACK_CHANNEL_ID`:
 

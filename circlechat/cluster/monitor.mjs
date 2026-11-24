@@ -1,12 +1,16 @@
 // Uptime checks between computers. Each computer's agent reports the health of the stacks on that
-// computer; every other computer asks for the report each minute. A computer that stops answering
-// for 3 minutes, or a stack that stops answering, gets one alert in each affected stack's Slack
-// channel, and one more alert when the stack is back. The alert goes through the cluster's Slack
-// app, so no stack's own secrets ever reach another computer.
+// computer, and the state of the computer's own kit services (services.mjs). Every other computer
+// asks for the report each minute, at the computer's Tailscale address (kit/render.mjs agentPeers).
+// A computer that stops answering for 3 minutes, or a stack that stops answering, gets one alert in
+// each affected stack's Slack channel, and one more alert when the stack is back. A kit service
+// that is down for 3 minutes gets one alert in the cluster's channel, and one more when the
+// service answers again. The alert goes through the cluster's Slack app, so no stack's own secrets
+// ever reach another computer.
 import fs from "node:fs";
 import path from "node:path";
 import { clusterStackName } from "../kit/render.mjs";
 import { siteFile, tenantStacks } from "../kit/stack-paths.mjs";
+import { cleanServices } from "./services.mjs";
 
 const DOWN_AFTER_MS = 3 * 60_000;
 
@@ -44,9 +48,12 @@ export class Monitor {
 
   async tick() {
     const state = this.read();
-    for (const [name, url] of Object.entries(this.peers)) {
+    // peers: { name: url }, or a function that reads the list at each check, so a changed site.json counts.
+    const peers = typeof this.peers === "function" ? this.peers() : this.peers;
+    for (const [name, url] of Object.entries(peers)) {
       if (name === this.self) continue;
       const p = state[name] ?? { lastOk: this.now(), stacks: [], alerted: {} };
+      p.downSince ??= {};
       const status = await this.fetchStatus(url).catch(() => null);
       if (status) {
         if (p.alerted.computer) {
@@ -61,6 +68,7 @@ export class Monitor {
           if (s.state === "up" && p.alerted[key]) { await this.say([s.channel], `:white_check_mark: Stack ${s.name} on ${name} is back.`); delete p.alerted[key]; }
         }
         p.stacks = (status.stacks ?? []).filter((s) => s.channel).map((s) => ({ name: s.name, channel: s.channel }));
+        await this.services(name, p, cleanServices(status.services));
       } else if (this.now() - p.lastOk >= DOWN_AFTER_MS && !p.alerted.computer) {
         await this.say([this.clusterChannel, ...p.stacks.map((s) => s.channel)], `:red_circle: ${name} has not answered for 3 minutes. The stacks on ${name} are unreachable.`);
         p.alerted.computer = true;
@@ -68,6 +76,27 @@ export class Monitor {
       state[name] = p;
     }
     this.write(state);
+  }
+
+  // Each kit service the peer reports: down for 3 minutes posts once, and answering again posts once.
+  // A service the report no longer lists, such as one site.json dropped, leaves without a post.
+  async services(name, p, list) {
+    const t = this.now(), listed = new Set(list.map((s) => s.name));
+    for (const { name: svc, state } of list) {
+      const key = `service:${svc}`;
+      if (state === "down") {
+        p.downSince[svc] ??= t;
+        if (t - p.downSince[svc] >= DOWN_AFTER_MS && !p.alerted[key]) {
+          await this.say([this.clusterChannel], `:red_circle: ${svc} on ${name} has been down or not answering for 3 minutes.`);
+          p.alerted[key] = "down";
+        }
+      } else {
+        delete p.downSince[svc];
+        if (p.alerted[key]) { await this.say([this.clusterChannel], `:white_check_mark: ${svc} on ${name} answers again.`); delete p.alerted[key]; }
+      }
+    }
+    for (const svc of Object.keys(p.downSince)) if (!listed.has(svc)) delete p.downSince[svc];
+    for (const key of Object.keys(p.alerted)) if (key.startsWith("service:") && !listed.has(key.slice(8))) delete p.alerted[key];
   }
 
   async say(channels, text) {

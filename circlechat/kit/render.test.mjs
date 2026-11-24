@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { spawnSync } from "node:child_process";
-import { warnings, clusterStackName, followsMain, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { agentPeers, warnings, clusterStackName, followsMain, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
 import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
@@ -844,4 +844,16 @@ test("with max_loaded_models, the memory check counts only the largest models an
   assert.deepEqual(validate(t), []);
   mac.model_memory_gb = 59;
   assert.match(validate(t).join("\n"), new RegExp(`the loaded models need 60 GB, and the node gives its models 59 GB \\(model_memory_gb\\): ollama/b 40 GB, mlx/${mlx.models[0].id} 20 GB\\. server ollama keeps 1 of its 2 models loaded`));
+});
+
+test("each cluster agent watches the other computers at their Tailscale addresses, and this computer at 127.0.0.1", () => {
+  const s = clone();
+  assert.deepEqual(agentPeers(s, "machine-2"), { "machine-1": "http://100.64.0.1:7500", "machine-2": "http://127.0.0.1:7500" }, "the control computer's tailnet_address, not host.docker.internal");
+  assert.deepEqual(agentPeers(s, "machine-1"), { "machine-1": "http://127.0.0.1:7500", "machine-2": "http://machine-2.example.ts.net:7500" });
+  s.nodes[1].tailnet_address = "fd7a:115c:a1e0::2";
+  assert.equal(agentPeers(s, "machine-1")["machine-2"], "http://[fd7a:115c:a1e0::2]:7500");
+  assert.deepEqual(warnings(clone()).filter((w) => /cluster agent/.test(w)), []);
+  delete s.nodes[0].tailnet_address;
+  assert.equal(agentPeers(s, "machine-2")["machine-1"], undefined, "no address the other computers reach");
+  assert.ok(warnings(s).includes("node machine-1: no other computer's cluster agent can reach machine-1, so nothing watches machine-1. Set tailnet_address for machine-1 to the computer's Tailscale address"));
 });
