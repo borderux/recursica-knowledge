@@ -65,7 +65,7 @@ test("a file or folder the group or other accounts can change is refused, in the
   fs.chmodSync(path.join(parent.h, "code"), 0o775);
   r = check(parent.kit, parent.h);
   assert.equal(r.status, 1);
-  assert.match(r.stdout, /can change .*\/code, a folder above the checkout\./);
+  assert.match(r.stdout, /can change .*\/code, a folder above the checkout\. Run: sudo chmod go-w \S+\/code /);
 });
 
 test("a checkout another account owns is refused", () => {
@@ -74,7 +74,7 @@ test("a checkout another account owns is refused", () => {
   const other = me === "root" ? "nobody" : "root";
   const r = check(kit, h, { owner: other });
   assert.equal(r.status, 1);
-  assert.match(r.stdout, new RegExp(`belongs to ${me}, not ${other}\\.`));
+  assert.match(r.stdout, new RegExp(`belongs to ${me}, not ${other}\\. Run: sudo chown -R ${other} `));
 });
 
 test("with no owner named, the owner of the home folder is the owner", () => {
@@ -109,7 +109,11 @@ test("each root script and each installer of one checks the kit first", () => {
     const first = text.search(/^[^#\n]*\b(sudo|install_unit|install -m|rm -rf|tee) /m);
     assert.ok(first < 0 || at < first, `${file} checks the kit before the first change`);
   }
-  for (const file of ["circlechat/cluster/agent.mjs", "circlechat/cluster/updater.mjs"]) {
-    assert.match(fs.readFileSync(path.join(repo, file), "utf8"), /requireKit\(env\.KIT, env\)/, file);
-  }
+  assert.match(fs.readFileSync(path.join(repo, "circlechat/cluster/agent.mjs"), "utf8"), /requireKit\(env\.KIT, env\)/);
+  // The update job checks the kit, posts a refusal, and exits before its first update step.
+  const updater = fs.readFileSync(path.join(repo, "circlechat/cluster/updater.mjs"), "utf8");
+  const checked = updater.search(/const problem = kitProblem\(env\.KIT, env\);/);
+  const exits = updater.search(/if \(problem\) \{[\s\S]*?process\.exit\(1\);/);
+  const firstStep = updater.search(/await check\(\{ post:/);
+  assert.ok(checked > 0 && exits > checked && firstStep > exits, "updater.mjs checks the kit and exits before the first update step");
 });

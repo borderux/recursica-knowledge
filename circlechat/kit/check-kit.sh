@@ -36,11 +36,11 @@ done
 f="$(find "$KIT" ! -type l \( -perm -g+w -o -perm -o+w \) -print -quit 2>/dev/null || true)"
 [ -z "$f" ] || fail "the group or other accounts can change $f. Run: chmod -R go-w $KIT"
 f="$(find "$KIT" ! -user "$OWNER" -print -quit 2>/dev/null || true)"
-[ -z "$f" ] || fail "$f belongs to $(ls -ld "$f" | awk '{ print $3 }'), not $OWNER."
+[ -z "$f" ] || fail "$f belongs to $(ls -ld "$f" | awk '{ print $3 }'), not $OWNER. Run: sudo chown -R $OWNER $KIT"
 d="$(dirname "$KIT")"
 while :; do
-  [ -z "$(find "$d" -maxdepth 0 \( -perm -g+w -o -perm -o+w \) ! \( -perm -1000 -user root \) -print)" ] || fail "the group or other accounts can change $d, a folder above the checkout."
-  [ -n "$(find "$d" -maxdepth 0 \( -user "$OWNER" -o -user root \) -print)" ] || fail "$d, a folder above the checkout, belongs to neither $OWNER nor root."
+  [ -z "$(find "$d" -maxdepth 0 \( -perm -g+w -o -perm -o+w \) ! \( -perm -1000 -user root \) -print)" ] || fail "the group or other accounts can change $d, a folder above the checkout. Run: sudo chmod go-w $d"
+  [ -n "$(find "$d" -maxdepth 0 \( -user "$OWNER" -o -user root \) -print)" ] || fail "$d, a folder above the checkout, belongs to neither $OWNER nor root. Run: sudo chown $OWNER $d"
   [ "$d" = / ] && break
   d="$(dirname "$d")"
 done
