@@ -108,6 +108,20 @@ test("/status lists each kit service's name and state, and nothing else", async 
   } finally { srv.close(); }
 });
 
+test("/status names Barb's state on the control computer only, and an error reads as unknown", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  const status = async (barb) => {
+    const agent = makeAgent({ env: { COMPUTER: "machine-1", CLUSTER_TOKEN: "t0ken" }, platform: {}, guard: { state: { status: "ok" } }, post: async () => {}, stateDir, ...(barb ? { barb } : {}) });
+    const srv = agent.server().listen(0, "127.0.0.1");
+    await new Promise((r) => srv.once("listening", r));
+    try { return await (await fetch(`http://127.0.0.1:${srv.address().port}/status`, { headers: { authorization: "Bearer t0ken" } })).json(); } finally { srv.close(); }
+  };
+  assert.equal((await status(async () => "idle")).barb, "idle");
+  assert.equal((await status(async () => "busy: 1 agent message(s) queued or in a turn")).barb, "busy: 1 agent message(s) queued or in a turn");
+  assert.equal((await status(async () => { throw new Error("no database"); })).barb, "unknown");
+  assert.ok(!("barb" in (await status())), "a computer that isn't the control computer reports no state");
+});
+
 test("each minute runs the restart check, and a failed check stops nothing else", async () => {
   const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
   const ran = [];

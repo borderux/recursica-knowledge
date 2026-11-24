@@ -3,7 +3,7 @@
 # install-secrets-helper.sh copies it to /usr/local/bin/agent-stacks-apply, owned by root, and lets
 # the GitHub runner's user run that copy through sudo and nothing else.
 #
-#   <KEY=value lines on stdin> | agent-stacks-apply <stack> <computer> <restart: true|false>
+#   <KEY=value lines on stdin> | agent-stacks-apply <stack> <computer> <restart: true|false> [<kev_rotation>]
 #   STACK_DISK_KEY=<key> on stdin | agent-stacks-apply --unlock <stack> <computer>
 #   agent-stacks-apply --lock <stack> <computer>
 #
@@ -15,6 +15,10 @@
 # cluster's site.json ("cluster" when unset), or "client-<name>" for the client stack with
 # site.tenant <name>. <computer> is a node name in that
 # stack's site.json. Only the key names below are read; every other line is ignored.
+#
+# <kev_rotation> comes only from a key rotation (rotate-tokens.sh), and is empty for every other
+# deploy. "check" runs the rotation's checks and writes nothing. Any other value is the rotation's
+# proof, and lets this run restart kev-engine once (see "A kev-engine key rotation" below).
 set -euo pipefail
 # The runner starts the helper in the runner's own work folder, which the owner cannot read. Each
 # command the helper runs as the owner would then fail to read the current folder, and print
@@ -37,6 +41,7 @@ case "${1:-}" in --unlock) MODE=unlock; shift ;; --lock) MODE=lock; shift ;; esa
 STACK="${1:?usage: agent-stacks-apply <stack> <computer> <restart>}"
 COMPUTER="${2:?usage: agent-stacks-apply <stack> <computer> <restart>}"
 RESTART="${3:-false}"
+KEV_ROTATION="${4:-}"
 SLUG='^[a-z0-9][a-z0-9-]*$'
 case "$STACK" in
   client-*) TENANT="${STACK#client-}" ;;
@@ -196,14 +201,152 @@ drop_kv() {
   echo "  $k removed from $f"
 }
 
+# True when one of the names in $2 (comma or space separated) is in the list $1.
+changed_any() { local n; for n in ${2//,/ }; do [[ "$1" == *" $n "* ]] && return 0; done; return 1; }
+
+# A kev-engine key rotation (rotate-tokens.sh). kev-engine stops only for a key rotation, and only
+# while Barb isn't running and the engine handles no request. The rotation's run checks both before
+# it writes anything. When a check fails, the run writes nothing and fails, so the engine keeps
+# running with the key in its secrets file.
+#   - Barb: the control computer's cluster agent reads Barb's state from the RecursicaChat server's
+#     database (cluster/quiet.mjs agentState). No agent named Barb, or one with no turn and no
+#     service request open, passes. A state the agent can't read fails.
+#   - The engine: three readings over 10 seconds on this computer. No connection is open to the
+#     engine's port at any reading. The engine's GET /v1/models shows nothing queued, and the same
+#     count of answered requests at the first reading and the last. The engine counts a request
+#     only after the request is answered, so the connection check covers a request in progress.
+# The proof is the SHA-256 of "kev-rotation", a line break and the new KEV_API_KEY. Only the
+# rotation knows the new key when the rotation starts the run, and the hash shows nothing of the
+# key. The run restarts kev-engine only when KEV_API_KEY changed, so a second run of the same
+# rotation restarts nothing.
+KEV_PORT="$("$NODE_BIN" -e '
+  const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  console.log((s.nodes ?? []).find((x) => x.name === process.argv[2])?.kev?.port ?? 8009);
+' "$SITE" "$COMPUTER")"
+KEV_SERVICES=""
+for sv in $SERVICE_READS; do
+  name="${sv%%:*}" reads="${sv#*:}"
+  case "$name" in kev-engine|kev-engine-*) changed_any " ${reads//,/ } " KEV_API_KEY && KEV_SERVICES="$KEV_SERVICES $name" ;; esac
+done
+KEV_IDLE_WAIT="${AGENT_STACKS_KEV_IDLE_WAIT:-5}"
+KEV_READY_SECONDS="${AGENT_STACKS_KEV_READY_SECONDS:-900}"
+CLUSTER_ENV="${AGENT_CLUSTER_ENV:-/etc/agent-cluster.env}"
+
+# The rotation's proof of the value on stdin.
+kev_proof() { "$NODE_BIN" -e 'let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => process.stdout.write(require("crypto").createHash("sha256").update("kev-rotation\n" + s).digest("hex")));'; }
+
+# Barb's state from the control computer's cluster agent: none, idle, busy: <why> or unknown.
+# Prints why when the state can't be read, and returns 1.
+barb_state() {
+  "$NODE_BIN" -e '
+    const fs = require("fs");
+    const [envFile, siteFile, self, port] = process.argv.slice(1);
+    const env = {};
+    try { for (const l of fs.readFileSync(envFile, "utf8").split("\n")) { const i = l.indexOf("="); if (i > 0) env[l.slice(0, i)] = l.slice(i + 1); } } catch {}
+    const control = (JSON.parse(fs.readFileSync(siteFile, "utf8")).nodes ?? []).find((n) => n.control);
+    if (!control) { console.log("site.json names no control computer"); process.exit(1); }
+    // As kit/peers.mjs: this computer at 127.0.0.1, another one at its Tailscale address.
+    const host = control.name === self ? "127.0.0.1" : control.tailnet_address || (control.address !== "host.docker.internal" ? control.address : "");
+    if (!host) { console.log(`site.json gives no address for ${control.name}`); process.exit(1); }
+    if (!env.CLUSTER_TOKEN) { console.log(`${envFile} has no CLUSTER_TOKEN`); process.exit(1); }
+    fetch(`http://${host.includes(":") ? `[${host}]` : host}:${port}/status`, { headers: { authorization: `Bearer ${env.CLUSTER_TOKEN}` }, signal: AbortSignal.timeout(15000) })
+      .then(async (r) => {
+        if (!r.ok) { console.log(`the cluster agent on ${control.name} answered ${r.status}`); process.exit(1); }
+        const j = await r.json();
+        if (typeof j.barb !== "string") { console.log(`the cluster agent on ${control.name} reports no state for Barb, so it runs an older kit`); process.exit(1); }
+        console.log(j.barb);
+      })
+      .catch((e) => { console.log(`the cluster agent on ${control.name} is unreachable (${e.message})`); process.exit(1); });
+  ' "$CLUSTER_ENV" "$SITE" "$COMPUTER" "${AGENT_STACKS_AGENT_PORT:-7500}"
+}
+
+# The engine's counts from GET /v1/models, with the key on stdin: "<queued> <answered>". Prints why
+# when the counts can't be read, and returns 1.
+kev_counts() {
+  "$NODE_BIN" -e '
+    let key = "";
+    process.stdin.on("data", (d) => (key += d)).on("end", async () => {
+      const port = process.argv[1];
+      try {
+        const r = await fetch(`http://127.0.0.1:${port}/v1/models`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000) });
+        if (r.status === 401) { console.log("kev-engine refused the key in the secrets file, so the engine runs with another key"); process.exit(1); }
+        if (!r.ok) { console.log(`kev-engine answered ${r.status} on port ${port}`); process.exit(1); }
+        const b = (await r.json()).models?.[0]?.batches;
+        if (typeof b?.queued !== "number" || typeof b?.requests !== "number") { console.log("kev-engine reports no request counts"); process.exit(1); }
+        console.log(`${b.queued} ${b.requests}`);
+      } catch (e) { console.log(`kev-engine does not answer on port ${port} (${e.message})`); process.exit(1); }
+    });
+  ' "$KEV_PORT"
+}
+
+# The connections open to the engine's port on this computer.
+kev_connections() {
+  if [ "$(uname -s)" = Darwin ]; then netstat -anp tcp | awk -v p="$KEV_PORT" '$6 == "ESTABLISHED" && $4 ~ ("[.]" p "$")' | wc -l
+  else ss -Htn state established "( sport = :$KEV_PORT )" | wc -l; fi | tr -d ' '
+}
+
+# Why the engine isn't idle, with the key on stdin. Prints nothing, and returns 0, when it is idle.
+kev_busy() {
+  local key first last n i c
+  key="$(cat)"
+  for i in 1 2 3; do
+    n="$(kev_connections)"
+    [ "$n" = 0 ] || { echo "$n connection(s) open to port $KEV_PORT"; return 1; }
+    if [ "$i" != 2 ]; then
+      if ! c="$(printf '%s' "$key" | kev_counts)"; then echo "$c"; return 1; fi
+      if [ "$i" = 1 ]; then first="$c"; else last="$c"; fi
+    fi
+    [ "$i" = 3 ] || sleep "$KEV_IDLE_WAIT"
+  done
+  [ "${first%% *}" = 0 ] && [ "${last%% *}" = 0 ] || { echo "requests are queued"; return 1; }
+  [ "${first#* }" = "${last#* }" ] || { echo "it answered $(( ${last#* } - ${first#* } )) request(s) in the last $((2 * KEV_IDLE_WAIT)) seconds"; return 1; }
+}
+
+# The rotation's checks, each result on its own line. Returns 1 when kev-engine may not stop now.
+kev_checks() {
+  local s why name
+  if ! s="$(barb_state)"; then echo "  Barb's state can't be read: $s."; return 1; fi
+  case "$s" in
+    none) echo "  Barb isn't running: RecursicaChat has no agent named Barb." ;;
+    idle) echo "  Barb isn't running: Barb has no turn queued or running, and no service request open." ;;
+    unknown) echo "  Barb's state is unknown: the RecursicaChat server's database can't be read."; return 1 ;;
+    *) echo "  Barb is running (${s#busy: })."; return 1 ;;
+  esac
+  for name in $KEV_SERVICES; do
+    if ! why="$(cur_val "$NODE_ENV" KEV_API_KEY | kev_busy)"; then echo "  $name is not idle: $why."; return 1; fi
+    echo "  $name is idle: no connection open, nothing queued, and no request answered in $((2 * KEV_IDLE_WAIT)) seconds."
+  done
+}
+
+KEV_ROTATE=false KEV_OLD=""
+if [ "$KEV_ROTATION" = check ]; then
+  echo "Key rotation check for kev-engine on $COMPUTER:"
+  [ -n "$KEV_SERVICES" ] || { echo "  No service on $COMPUTER reads KEV_API_KEY. Nothing was written."; exit 0; }
+  kev_checks || { echo "kev-engine on $COMPUTER may not stop now. Nothing was written."; exit 1; }
+  echo "kev-engine on $COMPUTER may stop for the key rotation. Nothing was written."
+  exit 0
+elif [ -n "$KEV_ROTATION" ]; then
+  [ "$RESTART" = true ] || { echo "Refused: a key rotation needs restart on. Nothing was written."; exit 1; }
+  has KEV_API_KEY || { echo "Refused: a key rotation needs KEV_API_KEY in the GitHub environment. Nothing was written."; exit 1; }
+  [ "$(val KEV_API_KEY | kev_proof)" = "$KEV_ROTATION" ] || { echo "Refused: kev_rotation doesn't match KEV_API_KEY. Only rotate-tokens.sh starts a key rotation. Nothing was written."; exit 1; }
+  KEV_OLD="$(cur_val "$NODE_ENV" KEV_API_KEY || true)"
+  if [ -n "$KEV_SERVICES" ] && [ "$KEV_OLD" != "$(val KEV_API_KEY)" ]; then
+    echo "Key rotation for kev-engine on $COMPUTER:"
+    kev_checks || { echo "kev-engine on $COMPUTER may not stop now. Nothing was written."; exit 1; }
+    KEV_ROTATE=true
+  fi
+fi
+
 # The names of the secrets whose values changed, for each file.
 CHANGED_NODE=" " CHANGED_CLUSTER=" "
 WROTE_CONTROL=false
 WROTE_APPS=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
+  # Programs read these from .env at each run, and the gateway reads none of them, so a changed
+  # value here restarts nothing.
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
-    if has "$k" && set_kv "$CC_DIR/.env" "$k" "$(val "$k")"; then WROTE_CONTROL=true; fi
+    if has "$k"; then set_kv "$CC_DIR/.env" "$k" "$(val "$k")" || true; fi
   done
   # Cloud keys go to the gateway's secrets file, which root owns and only the gateway reads.
   KEYS_FILE="$CC_DIR/model-keys.env"
@@ -261,7 +404,6 @@ fi
 #     could make valid approval codes.
 # A deploy to a helper writes none of the control computer's secrets, and removes each one that the
 # helper's file holds.
-CLUSTER_ENV="${AGENT_CLUSTER_ENV:-/etc/agent-cluster.env}"
 CONTROL_ONLY='^(SLACK_APP_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+)$'
 DROPPED_CLUSTER=false
 if [ -z "$TENANT" ]; then
@@ -299,9 +441,6 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
-# True when one of the names in $2 (comma or space separated) is in the list $1.
-changed_any() { local n; for n in ${2//,/ }; do [[ "$1" == *" $n "* ]] && return 0; done; return 1; }
-
 # Post one line in the cluster's channel, with the bot token and the channel in the cluster's file.
 # Root reads the file. The token never reaches a command line or the log.
 post_cluster() {
@@ -321,11 +460,12 @@ post_cluster() {
 
 # kev-engine never restarts from a deploy, on any computer: a restart stops the engine's work. When
 # a value kev-engine reads changed, the deploy writes the value and asks a person, in the cluster's
-# channel, to restart kev-engine.
+# channel, to restart kev-engine. A key rotation's run is the one exception, below.
 for sv in $SERVICE_READS; do
   name="${sv%%:*}" reads="${sv#*:}"
   case "$name" in kev-engine|kev-engine-*) ;; *) continue ;; esac
   changed_any "$CHANGED_NODE" "$reads" || continue
+  [ "$KEV_ROTATE" = true ] && [[ " $KEV_SERVICES " == *" $name "* ]] && continue
   names=""; for n in ${reads//,/ }; do [[ "$CHANGED_NODE" == *" $n "* ]] && names="$names${names:+, }$n"; done
   echo "  $name not restarted: a deploy never restarts $name. $names changed, so $name needs a restart by a person."
   if why="$(post_cluster ":warning: $name on $COMPUTER needs a restart by a person: the secrets deploy of stack $STACK changed $names. A deploy never restarts $name.")"; then
@@ -365,6 +505,28 @@ restart_unit() {
 #   the cluster agent: SLACK_BOT_TOKEN, SLACK_CHANNEL_ID and CLUSTER_TOKEN, and a removed line,
 #     which the running agent still holds
 #   the Slack app: every cluster secret
+# A key rotation restarts kev-engine once, with the new key, right after the checks passed. A
+# connection that opened since then puts the old key back, and fails the run, so the engine keeps
+# running with the key in its secrets file.
+if [ "$KEV_ROTATE" = true ]; then
+  for name in $KEV_SERVICES; do
+    n="$(kev_connections)"
+    if [ "$n" != 0 ]; then
+      set_kv "$NODE_ENV" KEV_API_KEY "$KEV_OLD" >/dev/null || true
+      echo "  $name not restarted: $n connection(s) opened to port $KEV_PORT after the checks. The old key is back in $NODE_ENV."
+      FAILED="$FAILED $name"; continue
+    fi
+    before="$FAILED"
+    restart_unit "$name"
+    [ "$FAILED" = "$before" ] || continue
+    t=0
+    until val KEV_API_KEY | kev_counts >/dev/null; do
+      if [ "$t" -ge "$KEV_READY_SECONDS" ]; then echo "  $name doesn't answer with the new key after $t seconds. Read the service's log."; FAILED="$FAILED $name"; break; fi
+      sleep 5; t=$((t + 5))
+    done
+    [ "$FAILED" != "$before" ] || echo "  $name answers with the new key after about $t seconds."
+  done
+fi
 if [[ " $ROLES " == *" jobs "* ]] && changed_any "$CHANGED_NODE" "JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET"; then restart_unit "jobd$SUFFIX"; fi
 for sv in $SERVICE_READS; do
   name="${sv%%:*}" reads="${sv#*:}"

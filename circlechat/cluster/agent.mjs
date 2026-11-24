@@ -26,10 +26,13 @@ import { TAG, approve } from "./release-gate.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 import { agentPeers } from "../kit/peers.mjs";
 import { RestartWatch, restartCounts, serviceChecks, serviceStates } from "./services.mjs";
+import { agentState } from "./quiet.mjs";
 import { siteFile, stackDir, tenantStacks } from "../kit/stack-paths.mjs";
 
 //   services(): [{ name, state }] of this computer's kit services, for /status; restarts: RestartWatch
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], services = async () => [], restarts, egress, network }) {
+//   barb(): Barb's state on the control computer's RecursicaChat server (quiet.mjs agentState), for
+//     /status, or null on any other computer. A kev-engine key rotation reads it (deploy/apply-secrets.sh).
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], services = async () => [], barb = async () => null, restarts, egress, network }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -101,7 +104,8 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       if (auth.length !== want.length || !crypto.timingSafeEqual(Buffer.from(auth), Buffer.from(want))) return send(401, { ok: false, message: "unauthorized" });
       if (req.method === "GET" && req.url === "/status") {
         const svc = await services().catch(() => []);
-        return send(200, { ok: true, computer: env.COMPUTER, guard: { status: guard.state.status }, reboot: readReboot(), stacks: await stacks(), services: svc.map(({ name, state }) => ({ name, state })) });
+        const b = await barb().catch(() => "unknown");
+        return send(200, { ok: true, computer: env.COMPUTER, guard: { status: guard.state.status }, reboot: readReboot(), stacks: await stacks(), services: svc.map(({ name, state }) => ({ name, state })), ...(b === null ? {} : { barb: b }) });
       }
       if (req.method !== "POST" || req.url !== "/action") return send(404, { ok: false, message: "not found" });
       let body = ""; for await (const c of req) { body += c; if (body.length > 10_000) return send(413, { ok: false, message: "too large" }); }
@@ -175,7 +179,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     read: () => restartCounts(checks(), { run, mac: IS_MAC }) });
   // The stacks this computer is the control computer of, each checked on this computer.
   const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME, { computer: env.COMPUTER }),
-    services: () => serviceStates(checks(), { running }), restarts, egress, network });
+    services: () => serviceStates(checks(), { running }), restarts, egress, network,
+    // Barb's state, on the control computer only: the computer that runs the RecursicaChat server.
+    barb: async () => { const s = site(); return s?.nodes?.some((n) => n.name === env.COMPUTER && n.control) ? agentState(s, "barb") : null; } });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());

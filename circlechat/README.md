@@ -515,7 +515,7 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 **Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
 
 1. **Create one GitHub environment per stack** in the private repo. Name each client stack's environment `client-<name>`. Name the cluster's own stack's environment after `site.stack_name` in the cluster's site.json, or `cluster` when site.json sets no name.
-2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
+2. **Require an approval** in each environment's settings, under "Required reviewers", where the GitHub plan offers the setting. A workflow then waits for the approval before the workflow reads the environment's secrets. On a plan without required reviewers, a run reads the secrets at once.
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
@@ -526,10 +526,11 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 
 - A secret with the same value as the file's line stays as the line is, and the log says `<name> unchanged`.
 - With "restart" on, a service restarts only when a value that the service reads changed. jobd reads `JOBD_TOKEN`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. Each service in site.json reads the service's `secret_env`.
-- kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person.
+- kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person. A key rotation is the one exception. See "Rotate the shared tokens".
+- A changed value in the control computer's `.env` restarts nothing. Each program reads `.env` at each run, and the model gateway reads none of the values.
 - The log names the real result for each service: `restarted <service>`, `<service> is not installed`, `<service> failed to restart`, or a restart and then a stop. A failed restart fails the workflow.
 
-**A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that writes a control computer's secrets, the helper takes two steps:
+**A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that changes a control computer's cloud keys, the helper takes two steps:
 
 1. **As root:** the helper writes the gateway's state folder and LiteLLM's master key. On a Mac, the owner owns each one, so Colima's VM can mount the files. The helper refuses a symlinked state folder, and a secrets file with a symlink or a second hard link.
 2. **As the owner:** `setup-host.sh --secrets-only` recreates the model gateway in Docker.
@@ -540,19 +541,71 @@ The helper starts in `/`, so no command the owner runs prints `getcwd` errors fr
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
-| Secret in GitHub                                | File the helper writes                                                                               | Read by                                                                    |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                        |
-| `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The stack's scripts, through the cluster's Slack app                       |
-| `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | Kev's engine key. No kit script reads the key since CircleChat 1.x left    |
-| `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Each job runner, and each program that sends a port job                    |
-| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | Each job runner, which sends each job's result to the webhook              |
-| `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents" |
-| `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                |
+| Secret in GitHub                                | File the helper writes                                                                               | Read by                                                                                          |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                                              |
+| `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The stack's scripts, through the cluster's Slack app                                             |
+| `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | The copy of `KEV_API_KEY` for a program that calls kev-engine. No program calls kev-engine today |
+| `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Each job runner. No program sends a port job today                                               |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | Each job runner, which sends each job's result to the webhook                                    |
+| `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents"                       |
+| `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                                      |
 
 The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too. The Kev notes push's key is `APP_KEY_KEV_DATA`, written to `kev-data.pem` in the same folder. `CC_CHECK_PASSWORD` belonged to CircleChat 1.x's agent check: the helper writes nothing for the secret, and asks for the secret's removal.
 
 **Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
+
+## Rotate the shared tokens
+
+**Rotate the cluster's three shared tokens with `circlechat/deploy/rotate-tokens.sh`.** The tokens are `CLUSTER_TOKEN`, `JOBD_TOKEN` and `KEV_API_KEY`. Run the command in a terminal on any computer with `gh` and Node:
+
+```sh
+circlechat/deploy/rotate-tokens.sh --repo <owner>/<stacks repo> --site <stack folder>/site.json
+```
+
+- `--check` runs the checks and changes nothing.
+- `--only cluster`, `--only jobd` or `--only kev` rotates only the named token. Repeat `--only` for two tokens.
+
+**The command asks for a one-day GitHub token, and the token never shows on the screen.** Paste the token at the prompt. Make a fine-grained personal access token with these settings:
+
+| Setting           | Value                                                       |
+| ----------------- | ----------------------------------------------------------- |
+| Resource owner    | The organization that owns the repo of stacks               |
+| Expiration        | Custom: the next day                                        |
+| Repository access | Only select repositories: the repo of stacks                |
+| Actions           | Read and write: the command starts and reads the runs       |
+| Environments      | Read and write: the command saves the environment's secrets |
+| Metadata          | Read-only, which GitHub always sets                         |
+
+Leave every other permission at "No access". Delete the token after the rotation.
+
+**The command changes one token at a time, and deploys each token before the next one.** Each Deploy secrets run writes every secret in the environment. Changing all three tokens at once would switch all three in the first run.
+
+1. **Checks.** The command checks the token's permissions. Next, a check run on each computer with a kev-engine checks that Barb isn't running. The run also checks that the engine is idle. A check run writes nothing. When a check fails, the command stops, shows why, and changes nothing.
+2. **`CLUSTER_TOKEN`.** The command saves a new value, then starts every computer's run at once. Each cluster agent restarts.
+3. **`JOBD_TOKEN`.** The command saves a new value. The command then starts at once the runs of each computer with jobd and of the control computer. Each jobd restarts.
+4. **`KEV_API_KEY` and `KEV_ENGINE_KEY`.** The command saves one new value in both secrets. The command then runs one computer at a time, the best engine first, as `kev.priority` orders the engines. Each run checks again, then restarts kev-engine once, with the new key. The run waits until the engine answers to the new key.
+
+**Each value is 32 random bytes. No value is ever shown, written to a file or put on a command line.** `gh` gets the one-day token in `GH_TOKEN`, and each value on stdin.
+
+**kev-engine stops only for a key rotation, and only while Barb isn't running and the engine handles no request.** The rotation is the only program that restarts kev-engine. A rotation's run passes `kev_rotation` to the secrets helper, with the SHA-256 of the new key as proof. The helper restarts kev-engine only when the proof matches the new key and the key changed. The helper checks two things before writing anything:
+
+- **Barb isn't running.** The control computer's cluster agent reads Barb's state from the RecursicaChat server's database, and reports the state in `/status`. No agent named Barb passes. A Barb with no message queued or in a turn, and no service request open, passes too. A database the agent can't read fails the check.
+- **The engine is idle.** The helper takes three readings over 10 seconds. No connection is open to the engine's port at any reading. The engine's `GET /v1/models` shows nothing queued, and the same count of answered requests at the first and last readings.
+
+When a check fails, the run writes nothing and fails. The engine keeps running with the key in the engine's file. A connection that opens between the checks and the restart puts the old key back and fails the run.
+
+**After a failed kev-engine run, run the command again with `--only kev` before any other Deploy secrets run.** GitHub then holds the new key, and the failed computer's file holds the old key. Another run would write the new key without a restart. The engine would then hold a different key from the engine's file.
+
+**Each switch stops the token's users for a short time:**
+
+| Token           | What stops, and for how long                                                                                                                                                                                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLUSTER_TOKEN` | Each agent refuses the other's checks and button actions between the two restarts. The gap lasts a few seconds to about a minute. The cluster posts a computer as down only after 3 minutes without an answer. The Slack app reconnects in a few seconds after the Slack app's restart. |
+| `JOBD_TOKEN`    | Each jobd stops for a few seconds while jobd restarts. No program sends a port job today, so no caller has to switch.                                                                                                                                                                   |
+| `KEV_API_KEY`   | Each engine stops while the engine loads the model again, one engine at a time. Kev moves on to the next engine when one engine doesn't answer or refuses Kev's key. No program calls kev-engine today, so no caller has to switch.                                                     |
+
+**The command knows the callers of kev-engine and jobd.** Barb and Porter called the two services from CircleChat 1.x, which was retired on November 21, 2026. No program calls kev-engine or jobd today. When a new program calls kev-engine or jobd, add the program to the callers list at the top of `rotate-tokens.sh`. Then make the rotation write the program's key.
 
 ## GitHub access for agents
 
