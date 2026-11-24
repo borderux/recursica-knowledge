@@ -173,7 +173,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const running = async (c) => (await run("docker", ["inspect", "-f", "{{.State.Running}}", c])).trim() === "true";
   const restarts = new RestartWatch({ computer: env.COMPUTER, stateFile: path.join(stateDir, "restarts.json"), post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
     read: () => restartCounts(checks(), { run, mac: IS_MAC }) });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME),
+  // The stacks this computer is the control computer of, each checked on this computer.
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME, { computer: env.COMPUTER }),
     services: () => serviceStates(checks(), { running }), restarts, egress, network });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {

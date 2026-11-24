@@ -1053,7 +1053,13 @@ Operating system packages are checked each hour, and each stack's container imag
 
 **Each computer's cluster agent asks every other computer's agent for a report every minute.** The agent asks at the other computer's Tailscale address: the node's `tailnet_address` in site.json, or the node's `address`. The control computer's `address` is often `host.docker.internal`, which only the control computer's containers can reach, so give the control computer a `tailnet_address`. The config check warns about a computer that no other agent can reach.
 
-A computer silent for 3 minutes gets one alert in the cluster's channel and in each affected stack's channel. One more alert follows when the computer answers again. A stack counts as up while the stack's site.json can be read, and as locked while the stack's disk image is closed.
+A computer silent for 3 minutes gets one alert in the cluster's channel and in each affected stack's channel. One more alert follows when the computer answers again.
+
+**Each stack's own control computer checks the stack, on that computer.** The stack is up when the stack's RecursicaChat 2.0 server answers at `recursicachat.url`, `http://127.0.0.1:3100` by default. The stack's model gateway must answer at `127.0.0.1:<site.gateway_local_port>` too. Only the control computer lists the stack in the computer's report. A helper keeps a copy of site.json and runs none of the stack's services. So a helper lists no stack. Every other computer learns the stack's state from the control computer's report. No computer checks another computer's stack across Tailscale, because the computers reach only each other's agent there.
+
+A stack down for 3 minutes gets one alert in the stack's channel, and one more when the stack is back. A client stack counts as locked while the stack's disk image is closed. A locked stack gets one reminder in the cluster's channel.
+
+**An agent from before the services report checks CircleChat 1.x's port for each stack.** So the agent reports a stack as down whenever 1.x is gone. A watching computer skips the stacks in such a report. The cluster's channel hears once that the agent needs a restart, with `install-cluster.sh` on that computer.
 
 **Each report also lists the state of the computer's own kit services.** A watching computer posts in the cluster's channel when a service has been down for 3 minutes. The computer posts once more when the service answers again:
 
