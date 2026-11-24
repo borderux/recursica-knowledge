@@ -1,0 +1,27 @@
+# The RecursicaChat 2.0 server's Colima VM: the ports Lima forwards from the VM to the Mac.
+#
+# recursicachat/install.sh installs this file, as the server's account, at
+# /opt/recursicachat/home/.colima/_lima/_config/override.yaml. Lima reads the file at each start of
+# the VM and puts these rules before the rules Colima writes. Lima uses the first rule that matches,
+# so these rules win.
+#
+# Without these rules, two kinds of port reach every address of the Mac:
+# - A port the VM opens on every address (0.0.0.0 or ::). Colima's rule forwards the port to
+#   0.0.0.0 on the Mac.
+# - A port below 1024 that the VM opens on 127.0.0.1 or ::1, such as port 53 of dnsmasq, the VM's
+#   own DNS server. On macOS only root can listen on 127.0.0.1 below port 1024. Lima listens on
+#   every address instead, and closes each connection that doesn't come from the Mac itself.
+portForwards:
+  # Ports 1 to 1023, port 53 included, on any address in the VM, TCP and UDP: never forwarded.
+  - guestIP: "0.0.0.0"
+    guestIPMustBeZero: false
+    guestPortRange: [1, 1023]
+    proto: any
+    ignore: true
+  # Ports 1024 and up that the VM opens on every address: to 127.0.0.1 on the Mac only.
+  # A port the VM opens on 127.0.0.1 or ::1 goes to 127.0.0.1 by Colima's own rule.
+  - guestIP: "0.0.0.0"
+    guestIPMustBeZero: true
+    guestPortRange: [1024, 65535]
+    hostIP: "127.0.0.1"
+    proto: any

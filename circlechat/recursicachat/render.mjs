@@ -43,12 +43,13 @@ export const TEMPLATES = [
   "io.recursica.stack-backup.plist",
   "io.recursica.stack-restore-test.plist",
 ];
-// Copied as they are: the kit's own Colima service script, the PDF text reader's build, and
-// rc-clear's database work.
+// Copied as they are: the kit's own Colima service script, the PDF text reader's build,
+// rc-clear's database work, and the ports the server's Colima VM forwards to the Mac.
 export const COPIED = {
   "colima-service.sh": join(here, "..", "kit", "colima-service.sh"),
   "build-pdftext.sh": join(here, "build-pdftext.sh"),
   "rc-clear.mjs": join(here, "rc-clear.mjs"),
+  "lima-override.yaml": join(here, "lima-override.yaml"),
 };
 
 const PATH = /^\/[A-Za-z0-9._/-]+$/;

@@ -27,6 +27,9 @@
 #                             makes in $CC_DIR/gateway-state/rc-tasks.key. Until that
 #                             copy exists, the script says so and installs neither
 #                             file, and the server runs with no task settings.
+#   /opt/recursicachat/home/  .colima/_lima/_config/override.yaml, from                 _recursicachat 600
+#                             lima-override.yaml: the ports the server's Colima VM
+#                             forwards to the Mac. The server's account writes it.
 # It changes only the files whose text changed, and each file in /etc/recursicachat whose owner,
 # group or mode differs from the list above, so a wrong mode is put right. A changed backup or restore-test job is loaded
 # again at once. A changed server or Colima job is not restarted: the script prints the command,
@@ -112,6 +115,23 @@ else
     install -m 440 -o root -g _recursicachat "$OUT/task-settings.json" "$ETC/task-settings.json"
     echo "task-settings.json installed. The server reads it at its next start."
   fi
+fi
+
+# The ports the server's Colima VM forwards to the Mac (lima-override.yaml): 127.0.0.1 only, and never
+# a port below 1024, such as port 53 of the VM's DNS server. Lima reads the rules from
+# $LIMA_HOME/_config/override.yaml at each start of the VM. The folder belongs to the server's account,
+# so the server's account writes the file, never root: a link in a folder another account owns could
+# lead root's write to one of root's own files.
+RC_HOME=/opt/recursicachat/home
+LIMA_CONFIG="$RC_HOME/.colima/_lima/_config"
+as_server() { /usr/bin/sudo -u _recursicachat -H "$@"; }
+if [ ! -d "$RC_HOME" ] || [ -L "$RC_HOME" ]; then
+  echo "No home folder for the server's account at $RC_HOME yet: lima-override.yaml is not installed."
+elif as_server /bin/sh -c '[ -f "$1" ] && [ ! -L "$1" ] && cmp -s - "$1" && [ "$(stat -f %Lp "$1")" = 600 ]' sh "$LIMA_CONFIG/override.yaml" < "$OUT/lima-override.yaml"; then
+  echo "lima-override.yaml is unchanged"
+else
+  as_server /bin/sh -c 'umask 077 && mkdir -p "$1" && cat > "$1/override.yaml.new" && mv -f "$1/override.yaml.new" "$1/override.yaml"' sh "$LIMA_CONFIG" < "$OUT/lima-override.yaml"
+  echo "lima-override.yaml installed. The server's VM uses it from its next start: sudo launchctl kickstart -k system/io.recursica.recursicachat-colima"
 fi
 
 # sudo rc-deploy and sudo rc-clear: links in /usr/local/bin, only when only root can change that
