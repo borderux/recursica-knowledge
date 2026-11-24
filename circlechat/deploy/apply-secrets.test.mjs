@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import http from "node:http";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "..", "site.example.json"), "utf8"));
@@ -480,4 +481,130 @@ test("every secret the deploy workflow passes is one the helper reads", () => {
   assert.ok(passed.includes("RUSTDESK_RESTIC_PASSWORD"), "the RustDesk backup's secret is in the workflow's list");
   const known = new RegExp(/^KNOWN='(.*)'$/m.exec(fs.readFileSync(path.join(here, "apply-secrets.sh"), "utf8"))[1]);
   for (const name of passed) assert.ok(known.test(name), `${name} is passed by the workflow and ignored by the helper`);
+});
+
+// A deploy with restart on a computer with stand-ins for systemctl and launchctl, and a stand-in for
+// Slack's chat.postMessage. installed: the services that exist; failing: the services that fail to
+// restart.
+const helperName = example.nodes.find((n) => !n.control).name;
+async function restartWorld({ system = "Linux", installed = [], failing = [], slackOk = true } = {}) {
+  const { home, conf } = setup();
+  const fake = fakeSystem(home, system);
+  const log = path.join(home, "units.log");
+  const list = (name, items) => { const f = path.join(home, name); fs.writeFileSync(f, items.map((x) => `${x}\n`).join("")); return f; };
+  const inst = list("installed", installed), fail = list("failing", failing);
+  fs.writeFileSync(path.join(fake.bin, "systemctl"), `#!/usr/bin/env bash
+echo "systemctl $*" >> "${log}"
+case "$1" in
+  cat) grep -qx "\${2%.service}" "${inst}" ;;
+  restart) ! grep -qx "\${2%.service}" "${fail}" ;;
+  is-active) exit 0 ;;
+esac
+`, { mode: 0o755 });
+  fs.writeFileSync(path.join(fake.bin, "launchctl"), `#!/usr/bin/env bash
+echo "launchctl $*" >> "${log}"
+u="\${@: -1}"; u="\${u#system/io.recursica.}"
+case "$1" in
+  print) grep -qx "$u" "${inst}" ;;
+  kickstart) ! grep -qx "$u" "${fail}" ;;
+esac
+`, { mode: 0o755 });
+  // The cluster's file holds the bot token and the channel, as on every computer.
+  fs.writeFileSync(path.join(home, "agent-cluster.env"), "SLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL_ID=C0CLUSTER\nCLUSTER_TOKEN=ct\n", { mode: 0o600 });
+  const posts = [];
+  const slack = http.createServer((q, s) => { let b = ""; q.on("data", (d) => (b += d)); q.on("end", () => {
+    posts.push({ auth: q.headers.authorization, body: JSON.parse(b) }); s.setHeader("content-type", "application/json"); s.end(JSON.stringify(slackOk ? { ok: true } : { ok: false, error: "not_in_channel" })); }); });
+  await new Promise((r) => slack.listen(0, "127.0.0.1", r));
+  const env = { ...fake.env, AGENT_STACKS_SLACK_API: `http://127.0.0.1:${slack.address().port}/api` };
+  const run = (computer, input, restart = "true") => new Promise((resolve) => {
+    const p = spawn("bash", [path.join(here, "apply-secrets.sh"), "cluster", computer, restart], {
+      env: { ...process.env, AGENT_STACKS_CONF: conf, AGENT_CLUSTER_ENV: path.join(home, "agent-cluster.env"), ...env } });
+    let stdout = "", stderr = "";
+    p.stdout.on("data", (d) => (stdout += d)); p.stderr.on("data", (d) => (stderr += d));
+    p.on("close", (status) => resolve({ status, stdout, stderr }));
+    p.stdin.end(input);
+  });
+  const units = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
+  return { home, run, posts, units, close: () => slack.close() };
+}
+const restarts = (units) => units.split("\n").filter((l) => / restart | kickstart /.test(l));
+
+test("an unchanged value restarts nothing", async () => {
+  const w = await restartWorld({ installed: ["jobd", "kev-engine", "mlx-large", "cluster-agent"] });
+  try {
+    fs.writeFileSync(path.join(w.home, ".recursica-node.env"), "JOBD_TOKEN=jt\nKEV_API_KEY=kk\n", { mode: 0o600 });
+    let r = await w.run(helperName, "JOBD_TOKEN=jt\nSLACK_BOT_TOKEN=xoxb-test\nCLUSTER_TOKEN=ct\n");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.match(r.stdout, /  JOBD_TOKEN unchanged in /);
+    assert.match(r.stdout, /  CLUSTER_TOKEN unchanged in /);
+    assert.match(r.stdout, /No value a service reads changed, so nothing restarted\./);
+    r = await w.run(control, "KEV_API_KEY=kk\n");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.deepEqual(restarts(w.units()), [], "no service restarted");
+    assert.deepEqual(w.posts, [], "no post for an unchanged value");
+  } finally { w.close(); }
+});
+
+test("a changed KEV_API_KEY restarts nothing, and posts in the cluster's channel that kev-engine needs a restart by a person", async () => {
+  for (const system of ["Linux", "Darwin"]) {
+    const w = await restartWorld({ system, installed: ["jobd", "kev-engine", "cluster-agent"] });
+    try {
+      fs.writeFileSync(path.join(w.home, ".recursica-node.env"), "KEV_API_KEY=old-kev-key\n", { mode: 0o600 });
+      for (const restart of ["true", "false"]) {
+        const value = `new-kev-key-${restart}`;
+        const r = await w.run(control, `KEV_API_KEY=${value}\n`, restart);
+        assert.equal(r.status, 0, r.stdout + r.stderr);
+        assert.match(fs.readFileSync(path.join(w.home, ".recursica-node.env"), "utf8"), new RegExp(`^KEV_API_KEY=${value}$`, "m"), "the value is written");
+        assert.match(r.stdout, /  kev-engine not restarted: a deploy never restarts kev-engine\. KEV_API_KEY changed, so kev-engine needs a restart by a person\./);
+        assert.match(r.stdout, /  Posted in the cluster's channel: kev-engine needs a restart by a person\./);
+        assert.ok(!r.stdout.includes(value), "the value is never printed");
+      }
+      assert.deepEqual(restarts(w.units()), [], `${system}: kev-engine and every other service keep running`);
+      assert.equal(w.posts.length, 2);
+      for (const p of w.posts) {
+        assert.equal(p.auth, "Bearer xoxb-test");
+        assert.equal(p.body.channel, "C0CLUSTER");
+        assert.equal(p.body.username, control);
+        assert.match(p.body.text, new RegExp(`kev-engine on ${control} needs a restart by a person: the secrets deploy of stack cluster changed KEV_API_KEY\\.`));
+        assert.ok(!p.body.text.includes("new-kev-key"), "the post never holds the value");
+      }
+    } finally { w.close(); }
+  }
+});
+
+test("a failed post says so in the log, and the deploy still restarts nothing", async () => {
+  const w = await restartWorld({ installed: ["kev-engine"], slackOk: false });
+  try {
+    const r = await w.run(control, "KEV_API_KEY=changed\n");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.match(r.stdout, /  The post in the cluster's channel failed \(Slack answered not_in_channel\)\. Restart kev-engine by hand when the engine is idle\./);
+    assert.deepEqual(restarts(w.units()), []);
+  } finally { w.close(); }
+});
+
+test("a service that is missing or fails to restart is never reported as restarted", async () => {
+  for (const system of ["Linux", "Darwin"]) {
+    let w = await restartWorld({ system, installed: [] });
+    try {
+      const r = await w.run(helperName, "JOBD_TOKEN=new-token\n");
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, new RegExp(`  jobd is not installed on ${helperName}: nothing restarted\\n`));
+      assert.doesNotMatch(r.stdout, /restarted jobd/);
+    } finally { w.close(); }
+    w = await restartWorld({ system, installed: ["jobd"], failing: ["jobd"] });
+    try {
+      const r = await w.run(helperName, "JOBD_TOKEN=new-token\n");
+      assert.equal(r.status, 1, "a failed restart fails the deploy");
+      assert.match(r.stdout, /  jobd failed to restart\n/);
+      assert.match(r.stdout, /Failed to restart: jobd\./);
+      assert.doesNotMatch(r.stdout, /restarted jobd/);
+    } finally { w.close(); }
+    w = await restartWorld({ system, installed: ["jobd", "mlx-large"] });
+    try {
+      const r = await w.run(helperName, "JOBD_TOKEN=new-token\n");
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /  restarted jobd\n/);
+      assert.doesNotMatch(r.stdout, /mlx-large/, "a service that reads no changed value keeps running");
+    } finally { w.close(); }
+  }
 });

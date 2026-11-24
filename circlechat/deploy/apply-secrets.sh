@@ -121,6 +121,12 @@ ROLES="$("$NODE_BIN" -e '
   console.log(r.join(" ") || "none");
 ' "$SITE" "$COMPUTER")"
 [ "$ROLES" != none ] || { echo "Computer $COMPUTER runs nothing for stack $STACK in $SITE."; exit 1; }
+# Each service of this computer, with the names of the secrets the service reads: "name:A,B".
+SERVICE_READS="$("$NODE_BIN" -e '
+  const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  const n = (s.nodes ?? []).find((x) => x.name === process.argv[2]);
+  console.log((n?.services ?? []).map((v) => `${v.name}:${(v.secret_env ?? []).join(",")}`).join(" "));
+' "$SITE" "$COMPUTER")"
 
 # A client or demo stack without a recorded permission runs local models only, so no cloud
 # key may reach the stack. The helper refuses the whole run before writing anything.
@@ -163,10 +169,17 @@ if [[ " $ROLES " == *" control "* ]] && { [ -L "$CC_DIR/model-keys.env" ] || [ -
   echo "Refused: $CC_DIR/model-keys.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
 
-# Replace or add one KEY=value line, keeping every other line and the file's owner.
+# The value of one KEY=value line in a file, or nothing. Never printed to the log.
+cur_val() { [ -f "$1" ] && awk -v k="$2" 'index($0, k "=") == 1 { print substr($0, length(k) + 2); exit }' "$1"; }
+
+# Replace or add one KEY=value line, keeping every other line and the file's owner. Returns 1, and
+# changes nothing, when the file holds the same value: a service restarts only for a changed value.
+#   set_kv <file> <name> <value> [<owner of a new file>]
 set_kv() {
-  local f="$1" k="$2" v="$3" tmp
-  [ -f "$f" ] || { install -m 600 -o "$OWNER" /dev/null "$f"; }
+  local f="$1" k="$2" v="$3" owner="${4:-$OWNER}" tmp
+  if [ -f "$f" ] && grep -q "^$k=" "$f" && [ "$(cur_val "$f" "$k")" = "$v" ]; then echo "  $k unchanged in $f"; return 1; fi
+  # A file of root's is created by root, which runs this script: install needs no -o for root.
+  if [ ! -f "$f" ]; then if [ "$owner" = root ]; then install -m 600 /dev/null "$f"; else install -m 600 -o "$owner" /dev/null "$f"; fi; fi
   tmp="$(mktemp)"
   awk -v k="$k" 'index($0, k "=") != 1' "$f" > "$tmp"
   printf '%s=%s\n' "$k" "$v" >> "$tmp"
@@ -183,18 +196,21 @@ drop_kv() {
   echo "  $k removed from $f"
 }
 
+# The names of the secrets whose values changed, for each file.
+CHANGED_NODE=" " CHANGED_CLUSTER=" "
 WROTE_CONTROL=false
 WROTE_APPS=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
-    has "$k" && { set_kv "$CC_DIR/.env" "$k" "$(val "$k")"; WROTE_CONTROL=true; }
+    if has "$k" && set_kv "$CC_DIR/.env" "$k" "$(val "$k")"; then WROTE_CONTROL=true; fi
   done
   # Cloud keys go to the gateway's secrets file, which root owns and only the gateway reads.
   KEYS_FILE="$CC_DIR/model-keys.env"
   for k in $NAMES; do
     case "$k" in MODEL_KEY_*) name="$k" ;; ANTHROPIC_API_KEY) name=MODEL_KEY_DEFAULT ;; *) continue ;; esac
     [ "$k" = ANTHROPIC_API_KEY ] && has MODEL_KEY_DEFAULT && continue
+    if [ -f "$KEYS_FILE" ] && grep -q "^$name=" "$KEYS_FILE" && [ "$(cur_val "$KEYS_FILE" "$name")" = "$(val "$k")" ]; then echo "  $name unchanged in $KEYS_FILE"; continue; fi
     [ -f "$KEYS_FILE" ] || install -m 600 /dev/null "$KEYS_FILE"
     tmp="$(mktemp)"; awk -v k="$name" 'index($0, k "=") != 1' "$KEYS_FILE" > "$tmp"
     printf '%s=%s\n' "$name" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$KEYS_FILE"; rm -f "$tmp"
@@ -219,6 +235,7 @@ if [[ " $ROLES " == *" control "* ]]; then
     while [ "${pem%$'\n'}" != "$pem" ]; do pem="${pem%$'\n'}"; done
     case "$pem" in "-----BEGIN "*"PRIVATE KEY-----"*"-----END "*"PRIVATE KEY-----") ;; *) echo "  $k skipped: the value is not a private key in PEM form"; continue ;; esac
     mkdir -p "$APP_KEYS"; chmod 700 "${APP_KEYS%/*}" "$APP_KEYS"
+    if [ -f "$APP_KEYS/$match.pem" ] && [ ! -L "$APP_KEYS/$match.pem" ] && [ "$(cat "$APP_KEYS/$match.pem")" = "$pem" ]; then echo "  $k unchanged in $APP_KEYS/$match.pem"; continue; fi
     [ ! -L "$APP_KEYS/$match.pem" ] || rm -f "$APP_KEYS/$match.pem"
     tmp="$(mktemp "$APP_KEYS/.new.XXXXXX")"; printf '%s\n' "$pem" > "$tmp"; chmod 600 "$tmp"; mv -f "$tmp" "$APP_KEYS/$match.pem"
     echo "  $k -> $APP_KEYS/$match.pem"; WROTE_APPS=true
@@ -246,7 +263,6 @@ fi
 # helper's file holds.
 CLUSTER_ENV="${AGENT_CLUSTER_ENV:-/etc/agent-cluster.env}"
 CONTROL_ONLY='^(SLACK_APP_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+)$'
-WROTE_CLUSTER=false
 DROPPED_CLUSTER=false
 if [ -z "$TENANT" ]; then
   IS_CONTROL=false; [[ " $ROLES " == *" control "* ]] && IS_CONTROL=true
@@ -255,29 +271,25 @@ if [ -z "$TENANT" ]; then
       if [ "$IS_CONTROL" = false ] && [[ "$k" =~ $CONTROL_ONLY ]]; then
         echo "  $k skipped: only the control computer's Slack app reads $k"; continue
       fi
-      [ -f "$CLUSTER_ENV" ] || install -m 600 /dev/null "$CLUSTER_ENV"
-      tmp="$(mktemp)"; awk -v k="$k" 'index($0, k "=") != 1' "$CLUSTER_ENV" > "$tmp"
-      printf '%s=%s\n' "$k" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$CLUSTER_ENV"; rm -f "$tmp"
-      echo "  $k -> $CLUSTER_ENV"; WROTE_CLUSTER=true ;;
+      if set_kv "$CLUSTER_ENV" "$k" "$(val "$k")" root; then CHANGED_CLUSTER="$CHANGED_CLUSTER$k "; fi ;;
     esac
   done
   if [ "$IS_CONTROL" = false ] && [ -f "$CLUSTER_ENV" ]; then
     for k in $(awk -F= '{ print $1 }' "$CLUSTER_ENV"); do
       [[ "$k" =~ $CONTROL_ONLY ]] || continue
-      drop_kv "$CLUSTER_ENV" "$k"; WROTE_CLUSTER=true; DROPPED_CLUSTER=true
+      drop_kv "$CLUSTER_ENV" "$k"; DROPPED_CLUSTER=true
     done
   fi
 fi
 
-WROTE_NODE=false
 if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *" rustdesk "* ]]; then
   echo "Services of stack $STACK on $COMPUTER:"
   for k in KEV_API_KEY JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
-    has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }
+    if has "$k" && set_kv "$NODE_ENV" "$k" "$(val "$k")"; then CHANGED_NODE="$CHANGED_NODE$k "; fi
   done
   # The RustDesk server's backup secret, only on the computer that runs the server. The backup
   # reads it at each run, so nothing restarts for it.
-  if [[ " $ROLES " == *" rustdesk "* ]] && has RUSTDESK_RESTIC_PASSWORD; then set_kv "$NODE_ENV" RUSTDESK_RESTIC_PASSWORD "$(val RUSTDESK_RESTIC_PASSWORD)"; fi
+  if [[ " $ROLES " == *" rustdesk "* ]] && has RUSTDESK_RESTIC_PASSWORD; then set_kv "$NODE_ENV" RUSTDESK_RESTIC_PASSWORD "$(val RUSTDESK_RESTIC_PASSWORD)" || true; fi
   # Port jobs reach cloud models through the gateway, with a key for each task. The node secrets
   # file holds no cloud key.
   has PORTER_ANTHROPIC_API_KEY && echo "  PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway. Rename the secret to MODEL_KEY_PORTER, and name porter in that key's agents in site.json."
@@ -287,6 +299,42 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
   "$CHOWN" "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
+# True when one of the names in $2 (comma or space separated) is in the list $1.
+changed_any() { local n; for n in ${2//,/ }; do [[ "$1" == *" $n "* ]] && return 0; done; return 1; }
+
+# Post one line in the cluster's channel, with the bot token and the channel in the cluster's file.
+# Root reads the file. The token never reaches a command line or the log.
+post_cluster() {
+  "$NODE_BIN" -e '
+    const fs = require("fs");
+    const [file, computer, text, api] = process.argv.slice(1);
+    const env = {};
+    try { for (const l of fs.readFileSync(file, "utf8").split("\n")) { const i = l.indexOf("="); if (i > 0) env[l.slice(0, i)] = l.slice(i + 1); } } catch {}
+    if (!env.SLACK_BOT_TOKEN || !env.SLACK_CHANNEL_ID) { console.log(`${file} has no SLACK_BOT_TOKEN or SLACK_CHANNEL_ID`); process.exit(1); }
+    fetch(`${api}/chat.postMessage`, { method: "POST", signal: AbortSignal.timeout(15000),
+      headers: { authorization: `Bearer ${env.SLACK_BOT_TOKEN}`, "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ channel: env.SLACK_CHANNEL_ID, text, username: computer }) })
+      .then((r) => r.json()).then((j) => { if (!j.ok) { console.log(`Slack answered ${j.error}`); process.exit(1); } })
+      .catch((e) => { console.log(e.message); process.exit(1); });
+  ' "$CLUSTER_ENV" "$COMPUTER" "$1" "${AGENT_STACKS_SLACK_API:-https://slack.com/api}"
+}
+
+# kev-engine never restarts from a deploy, on any computer: a restart stops the engine's work. When
+# a value kev-engine reads changed, the deploy writes the value and asks a person, in the cluster's
+# channel, to restart kev-engine.
+for sv in $SERVICE_READS; do
+  name="${sv%%:*}" reads="${sv#*:}"
+  case "$name" in kev-engine|kev-engine-*) ;; *) continue ;; esac
+  changed_any "$CHANGED_NODE" "$reads" || continue
+  names=""; for n in ${reads//,/ }; do [[ "$CHANGED_NODE" == *" $n "* ]] && names="$names${names:+, }$n"; done
+  echo "  $name not restarted: a deploy never restarts $name. $names changed, so $name needs a restart by a person."
+  if why="$(post_cluster ":warning: $name on $COMPUTER needs a restart by a person: the secrets deploy of stack $STACK changed $names. A deploy never restarts $name.")"; then
+    echo "  Posted in the cluster's channel: $name needs a restart by a person."
+  else
+    echo "  The post in the cluster's channel failed ($why). Restart $name by hand when the engine is idle."
+  fi
+done
+
 if [ "$RESTART" != true ]; then
   # The running cluster agent read the removed secrets at the agent's start.
   if [ "$DROPPED_CLUSTER" = true ]; then echo "  The cluster agent holds the removed secrets until the agent restarts. Run the deploy again with restart, or restart cluster-agent."; fi
@@ -294,21 +342,38 @@ if [ "$RESTART" != true ]; then
   exit 0
 fi
 
+# Restart one service, and print the real result: restarted, not installed, failed to restart, or
+# stopped after the restart.
+RESTARTED=0 FAILED=""
 restart_unit() {
-  if [ "$(uname -s)" = Darwin ]; then launchctl kickstart -k "system/io.recursica.$1"
-  else systemctl restart "$1"; fi
-  echo "  restarted $1"
+  local u="$1"
+  if [ "$(uname -s)" = Darwin ]; then
+    if ! launchctl print "system/io.recursica.$u" >/dev/null 2>&1; then echo "  $u is not installed on $COMPUTER: nothing restarted"; return 0; fi
+    if launchctl kickstart -k "system/io.recursica.$u" >/dev/null 2>&1; then echo "  restarted $u"; RESTARTED=$((RESTARTED + 1))
+    else echo "  $u failed to restart"; FAILED="$FAILED $u"; fi
+    return 0
+  fi
+  if ! systemctl cat "$u.service" >/dev/null 2>&1; then echo "  $u is not installed on $COMPUTER: nothing restarted"; return 0; fi
+  if ! systemctl restart "$u.service" >/dev/null 2>&1; then echo "  $u failed to restart"; FAILED="$FAILED $u"; return 0; fi
+  if systemctl is-active --quiet "$u.service"; then echo "  restarted $u"; RESTARTED=$((RESTARTED + 1))
+  else echo "  $u restarted, then stopped. Read the service's log: journalctl -u $u"; FAILED="$FAILED $u"; fi
 }
-if [ "$WROTE_NODE" = true ]; then
-  [[ " $ROLES " == *" jobs "* ]] && restart_unit "jobd$SUFFIX"
-  for r in $ROLES; do case "$r" in service:*) restart_unit "${r#service:}" ;; esac; done
-fi
-# The token service reads each app's private key when the service starts.
-if [ "$WROTE_APPS" = true ]; then restart_unit "github-tokens$SUFFIX" 2>/dev/null || echo "  github-tokens$SUFFIX is not installed yet: run setup-host.sh once"; fi
-# The cluster agent and the Slack app read the cluster's secrets when they start.
-if [ "$WROTE_CLUSTER" = true ]; then
-  for u in cluster-agent cluster-bot; do restart_unit "$u" 2>/dev/null || true; done
-fi
+# Each service restarts only when a value the service reads changed.
+#   jobd: JOBD_TOKEN, PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL and PORTER_HOOK_SECRET
+#   each service in site.json: the service's secret_env. kev-engine never restarts (above).
+#   the token service: the apps' private keys
+#   the cluster agent: SLACK_BOT_TOKEN, SLACK_CHANNEL_ID and CLUSTER_TOKEN, and a removed line,
+#     which the running agent still holds
+#   the Slack app: every cluster secret
+if [[ " $ROLES " == *" jobs "* ]] && changed_any "$CHANGED_NODE" "JOBD_TOKEN PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET"; then restart_unit "jobd$SUFFIX"; fi
+for sv in $SERVICE_READS; do
+  name="${sv%%:*}" reads="${sv#*:}"
+  case "$name" in kev-engine|kev-engine-*) continue ;; esac
+  if changed_any "$CHANGED_NODE" "$reads"; then restart_unit "$name"; fi
+done
+if [ "$WROTE_APPS" = true ]; then restart_unit "github-tokens$SUFFIX"; fi
+if [ "$DROPPED_CLUSTER" = true ] || changed_any "$CHANGED_CLUSTER" "SLACK_BOT_TOKEN SLACK_CHANNEL_ID CLUSTER_TOKEN"; then restart_unit cluster-agent; fi
+if [ "$CHANGED_CLUSTER" != " " ] && [[ " $ROLES " == *" control "* ]]; then restart_unit cluster-bot; fi
 if [ "$WROTE_CONTROL" = true ]; then
   # The gateway reads the secrets file when the gateway starts, so the kit recreates the gateway.
   # The owner needs no sudo for this: the helper takes each step that needs root, and the owner
@@ -336,4 +401,6 @@ if [ "$WROTE_CONTROL" = true ]; then
   sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
     PATH="$(dirname "$NODE_BIN"):$PATH" bash "$KIT/circlechat/setup-host.sh" --secrets-only </dev/null
 fi
+if [ -n "$FAILED" ]; then echo "Secrets written for stack $STACK on $COMPUTER. Failed to restart:$FAILED."; exit 1; fi
+if [ "$RESTARTED" = 0 ] && [ "$WROTE_CONTROL" = false ]; then echo "Secrets written for stack $STACK on $COMPUTER. No value a service reads changed, so nothing restarted."; exit 0; fi
 echo "Secrets written and applied for stack $STACK on $COMPUTER."
