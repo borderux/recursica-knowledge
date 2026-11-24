@@ -234,19 +234,39 @@ if [[ " $ROLES " == *" control "* ]]; then
   fi
 fi
 
-# The cluster's own secrets: the Slack app, the cluster token and the approvers' authenticator
-# secrets. They belong to the cluster's own stack, and go to every computer that stack deploys to.
+# The cluster's own secrets, for the cluster's own stack only, in /etc/agent-cluster.env:
+#   - Every computer: SLACK_BOT_TOKEN, SLACK_CHANNEL_ID and CLUSTER_TOKEN. On each computer, the
+#     cluster agent (cluster/agent.mjs) and the hourly update job (cluster/updater.mjs) read the
+#     three secrets. The RustDesk backup posts to Slack with the first two (cluster/post.mjs).
+#   - The control computer only: SLACK_APP_TOKEN, APPROVERS and each TOTP_SECRET_<NAME>. Only the
+#     cluster's Slack app reads the secrets (cluster/bot.mjs), and only the control computer runs
+#     the Slack app (cluster/install-cluster.sh). With an approver's TOTP secret, root on a helper
+#     could make valid approval codes.
+# A deploy to a helper writes none of the control computer's secrets, and removes each one that the
+# helper's file holds.
 CLUSTER_ENV="${AGENT_CLUSTER_ENV:-/etc/agent-cluster.env}"
+CONTROL_ONLY='^(SLACK_APP_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+)$'
 WROTE_CLUSTER=false
+DROPPED_CLUSTER=false
 if [ -z "$TENANT" ]; then
+  IS_CONTROL=false; [[ " $ROLES " == *" control "* ]] && IS_CONTROL=true
   for k in $NAMES; do
     case "$k" in SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_*)
+      if [ "$IS_CONTROL" = false ] && [[ "$k" =~ $CONTROL_ONLY ]]; then
+        echo "  $k skipped: only the control computer's Slack app reads $k"; continue
+      fi
       [ -f "$CLUSTER_ENV" ] || install -m 600 /dev/null "$CLUSTER_ENV"
       tmp="$(mktemp)"; awk -v k="$k" 'index($0, k "=") != 1' "$CLUSTER_ENV" > "$tmp"
       printf '%s=%s\n' "$k" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$CLUSTER_ENV"; rm -f "$tmp"
       echo "  $k -> $CLUSTER_ENV"; WROTE_CLUSTER=true ;;
     esac
   done
+  if [ "$IS_CONTROL" = false ] && [ -f "$CLUSTER_ENV" ]; then
+    for k in $(awk -F= '{ print $1 }' "$CLUSTER_ENV"); do
+      [[ "$k" =~ $CONTROL_ONLY ]] || continue
+      drop_kv "$CLUSTER_ENV" "$k"; WROTE_CLUSTER=true; DROPPED_CLUSTER=true
+    done
+  fi
 fi
 
 WROTE_NODE=false
@@ -268,6 +288,8 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* || " $ROLES " == *
 fi
 
 if [ "$RESTART" != true ]; then
+  # The running cluster agent read the removed secrets at the agent's start.
+  if [ "$DROPPED_CLUSTER" = true ]; then echo "  The cluster agent holds the removed secrets until the agent restarts. Run the deploy again with restart, or restart cluster-agent."; fi
   echo "Secrets written. Nothing restarted."
   exit 0
 fi

@@ -246,6 +246,59 @@ test("the cluster's secrets go to the cluster file, for the cluster's own stack 
   assert.match(f, /^TOTP_SECRET_PERSON_A=ABC$/m);
 });
 
+const helper = example.nodes.find((n) => !n.control).name;
+const CLUSTER_SECRETS = "SLACK_APP_TOKEN=xapp-1\nSLACK_BOT_TOKEN=xoxb-1\nSLACK_CHANNEL_ID=C0123\nCLUSTER_TOKEN=ct\nAPPROVERS=U012=person_a,U034=person_b\nTOTP_SECRET_PERSON_A=ABCDEFGH\nTOTP_SECRET_PERSON_B=IJKLMNOP\n";
+const CONTROL_ONLY = /^(SLACK_APP_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]*)=/m;
+
+test("the control computer gets every cluster secret", () => {
+  const { home, conf } = setup();
+  const r = apply(conf, ["cluster", control, "false"], CLUSTER_SECRETS);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const f = fs.readFileSync(path.join(home, "agent-cluster.env"), "utf8");
+  for (const k of ["SLACK_APP_TOKEN", "SLACK_BOT_TOKEN", "SLACK_CHANNEL_ID", "CLUSTER_TOKEN", "APPROVERS", "TOTP_SECRET_PERSON_A", "TOTP_SECRET_PERSON_B"]) assert.match(f, new RegExp(`^${k}=`, "m"), k);
+});
+
+test("a helper gets only the bot token, the channel and the cluster token, never the app token, APPROVERS or a TOTP secret", () => {
+  const { home, conf } = setup();
+  const r = apply(conf, ["cluster", helper, "false"], CLUSTER_SECRETS);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(path.join(home, "agent-cluster.env"), "utf8"), "SLACK_BOT_TOKEN=xoxb-1\nSLACK_CHANNEL_ID=C0123\nCLUSTER_TOKEN=ct\n");
+  for (const k of ["SLACK_APP_TOKEN", "APPROVERS", "TOTP_SECRET_PERSON_A", "TOTP_SECRET_PERSON_B"]) {
+    assert.match(r.stdout, new RegExp(`  ${k} skipped: only the control computer's Slack app reads ${k}\n`), k);
+  }
+  assert.ok(!r.stdout.includes("ABCDEFGH") && !r.stdout.includes("xapp-1"), "a secret's value is never printed");
+});
+
+test("a deploy to a helper removes each control-only line the helper's file holds, and names each line", () => {
+  for (const input of [CLUSTER_SECRETS, "SLACK_BOT_TOKEN=xoxb-2\n", "JOBD_TOKEN=jt\n"]) {
+    const { home, conf } = setup();
+    const file = path.join(home, "agent-cluster.env");
+    fs.writeFileSync(file, "SLACK_APP_TOKEN=xapp-old\nSLACK_BOT_TOKEN=xoxb-old\nAPPROVERS=U012=person_a\nTOTP_SECRET_PERSON_A=OLDOLDOL\nCLUSTER_TOKEN=ct-old\nTOTP_SECRET_PERSON_B=OLDOLDOM\n", { mode: 0o600 });
+    const r = apply(conf, ["cluster", helper, "false"], input);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const f = fs.readFileSync(file, "utf8");
+    assert.doesNotMatch(f, CONTROL_ONLY, `after a deploy of ${JSON.stringify(input)}`);
+    assert.match(f, /^SLACK_BOT_TOKEN=xoxb-/m);
+    assert.match(f, /^CLUSTER_TOKEN=ct/m);
+    for (const k of ["SLACK_APP_TOKEN", "APPROVERS", "TOTP_SECRET_PERSON_A", "TOTP_SECRET_PERSON_B"]) assert.match(r.stdout, new RegExp(`  ${k} removed from ${file}\n`), k);
+    assert.match(r.stdout, /The cluster agent holds the removed secrets until the agent restarts\./);
+    assert.equal(fs.statSync(file).mode & 0o777, 0o600, "the file keeps mode 600");
+  }
+});
+
+test("a client stack's deploy never touches the cluster file", () => {
+  const { home, conf } = setup();
+  const file = path.join(home, "agent-cluster.env");
+  fs.writeFileSync(file, "TOTP_SECRET_PERSON_A=ABCDEFGH\n", { mode: 0o600 });
+  const site = structuredClone(example);
+  Object.assign(site.site, { tenant: "acme", kind: "client" });
+  fs.mkdirSync(path.join(home, "tenants", "acme", "circlechat"), { recursive: true });
+  fs.writeFileSync(path.join(home, "tenants", "acme", "circlechat", "site.json"), JSON.stringify(site));
+  const r = apply(conf, ["client-acme", helper, "false"], CLUSTER_SECRETS);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(fs.readFileSync(file, "utf8"), "TOTP_SECRET_PERSON_A=ABCDEFGH\n");
+});
+
 // A private key in PEM form, as the workflow passes the key: each line break as the two characters \n.
 const PEM = "-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEAtest+key/body=\\n-----END RSA PRIVATE KEY-----\\n";
 

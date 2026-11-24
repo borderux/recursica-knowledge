@@ -343,7 +343,6 @@ To apply it on a Mac set up before the file existed:
    docker rm -f forward-check
    ```
 
-
 ## The job runners and port jobs
 
 A port is too long and too heavy for an agent turn, so each port runs as a **job** on a **job
@@ -939,6 +938,15 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
    - `APPROVERS`: Slack user IDs and names, such as `U012=person_a,U034=person_b`.
    - Each approver's `TOTP_SECRET_<NAME>`, from `enroll.mjs`.
 4. Set `site.slack_channel_id` in each stack's site.json, so uptime alerts reach the stack's own channel.
+
+**Only the control computer gets the Slack app's token and the approvers' secrets.** The deploy writes the cluster's secrets to `/etc/agent-cluster.env` on each computer:
+
+| Secret                                                    | Computers                                                                                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`, `CLUSTER_TOKEN`    | Every computer. The cluster agent, the update job and the RustDesk backup read the secrets.                        |
+| `SLACK_APP_TOKEN`, `APPROVERS`, each `TOTP_SECRET_<NAME>` | The control computer only. Only the Slack app reads the secrets, and only the control computer runs the Slack app. |
+
+An approver's TOTP secret makes valid approval codes, so the secret stays off every helper. A deploy to a helper removes each control-only line from the helper's file. The deploy's log names each removed line.
 
 **Each Slack message names the computer or the stack that sent it.** The sender's name replaces the app's name on the message:
 
