@@ -66,7 +66,7 @@ export const SETUPS = {
     "circlechat/setup-node.sh", "circlechat/kit/lib.sh", "circlechat/kit/render.mjs", "circlechat/egress/", "circlechat/jobd/porter-job/",
     "circlechat/rustdesk/",
   ],
-  "install-cluster.sh": ["circlechat/cluster/install-cluster.sh", "circlechat/kit/lib.sh", "circlechat/cluster/firewall/"],
+  "install-cluster.sh": ["circlechat/cluster/install-cluster.sh", "circlechat/kit/lib.sh", "circlechat/cluster/firewall/", "circlechat/cluster/canary-keys.sh"],
 };
 const ORDER = Object.keys(SETUPS);
 
