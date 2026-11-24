@@ -14,6 +14,10 @@
 //   - An update that interrupts work waits until RecursicaChat 2.0 on this computer is quiet
 //     (quiet.mjs): a Tailscale, Ollama, Colima or Lima update, and an image pin that recreates the
 //     gateway. The cluster's channel hears once that it waits.
+//   - With updates.follow "main", each kit service whose own code files changed since the service
+//     started restarts, so the service runs the new code (restarts.mjs). The heavy services, such
+//     as the model gateway, wait until RecursicaChat is quiet. The job never restarts RecursicaChat
+//     this way, and never reruns a setup this way.
 //   - A kit checkout that kit/check-kit.sh refuses stops the job before any update. The cluster's
 //     channel hears the reason and the fix once, then again for a new reason or after 24 hours.
 //     Each other post about a wait for a person follows the same rule (notice.mjs).
@@ -138,6 +142,21 @@ async function followStep({ env, site, control, stacks, chat, state }) {
   console.log(`kit follows main: ${result}`);
 }
 
+// The kit services that run old code restart (restarts.mjs). Each hour, after the follow step, so a
+// heavy service that waited for a quiet RecursicaChat restarts at a later hour.
+async function restartKit({ env, site, control, stacks, chat, state }) {
+  const { instances, realRestartDeps, restartStep, stackContainers } = await import("./restarts.mjs");
+  const { serverQuiet } = await import("./quiet.mjs");
+  const { stackPaths } = await import("./root-steps.mjs");
+  const local = stacks.map((st) => ({ ...st, ...stackPaths(env.OWNER_HOME, st.ccDir) }));
+  const done = await restartStep({
+    computer: env.COMPUTER, services: instances(control ? stackContainers(local) : []), deps: realRestartDeps({ env }), state,
+    quiet: () => (control ? serverQuiet(site) : { quiet: true, why: "" }),
+    post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
+  });
+  if (done.length) console.log(`kit services restarted: ${done.join(", ")}`);
+}
+
 async function main() {
   const env = process.env;
   const stateFile = "/var/lib/agent-cluster/updater.json";
@@ -196,7 +215,10 @@ async function main() {
   const { dailySummary } = await import("./daily-summary.mjs");
   await dailySummary({ env, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text) }).catch((e) => console.error(`daily summary: ${e.message}`));
   // The kit checkout follows main. The step runs last, so the update job loads no module from the new commit.
-  if (followsMain(site)) await followStep({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit follows main: ${e.message}`));
+  if (followsMain(site)) {
+    await followStep({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit follows main: ${e.message}`));
+    await restartKit({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit restarts: ${e.message}`));
+  }
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
   const run = (cmd, args) => spawnSync(cmd, args, { stdio: "inherit" }).status;
   for (const c of refreshRootCopies({ kit: env.KIT, mac: process.platform === "darwin", run })) console.log(`${c}: installed again from the kit`);

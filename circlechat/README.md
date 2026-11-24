@@ -982,6 +982,31 @@ The job never runs `rc-deploy`. A new RecursicaChat 2.0 server still waits for `
 
 **A setup runs again only when the owner has password-free sudo.** Each of the three setups calls sudo as the owner. Without password-free sudo, the channel's line names each command to run by hand. On the control computer, `setup-host.sh --upgrade` still runs, with root's own steps, as in an upgrade. The line asks for the full `setup-host.sh` only when the change adds or removes a service or a job.
 
+#### Kit services after an update
+
+**Each hour, the update job restarts each kit service whose own code changed since the service started** (`cluster/restarts.mjs`). A running service keeps the code the service started with. Without a restart, the service runs old code after a fast-forward. A service's own code is the service's entry file and each file the entry imports, followed through every import. The job compares each file's change time with the service's start time. git writes each changed file anew, at the fast-forward.
+
+| Service                  | The service's own code                                                                     | Restarts                    |
+| ------------------------ | ------------------------------------------------------------------------------------------ | --------------------------- |
+| The cluster agent        | `cluster/agent.mjs` and the agent's imports, the network check included                    | At once                     |
+| The cluster's Slack app  | `cluster/bot.mjs` and the app's imports                                                    | At once                     |
+| jobd                     | `jobd/jobd.mjs`                                                                            | At once                     |
+| The GitHub token service | `github/token-service.mjs` and the service's imports                                       | At once                     |
+| The model gateway        | The copy of `gateway/*.mjs` and `gateway/package.json` in the stack's `gateway-app` folder | When RecursicaChat is quiet |
+| LiteLLM                  | `gateway/start-litellm.py`                                                                 | When RecursicaChat is quiet |
+| kev-engine               | None in the kit: kev-engine runs from the engine's own checkout                            | Never for a kit change      |
+
+- The model gateway runs a copy of the router's files. When the copy differs from the kit's files, the job copies the kit's files into `gateway-app` and restarts the gateway.
+- Quiet means no agent turn running or queued and no service run open, as "Updates that interrupt work" describes. The channel hears once that the heavy services wait, then again every 24 hours.
+- Each restart posts one line in the cluster's channel, with the service and the kit's commit. A failed restart posts the last lines of the output.
+- The job leaves alone a service that isn't installed, isn't running, or has no known start time. On Linux, the start time comes from systemd. On a Mac, the start time comes from the job's process. A container's start time comes from Docker.
+- The job never runs a setup this way. The job never restarts these services:
+  - RecursicaChat, or a RecursicaChat job
+  - the firewall's start-up job
+  - the decoys
+  - Ollama
+  - the update job
+
 **A failed setup leaves the kit checkout at the new commit for a person to look at.** The channel's line ends with the last lines of the setup's output. Text that looks like a key or a token is hidden. The job runs no other setup after the failed one. The next update waits for a newer commit on main, such as a fix. That update runs the failed setup again, with each setup the newer change touches.
 
 **The job never applies a change that can cut remote access or interrupt running work.** A held step, a "network step" in the kit's markers, is a setup step of either kind:
@@ -1074,7 +1099,7 @@ A trial Ollama server that no route names isn't watched. The report holds each s
 
 **A kit service that restarts more than 3 times in an hour gets one post** in the cluster's channel. The computer itself posts. The count comes from systemd's `NRestarts`, launchd's `runs` or Docker's `RestartCount`. After the count of the last hour drops back to 3 or fewer, a new run of restarts posts again.
 
-A running cluster agent keeps the agent's old code until the agent restarts. `install-cluster.sh` restarts the agent, and so does a new kit release.
+A running cluster agent keeps the agent's old code until the agent restarts. With `updates.follow` set to `"main"`, the update job restarts the agent after the agent's code changes, as "Kit services after an update" describes. `install-cluster.sh` restarts the agent too, and so does a new kit release.
 
 **Each computer checks the computer's own network every 5 minutes.** The check posts in the cluster's channel, `SLACK_CHANNEL_ID`:
 
