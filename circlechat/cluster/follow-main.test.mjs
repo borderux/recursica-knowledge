@@ -14,6 +14,7 @@ test("each setup runs again only for a change to a file the setup reads, and a h
   assert.deepEqual(touchedSetups(["circlechat/kit/lib.sh"], { control: true }), ["setup-host.sh", "setup-node.sh", "install-cluster.sh"]);
   assert.deepEqual(touchedSetups(["circlechat/kit/lib.sh"], { control: false }), ["setup-node.sh", "install-cluster.sh"]);
   assert.deepEqual(touchedSetups(["circlechat/cluster/firewall/nft-base.nft"], { control: true }), ["install-cluster.sh"]);
+  assert.deepEqual(touchedSetups(["circlechat/cluster/canary-keys.sh"], { control: false }), ["install-cluster.sh"], "the decoy's key mover");
   assert.deepEqual(touchedSetups(["circlechat/gateway/key-check.mjs"], { control: true }), ["setup-host.sh"]);
   assert.deepEqual(touchedSetups(["circlechat/gateway/key-check.mjs"], { control: false }), []);
   assert.deepEqual(touchedSetups(["circlechat/rustdesk/setup-rustdesk.sh"], { control: false }), ["setup-node.sh"]);

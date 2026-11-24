@@ -28,6 +28,12 @@ bash "$KIT/circlechat/setup-host.sh"
 ( umask 077; grep '^JOBD_TOKEN=' "$CC/.env" > "$HOME/.recursica-node.env" )
 bash "$KIT/circlechat/setup-node.sh" ci
 sudo apt-get install -y -qq tcpdump age python3-venv nftables >/dev/null
+# An earlier install left the decoy's SSH host keys in /var/tmp, mode 644. install-cluster.sh moves
+# the keys into a folder only root reads, so the decoy keeps the same key.
+sudo ssh-keygen -q -t rsa -b 2048 -m PEM -N '' -C '' -f /var/tmp/id_rsa
+sudo chmod 644 /var/tmp/id_rsa
+# shellcheck disable=SC2034  # read inside a check string below
+OLD_DECOY_KEY="$(cat /var/tmp/id_rsa.pub)"
 bash "$KIT/circlechat/cluster/install-cluster.sh" ci
 
 sleep 20
@@ -82,4 +88,8 @@ check "the refusal is in the filter's log" "sudo grep -q 'example.com:443 403 TC
 check "the firewall rules are loaded" "sudo nft list table inet agentguard >/dev/null"
 for u in cluster-agent opencanary; do check "service $u runs" "systemctl is-active --quiet $u"; done
 check "the decoy answers" "curl -s -m 5 -o /dev/null http://127.0.0.1:8088/ || nc -z 127.0.0.1 2222"
+check "the decoy's SSH keys are in a folder only root reads" "[ \"\$(sudo stat -c '%U %a' /var/lib/opencanary)\" = 'root 700' ]"
+check "the decoy's four SSH key files are root's, mode 600" "[ \"\$(sudo find /var/lib/opencanary -maxdepth 1 -name 'id_*' -user root -perm 600 | wc -l)\" = 4 ]"
+check "the decoy kept the key an earlier install left in /var/tmp" "[ \"\$(sudo cat /var/lib/opencanary/id_rsa.pub)\" = \"\$OLD_DECOY_KEY\" ]"
+check "no decoy key is left in /var/tmp" "[ -z \"\$(ls /var/tmp/id_rsa* /var/tmp/id_dsa* 2>/dev/null)\" ]"
 [ "$fail" = 0 ] && echo "Smoke install passed." || { echo "Smoke install failed."; exit 1; }

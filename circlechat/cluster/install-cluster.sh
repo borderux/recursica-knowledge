@@ -122,18 +122,25 @@ if [ ! -x /opt/opencanary/bin/opencanaryd ]; then
   sudo /opt/opencanary/bin/pip install --quiet "opencanary>=0.9,<1"
 fi
 sudo mkdir -p /etc/opencanaryd
+# The fake SSH server's host keys: in a folder only root reads, never OpenCanary's default /var/tmp,
+# which every account can write to. canary-keys.sh moves the keys an earlier install left there, so
+# the decoy keeps the decoy's fingerprint. OpenCanary runs with umask 077, so a key OpenCanary makes is
+# mode 600 too.
+CANARY_KEYS=/var/lib/opencanary
+sudo bash "$HERE/canary-keys.sh" /var/tmp "$CANARY_KEYS"
 sudo tee /etc/opencanaryd/opencanary.conf >/dev/null <<CANARY
 {
   "device.node_id": "$NODE",
   "ip.ignorelist": ["127.0.0.1"],
   "ssh.enabled": true, "ssh.port": 2222, "ssh.version": "SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13",
+  "ssh.key_path": "$CANARY_KEYS",
   "ftp.enabled": true, "ftp.port": 2121, "ftp.banner": "FTP server ready",
   "http.enabled": true, "http.port": 8088, "http.banner": "Apache/2.4.58 (Ubuntu)", "http.skin": "nasLogin",
   "logger": { "class": "PyLogger", "kwargs": { "formatters": { "plain": { "format": "%(message)s" } },
     "handlers": { "file": { "class": "logging.FileHandler", "filename": "/var/lib/agent-cluster/opencanary.log" } } } }
 }
 CANARY
-UNIT_SETTINGS=/etc/opencanaryd/opencanary.conf install_unit opencanary "/opt/opencanary/bin/opencanaryd --dev" / root
+UNIT_SETTINGS=/etc/opencanaryd/opencanary.conf install_unit opencanary "umask 077; exec /opt/opencanary/bin/opencanaryd --dev" / root
 
 ENVS="set -a; . /etc/agent-cluster.conf; . /etc/agent-cluster.env; set +a;"
 # Each service restarts when the service's settings, secrets or the kit's version change.
