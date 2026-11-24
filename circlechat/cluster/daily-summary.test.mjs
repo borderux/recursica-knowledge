@@ -125,6 +125,6 @@ test("dailySummary: only the jobs installed here, none on a computer without the
 
 test("the updater posts the summary each hour it is due, before it saves its state, and logs that it ran", () => {
   const src = fs.readFileSync(path.join(here, "updater.mjs"), "utf8");
-  assert.ok(src.indexOf("dailySummary({ env, state") < src.indexOf("fs.writeFileSync(stateFile"), "the posted day is saved");
+  assert.ok(src.indexOf("dailySummary({ env, state") < src.lastIndexOf("fs.writeFileSync(stateFile"), "the posted day is saved");
   assert.match(src, /console\.log\(`\$\{new Date\(\)\.toISOString\(\)\} updater: done`\)/);
 });

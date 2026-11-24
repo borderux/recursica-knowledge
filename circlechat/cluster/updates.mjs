@@ -9,7 +9,7 @@
 //   - An update that needs a reboot is held, and Slack gets the reboot buttons.
 //   - An update that interrupts work (quiet.mjs DISRUPTIVE_BREWS: Tailscale, Ollama, Colima, Lima)
 //     waits, after its 7 days, until RecursicaChat 2.0 on this computer is quiet. The cluster's
-//     channel hears once that it waits, and why.
+//     channel hears that it waits, and why, once, then again every 24 hours while it waits.
 //
 //   node updates.mjs check          the check (updater.mjs runs it hourly)
 //   node updates.mjs install-held   install the held updates (the agent runs this before a reboot)
@@ -20,6 +20,7 @@ import { promisify } from "node:util";
 import { stopColimaVms } from "./colima.mjs";
 import { IS_MAC, IS_WSL } from "./platform.mjs";
 import { disruptive, serverQuiet } from "./quiet.mjs";
+import { REPEAT_MS } from "./notice.mjs";
 import { siteFile } from "../kit/stack-paths.mjs";
 
 const exec = promisify(execFile);
@@ -113,12 +114,13 @@ const latestRelease = async (repo) => {
 };
 
 // The updates due now that may install now: all of them when RecursicaChat is quiet, and otherwise
-// only those that interrupt no work. Each update that waits is announced once (seen["waiting:<key>"]).
+// only those that interrupt no work. Each update that waits is announced once, then again 24 hours
+// after the last announcement while the update still waits (seen["waiting:<key>"] holds the time).
 //   returns { install, waiting, line }: line is "" when nothing new waits
 export function holdUntilQuiet(due, { quiet, why }, seen, now) {
   if (quiet) return { install: due, waiting: [], line: "" };
   const waiting = due.filter((u) => disruptive(u.name));
-  const fresh = waiting.filter((u) => seen[`waiting:${u.key}`] === undefined);
+  const fresh = waiting.filter((u) => seen[`waiting:${u.key}`] === undefined || !(now - seen[`waiting:${u.key}`] < REPEAT_MS));
   for (const u of fresh) seen[`waiting:${u.key}`] = now;
   const line = fresh.length ? `${fresh.map((u) => `${u.name} ${u.version}`).join(", ")} wait${fresh.length === 1 ? "s" : ""} to install. Each one interrupts work, so it waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open. Now: ${why}.` : "";
   return { install: due.filter((u) => !disruptive(u.name)), waiting, line };

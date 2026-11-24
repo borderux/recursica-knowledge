@@ -572,3 +572,100 @@ test("a job installer change: install-cluster.sh runs under the hold, the post a
   await followMain(w.deps);
   assert.equal(w.deps.state.follow.network, undefined, "install-cluster.sh ran by hand");
 });
+
+// The update job's own git and fast-forward never leave the checkout for check-kit.sh to refuse.
+// The tests set the process's umask to 002, as pam_umask gives sudo's session on Ubuntu.
+const groupWritable = (dir) => spawnSync("find", [dir, "!", "-type", "l", "-perm", "/022"], { encoding: "utf8" }).stdout.split("\n").filter(Boolean);
+const withUmask = async (mask, fn) => { const old = process.umask(mask); try { return await fn(); } finally { process.umask(old); } };
+// realDeps' spawn without "sudo -u <owner> -H": the command runs as this test's account.
+const noSudo = (cmd, args, opts) => (cmd === "sudo" ? spawnSync(args[3], args.slice(4), opts) : spawnSync(cmd, args, opts));
+
+test("the update job's git runs with umask 022, so a fetch and a fast-forward under umask 002 leave nothing group-writable", async () => {
+  await withUmask(0o002, async () => {
+    // Plain git under umask 002 leaves group-writable files: the failure this guards against.
+    const plain = repos();
+    plain.push("circlechat/rc-sync.sh", "#!/usr/bin/env bash\n");
+    spawnSync("git", ["-C", plain.kit, "pull", "-q", "--ff-only"], { encoding: "utf8" });
+    assert.ok(groupWritable(plain.kit).length > 0, "plain git under umask 002 leaves group-writable files");
+    const r = repos();
+    spawnSync("chmod", ["-R", "go-w", r.kit]);
+    r.push("circlechat/rc-sync.sh", "#!/usr/bin/env bash\n");
+    const env = { COMPUTER: "machine-2", OWNER: "owner", OWNER_HOME: "/home/owner", KIT: r.kit, PATH: process.env.PATH };
+    const deps = realDeps({ env, stacks: [], afterUpgrade: () => [], prepare: () => "", spawn: noSudo, platform: "linux" });
+    assert.equal(deps.git("fetch", "--quiet", "origin", "main").status, 0);
+    assert.equal(deps.git("merge", "--ff-only", "--quiet", "origin/main").status, 0);
+    assert.deepEqual(groupWritable(r.kit), []);
+  });
+  const calls = [];
+  const env = { COMPUTER: "machine-2", OWNER: "owner", OWNER_HOME: "/home/owner", KIT: "/home/owner/kit", PATH: "/usr/bin" };
+  const deps = realDeps({ env, stacks: [], afterUpgrade: () => [], prepare: () => "", spawn: (cmd, args) => { calls.push([cmd, ...args]); return { status: 0, stdout: "" }; }, platform: "linux" });
+  deps.git("fetch", "--quiet", "origin", "main");
+  deps.tidy();
+  assert.deepEqual(calls[0], ["sudo", "-u", "owner", "-H", "/bin/sh", "-c", 'umask 022 && exec git "$@"', "git", "-C", "/home/owner/kit", "fetch", "--quiet", "origin", "main"]);
+  assert.deepEqual(calls[1], ["sudo", "-u", "owner", "-H", "chmod", "-R", "go-w", "/home/owner/kit"]);
+});
+
+test("after each fast-forward, the update clears group and other write in the checkout, so the next run's kit check passes", async () => {
+  await withUmask(0o002, async () => {
+    const r = repos();
+    spawnSync("chmod", ["-R", "go-w", r.kit]);
+    const env = { COMPUTER: "machine-2", OWNER: "owner", OWNER_HOME: "/home/owner", KIT: r.kit, PATH: process.env.PATH };
+    const real = realDeps({ env, stacks: [], afterUpgrade: () => [], prepare: () => "", spawn: noSudo, platform: "linux" });
+    const order = [];
+    // An older git without the umask: the fast-forward leaves group-writable files, and the clean-up removes the write.
+    const git = (...a) => { order.push(`git ${a[0]}`); return a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: "https://github.com/acme/kit.git\n" } : r.git(...a); };
+    const w = world(r, { git, tidy: () => { order.push("tidy"); return real.tidy(); } });
+    assert.equal(await followMain(w.deps), "none");
+    assert.ok(!order.includes("tidy"), "no update, no clean-up");
+    r.push("circlechat/rc-sync.sh", "#!/usr/bin/env bash\n");
+    assert.equal(await followMain(w.deps), "updated");
+    assert.ok(order.indexOf("tidy") > order.lastIndexOf("git merge"), "the clean-up runs after the fast-forward");
+    assert.deepEqual(groupWritable(r.kit), []);
+  });
+});
+
+test("a wait or a stop posts again only for a new reason, or 24 hours after the last post", async () => {
+  const r = repos();
+  let t = Date.parse("2026-11-23T10:00:00Z");
+  const w = world(r, { quiet: async () => ({ quiet: false, why: "1 agent message(s) queued or in a turn" }), now: () => t });
+  const first = r.push("circlechat/setup-node.sh");
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 1);
+  t += 23 * 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 1, "the same reason within 24 hours: no post");
+  t += 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 2, "24 hours later: the post repeats");
+  assert.match(w.posts[1], new RegExp(`to ${first.slice(0, 7)} waits until RecursicaChat is quiet`));
+  t += 3600_000;
+  const second = r.push("README.md", "later\n");
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 3, "a new commit is a new reason: a post at once");
+  assert.match(w.posts[2], new RegExp(`to ${second.slice(0, 7)} waits`));
+  // A job from before the repeat kept only the key: no post now, and the 24 hours start now.
+  w.deps.state.follow.told = w.deps.state.follow.told.key;
+  t += 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 3);
+  t += 24 * 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.length, 4);
+});
+
+test("network changes held for a person post again 24 hours later, while they still wait", async () => {
+  const r = repos();
+  let t = Date.parse("2026-11-23T10:00:00Z");
+  const w = world(r, { kit: "/home/owner/kit", platform: "linux", now: () => t });
+  r.push(FIREWALL, "pass in quick inet from 100.64.0.0/10\n");
+  await followMain(w.deps);
+  const held = (p) => /network changes from .* wait for a person/.test(p);
+  assert.equal(w.posts.filter(held).length, 1);
+  t += 12 * 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.filter(held).length, 1);
+  t += 12 * 3600_000;
+  await followMain(w.deps);
+  assert.equal(w.posts.filter(held).length, 2, "the changes still wait after 24 hours: the post repeats");
+  assert.equal(w.posts.length, 3, "and nothing else posts");
+});

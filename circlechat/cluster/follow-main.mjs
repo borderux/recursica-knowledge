@@ -9,12 +9,18 @@
 //      cluster's channel hears once about each commit that stops the update.
 //   3. The update waits until RecursicaChat 2.0 is quiet, the rule of the image pins and Homebrew
 //      updates (quiet.mjs). The channel hears once about each update that waits.
-//   4. The checkout fast-forwards to the new commit.
+//   4. The checkout fast-forwards to the new commit. Each git command runs with umask 022, and after
+//      the fast-forward no file in the checkout stays writable by the group or other accounts, so
+//      the next run's kit check (kit/check-kit.sh) passes.
 //   5. The setups the change touches run again (SETUPS): setup-host.sh on the control computer,
 //      and setup-node.sh and install-cluster.sh on each computer, each without its network steps.
 //      rc-deploy never runs here.
 //   6. The channel gets one line: the computer, the old and new commit, and the result. Network
 //      changes that wait for a person get one post of their own.
+//
+// Each post about a wait for a person, such as a stop, the wait for a quiet
+// RecursicaChat or held network changes, posts once. The post repeats only for a new reason, or
+// 24 hours after the last post (notice.mjs).
 //
 // The full setups call sudo as the owner. A setup runs again only when the owner has password-free
 // sudo. Otherwise the channel's line names the command to run by hand. On the control computer,
@@ -40,6 +46,13 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { siteFile } from "../kit/stack-paths.mjs";
+import { notice } from "./notice.mjs";
+
+// git in the kit checkout, as the owner, with umask 022. On Ubuntu, sudo's session can set umask 002
+// (pam_umask), so a file git wrote was group-writable, and check-kit.sh then refused the checkout
+// at the next run. The arguments follow "sudo -u <owner> -H".
+//   gitAsOwner <kit folder> <git arguments>
+export const gitAsOwner = (kit, args) => ["/bin/sh", "-c", 'umask 022 && exec git "$@"', "git", "-C", kit, ...args];
 
 // The kit files each setup reads. A change to one of the listed files runs the setup again. A path that
 // ends in "/" is a folder.
@@ -344,39 +357,40 @@ export function decide({ head, target, ancestor, branch, mainAncestor }) {
 //   installed(): a fingerprint of the installed firewall rule files (INSTALLED_RULES)
 //   state: the update job's state object, changed in place (state.follow)
 //   returns a short word for the log: none, stopped, waiting, updated, failed
-export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state, kit = "", platform = process.platform, applied = async () => "", installed = async () => "" }) {
+//   tidy(): { status } of removing group and other write in the checkout, after each fast-forward
+//   now(): the time in ms, for the notices' 24 hours
+export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state, kit = "", platform = process.platform, applied = async () => "", installed = async () => "", tidy = async () => ({ status: 0 }), now = () => Date.now() }) {
   const follow = state.follow ?? {};
   const g = (...a) => { const r = git(...a); return { ...r, out: String(r.stdout ?? "").trim() }; };
   // Network changes that wait for a person: each one a person applied clears, and an unsent post is sent.
   if (follow.network) {
-    const n = follow.network, now = await installed();
+    const n = follow.network, rulesNow = await installed();
     for (const s of Object.keys(n.waiting)) {
       const mark = String((await applied(s)) ?? "").trim();
       const byHand = /^[0-9a-f]{40}$/.test(mark) && g("merge-base", "--is-ancestor", n.to, mark).status === 0;
-      const rules = s === "install-cluster.sh" && !n.waiting[s].whole && !n.waiting[s].byHand && now !== n.installed;
+      const rules = s === "install-cluster.sh" && !n.waiting[s].whole && !n.waiting[s].byHand && rulesNow !== n.installed;
       if (byHand || rules) delete n.waiting[s];
     }
     if (!Object.keys(n.waiting).length) { delete follow.network; console.log("kit follows main: a person applied the network changes that waited"); }
   }
+  // Held network changes: one post, again for a newer change or 24 hours later.
   const tellNetwork = async () => {
     const n = follow.network;
-    if (!n || n.told === n.to) return;
-    const files = [...new Set(Object.values(n.waiting).flatMap((w) => w.files))];
-    const commits = g("log", "--format=%h %s", `${n.from}..${n.to}`, "--", ...files).out.split("\n").filter(Boolean);
-    const applyScript = Boolean(APPLY_WITH_UNDO[platform]) && g("cat-file", "-e", `${n.to}:${APPLY_WITH_UNDO[platform]}`).status === 0;
-    const commands = networkCommands({ waiting: n.waiting, computer, kit, platform, applyScript });
-    const r = await post(networkPost({ computer, from: n.from, to: n.to, commits, waiting: n.waiting, commands })).catch(() => ({ ok: false }));
-    if (r?.ok !== false) n.told = n.to;
+    if (!n) return;
+    await notice(n, "told", n.to, () => {
+      const files = [...new Set(Object.values(n.waiting).flatMap((w) => w.files))];
+      const commits = g("log", "--format=%h %s", `${n.from}..${n.to}`, "--", ...files).out.split("\n").filter(Boolean);
+      const applyScript = Boolean(APPLY_WITH_UNDO[platform]) && g("cat-file", "-e", `${n.to}:${APPLY_WITH_UNDO[platform]}`).status === 0;
+      const commands = networkCommands({ waiting: n.waiting, computer, kit, platform, applyScript });
+      return networkPost({ computer, from: n.from, to: n.to, commits, waiting: n.waiting, commands });
+    }, post, now());
   };
   await tellNetwork();
   const fetched = g("fetch", "--quiet", "origin", "main");
   if (fetched.status !== 0) { console.error(`kit follows main: git fetch failed: ${String(fetched.stderr ?? "").trim()}`); return "none"; }
   const head = g("rev-parse", "HEAD").out, target = g("rev-parse", "refs/remotes/origin/main").out;
-  const tell = async (key, text) => {
-    if (follow.told === key) return;
-    const r = await post(text).catch(() => ({ ok: false }));
-    if (r?.ok !== false) follow.told = key;
-  };
+  // A stop or a wait: one post, again for a new reason or 24 hours later.
+  const tell = (key, text) => notice(follow, "told", key, text, post, now());
   const save = () => { state.follow = follow; };
   const ancestor = head && target ? g("merge-base", "--is-ancestor", head, target).status === 0 : false;
   const branch = g("symbolic-ref", "--short", "-q", "HEAD").out;
@@ -407,10 +421,13 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
   }
   const ff = g("merge", "--ff-only", "--quiet", target);
   if (ff.status !== 0) {
-    const now = g("rev-parse", "HEAD").out;
-    await tell(`ff:${target}`, `:x: Kit on ${computer} stays at ${short(now)}: the fast-forward to ${short(target)} failed. ${lastLines(ff.stderr, 3)}`);
+    const at = g("rev-parse", "HEAD").out;
+    await tell(`ff:${target}`, `:x: Kit on ${computer} stays at ${short(at)}: the fast-forward to ${short(target)} failed. ${lastLines(ff.stderr, 3)}`);
     save(); return "stopped";
   }
+  // No file in the checkout stays writable by the group or other accounts, so the next run's kit check passes.
+  const tidied = await tidy();
+  if (tidied?.status !== 0) console.error(`kit follows main: removing group and other write in the checkout failed: ${String(tidied?.stderr ?? "").trim()}`);
   // 5. Run each setup the change touches again, and each setup an earlier failure left.
   const files = g("diff", "--name-only", head, target).out.split("\n").filter(Boolean);
   // Network changes wait for a person. A setup that waits whole doesn't run.
@@ -479,7 +496,9 @@ export function realDeps({ env, stacks, afterUpgrade, prepare, platform = proces
   return {
     kit,
     platform,
-    git: (...a) => asOwner(["git", "-C", kit, ...a]),
+    git: (...a) => asOwner(gitAsOwner(kit, a)),
+    // After each fast-forward: the group and other accounts can change no file in the checkout.
+    tidy: () => asOwner(["chmod", "-R", "go-w", kit]),
     // The kit commit the setup's last run by hand recorded (network_applied, kit/lib.sh).
     applied: (name) => String(tryRead(path.join(env.OWNER_HOME, ".recursica-kit/network-applied", path.basename(name)))).trim(),
     installed: () => {

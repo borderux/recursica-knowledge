@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { imagesWaitingPost, plan, localStacks, refreshRootCopies } from "./updater.mjs";
+import { imagesWaitingPost, plan, localStacks, refreshRootCopies, tellRefused } from "./updater.mjs";
 
 test("Recursica's software every hour on a stack with upgrade.auto; images once a day per stack", () => {
   const stacks = [{ name: "cluster", upgradeAuto: true }, { name: "acme", upgradeAuto: false }];
@@ -68,4 +68,51 @@ test("image pins that wait for a quiet RecursicaChat are announced once per set 
   assert.equal(imagesWaitingPost("acme", ["node:22-alpine"], "the same", state), "");
   assert.match(imagesWaitingPost("acme", ["node:22-alpine", "node:22"], "busy", state), /node:22-alpine, node:22/);
   assert.equal(imagesWaitingPost("acme", [], "busy", state), "");
+});
+
+test("image pins that still wait are announced again 24 hours later", () => {
+  const t = Date.parse("2026-11-23T10:00:00Z");
+  const state = { imagesWaiting: { acme: "node:22-alpine" } };
+  assert.equal(imagesWaitingPost("acme", ["node:22-alpine"], "busy", state, t), "", "a pin announced by an older job: the 24 hours start now");
+  assert.equal(imagesWaitingPost("acme", ["node:22-alpine"], "busy", state, t + 23 * 3600_000), "");
+  assert.match(imagesWaitingPost("acme", ["node:22-alpine"], "busy", state, t + 24 * 3600_000), /node:22-alpine wait to install/);
+});
+
+const REFUSED = "Refusing the kit checkout /home/owner/recursica-knowledge: the group or other accounts can change /home/owner/recursica-knowledge/.git/index. Run: chmod -R go-w /home/owner/recursica-knowledge Use a checkout outside the agents' workspace that only owner can change, such as /home/owner/recursica-knowledge.";
+
+test("a refused kit checkout posts the reason and the fix once, then again only for a new reason or after 24 hours", async () => {
+  const posts = [];
+  const post = async (text) => { posts.push(text); return { ok: true }; };
+  const state = {};
+  let t = Date.parse("2026-11-23T10:00:00Z");
+  assert.equal(await tellRefused({ computer: "machine-2", problem: REFUSED, state, post, now: t }), true);
+  assert.equal(posts[0], ":no_entry: Kit on machine-2: the update job refuses the kit checkout, so the kit stays where it is and no update runs on machine-2. the group or other accounts can change /home/owner/recursica-knowledge/.git/index. Run: chmod -R go-w /home/owner/recursica-knowledge Use a checkout outside the agents' workspace that only owner can change, such as /home/owner/recursica-knowledge.");
+  for (const h of [1, 12, 23]) assert.equal(await tellRefused({ computer: "machine-2", problem: REFUSED, state, post, now: t + h * 3600_000 }), false, `${h} hours later`);
+  assert.equal(posts.length, 1);
+  // A new reason posts at once.
+  const other = REFUSED.replace(".git/index", "circlechat/rc-sync.sh");
+  assert.equal(await tellRefused({ computer: "machine-2", problem: other, state, post, now: t + 23.5 * 3600_000 }), true);
+  assert.match(posts[1], /can change \/home\/owner\/recursica-knowledge\/circlechat\/rc-sync\.sh\. Run: chmod -R go-w /);
+  // The same reason 24 hours after the last post posts again.
+  t += 23.5 * 3600_000;
+  assert.equal(await tellRefused({ computer: "machine-2", problem: other, state, post, now: t + 24 * 3600_000 }), true);
+  assert.equal(posts.length, 3);
+  // A checkout that passes clears the record, so the next refusal posts at once.
+  assert.equal(await tellRefused({ computer: "machine-2", problem: null, state, post, now: t + 25 * 3600_000 }), false);
+  assert.equal(state.refused, undefined);
+  assert.equal(await tellRefused({ computer: "machine-2", problem: other, state, post, now: t + 25.5 * 3600_000 }), true);
+  assert.equal(posts.length, 4);
+});
+
+test("a refusal whose post fails is posted again at the next run", async () => {
+  const state = {};
+  let ok = false;
+  const posts = [];
+  const post = async (text) => { posts.push(text); return { ok }; };
+  const t = Date.parse("2026-11-23T10:00:00Z");
+  assert.equal(await tellRefused({ computer: "machine-2", problem: REFUSED, state, post, now: t }), false);
+  assert.equal(state.refused, undefined);
+  ok = true;
+  assert.equal(await tellRefused({ computer: "machine-2", problem: REFUSED, state, post, now: t + 3600_000 }), true);
+  assert.equal(posts.length, 2);
 });

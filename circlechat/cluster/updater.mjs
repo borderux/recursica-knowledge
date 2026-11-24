@@ -14,6 +14,9 @@
 //   - An update that interrupts work waits until RecursicaChat 2.0 on this computer is quiet
 //     (quiet.mjs): a Tailscale, Ollama, Colima or Lima update, and an image pin that recreates the
 //     gateway. The cluster's channel hears once that it waits.
+//   - A kit checkout that kit/check-kit.sh refuses stops the job before any update. The cluster's
+//     channel hears the reason and the fix once, then again for a new reason or after 24 hours.
+//     Each other post about a wait for a person follows the same rule (notice.mjs).
 //   - Each morning, the cluster's channel gets a summary of this computer's backups and restore
 //     tests, and of any job that didn't run on time (daily-summary.mjs).
 import { spawnSync } from "node:child_process";
@@ -21,6 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { clusterStackName, followsMain } from "../kit/render.mjs";
 import { siteFile, stackDir, tenantOf, tenantStacks, workspaceDir } from "../kit/stack-paths.mjs";
+import { noticeDue, notice } from "./notice.mjs";
 
 const DAY = 24 * 3600_000;
 
@@ -34,12 +38,41 @@ export function plan(stacks, state = {}, now = Date.now()) {
 }
 
 // The post for a stack's image pins that wait for a quiet RecursicaChat, or "" when the same pins
-// were already announced. state.imagesWaiting keeps each stack's announced pins.
-export function imagesWaitingPost(stack, tags, why, state) {
+// were announced less than 24 hours ago. state.imagesWaiting keeps each stack's last announcement.
+export function imagesWaitingPost(stack, tags, why, state, now = Date.now()) {
   const key = [...tags].sort().join(",");
-  if (!tags.length || state.imagesWaiting?.[stack] === key) return "";
-  state.imagesWaiting = { ...(state.imagesWaiting ?? {}), [stack]: key };
+  if (!tags.length) return "";
+  state.imagesWaiting ??= {};
+  if (!noticeDue(state.imagesWaiting, stack, key, now)) return "";
+  state.imagesWaiting[stack] = { key, at: now };
   return `:hourglass: Stack ${stack}: new versions of ${tags.join(", ")} wait to install. Each move recreates the gateway, which interrupts work, so it waits until RecursicaChat is quiet, with no agent turn running or queued and no service run open. Now: ${why}.`;
+}
+
+// A refused kit checkout: the post with the reason and the fix, once, then again for a new reason
+// or after 24 hours. A checkout that passes clears the record, so the next refusal posts at once.
+//   problem: kit/check-kit.sh's message, which names the fix, or null for a checkout that passes
+//   post(text): { ok } of one post in the cluster's channel
+export async function tellRefused({ computer, problem, state, post, now = Date.now() }) {
+  if (!problem) { delete state.refused; return false; }
+  const reason = problem.replace(/^Refusing the kit checkout [^:]*: /, "");
+  const text = `:no_entry: Kit on ${computer}: the update job refuses the kit checkout, so the kit stays where it is and no update runs on ${computer}. ${reason}`;
+  return notice(state, "refused", problem, text, post, now);
+}
+
+// One post in the cluster's channel, for a refused checkout. The job posts from this file, which
+// already runs, and loads no other module from the refused checkout. The result goes to the job's log.
+async function postRefusal(env, text) {
+  try {
+    const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST", signal: AbortSignal.timeout(30_000),
+      headers: { authorization: `Bearer ${env.SLACK_BOT_TOKEN}`, "content-type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ channel: env.SLACK_CHANNEL_ID, text, ...(env.COMPUTER ? { username: env.COMPUTER } : {}), ...(env.SLACK_ICON ? { icon_emoji: env.SLACK_ICON } : {}) }) });
+    const j = await r.json();
+    console.log(j.ok ? `slack: posted the refusal to the cluster's channel (ts ${j.ts})` : `slack: the refusal's post failed: ${j.error}`);
+    return { ok: Boolean(j.ok) };
+  } catch (e) {
+    console.log(`slack: the refusal's post got no answer: ${e.message}`);
+    return { ok: false };
+  }
 }
 
 // The stacks whose control computer is this computer. A helper computer keeps a copy of a stack's
@@ -107,11 +140,17 @@ async function followStep({ env, site, control, stacks, chat, state }) {
 
 async function main() {
   const env = process.env;
-  const { requireKit } = await import("./kit-check.mjs");
-  requireKit(env.KIT, env);
-  const here = path.dirname(new URL(import.meta.url).pathname);
   const stateFile = "/var/lib/agent-cluster/updater.json";
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
+  const { kitProblem } = await import("./kit-check.mjs");
+  const problem = kitProblem(env.KIT, env);
+  await tellRefused({ computer: env.COMPUTER, problem, state, post: (text) => postRefusal(env, text) });
+  if (problem) {
+    console.error(problem);
+    fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
+    process.exit(1);
+  }
+  const here = path.dirname(new URL(import.meta.url).pathname);
   const { check } = await import("./updates.mjs");
   const { runUpgrade } = await import("./root-steps.mjs");
   const { makeChannel } = await import("./channel.mjs");
@@ -124,7 +163,8 @@ async function main() {
   const { isClusterControl, releaseCheck } = await import("./release-gate.mjs");
   const control = isClusterControl(env.OWNER_HOME, env.COMPUTER);
   if (control && !followsMain(site)) {
-    const git = (...a) => String(spawnSync("sudo", ["-u", env.OWNER, "-H", "git", "-C", env.KIT, ...a], { encoding: "utf8" }).stdout ?? "").trim();
+    const { gitAsOwner } = await import("./follow-main.mjs");
+    const git = (...a) => String(spawnSync("sudo", ["-u", env.OWNER, "-H", ...gitAsOwner(env.KIT, a)], { encoding: "utf8" }).stdout ?? "").trim();
     const current = JSON.parse(fs.readFileSync(path.join(env.KIT, "package.json"), "utf8")).version;
     await releaseCheck({ stateDir: path.dirname(stateFile), git, current, post: (text, ref) => chat.post(env.SLACK_CHANNEL_ID, "release", text, ref) })
       .catch((e) => console.error(`kit release check: ${e.message}`));

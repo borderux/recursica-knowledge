@@ -248,8 +248,12 @@ Each script below checks the kit checkout first, with `circlechat/kit/check-kit.
 The check refuses a checkout in three cases:
 
 - The checkout sits inside an agents' workspace: `~/recursica-workspace`, the older `~/circlechat-workspace`, or `~/tenants/<client>/workspace`.
-- The group or other accounts can change the checkout, or a folder above the checkout. Fix the checkout with `chmod -R go-w ~/recursica-knowledge`.
-- Another account owns a file or folder in the checkout.
+- The group or other accounts can change the checkout, or a folder above the checkout. Fix the checkout with `chmod -R go-w ~/recursica-knowledge`, and a folder above the checkout with `sudo chmod go-w <folder>`.
+- Another account owns a file or folder in the checkout. Fix the checkout with `sudo chown -R <owner> ~/recursica-knowledge`.
+
+The refusal names the file and the command that fixes the checkout.
+
+**The update job posts each refusal in the cluster's channel,** with the reason and the command that fixes the checkout. The post goes out once. The post repeats for a new reason, or 24 hours after the last post. The job then stops, and no update runs on the computer until the checkout passes. The job posts from the job's own file, and loads no other module from the refused checkout.
 
 A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout. Other accounts cannot rename or delete the owner's folder there.
 
@@ -753,7 +757,7 @@ On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as a b
 | A Mac    | A `utun` interface                                   | `pass in quick on $tailscale_if`, for `utun0` to `utun31`                                            |
 | Windows  | The `Tailscale` adapter                              | "AgentGuard: Tailscale peers" names the `Tailscale` adapter                                          |
 | WSL      | No adapter: a Hyper-V firewall rule takes no adapter | "AgentGuard: Tailscale peers to WSL" takes the computer's own Tailscale addresses as local addresses |
-| Linux    | `tailscale0`                                         | `iifname != "tailscale0" ip saddr 100.64.0.0/10 drop`, before the Tailscale accepts                |
+| Linux    | `tailscale0`                                         | `iifname != "tailscale0" ip saddr 100.64.0.0/10 drop`, before the Tailscale accepts                  |
 
 macOS has no interface groups, and Tailscale takes the first free `utun` number, so the rule lists 32 `utun` numbers. On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. On Linux, the nftables rules refuse a Tailscale address on every interface but `tailscale0`, in the input chain and in the forward chain that Docker's published ports use, then pass the address. In WSL the nftables rules check only the address: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface, never on `tailscale0`.
 
@@ -927,7 +931,7 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
 A request unchanged for more than a day counts as abandoned, so a service that crashed can't hold every update for good. A server too old to have service requests has no service runs. A database that can't be read counts as busy. A computer with no `recursicachat` block in site.json runs no server, and is always quiet.
 
-**The cluster's channel, `SLACK_CHANNEL_ID`, hears once about each update that waits**, with the reason, such as one agent message in a turn. The update installs at the first quiet hour, and the usual "Installed" post follows. Every other Homebrew update installs as before. The 7-day wait and the rule for CISA's list come first. A waiting image refresh runs again each hour, not each day.
+**The cluster's channel, `SLACK_CHANNEL_ID`, hears about each update that waits**, with the reason, such as one agent message in a turn. The post goes out once, then every 24 hours while the update waits. The update installs at the first quiet hour, and the usual "Installed" post follows. Every other Homebrew update installs as before. The 7-day wait and the rule for CISA's list come first. A waiting image refresh runs again each hour, not each day.
 
 #### Kit releases
 
@@ -961,10 +965,10 @@ A helper computer hosts no stack, so with `"releases"` the update job never move
 
 **With `"main"`, the update job takes six steps each hour, as root, on each computer** (`cluster/follow-main.mjs`):
 
-1. The job fetches `origin/main` into the kit checkout, as the owner. With no new commit, the job stops here.
+1. The job fetches `origin/main` into the kit checkout, as the owner. Each of the job's git commands runs with umask 022, so no file git writes is writable by the group. With no new commit, the job stops here.
 2. GitHub must show each new commit as verified. One commit that GitHub doesn't verify stops the whole update, and the kit checkout stays where the checkout was. The cluster's channel, `SLACK_CHANNEL_ID`, gets one alert for each such commit.
-3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears once about each update that waits. A helper runs no RecursicaChat server, so a helper never waits.
-4. The kit checkout fast-forwards to the new commit. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
+3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears about each update that waits once, then again every 24 hours while the update waits. A helper runs no RecursicaChat server, so a helper never waits.
+4. The kit checkout fast-forwards to the new commit. After the fast-forward, the job removes group and other write in the checkout (`chmod -R go-w`), so the next hour's kit check passes. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
 5. The job runs each setup the change touches again, as the owner, without the setup's network steps. A change touches a setup when the change edits a kit file the setup reads. The table below lists the setups.
 6. The channel gets one line with the computer, the old and new commit, and the result. A network change that waits for a person gets one post of its own.
 
@@ -993,7 +997,7 @@ The job runs each setup with `KIT_HOLD_NETWORK=1`, which skips the setup's held 
 | `setup-host.sh`      | `tailscale serve` for the gateway's port for port jobs, on a Mac with Colima; removing CircleChat 1.x's jobs; and `tailscale serve` for the app preview                       |
 | `setup-node.sh`      | `tailscale serve` for the RustDesk console, through `rustdesk/setup-rustdesk.sh`                                                                                              |
 
-**A change to a network step waits for a person, and the channel hears once.** A network change edits a file in `circlechat/cluster/firewall/`, or a line between `# network-step begin` and `# network-step end` in a setup's script. The post names the computer, the commits, each waiting step and the command to run by hand on that computer:
+**A network change waits for a person, and the channel hears once a day while the change waits.** A network change edits a file in `circlechat/cluster/firewall/`, or a line between `# network-step begin` and `# network-step end` in a setup's script. The post names the computer, the commits, each waiting step and the command to run by hand on that computer:
 
 - On a Mac, with `circlechat/cluster/firewall/pf-apply-tailnet.sh` in the kit checkout: `sudo <kit>/circlechat/cluster/firewall/pf-apply-tailnet.sh`. The script loads the new rules and puts the old rules back after 5 minutes. Within the 5 minutes, open a new RustDesk or SSH session over Tailscale, and run the script with `--confirm` there.
 - On Linux, with `circlechat/cluster/firewall/nft-apply-tailnet.sh` in the kit checkout: the same, with that script. The kit has no such script yet.

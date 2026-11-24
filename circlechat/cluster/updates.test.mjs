@@ -95,6 +95,10 @@ test("an update that interrupts work waits for a quiet RecursicaChat, announced 
   assert.doesNotMatch(r.line, /online/, "a person online doesn't hold an update");
   r = holdUntilQuiet(due, busy, seen, 2000);
   assert.equal(r.line, "", "announced once");
+  r = holdUntilQuiet(due, busy, seen, 1000 + 24 * 3600_000 - 1);
+  assert.equal(r.line, "", "not again within 24 hours");
+  r = holdUntilQuiet(due, busy, seen, 1000 + 24 * 3600_000);
+  assert.match(r.line, /ollama 1\.2, tailscale 1\.9 wait to install/, "24 hours later, the updates that still wait are announced again");
   r = holdUntilQuiet(due, { quiet: true, why: "" }, seen, 3000);
   assert.deepEqual(r.install.map((u) => u.name), ["ollama", "gh", "tailscale"]);
 });
