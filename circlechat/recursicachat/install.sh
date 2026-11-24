@@ -19,7 +19,7 @@
 #                             build-pdftext.sh, which builds the PDF text reader's image
 #   /Library/LaunchDaemons/   the four io.recursica.recursicachat*.plist, and         root:wheel 644
 #                             io.recursica.stack-backup and -restore-test
-#   /etc/recursicachat/       task-settings.json, the task settings the server offers  root:wheel 644
+#   /etc/recursicachat/       task-settings.json, the task settings the server offers  root:_recursicachat 440
 #                             on each task: the kit's "Model use" setting (kit/render.mjs
 #                             taskSettings)
 #                             gateway.key, the key of the server's gateway listener,   root:_recursicachat 440
@@ -27,7 +27,8 @@
 #                             makes in $CC_DIR/gateway-state/rc-tasks.key. Until that
 #                             copy exists, the script says so and installs neither
 #                             file, and the server runs with no task settings.
-# It changes only the files whose text changed. A changed backup or restore-test job is loaded
+# It changes only the files whose text changed, and each file in /etc/recursicachat whose owner,
+# group or mode differs from the list above, so a wrong mode is put right. A changed backup or restore-test job is loaded
 # again at once. A changed server or Colima job is not restarted: the script prints the command,
 # so the restart happens when you choose. A changed script takes effect at its next start.
 # A changed task-settings.json or gateway.key takes effect at the server's next start, as run.sh does.
@@ -73,6 +74,8 @@ mkdir -p "$BIN" && chown root:wheel "$BIN" && chmod 755 "$BIN"
 mkdir -p /var/log/recursicachat && chown root:wheel /var/log/recursicachat && chmod 700 /var/log/recursicachat
 
 same() { [ -f "$2" ] && cmp -s "$1" "$2"; }
+# current <new> <installed> <owner:group:mode>: the installed copy has the new text, owner, group and mode.
+current() { same "$1" "$2" && [ "$(stat -f %Su:%Sg:%Lp "$2")" = "$3" ]; }
 for f in run.sh backup.sh restore-test.sh stack-backup.sh stack-restore-test.sh colima-service.sh rc-deploy.sh rc-clear.sh rc-clear.mjs build-pdftext.sh; do
   if same "$OUT/$f" "$BIN/$f"; then echo "$f is unchanged"; continue; fi
   # rc-clear.mjs is read by the server's Node, never run as a command.
@@ -96,16 +99,17 @@ else
   [[ "$gw_key" =~ ^rct_[0-9a-f]{48}$ ]] || fail "$GW_KEY_SRC does not hold a gateway key for the task settings. Remove it, and run setup-host.sh to make a new one"
   printf '%s\n' "$gw_key" > "$OUT/gateway.key"
   gw_key=""
-  if same "$OUT/gateway.key" "$ETC/gateway.key" && [ "$(stat -f %Su:%Sg:%Lp "$ETC/gateway.key")" = root:_recursicachat:440 ]; then
+  if current "$OUT/gateway.key" "$ETC/gateway.key" root:_recursicachat:440; then
     echo "gateway.key is unchanged"
   else
     install -m 440 -o root -g _recursicachat "$OUT/gateway.key" "$ETC/gateway.key"
     echo "gateway.key installed. The server reads it at its next start."
   fi
-  if same "$OUT/task-settings.json" "$ETC/task-settings.json"; then
+  # Only the server's account reads the task settings, as it reads the key.
+  if current "$OUT/task-settings.json" "$ETC/task-settings.json" root:_recursicachat:440; then
     echo "task-settings.json is unchanged"
   else
-    install -m 644 -o root -g wheel "$OUT/task-settings.json" "$ETC/task-settings.json"
+    install -m 440 -o root -g _recursicachat "$OUT/task-settings.json" "$ETC/task-settings.json"
     echo "task-settings.json installed. The server reads it at its next start."
   fi
 fi

@@ -86,7 +86,8 @@ test("install.sh copies the gateway's key into the server's key file only from a
   assert.match(install, /\[ -L "\$GW_KEY_SRC" \]/, "never through a link");
   assert.match(install, /\^rct_\[0-9a-f\]\{48\}\$/, "only a gateway key's shape");
   assert.match(install, /install -m 440 -o root -g _recursicachat "\$OUT\/gateway\.key" "\$ETC\/gateway\.key"/);
-  assert.match(install, /install -m 644 -o root -g wheel "\$OUT\/task-settings\.json" "\$ETC\/task-settings\.json"/);
+  assert.match(install, /install -m 440 -o root -g _recursicachat "\$OUT\/task-settings\.json" "\$ETC\/task-settings\.json"/);
+  assert.doesNotMatch(install, /install -m 644 [^\n]*task-settings\.json/, "only the server's account reads the task settings");
   assert.doesNotMatch(install, /echo "\$gw_key"/, "the key is never printed");
 });
 
