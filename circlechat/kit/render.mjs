@@ -32,6 +32,8 @@
 import { OLLAMA_SETTINGS, linuxOllamaErrors, linuxOllamaSpec, ollamaEnv, ollamaSettingErrors, trialServer } from "./ollama.mjs";
 import fs from "node:fs";
 import net from "node:net";
+import { peerAddress } from "./peers.mjs";
+export { AGENT_PORT, agentPeers, peerAddress } from "./peers.mjs";
 import path from "node:path";
 import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
@@ -306,10 +308,14 @@ export function envFile(lines) {
   return lines.join("\n") + "\n";
 }
 
-// The config check's warnings: settings that still work, and that a later release removes. A
-// warning never stops the setup.
-export const warnings = (site = {}) => RETIRED_SETTINGS.filter(([, get]) => get(site) !== undefined)
-  .map(([name]) => `${name} is no longer read, since the kit no longer runs CircleChat 1.x. Remove ${name} from site.json`);
+// The config check's warnings: settings that still work, and that a later release removes, and a
+// computer the other cluster agents can't reach. A warning never stops the setup.
+export const warnings = (site = {}) => [
+  ...RETIRED_SETTINGS.filter(([, get]) => get(site) !== undefined)
+    .map(([name]) => `${name} is no longer read, since the kit no longer runs CircleChat 1.x. Remove ${name} from site.json`),
+  ...((site.nodes ?? []).length > 1 ? site.nodes.filter((n) => !peerAddress(n)) : [])
+    .map((n) => `node ${n.name}: no other computer's cluster agent can reach ${n.name}, so nothing watches ${n.name}. Set tailnet_address for ${n.name} to the computer's Tailscale address`),
+];
 
 export function squidConf(site = {}) {
   return `# Written by circlechat/kit/render.mjs. Each stack's outgoing filter.

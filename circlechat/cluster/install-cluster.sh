@@ -20,14 +20,17 @@ require_kit "$KIT"
 NODE_BIN="$(command -v node)"
 for t in tcpdump age; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
 
-INFO="$(node -e '
-  const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+# AGENTS: each computer's cluster agent, at the computer's Tailscale address (kit/peers.mjs agentPeers).
+INFO="$(node --input-type=module -e '
+  import fs from "node:fs";
+  const { agentPeers } = await import(process.argv[3]);
+  const s = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
   const me = s.nodes.find((n) => n.name === process.argv[2]);
   if (!me) { console.error(`no computer ${process.argv[2]} in site.json`); process.exit(1); }
-  const agents = s.nodes.map((n) => `${n.name}=http://${n.name === me.name ? "127.0.0.1" : n.address}:7500`).join(",");
+  const agents = Object.entries(agentPeers(s, me.name)).map(([name, url]) => `${name}=${url}`).join(",");
   // The fields are split on \x1f, not a tab: read collapses empty fields between tabs.
   console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? "", me.slack_icon ?? "", me.router ?? ""].join("\x1f"));
-' "$SITE" "$NODE")"
+' "$SITE" "$NODE" "$HERE/../kit/peers.mjs")"
 IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXPECTED_ROUTER <<<"$INFO"
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
