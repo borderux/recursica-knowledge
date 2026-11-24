@@ -41,7 +41,10 @@ test("starts a job, refuses a second when full, reports and wakes the agent when
   const r = await call("POST", "/jobs", pkg);
   assert.equal(r.status, 201);
   const { id } = await r.json();
-  assert.equal(fs.readFileSync(path.join(tmp, "jobs", id, "package.md"), "utf8"), pkg.package);
+  // The container sees only the work folder. jobd's own files sit one folder up, mode 700.
+  assert.equal(fs.readFileSync(path.join(tmp, "jobs", id, "work", "package.md"), "utf8"), pkg.package);
+  assert.equal(fs.statSync(path.join(tmp, "jobs", id)).mode & 0o777, 0o700);
+  assert.equal(fs.statSync(path.join(tmp, "jobs", id, "work")).mode & 0o777, 0o777);
   // The job gets the gateway's address and the task's gateway key from a file, never a cloud key.
   const gw = path.join(tmp, "jobs", id, "gateway.env");
   // The job also gets the token service's address, where the job asks for Porter's GitHub token.
@@ -49,12 +52,13 @@ test("starts a job, refuses a second when full, reports and wakes the agent when
   assert.equal(fs.statSync(gw).mode & 0o777, 0o600);
   const args = fs.readFileSync(path.join(state, `${id}.args`), "utf8").split("\n");
   assert.equal(args[args.indexOf("--env-file") + 1], gw);
+  assert.equal(args[args.indexOf("-v") + 1], `${path.join(tmp, "jobs", id, "work")}:/work`);
   assert.ok(args.includes("PORTER_MODEL"));
   assert.ok(!args.includes("PORTER_GITHUB_PAT"), "a retired token never reaches a job");
   assert.ok(!args.some((a) => a.includes("ANTHROPIC_API_KEY") || a.includes(pkg.gateway_key)), "no cloud key and no key on the command line");
   assert.equal((await call("POST", "/jobs", pkg)).status, 429);
   assert.equal((await (await call("GET", `/jobs/${id}`)).json()).status, "running");
-  fs.writeFileSync(path.join(tmp, "jobs", id, "report.md"), "PR: https://example/pr/1");
+  fs.writeFileSync(path.join(tmp, "jobs", id, "work", "report.md"), "PR: https://example/pr/1");
   fs.writeFileSync(path.join(state, id), "exited 0 false");
   await new Promise((r) => setTimeout(r, 600));
   const meta = await (await call("GET", `/jobs/${id}`)).json();
