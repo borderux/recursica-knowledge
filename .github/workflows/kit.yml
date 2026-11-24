@@ -62,6 +62,10 @@ jobs:
       # also runs here, with the bash, find and tar that macOS ships.
       - name: rc-clear, with macOS's own bash, find and tar
         run: node --test circlechat/recursicachat/rc-clear.test.mjs
+      # install.sh runs only on a Mac, and its check of an installed file's owner and mode uses
+      # macOS's stat -f. checks.yml runs the test's text checks on Linux and skips the behavior test.
+      - name: install.sh's check of owner, group and mode, with macOS's stat
+        run: node --test circlechat/recursicachat/install.test.mjs
       - name: The pf rules parse
         run: |
           # @RUSTDESK_DIRECT@ both ways install-cluster.sh fills it: empty, and the direct-address rule.
