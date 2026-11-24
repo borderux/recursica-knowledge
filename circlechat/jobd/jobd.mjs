@@ -14,6 +14,13 @@
 // stack's token service (github/token-service.mjs), with the same task key. The job holds no
 // private key and no long-lived token.
 //
+// Each job has two folders. The job's own folder, JOBD_DIR/<id>, mode 700, holds jobd's files:
+// meta.json, gateway.env and job.log. The work folder, JOBD_DIR/<id>/work, is the container's
+// /work, with package.md and the job's report.md. The container sees only the work folder, so a job
+// can never change jobd's files. jobd reads report.md without following a link, up to
+// JOBD_REPORT_MAX_BYTES. A job that an older jobd started has one folder for both. jobd reads and
+// writes that folder without following a link, and gives the job a work folder at a restart.
+//
 //   GET    /health                 { node, slots, running }
 //   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
 //   GET    /jobs/:id               { id, label, repo, status, exit_code, oom }
@@ -48,6 +55,7 @@ const C = {
   hookUrl: env.PORTER_HOOK_URL ?? "",
   hookSecret: env.PORTER_HOOK_SECRET ?? "",
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
+  reportMax: Number(env.JOBD_REPORT_MAX_BYTES ?? 1 << 20),
 };
 const TYPES = { porter: { image: env.JOBD_PORTER_IMAGE ?? "recursica/porter-job" } };
 if (!C.token) { console.error("JOBD_TOKEN is required"); process.exit(1); }
@@ -57,8 +65,39 @@ const run = (args) => new Promise((res) => execFile(C.docker, args, { maxBuffer:
 const ID = /^job-[0-9a-z-]{6,64}$/;
 const TASK_KEY = /^cct_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 const jobDir = (id) => path.join(C.dir, id);
-const readMeta = (id) => { try { return JSON.parse(fs.readFileSync(path.join(jobDir(id), "meta.json"), "utf8")); } catch { return null; } };
-const writeMeta = (m) => fs.writeFileSync(path.join(jobDir(m.id), "meta.json"), JSON.stringify(m, null, 2));
+// The work folder the container sees. A job that an older jobd started has no work folder, and
+// the container saw the job's own folder.
+const isDir = (p) => { try { return fs.lstatSync(p).isDirectory(); } catch { return false; } };
+const workDir = (id) => (isDir(path.join(jobDir(id), "work")) ? path.join(jobDir(id), "work") : jobDir(id));
+
+// Reads a plain file without following a link. O_NONBLOCK keeps a named pipe from blocking the
+// read. Returns null for a missing file, a link or any other kind of file, and { tooLarge } for a
+// file over max bytes.
+const { O_RDONLY, O_WRONLY, O_CREAT, O_EXCL, O_NOFOLLOW, O_NONBLOCK } = fs.constants;
+export function readPlain(file, max) {
+  let fd;
+  try { fd = fs.openSync(file, O_RDONLY | O_NOFOLLOW | O_NONBLOCK); } catch { return null; }
+  try {
+    const st = fs.fstatSync(fd);
+    if (!st.isFile()) return null;
+    if (st.size > max) return { tooLarge: true };
+    const buf = Buffer.alloc(st.size);
+    const n = st.size ? fs.readSync(fd, buf, 0, st.size, 0) : 0;
+    return { text: buf.subarray(0, n).toString("utf8") };
+  } finally { fs.closeSync(fd); }
+}
+// Writes a file as a new file, then renames the new file over the old name. A rename replaces a
+// link itself, so a write never goes through a link that a job left in the folder.
+export function writePlain(file, text, mode = 0o600) {
+  const tmp = path.join(path.dirname(file), `.new-${crypto.randomBytes(6).toString("hex")}`);
+  const fd = fs.openSync(tmp, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW, mode);
+  try { fs.writeSync(fd, text); } finally { fs.closeSync(fd); }
+  fs.renameSync(tmp, file);
+}
+const readMeta = (id) => { try { return JSON.parse(readPlain(path.join(jobDir(id), "meta.json"), 1 << 20)?.text ?? "null"); } catch { return null; } };
+const writeMeta = (m) => writePlain(path.join(jobDir(m.id), "meta.json"), JSON.stringify(m, null, 2), 0o644);
+// A report of any size counts, without a read of the whole file.
+const hasReport = (id) => readPlain(path.join(workDir(id), "report.md"), 0) !== null;
 const allJobs = () => fs.readdirSync(C.dir).filter((d) => ID.test(d)).map(readMeta).filter(Boolean);
 const running = () => allJobs().filter((m) => m.status === "running");
 
@@ -99,7 +138,7 @@ function networkArgs() {
 function containerArgs(id, repo, image) {
   return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
     ...(C.cpus ? ["--cpus", C.cpus] : []),
-    "-v", `${jobDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
+    "-v", `${path.join(jobDir(id), "work")}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
     "--env-file", path.join(jobDir(id), "gateway.env"),
     ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];
 }
@@ -113,11 +152,12 @@ async function start(body) {
   if (!C.gateway) return [500, { error: "no_gateway", detail: "JOBD_GATEWAY_URL is not set. Rerun setup-node.sh." }];
   if (running().length >= C.slots) return [429, { error: "full", slots: C.slots }];
   const id = `job-${Date.now().toString(36)}-${crypto.randomBytes(3).toString("hex")}`;
-  const dir = jobDir(id);
-  fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
-  fs.chmodSync(dir, 0o777);  // the container's user writes here
-  fs.writeFileSync(path.join(dir, "package.md"), body.package);
-  fs.writeFileSync(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`, { mode: 0o600 });
+  const dir = jobDir(id), work = path.join(dir, "work");
+  fs.mkdirSync(work, { recursive: true });
+  fs.chmodSync(dir, 0o700);
+  fs.chmodSync(work, 0o777);  // the container's user writes here
+  writePlain(path.join(work, "package.md"), body.package, 0o644);
+  writePlain(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n${C.githubTokenUrl ? `GITHUB_TOKEN_URL=${C.githubTokenUrl}\n` : ""}`);
   const label = String(body.label ?? "").slice(0, 120);
   const r = await run(containerArgs(id, body.repo, type.image));
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }
@@ -126,19 +166,37 @@ async function start(body) {
   return [201, { id, node: C.node }];
 }
 
+// Gives a job that an older jobd started a work folder, with a copy of the job's package. The
+// job's container has ended, so the job's own folder becomes private. Returns false when the job
+// has no package to start from.
+function giveWorkFolder(id) {
+  const dir = jobDir(id), work = path.join(dir, "work");
+  if (isDir(work)) return true;
+  const pkg = readPlain(path.join(dir, "package.md"), 300_000);
+  if (!pkg?.text) return false;
+  fs.rmSync(work, { force: true });
+  fs.mkdirSync(work);
+  fs.chmodSync(work, 0o777);
+  fs.chmodSync(dir, 0o700);
+  writePlain(path.join(work, "package.md"), pkg.text, 0o644);
+  return true;
+}
+
 async function reap() {
   for (const m of running()) {
     const r = await run(["inspect", "-f", "{{.State.Status}} {{.State.ExitCode}} {{.State.OOMKilled}}", m.id]);
     const [state, code, oom] = r.ok ? r.out.trim().split(" ") : ["missing", "-1", "false"];
     if (state === "running" || state === "created") continue;
     const logs = await run(["logs", "--tail", "2000", m.id]);
-    fs.writeFileSync(path.join(jobDir(m.id), "job.log"), logs.out + logs.err);
+    writePlain(path.join(jobDir(m.id), "job.log"), logs.out + logs.err, 0o644);
     await run(["rm", "-f", m.id]);
-    const hasReport = fs.existsSync(path.join(jobDir(m.id), "report.md"));
+    const reported = hasReport(m.id);
     // A restart cut the job off: start the job again from the saved package, up to MAX_RESTARTS
-    // times, instead of reporting a failure the job never had.
-    const interrupted = !hasReport && oom !== "true" && Date.parse(m.started) < STARTED;
-    if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && TYPES[m.type]) {
+    // times, instead of reporting a failure the job never had. A job that an older jobd started
+    // gets a work folder first. The job could change that job's meta.json, so the repository must
+    // still be on the allowlist.
+    const interrupted = !reported && oom !== "true" && Date.parse(m.started) < STARTED;
+    if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && TYPES[m.type] && C.repos.has(m.repo) && giveWorkFolder(m.id)) {
       const again = await run(containerArgs(m.id, m.repo, TYPES[m.type].image));
       if (again.ok) {
         m.restarts = (m.restarts ?? 0) + 1;
@@ -150,7 +208,7 @@ async function reap() {
     }
     fs.rmSync(path.join(jobDir(m.id), "gateway.env"), { force: true });
     m.exit_code = Number(code); m.oom = oom === "true"; m.ended = new Date().toISOString();
-    m.status = m.oom ? "out_of_memory" : m.exit_code === 0 && hasReport ? "succeeded" : "failed";
+    m.status = m.oom ? "out_of_memory" : m.exit_code === 0 && reported ? "succeeded" : "failed";
     writeMeta(m);
     console.log(`ended ${m.id} ${m.status}`);
     await notify({ event: "porter_job_done", job: m.id, node: C.node, label: m.label, repo: m.repo, status: m.status }, `${m.id}@${C.node}`);
@@ -179,12 +237,13 @@ export const handle = async (req, res) => {
     if (req.method === "DELETE" && !m[2]) { await run(["rm", "-f", meta.id]); fs.rmSync(path.join(jobDir(meta.id), "gateway.env"), { force: true }); meta.status = "stopped"; writeMeta(meta); return send(res, 200, meta); }
     if (!m[2]) return send(res, 200, meta);
     if (m[2] === "report") {
-      const f = path.join(jobDir(meta.id), "report.md");
-      return fs.existsSync(f) ? send(res, 200, fs.readFileSync(f, "utf8"), "text/markdown") : send(res, 404, { error: "no_report_yet" });
+      const r = readPlain(path.join(workDir(meta.id), "report.md"), C.reportMax);
+      if (r?.tooLarge) return send(res, 413, { error: "report_too_large", max_bytes: C.reportMax });
+      return r ? send(res, 200, r.text, "text/markdown") : send(res, 404, { error: "no_report_yet" });
     }
     const tail = Math.min(Number(u.searchParams.get("tail") ?? 200), 2000);
     const live = meta.status === "running" ? await run(["logs", "--tail", String(tail), meta.id]) : null;
-    const text = live ? live.out + live.err : (fs.existsSync(path.join(jobDir(meta.id), "job.log")) ? fs.readFileSync(path.join(jobDir(meta.id), "job.log"), "utf8") : "");
+    const text = live ? live.out + live.err : readPlain(path.join(jobDir(meta.id), "job.log"), 64 << 20)?.text ?? "";
     return send(res, 200, text.split("\n").slice(-tail).join("\n"), "text/plain");
   } catch (e) { send(res, 500, { error: "internal", detail: e.message }); }
 };

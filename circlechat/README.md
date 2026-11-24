@@ -326,6 +326,13 @@ a command line. Each job sends the job's model requests to the control computer'
 the gateway key for the job's task. A job that runs out of memory ends as `out_of_memory` and is
 reported; the machine keeps running.
 
+**A job's container sees only the job's work folder.** Each job has two folders in the job runner's job folder, such as `~/.recursica-jobs`:
+
+- `<job>/`, mode 700, holds the job runner's files: `meta.json`, `gateway.env` and `job.log`.
+- `<job>/work/` is the container's `/work`, with `package.md` and the job's `report.md`.
+
+The job runner reads `report.md` without following a link, up to 1 MB (`JOBD_REPORT_MAX_BYTES`). A larger report gets a 413 answer. A link or a named pipe at `report.md` counts as no report.
+
 **A job runner listens on `127.0.0.1` and the computer's Tailscale addresses, never on the office network.** `setup-node.sh` reads the Tailscale addresses with `tailscale ip`. Without Tailscale, the job runner listens on `127.0.0.1` only, and other computers cannot reach the job runner. The control computer's job runner listens at the control computer's `tailnet_address`. On Linux, `host.docker.internal` is Docker's bridge address, where no job runner listens.
 
 **On the control computer, port jobs reach the gateway as `cc-gateway`, on the jobs' closed network, `jobs-egress`.** `setup-host.sh` connects the gateway to that network whenever the network exists, before the gateway starts.
@@ -1331,17 +1338,17 @@ With the server already at the latest commit, restart it instead: `sudo launchct
 **`circlechat/recursicachat/` holds the server's own scripts and launchd jobs, for the control Mac.**
 This is the start of phase 5: the kit installs the server that rc-sync.sh already configures.
 
-| File                                                                   | What it does                                                                |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `run.sh`, `io.recursica.recursicachat.plist`                           | Checks the setup, waits for Docker, starts the server as `_recursicachat`   |
-| `io.recursica.recursicachat-colima.plist`                              | The server's own Colima VM, through `kit/colima-service.sh`                 |
-| `backup.sh`, `io.recursica.recursicachat-backup.plist`                 | The nightly backup, as root, at 03:30                                       |
-| `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist`     | The monthly test restore, as root, on the 1st at 05:00                      |
-| `stack-backup.sh`, `io.recursica.stack-backup.plist`                   | The nightly backup of the stack's own files, as root, at 04:00              |
-| `stack-restore-test.sh`, `io.recursica.stack-restore-test.plist`       | Its monthly test restore, as root, on the 1st at 05:30                      |
-| `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`                   | Puts the latest commit of the server's branch into service                  |
-| `rc-clear.sh` with `rc-clear.mjs`, linked as `/usr/local/bin/rc-clear` | Empties the server's work, and keeps a copy of what it removes              |
-| `build-pdftext.sh`                                                     | Builds the PDF text reader's image for people's uploads, and records its ID |
+| File                                                                   | What it does                                                                            |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `run.sh`, `io.recursica.recursicachat.plist`                           | Checks the setup, waits for Docker, starts the server as `_recursicachat`               |
+| `io.recursica.recursicachat-colima.plist`                              | The server's own Colima VM, through `kit/colima-service.sh`                             |
+| `backup.sh`, `io.recursica.recursicachat-backup.plist`                 | The nightly backup, as root, at 03:30                                                   |
+| `restore-test.sh`, `io.recursica.recursicachat-restore-test.plist`     | The monthly test restore, as root, on the 1st at 05:00                                  |
+| `stack-backup.sh`, `io.recursica.stack-backup.plist`                   | The nightly backup of the stack's own files, as root, at 04:00                          |
+| `stack-restore-test.sh`, `io.recursica.stack-restore-test.plist`       | Its monthly test restore, as root, on the 1st at 05:30                                  |
+| `rc-deploy.sh`, linked as `/usr/local/bin/rc-deploy`                   | Puts the latest commit of the server's branch into service                              |
+| `rc-clear.sh` with `rc-clear.mjs`, linked as `/usr/local/bin/rc-clear` | Empties the server's work, and keeps a copy of what it removes                          |
+| `build-pdftext.sh`                                                     | Builds the PDF text reader's image for people's uploads, and records its ID             |
 | `lima-override.yaml`                                                   | The ports the server's Colima VM forwards to the Mac: `127.0.0.1` only, none below 1024 |
 
 **Install them from root's kit checkout, with `sudo circlechat/recursicachat/install.sh`.**
