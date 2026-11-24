@@ -14,10 +14,12 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
 const directRule = (name) => new RegExp(`^  ${name}='(.*)'$`, "m").exec(fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8"))[1];
 
-// The base rules, filled both ways install-cluster.sh fills the placeholders.
-function baseRules(directOff = false) {
+// The base rules, filled each way install-cluster.sh fills the placeholders: @RUSTDESK_DIRECT@ empty
+// or the direct-address rule, and @TAILNET_IF@ the tailscale0 rules on Linux or empty in WSL.
+function baseRules(directOff = false, wsl = false) {
   const text = fs.readFileSync(path.join(here, "firewall/nft-base.nft"), "utf8").replaceAll("@CANARY_PORTS@", "2222, 2121, 8088");
-  return text.replace(/^@RUSTDESK_DIRECT@$/m, directOff ? directRule("NFT_DIRECT").replaceAll("\\n", "\n") : "");
+  return text.replace(/^@RUSTDESK_DIRECT@$/m, directOff ? directRule("NFT_DIRECT").replaceAll("\\n", "\n") : "")
+    .replace(/^@TAILNET_IF@$/gm, wsl ? "" : directRule("NFT_TAILNET").replaceAll("\\n", "\n"));
 }
 const lockdownRules = () => fs.readFileSync(path.join(here, "firewall/nft-lockdown.nft"), "utf8");
 
@@ -53,7 +55,11 @@ function parseRule(line) {
   let verdict = null;
   for (let i = 0; i < t.length; i++) {
     const w = t[i];
-    if (["iif", "iifname", "oif", "oifname"].includes(w)) { conds.push({ kind: w.startsWith("i") ? "iif" : "oif", value: t[++i].replaceAll('"', "") }); continue; }
+    if (["iif", "iifname", "oif", "oifname"].includes(w)) {
+      const neg = t[i + 1] === "!=" ? (i++, true) : false;
+      conds.push({ kind: w.startsWith("i") ? "iif" : "oif", neg, value: t[++i].replaceAll('"', "") });
+      continue;
+    }
     if ((w === "ip" || w === "ip6") && ["saddr", "daddr"].includes(t[i + 1])) {
       const field = t[++i];
       const neg = t[i + 1] === "!=" ? (i++, true) : false;
@@ -92,8 +98,8 @@ const inPorts = (port, list) => list.some((v) => (v.includes("-") ? port >= +v.s
 
 function matches(c, p) {
   switch (c.kind) {
-    case "iif": return p.iif === c.value;
-    case "oif": return p.oif === c.value;
+    case "iif": return (p.iif === c.value) !== c.neg;
+    case "oif": return (p.oif === c.value) !== c.neg;
     case "addr": {
       if (p.family !== c.family) return false;
       const hit = inAddresses(c.field === "saddr" ? p.saddr : p.daddr, p.family, c.value);
@@ -158,8 +164,8 @@ for (const directOff of [false, true]) {
       // With direct access off, the direct-access rule refuses the web client's ports, 21118 and
       // 21119, from Tailscale too.
       const fromTailscale = directOff && dport >= 21118 ? "drop" : "accept";
-      assert.equal(verdict(input, { iif: "eth0", saddr: "100.64.0.9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale`);
-      assert.equal(verdict(input, { iif: "eth0", saddr: "fd7a:115c:a1e0::9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale over IPv6`);
+      assert.equal(verdict(input, { iif: "tailscale0", saddr: "100.64.0.9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale`);
+      assert.equal(verdict(input, { iif: "tailscale0", saddr: "fd7a:115c:a1e0::9", dport, proto }), fromTailscale, `${proto} ${dport} from Tailscale over IPv6`);
       for (const saddr of ["192.168.1.20", "172.17.0.2", "8.8.8.8", "2001:db8::5"]) {
         assert.equal(verdict(input, { iif: "eth0", saddr, dport, proto }), "drop", `${proto} ${dport} from ${saddr}`);
       }
@@ -171,6 +177,52 @@ for (const directOff of [false, true]) {
     }
   });
 }
+
+// On Linux, Tailscale's packets arrive on tailscale0. A packet that claims a Tailscale address on
+// another interface is a forged source from the office network, so the rules refuse it, in the
+// input chain and in the forward chain, which Docker's published ports use.
+test("a Tailscale source passes only on tailscale0; on any other interface it is refused", () => {
+  for (const directOff of [false, true]) {
+    const input = chain(baseRules(directOff), "input");
+    for (const saddr of ["100.64.0.9", "100.127.255.1", "fd7a:115c:a1e0::9"]) {
+      for (const [dport, proto] of [[22, "tcp"], [7500, "tcp"], [21114, "tcp"], [21116, "udp"], [2222, "tcp"], [41641, "udp"]]) {
+        assert.equal(verdict(input, { iif: "tailscale0", saddr, dport, proto }), "accept", `${proto} ${dport} from ${saddr} on tailscale0`);
+        for (const iif of ["eth0", "wlan0", "docker0"]) assert.equal(verdict(input, { iif, saddr, dport, proto }), "drop", `${proto} ${dport} from ${saddr} on ${iif}`);
+      }
+      const icmp = saddr.includes(":") ? "icmpv6" : "icmp";
+      assert.equal(verdict(input, { iif: "eth0", saddr, proto: icmp }), "drop", `${icmp} from ${saddr} on eth0`);
+      assert.equal(verdict(input, { iif: "tailscale0", saddr, proto: icmp }), "accept", `${icmp} from ${saddr} on tailscale0`);
+    }
+    assert.equal(verdict(input, { iif: "eth0", saddr: "192.168.1.20", dport: 2222 }), "accept", "a decoy still answers the office network");
+    assert.equal(verdict(input, { iif: "eth0", saddr: "100.128.0.1", dport: 2222 }), "accept", "100.128.0.1 is outside 100.64.0.0/10");
+    const forward = chain(baseRules(directOff), "forward");
+    assert.equal(verdict(forward, { iif: "eth0", saddr: "100.64.0.9", dport: 8080 }), "drop", "a forged source to a published port");
+    assert.equal(verdict(forward, { iif: "eth0", saddr: "fd7a:115c:a1e0::9", dport: 8080 }), "drop");
+    assert.equal(verdict(forward, { iif: "tailscale0", saddr: "100.64.0.9", dport: 8080 }), "accept");
+  }
+});
+
+test("the tailscale0 rules come after the blocked sets, the RustDesk rules and the direct-address rule, and before every accept they guard", () => {
+  const input = chain(baseRules(true), "input").rules.map((r) => r.line);
+  const spoof4 = input.findIndex((l) => l.startsWith('iifname != "tailscale0" ip saddr 100.64.0.0/10 drop'));
+  const spoof6 = input.findIndex((l) => l.startsWith('iifname != "tailscale0" ip6 saddr fd7a:115c:a1e0::/48 drop'));
+  assert.ok(spoof4 > 0 && spoof6 === spoof4 + 1);
+  assert.ok(input.indexOf("ip saddr @blocked4 drop") < spoof4 && input.indexOf("ip6 saddr @blocked6 drop") < spoof4);
+  assert.ok(input.findLastIndex((l) => /"rustdesk( direct)?"$/.test(l)) < spoof4, "the RustDesk rules and the direct-address rule first");
+  assert.equal(input[spoof6 + 1], "ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept");
+  const forward = chain(baseRules(), "forward").rules.map((r) => r.line);
+  const f4 = forward.findIndex((l) => l.startsWith('iifname != "tailscale0" ip saddr 100.64.0.0/10 drop'));
+  assert.ok(f4 > forward.indexOf("ip6 saddr @blocked6 drop") && f4 < forward.findIndex((l) => l.startsWith("ct state new")));
+});
+
+// WSL has no tailscale0: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface.
+test("in WSL the rules check only the address, as before, and name no tailscale0", () => {
+  const text = baseRules(false, true);
+  assert.doesNotMatch(text.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n"), /tailscale0/);
+  const input = chain(text, "input");
+  assert.equal(verdict(input, { iif: "eth0", saddr: "100.64.0.9", dport: 22 }), "accept");
+  assert.equal(verdict(input, { iif: "eth1", saddr: "fd7a:115c:a1e0::9", dport: 21114 }), "accept");
+});
 
 test("the loopback0 rules come right after iif lo accept, before every drop", () => {
   const lines = chain(baseRules(), "input").rules.map((r) => r.line);

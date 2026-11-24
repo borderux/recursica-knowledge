@@ -5,6 +5,13 @@
 # RustDesk's TCP ports, 21114 to 21119, and UDP port 21116 take only Tailscale and the computer itself:
 # not Docker's internal networks, and not an allowed source. @RUSTDESK_DIRECT@ is empty, or a rule that refuses
 # RustDesk's direct-address ports, 21118 and 21119, from everywhere (remote_access.direct_ip false).
+# @TAILNET_IF@ is two rules that refuse a Tailscale address, 100.64.0.0/10 or fd7a:115c:a1e0::/48, on
+# any interface but tailscale0, Tailscale's interface on Linux: such a packet is a forged source from
+# the office network. Tailscale's addresses then pass only from tailscale0. In WSL @TAILNET_IF@ is
+# empty: Tailscale runs on Windows, and the packets reach WSL on a mirrored interface, never on
+# tailscale0, so Windows' own firewall rules check the adapter (install-windows-guard.ps1).
+# A rerun of install-cluster.sh and the start-up job load these rules with nft-load.sh, which keeps
+# the addresses in the four sets.
 table inet agentguard
 delete table inet agentguard
 table inet agentguard {
@@ -29,6 +36,7 @@ table inet agentguard {
     tcp dport 21114-21119 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
     udp dport 21116 ip6 saddr != { fd7a:115c:a1e0::/48, ::1 } drop comment "rustdesk"
 @RUSTDESK_DIRECT@
+@TAILNET_IF@
     ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept
     ip6 saddr fd7a:115c:a1e0::/48 accept
     ip saddr @allowed4 accept
@@ -45,6 +53,7 @@ table inet agentguard {
     ip saddr @blocked4 drop
     ip6 saddr @blocked6 drop
     ct state established,related accept
+@TAILNET_IF@
     tcp dport 21114-21119 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     udp dport 21116 ip saddr != 100.64.0.0/10 drop comment "rustdesk"
     ct state new ip saddr != { 100.64.0.0/10, 172.16.0.0/12, 127.0.0.0/8 } ip saddr != @allowed4 drop

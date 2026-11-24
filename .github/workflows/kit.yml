@@ -36,6 +36,10 @@ jobs:
       - name: The RustDesk backup, with the real restic and rclone
         run: node --test circlechat/rustdesk/rustdesk.test.mjs
         env: { RUSTDESK_RESTIC_REQUIRED: "1" }
+      # The nftables rules with real nftables, in network namespaces of their own: both renderings
+      # parse, a rerun keeps the sets' addresses, and a forged Tailscale source off tailscale0 drops.
+      - name: The nftables rules with real nftables
+        run: sudo -E env "PATH=$PATH" bash circlechat/ci/nft-check.sh
 
   smoke-install:
     name: Install a whole stack on a fresh machine
