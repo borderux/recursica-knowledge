@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import http from "node:http";
+import crypto from "node:crypto";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "..", "site.example.json"), "utf8"));
@@ -516,16 +517,16 @@ esac
     posts.push({ auth: q.headers.authorization, body: JSON.parse(b) }); s.setHeader("content-type", "application/json"); s.end(JSON.stringify(slackOk ? { ok: true } : { ok: false, error: "not_in_channel" })); }); });
   await new Promise((r) => slack.listen(0, "127.0.0.1", r));
   const env = { ...fake.env, AGENT_STACKS_SLACK_API: `http://127.0.0.1:${slack.address().port}/api` };
-  const run = (computer, input, restart = "true") => new Promise((resolve) => {
-    const p = spawn("bash", [path.join(here, "apply-secrets.sh"), "cluster", computer, restart], {
-      env: { ...process.env, AGENT_STACKS_CONF: conf, AGENT_CLUSTER_ENV: path.join(home, "agent-cluster.env"), ...env } });
+  const run = (computer, input, restart = "true", extra = [], more = {}) => new Promise((resolve) => {
+    const p = spawn("bash", [path.join(here, "apply-secrets.sh"), "cluster", computer, restart, ...extra], {
+      env: { ...process.env, AGENT_STACKS_CONF: conf, AGENT_CLUSTER_ENV: path.join(home, "agent-cluster.env"), ...env, ...more } });
     let stdout = "", stderr = "";
     p.stdout.on("data", (d) => (stdout += d)); p.stderr.on("data", (d) => (stderr += d));
     p.on("close", (status) => resolve({ status, stdout, stderr }));
     p.stdin.end(input);
   });
   const units = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
-  return { home, run, posts, units, close: () => slack.close() };
+  return { home, conf, bin: fake.bin, log, run, posts, units, close: () => slack.close() };
 }
 const restarts = (units) => units.split("\n").filter((l) => / restart | kickstart /.test(l));
 
@@ -607,4 +608,159 @@ test("a service that is missing or fails to restart is never reported as restart
       assert.doesNotMatch(r.stdout, /mlx-large/, "a service that reads no changed value keeps running");
     } finally { w.close(); }
   }
+});
+
+// A key rotation's world: restartWorld, with a stand-in kev-engine, a stand-in for the control
+// computer's cluster agent, and stand-ins for ss and netstat that report the open connections.
+// The engine takes the key in the node secrets file at each restart that the systemctl or launchctl
+// stand-in records, as kev-engine reads KEV_API_KEY at its start.
+async function rotationWorld({ system = "Linux", barb = "none", oldKit = false, connections = 0, answering = false } = {}) {
+  const w = await restartWorld({ system, installed: ["kev-engine", "jobd", "cluster-agent"] });
+  const nodeEnv = path.join(w.home, ".recursica-node.env");
+  fs.writeFileSync(nodeEnv, "KEV_API_KEY=old-kev-key\n", { mode: 0o600 });
+  const engine = { key: "old-kev-key", restarts: 0, answered: 7, reads: 0 };
+  const started = () => (w.units().match(/ (restart kev-engine|kickstart -k system\/io\.recursica\.kev-engine)/g) ?? []).length;
+  const kev = http.createServer((q, s) => {
+    if (started() > engine.restarts) { engine.restarts = started(); engine.key = /^KEV_API_KEY=(.*)$/m.exec(fs.readFileSync(nodeEnv, "utf8"))[1]; }
+    engine.reads++;
+    if (answering) engine.answered++;
+    if (q.headers.authorization !== `Bearer ${engine.key}`) { s.statusCode = 401; return s.end("{}"); }
+    s.setHeader("content-type", "application/json");
+    s.end(JSON.stringify({ models: [{ name: "kev-latest", batches: { count: 3, requests: engine.answered, queued: 0 } }] }));
+  });
+  const agentAuth = [];
+  const agent = http.createServer((q, s) => {
+    agentAuth.push(q.headers.authorization);
+    s.setHeader("content-type", "application/json");
+    s.end(JSON.stringify({ ok: true, computer: control, services: [], ...(oldKit ? {} : { barb }) }));
+  });
+  await new Promise((r) => kev.listen(0, "127.0.0.1", r));
+  await new Promise((r) => agent.listen(0, "127.0.0.1", r));
+  // The site's engine listens on the stand-in's port, and the control computer's agent at 127.0.0.1.
+  const siteFile = path.join(w.home, "circlechat", "site.json");
+  const site = JSON.parse(fs.readFileSync(siteFile, "utf8"));
+  for (const n of site.nodes) { if (n.kev) n.kev.port = kev.address().port; if (n.control) n.tailnet_address = "127.0.0.1"; }
+  site.nodes.find((n) => !n.control).services = [{ name: "kev-engine", command: "kev", dir: "/k", secret_env: ["KEV_API_KEY"] }];
+  fs.writeFileSync(siteFile, JSON.stringify(site));
+  const count = path.join(w.home, "connections");
+  fs.writeFileSync(count, String(connections));
+  fs.writeFileSync(path.join(w.bin, "ss"), `#!/usr/bin/env bash\necho "ss $*" >> "${w.log}"\nfor _ in $(seq 1 "$(cat "${count}")"); do echo "0 0 127.0.0.1:8009 127.0.0.1:50000"; done\n`, { mode: 0o755 });
+  fs.writeFileSync(path.join(w.bin, "netstat"), `#!/usr/bin/env bash\necho "netstat $*" >> "${w.log}"\necho "Proto Recv-Q Send-Q  Local Address          Foreign Address        (state)"\nfor _ in $(seq 1 "$(cat "${count}")"); do echo "tcp4       0      0  127.0.0.1.${kev.address().port}    127.0.0.1.50000        ESTABLISHED"; done\necho "tcp4       0      0  127.0.0.1.50001        127.0.0.1.${kev.address().port}    ESTABLISHED"\n`, { mode: 0o755 });
+  const more = { AGENT_STACKS_AGENT_PORT: String(agent.address().port), AGENT_STACKS_KEV_IDLE_WAIT: "0", AGENT_STACKS_KEV_READY_SECONDS: "10" };
+  const rotate = (computer, input, extra) => w.run(computer, input, "true", extra, more);
+  const key = () => /^KEV_API_KEY=(.*)$/m.exec(fs.readFileSync(nodeEnv, "utf8"))[1];
+  return { ...w, engine, agentAuth, rotate, key, setConnections: (n) => fs.writeFileSync(count, String(n)),
+    close: () => { w.close(); kev.close(); agent.close(); } };
+}
+const proof = (key) => crypto.createHash("sha256").update(`kev-rotation\n${key}`).digest("hex");
+
+test("a rotation's check writes nothing, and passes only while Barb isn't running and kev-engine is idle", async () => {
+  for (const system of ["Linux", "Darwin"]) {
+    for (const barb of ["none", "idle"]) {
+      const w = await rotationWorld({ system, barb });
+      try {
+        const r = await w.rotate(control, "KEV_API_KEY=new-kev-key\nJOBD_TOKEN=new-token\n", ["check"]);
+        assert.equal(r.status, 0, r.stdout + r.stderr);
+        assert.match(r.stdout, barb === "none" ? /  Barb isn't running: RecursicaChat has no agent named Barb\./ : /  Barb isn't running: Barb has no turn queued or running/);
+        assert.match(r.stdout, /  kev-engine is idle: no connection open, nothing queued, and no request answered in 0 seconds\./);
+        assert.match(r.stdout, new RegExp(`kev-engine on ${control} may stop for the key rotation\\. Nothing was written\\.`));
+        assert.equal(w.key(), "old-kev-key");
+        assert.ok(!fs.existsSync(path.join(w.home, "circlechat", ".env")) || !/JOBD_TOKEN/.test(fs.readFileSync(path.join(w.home, "circlechat", ".env"), "utf8")), "nothing written");
+        assert.deepEqual(restarts(w.units()), []);
+        assert.deepEqual(w.agentAuth, ["Bearer ct"], "the agent is asked with the cluster token");
+      } finally { w.close(); }
+    }
+  }
+});
+
+test("a rotation's check fails, and says why, when Barb runs, the state can't be read, or kev-engine is busy", async () => {
+  const cases = [
+    [{ barb: "busy: 1 agent message(s) queued or in a turn" }, /  Barb is running \(1 agent message\(s\) queued or in a turn\)\./],
+    [{ barb: "unknown" }, /  Barb's state is unknown: the RecursicaChat server's database can't be read\./],
+    [{ oldKit: true }, /  Barb's state can't be read: the cluster agent on \S+ reports no state for Barb, so it runs an older kit\./],
+    [{ connections: 1 }, /  kev-engine is not idle: 1 connection\(s\) open to port \d+\./],
+    [{ system: "Darwin", connections: 2 }, /  kev-engine is not idle: 2 connection\(s\) open to port \d+\./],
+    [{ answering: true }, /  kev-engine is not idle: it answered 1 request\(s\) in the last 0 seconds\./],
+  ];
+  for (const [opts, why] of cases) {
+    const w = await rotationWorld(opts);
+    try {
+      const r = await w.rotate(control, "KEV_API_KEY=new-kev-key\n", ["check"]);
+      assert.equal(r.status, 1, JSON.stringify(opts));
+      assert.match(r.stdout, why);
+      assert.match(r.stdout, /kev-engine on \S+ may not stop now\. Nothing was written\./);
+      assert.equal(w.key(), "old-kev-key");
+      assert.deepEqual(restarts(w.units()), []);
+    } finally { w.close(); }
+  }
+});
+
+test("a rotation writes the new key and restarts kev-engine once; a second run restarts nothing", async () => {
+  for (const system of ["Linux", "Darwin"]) {
+    for (const computer of [control, helperName]) {
+      const w = await rotationWorld({ system });
+      try {
+        let r = await w.rotate(computer, "KEV_API_KEY=new-kev-key\n", [proof("new-kev-key")]);
+        assert.equal(r.status, 0, r.stdout + r.stderr);
+        assert.equal(w.key(), "new-kev-key");
+        assert.equal(restarts(w.units()).length, 1, `${system} ${computer}: one restart`);
+        assert.match(restarts(w.units())[0], system === "Linux" ? /systemctl restart kev-engine\.service/ : /launchctl kickstart -k system\/io\.recursica\.kev-engine/);
+        assert.match(r.stdout, /  restarted kev-engine\n  kev-engine answers with the new key after about 0 seconds\./);
+        assert.doesNotMatch(r.stdout, /needs a restart by a person/);
+        assert.equal(w.engine.key, "new-kev-key");
+        assert.deepEqual(w.posts, []);
+        assert.ok(!r.stdout.includes("new-kev-key") && !r.stdout.includes("old-kev-key"), "no key in the log");
+        r = await w.rotate(computer, "KEV_API_KEY=new-kev-key\n", [proof("new-kev-key")]);
+        assert.equal(r.status, 0, r.stdout + r.stderr);
+        assert.equal(restarts(w.units()).length, 1, "the same rotation again restarts nothing");
+      } finally { w.close(); }
+    }
+  }
+});
+
+test("a rotation with a wrong proof, a failed check, or restart off writes nothing and restarts nothing", async () => {
+  let w = await rotationWorld();
+  try {
+    let r = await w.rotate(control, "KEV_API_KEY=new-kev-key\nJOBD_TOKEN=new-token\n", [proof("another-key")]);
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /Refused: kev_rotation doesn't match KEV_API_KEY\. Only rotate-tokens\.sh starts a key rotation\. Nothing was written\./);
+    r = await w.run(control, "KEV_API_KEY=new-kev-key\n", "false", [proof("new-kev-key")]);
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /Refused: a key rotation needs restart on\. Nothing was written\./);
+    assert.equal(w.key(), "old-kev-key");
+    assert.doesNotMatch(fs.readFileSync(path.join(w.home, ".recursica-node.env"), "utf8"), /JOBD_TOKEN/);
+  } finally { w.close(); }
+  w = await rotationWorld({ barb: "busy: 1 agent message(s) queued or in a turn" });
+  try {
+    const r = await w.rotate(control, "KEV_API_KEY=new-kev-key\nJOBD_TOKEN=new-token\n", [proof("new-kev-key")]);
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /  Barb is running/);
+    assert.equal(w.key(), "old-kev-key", "kev-engine keeps the key in its file");
+    assert.doesNotMatch(fs.readFileSync(path.join(w.home, ".recursica-node.env"), "utf8"), /JOBD_TOKEN/, "nothing else is written either");
+    assert.deepEqual(restarts(w.units()), []);
+  } finally { w.close(); }
+});
+
+test("a rotation's check reads the engine's counts with the key, and an engine on another key fails the check", async () => {
+  const w = await rotationWorld();
+  try {
+    w.engine.key = "a-key-the-file-does-not-hold";
+    const r = await w.rotate(control, "KEV_API_KEY=new-kev-key\n", [proof("new-kev-key")]);
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /  kev-engine is not idle: kev-engine refused the key in the secrets file, so the engine runs with another key\./);
+    assert.equal(w.key(), "old-kev-key");
+    assert.deepEqual(restarts(w.units()), []);
+  } finally { w.close(); }
+});
+
+test("a changed JOBD_TOKEN or KEV_ENGINE_KEY in the control computer's .env recreates no gateway", async () => {
+  const w = await restartWorld({ installed: ["jobd"] });
+  try {
+    const r = await w.run(control, "JOBD_TOKEN=jt-new\nKEV_ENGINE_KEY=kek-new\n");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    assert.match(fs.readFileSync(path.join(w.home, "circlechat", ".env"), "utf8"), /^KEV_ENGINE_KEY=kek-new$/m);
+    assert.match(r.stdout, /  restarted jobd\n/, "jobd reads JOBD_TOKEN from the node secrets file");
+    assert.doesNotMatch(r.stdout, /gateway recreated|Secrets applied/, "the gateway reads neither value");
+    assert.deepEqual(restarts(w.units()).length, 1);
+  } finally { w.close(); }
 });

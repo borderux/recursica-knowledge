@@ -54,3 +54,38 @@ export async function serverQuiet(site, { work = openWork } = {}) {
   const why = busyReason(await work(path.join(rc.data ?? RC_DEFAULTS.data, "circlechat.db")));
   return { quiet: !why, why };
 }
+
+// One agent's work on the server: { exists, turns, runs }, or null when the database can't be
+// read. turns and runs count as openWork does, for this agent alone. An agent the server doesn't
+// have, archived ones included, has exists false.
+export async function agentWork(file, handle, now = Date.now()) {
+  try {
+    if (!fs.existsSync(file)) return null;
+    const { DatabaseSync } = await import("node:sqlite");
+    const db = new DatabaseSync(file, { readOnly: true });
+    try {
+      const agent = db.prepare("SELECT id FROM agents WHERE handle = ?").get(handle);
+      if (!agent) return { exists: false, turns: 0, runs: 0 };
+      const turns = db.prepare("SELECT COUNT(*) AS n FROM deliveries WHERE agent_id = ? AND state IN ('queued', 'injected')").get(agent.id).n;
+      const hasRequests = db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'service_requests'").get();
+      const runs = hasRequests ? db.prepare("SELECT COUNT(*) AS n FROM service_requests WHERE agent_id = ? AND state IN ('pending', 'taken') AND updated_at > ?").get(agent.id, now - OPEN_RUN_MS).n : 0;
+      return { exists: true, turns, runs };
+    } finally { db.close(); }
+  } catch { return null; }
+}
+
+// One agent's state on the RecursicaChat 2.0 server that site.json names, for a kev-engine key
+// rotation (deploy/apply-secrets.sh), which restarts kev-engine only while Barb isn't running:
+//   "none"      the server has no agent with the handle, or site.json names no server
+//   "idle"      the agent has no turn queued or running, and no service request open
+//   "busy: ..." the agent has work, and why
+//   "unknown"   the server's database can't be read, which a rotation counts as busy
+export async function agentState(site, handle, { work = agentWork } = {}) {
+  const rc = site?.recursicachat;
+  if (!rc) return "none";
+  const w = await work(path.join(rc.data ?? RC_DEFAULTS.data, "circlechat.db"), handle);
+  if (w === null) return "unknown";
+  if (!w.exists) return "none";
+  const why = busyReason(w);
+  return why ? `busy: ${why}` : "idle";
+}

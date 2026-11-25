@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { busyReason, disruptive, OPEN_RUN_MS, openWork, serverQuiet } from "./quiet.mjs";
+import { agentState, agentWork, busyReason, disruptive, OPEN_RUN_MS, openWork, serverQuiet } from "./quiet.mjs";
 
 test("the server is busy with agent work queued, with a service's run open, or with a database that can't be read", () => {
   assert.equal(busyReason({ turns: 0, runs: 0 }), "");
@@ -68,4 +68,40 @@ test("openWork: a server with no service requests has no runs; a missing databas
     assert.deepEqual(await openWork(file), { turns: 0, runs: 0 });
     assert.equal(await openWork(path.join(dir, "none.db")), null);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("agentWork counts one agent's turns and open service requests, and names an agent the server doesn't have", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "quiet-"));
+  try {
+    const now = 1_000_000_000_000;
+    const file = path.join(dir, "circlechat.db");
+    const db = new DatabaseSync(file);
+    db.exec("CREATE TABLE agents (id TEXT PRIMARY KEY, handle TEXT UNIQUE NOT NULL)");
+    db.exec("CREATE TABLE deliveries (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, state TEXT NOT NULL)");
+    db.exec("CREATE TABLE service_requests (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, state TEXT NOT NULL, updated_at INTEGER NOT NULL)");
+    db.prepare("INSERT INTO agents VALUES (?, ?)").run("a1", "barb");
+    db.prepare("INSERT INTO agents VALUES (?, ?)").run("a2", "loki");
+    const d = db.prepare("INSERT INTO deliveries VALUES (?, ?, ?)");
+    for (const [id, agent, state] of [["d1", "a1", "answered"], ["d2", "a2", "injected"], ["d3", "a2", "queued"]]) d.run(id, agent, state);
+    db.prepare("INSERT INTO service_requests VALUES (?, ?, ?, ?)").run("r1", "a2", "taken", now - 60_000);
+    assert.deepEqual(await agentWork(file, "barb", now), { exists: true, turns: 0, runs: 0 }, "another agent's work doesn't count");
+    assert.deepEqual(await agentWork(file, "loki", now), { exists: true, turns: 2, runs: 1 });
+    assert.deepEqual(await agentWork(file, "betty", now), { exists: false, turns: 0, runs: 0 });
+    d.run("d4", "a1", "injected");
+    db.close();
+    assert.deepEqual(await agentWork(file, "barb", now), { exists: true, turns: 1, runs: 0 });
+    assert.equal(await agentWork(path.join(dir, "none.db"), "barb"), null);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("agentState: none, idle, busy with the reason, or unknown when the database can't be read", async () => {
+  const site = { recursicachat: { data: "/srv/acme-data" } };
+  let read = [];
+  const work = (w) => async (f, h) => { read = [f, h]; return w; };
+  assert.equal(await agentState(site, "barb", { work: work({ exists: false, turns: 0, runs: 0 }) }), "none");
+  assert.deepEqual(read, ["/srv/acme-data/circlechat.db", "barb"]);
+  assert.equal(await agentState(site, "barb", { work: work({ exists: true, turns: 0, runs: 0 }) }), "idle");
+  assert.equal(await agentState(site, "barb", { work: work({ exists: true, turns: 1, runs: 0 }) }), "busy: 1 agent message(s) queued or in a turn");
+  assert.equal(await agentState(site, "barb", { work: work(null) }), "unknown");
+  assert.equal(await agentState({}, "barb", { work: async () => { throw new Error("never read"); } }), "none");
 });

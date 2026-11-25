@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import { noul, TypeSafeClient } from "@typesafe-ai/sdk";
 import { config } from "./config.mjs";
+import { failover } from "./failover.mjs";
 
 const hash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 32);
 
@@ -38,38 +39,14 @@ function mockClient() {
   };
 }
 
-// Several Kev-engines, best first. A request goes to the first engine that answers; one that
-// cannot be reached (refused, DNS, timeout, 5xx) is skipped for the rest of this run, so a
-// machine that is down costs one failed request, not one per question.
-function failover(urls) {
-  const clients = urls.map((u) => ({
-    url: u,
-    c: new TypeSafeClient({ baseURL: u, apiKey: config.engineKey, defaultModel: config.model, timeout: config.timeoutMs }),
-  }));
-  const down = new Set();
-  const unreachable = (e) => {
-    const s = Number(e?.status ?? e?.statusCode ?? 0);
-    return !s || s >= 500 || /ECONNREFUSED|ENOTFOUND|EHOSTUNREACH|ETIMEDOUT|fetch failed|timed out/i.test(String(e?.message ?? e));
-  };
-  return {
-    async systemOne(req) {
-      let last;
-      for (const { url, c } of clients) {
-        if (down.has(url)) continue;
-        try { return await c.systemOne(req); }
-        catch (e) {
-          if (!unreachable(e)) throw e;   // a real answer, e.g. a bad request: don't hide it
-          down.add(url); last = e;
-          console.error(`kev: engine ${url} unreachable, trying the next one`);
-        }
-      }
-      throw last ?? new Error("no Kev-engine configured");
-    },
-  };
-}
+// The engines, best first, each with the key and the model. failover.mjs picks the engine.
+const engines = (urls) => failover(urls.map((u) => ({
+  url: u,
+  c: new TypeSafeClient({ baseURL: u, apiKey: config.engineKey, defaultModel: config.model, timeout: config.timeoutMs }),
+})));
 
 export function createEngine() {
-  const client = config.mock ? mockClient() : failover(config.engineUrls);
+  const client = config.mock ? mockClient() : engines(config.engineUrls);
   const cache = new Cache(config.cachePath);
   const usage = { requests: 0, input_tokens: 0, output_tokens: 0 };
 

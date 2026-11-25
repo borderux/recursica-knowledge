@@ -12,7 +12,8 @@ export const config = {
   appRoot: process.env.APP_ROOT ?? process.cwd(),
   // Kev-engine: the local model server. Any System One-compatible server works here.
   // One engine, or several, best first: KEV_ENGINE_URLS="http://a:8009,http://b:8009". A request
-  // that cannot reach an engine (refused, timed out, 5xx) is retried on the next one.
+  // that cannot reach an engine (refused, timed out, 5xx), or whose key an engine refuses (401), is
+  // retried on the next one.
   engineUrls: (process.env.KEV_ENGINE_URLS ?? process.env.KEV_ENGINE_URL ?? "http://localhost:8009")
     .split(",").map((u) => u.trim()).filter(Boolean),
   engineKey: process.env.KEV_ENGINE_KEY ?? "local",
