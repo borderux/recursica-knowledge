@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { imagesWaitingPost, plan, localStacks, refreshRootCopies, tellRefused } from "./updater.mjs";
+import { imagesWaitingPost, plan, localStacks, tellRefused } from "./updater.mjs";
 
 test("Recursica's software every hour on a stack with upgrade.auto; images once a day per stack", () => {
   const stacks = [{ name: "cluster", upgradeAuto: true }, { name: "acme", upgradeAuto: false }];
@@ -27,37 +27,6 @@ test("only the stacks this computer controls; a helper's copy of a stack is left
   fs.renameSync(cc, moved);
   fs.symlinkSync(moved, cc);
   assert.deepEqual(localStacks(home, "machine-1").map((s) => s.ccDir), [moved]);
-});
-
-test("a new kit reaches the root-owned copies: the secrets helper on any computer, the disk helper on Linux and WSL", () => {
-  const files = {
-    "/etc/agent-stacks.conf": "OWNER=owner\nOWNER_HOME=/home/owner\nKIT=/home/owner/kit\nNODE_BIN=/usr/bin/node\n",
-    "/etc/sudoers.d/agent-stacks": "gh-runner ALL=(root) NOPASSWD: /usr/local/bin/agent-stacks-apply\n",
-    "/home/owner/kit/circlechat/deploy/apply-secrets.sh": "new apply",
-    "/usr/local/bin/agent-stacks-apply": "old apply",
-    "/kit/circlechat/tenant/disk-helper.sh": "new disk",
-    "/usr/local/bin/agent-stacks-disk": "old disk",
-  };
-  const fsx = { exists: (f) => f in files, read: (f) => { if (!(f in files)) throw new Error("no file"); return files[f]; } };
-  const calls = [];
-  const run = (cmd, args) => { calls.push([cmd, ...args].join(" ")); return 0; };
-  assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: false, run, fsx }), ["agent-stacks-apply", "agent-stacks-disk"]);
-  assert.deepEqual(calls, [
-    "bash /home/owner/kit/circlechat/deploy/install-secrets-helper.sh gh-runner",
-    "install -m 755 -o root /kit/circlechat/tenant/disk-helper.sh /usr/local/bin/agent-stacks-disk",
-  ]);
-  // A Mac has no disk helper; the runner's account comes from the config once the config names it.
-  calls.length = 0;
-  files["/etc/agent-stacks.conf"] += "RUNNER=other-runner\n";
-  assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: true, run, fsx }), ["agent-stacks-apply"]);
-  assert.deepEqual(calls, ["bash /home/owner/kit/circlechat/deploy/install-secrets-helper.sh other-runner"]);
-  // Copies that match the kit, and a computer without the helpers, need nothing.
-  calls.length = 0;
-  files["/usr/local/bin/agent-stacks-apply"] = "new apply";
-  files["/usr/local/bin/agent-stacks-disk"] = "new disk";
-  assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: false, run, fsx }), []);
-  assert.deepEqual(refreshRootCopies({ kit: "/kit", mac: false, run, fsx: { exists: () => false, read: () => { throw new Error("no file"); } } }), []);
-  assert.deepEqual(calls, []);
 });
 
 test("image pins that wait for a quiet RecursicaChat are announced once per set of pins", () => {

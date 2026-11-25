@@ -479,7 +479,7 @@ A stack with no `site.tenant` keeps the names a single install uses.
 | A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
 | Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job installs `agent-stacks-disk` again after the kit changes. Rerun the script when the kit changes the version of Lima or Colima. The update job posts each new Lima or Colima release in Slack, as "Updates" describes.
+1. **On Linux or in WSL, prepare the computer once.** Run `~/recursica-knowledge/circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. The hourly update job replaces `agent-stacks-disk` after the kit changes `disk-helper.sh`, as "Updates" describes. Rerun the script when the kit changes the version of Lima or Colima. The update job posts each new Lima or Colima release in Slack, as "Updates" describes.
 2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
 4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
@@ -519,7 +519,7 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
-6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
+6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job replaces the helper after the kit changes `apply-secrets.sh`, as "Updates" describes.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret. With "restart" on, the workflow then restarts each service that reads a changed value.
 
 **A deploy restarts a service only for a changed value, and never restarts kev-engine.**
@@ -1185,7 +1185,15 @@ Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's
 | `/usr/local/bin/agent-stacks-apply` | `deploy/apply-secrets.sh` | Every computer              |
 | `/usr/local/bin/agent-stacks-disk`  | `tenant/disk-helper.sh`   | Linux, and Windows with WSL |
 
-Each hour, the update job compares each copy with the kit. For a copy that differs, the job reruns `install-secrets-helper.sh` for the runner's account, or copies `disk-helper.sh` again.
+Each hour, after the kit step, the update job takes five steps for each installed copy (`cluster/root-copies.mjs`):
+
+1. Root reads the kit file at the kit checkout's commit with `git show <commit>:<path>`, as the owner. Root never copies a file from the checkout, because the owner can edit the checkout's files.
+2. Root checks the commit, each folder and the file against the ids in the commit. The owner can edit git's own folder too, so a changed object stops the copy.
+3. A copy with the same bytes as the kit file needs nothing.
+4. For a copy that differs, GitHub must show the commit as verified and on main. GitHub is asked once for each commit. A commit GitHub doesn't verify replaces no copy, and the cluster's channel gets one alert.
+5. The new copy replaces the old copy in one rename. The copy keeps the old copy's path, owner, group and mode. The cluster's channel gets one line for each copy the job replaced.
+
+The job replaces only a copy a person installed. A computer without the copy gets none. The firewall's copies in `/var/lib/agent-cluster` wait for a person, as "A kit that follows main" describes.
 
 **Lima and Colima on Linux and WSL come from each project's GitHub releases, outside apt.** `setup-pc.sh` installs each one at a pinned version and checksum. The update job reads each installed version each hour. A new release waits 7 days, then posts once in Slack. To take the release, move `LIMA_VERSION` or `COLIMA_VERSION` and the checksum in `circlechat/tenant/setup-pc.sh` by pull request. Then rerun `setup-pc.sh`. On a Mac, Homebrew installs Colima, and the Homebrew updates cover Colima.
 

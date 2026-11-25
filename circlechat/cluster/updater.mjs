@@ -21,6 +21,9 @@
 //   - A kit checkout that kit/check-kit.sh refuses stops the job before any update. The cluster's
 //     channel hears the reason and the fix once, then again for a new reason or after 24 hours.
 //     Each other post about a wait for a person follows the same rule (notice.mjs).
+//   - Each root-owned copy of a kit file, such as the secrets helper, gets the file's text at the kit
+//     checkout's commit, read from git and verified by GitHub (root-copies.mjs). The cluster's channel
+//     gets one line for each copy the job replaced.
 //   - Each morning, the cluster's channel gets a summary of this computer's backups and restore
 //     tests, and of any job that didn't run on time (daily-summary.mjs).
 import { spawnSync } from "node:child_process";
@@ -99,28 +102,6 @@ export function localStacks(home, computer) {
   return out;
 }
 
-// Two commands are root-owned copies of kit files, so the account that runs them cannot change them:
-//   /usr/local/bin/agent-stacks-apply  apply-secrets.sh (deploy/install-secrets-helper.sh, any computer)
-//   /usr/local/bin/agent-stacks-disk   disk-helper.sh (tenant/setup-pc.sh, Linux and WSL)
-// A copy that differs from the kit is installed again, so a new kit reaches both commands.
-//   fsx: { exists, read } for the tests; run(cmd, args): the command's exit status
-export function refreshRootCopies({ kit, mac, run, fsx = { exists: fs.existsSync, read: (f) => fs.readFileSync(f, "utf8") } }) {
-  const done = [];
-  const conf = (f) => { try { return Object.fromEntries(fsx.read(f).split("\n").map((l) => l.match(/^([A-Z_]+)=(.*)$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^'(.*)'$/, "$1").replace(/\\(.)/g, "$1")])); } catch { return {}; } };
-  const differs = (src, dest) => fsx.exists(dest) && fsx.exists(src) && fsx.read(src) !== fsx.read(dest);
-  const apply = conf("/etc/agent-stacks.conf");
-  const applyKit = apply.KIT || kit;
-  if (differs(path.join(applyKit, "circlechat/deploy/apply-secrets.sh"), "/usr/local/bin/agent-stacks-apply")) {
-    // The runner's account is in the config since this change, and before it only in the sudo rule.
-    let runner = apply.RUNNER;
-    if (!runner) try { runner = fsx.read("/etc/sudoers.d/agent-stacks").split(/\s/)[0]; } catch {}
-    if (runner && run("bash", [path.join(applyKit, "circlechat/deploy/install-secrets-helper.sh"), runner]) === 0) done.push("agent-stacks-apply");
-  }
-  const disk = path.join(kit, "circlechat/tenant/disk-helper.sh");
-  if (!mac && differs(disk, "/usr/local/bin/agent-stacks-disk") && run("install", ["-m", "755", "-o", "root", disk, "/usr/local/bin/agent-stacks-disk"]) === 0) done.push("agent-stacks-disk");
-  return done;
-}
-
 // The kit's step with updates.follow "main" (follow-main.mjs). RecursicaChat runs on the control
 // computer only, so a helper has no server to wait for.
 async function followStep({ env, site, control, stacks, chat, state }) {
@@ -140,6 +121,39 @@ async function followStep({ env, site, control, stacks, chat, state }) {
     post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
   });
   console.log(`kit follows main: ${result}`);
+}
+
+// The step that refreshes the root-owned copies of kit files (root-copies.mjs). git runs as the
+// owner, in the kit checkout, with no replace objects and no text conversion.
+async function rootCopiesStep() {
+  const { ROOT_COPIES, helperKit, refreshRootCopies, verifiedOnMain } = await import("./root-copies.mjs");
+  const { gitAsOwner, githubRepo } = await import("./follow-main.mjs");
+  return async ({ env, chat, state }) => {
+    const git = (...a) => {
+      const r = spawnSync("sudo", ["-u", env.OWNER, "-H", ...gitAsOwner(env.KIT, ["--no-replace-objects", ...a])], { maxBuffer: 64 << 20 });
+      return r.status === 0 ? r.stdout : null;
+    };
+    const commit = String(git("rev-parse", "HEAD") ?? "").trim();
+    // The secrets helper runs the kit that /etc/agent-stacks.conf names. A different kit folder keeps the helper as it is.
+    let conf = ""; try { conf = fs.readFileSync("/etc/agent-stacks.conf", "utf8"); } catch {}
+    const other = helperKit(conf) && path.resolve(helperKit(conf)) !== path.resolve(env.KIT);
+    if (other) console.error(`agent-stacks-apply: /etc/agent-stacks.conf names the kit in ${helperKit(conf)}, not ${env.KIT}, so the job leaves the helper alone`);
+    const get = async (url) => {
+      const r = await fetch(url, { headers: { Accept: "application/vnd.github+json", "User-Agent": "recursica-kit-updater" }, signal: AbortSignal.timeout(30_000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    };
+    const repo = githubRepo(String(git("remote", "get-url", "origin") ?? ""));
+    const done = await refreshRootCopies({
+      computer: env.COMPUTER, commit, state,
+      copies: ROOT_COPIES.filter((c) => !(other && c.name === "agent-stacks-apply")),
+      cat: (type, id) => git("cat-file", type, id),
+      show: (rev, file) => git("show", "--no-textconv", `${rev}:${file}`),
+      verify: (c) => verifiedOnMain({ repo, commit: c, get }),
+      post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
+    });
+    for (const name of done) console.log(`${name}: replaced with the kit's file at ${commit.slice(0, 7)}`);
+  };
 }
 
 // The kit services that run old code restart (restarts.mjs). Each hour, after the follow step, so a
@@ -172,6 +186,8 @@ async function main() {
   const here = path.dirname(new URL(import.meta.url).pathname);
   const { check } = await import("./updates.mjs");
   const { runUpgrade } = await import("./root-steps.mjs");
+  // Loaded before the follow step, so the job loads no module from the new commit.
+  const rootCopies = await rootCopiesStep();
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
@@ -219,9 +235,10 @@ async function main() {
     await followStep({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit follows main: ${e.message}`));
     await restartKit({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit restarts: ${e.message}`));
   }
+  // Each root-owned copy of a kit file gets the file's text at the checkout's commit (root-copies.mjs).
+  // The step runs after the follow step, so the copies match the commit the checkout moved to.
+  await rootCopies({ env, chat, state }).catch((e) => console.error(`root copies: ${e.message}`));
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
-  const run = (cmd, args) => spawnSync(cmd, args, { stdio: "inherit" }).status;
-  for (const c of refreshRootCopies({ kit: env.KIT, mac: process.platform === "darwin", run })) console.log(`${c}: installed again from the kit`);
   console.log(`${new Date().toISOString()} updater: done`);
 }
 
