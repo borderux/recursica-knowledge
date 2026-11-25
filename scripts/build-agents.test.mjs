@@ -646,3 +646,22 @@ test("Loki is built for CircleChat and RecursicaChat 2.0 only", () => {
   );
   assert.ok(fs.existsSync(path.join(repoRoot, "portable", "recursicachat", "agents", "loki", "INSTRUCTIONS.md")), "the RecursicaChat 2.0 instructions");
 });
+
+/**
+ * Claire on RecursicaChat 2.0 works on a research repo, not on BigQuery and Drive, so her
+ * instructions there come from SKILL.recursicachat.md. Built from SKILL.md, they would tell her to
+ * check BigQuery tables and read Drive folders she has no tool for.
+ */
+test("Claire's RecursicaChat instructions come from SKILL.recursicachat.md, with her repo tools and nothing of BigQuery", () => {
+  const built = fs.readFileSync(path.join(repoRoot, "portable", "recursicachat", "agents", "claire", "INSTRUCTIONS.md"), "utf8");
+  const own = fs.readFileSync(path.join(agentsDir, "claire", "SKILL.recursicachat.md"), "utf8");
+  assert.ok(built.startsWith(own.split("<!-- platform:")[0]), "the body is SKILL.recursicachat.md's");
+  assert.doesNotMatch(built, /BigQuery|bq-|Drive folder|execute_sql|\{\{|@[A-Z_]+@/, "nothing of her other targets, and no token: rc-sync refuses a token");
+  assert.ok(built.length <= 20_000, "rc-sync's MAX_INSTRUCTIONS");
+  for (const tool of ["list_files", "read_file", "propose_changes", "list_proposals"]) assert.match(built, new RegExp(`claire_repos__${tool}`), tool);
+  assert.match(built, /one transcript and one pass at a time/i);
+  const buzz = fs.readFileSync(path.join(repoRoot, "buzz-agents", "agents", "claire", "SYSTEM_PROMPT.md"), "utf8");
+  assert.doesNotMatch(buzz, /claire_repos__/, "her Buzz prompt is still SKILL.md's");
+  const runtime = JSON.parse(fs.readFileSync(path.join(agentsDir, "claire", "runtime", "recursicachat.json"), "utf8"));
+  assert.deepEqual([runtime.autonomy, runtime.sandbox], ["ask", "docker"]);
+});

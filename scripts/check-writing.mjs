@@ -327,7 +327,7 @@ export function files() {
     ...list("skills", /^skills\/.+\.md$/),
     ...list(
       "agents",
-      /^agents\/[^/]+\/(SKILL\.md|PORTING\.md|platform\/.+\.md|subagents\/[^/]+\/(SKILL\.md|platform\/.+\.md))$/,
+      /^agents\/[^/]+\/(SKILL(?:\.[a-z-]+)?\.md|PORTING\.md|platform\/.+\.md|subagents\/[^/]+\/(SKILL\.md|platform\/.+\.md))$/,
     ),
     ...handWrittenBuzzPrompts(),
     ...list("docs", /^docs\/CONTRIBUTING_[^/]+\.md$/),
