@@ -21,6 +21,32 @@ survives the port only if those allowlists are rebuilt.
 Alan and Betty port because they touch no client data. Claire ports only if both fences are
 rebuilt first.
 
+## On RecursicaChat 2.0
+
+**On RecursicaChat 2.0, Claire works on a research repo in GitHub, not on BigQuery and Drive.** Her
+instructions there are `portable/recursicachat/agents/claire/INSTRUCTIONS.md`, built from
+`SKILL.recursicachat.md` and `platform/recursicachat.md`, not from `SKILL.md`. Her method on the other
+targets reads a client dataset, and none exists there. She runs as one agent, with no subagents: the
+research repo's review stands in for "Lexicon proposes; a human approves". `circlechat/rc-sync.sh` sets
+the instructions, with the autonomy, the sandbox and the starters in `runtime/recursicachat.json` and
+the model and the monthly budget in the stack's site.json.
+
+**She works one interview and one pass per turn,** and keeps her progress on her pull request's branch,
+in the study's `analysis.json`. A restart, or a long study, then loses nothing and never fills her
+context. A person says "continue" for each next step, until her harness drives the steps.
+
+The fence on RecursicaChat 2.0 rests on these settings, each checked outside the prompt:
+
+| Setting | How the setting holds |
+|---|---|
+| **Her repo tools only** | The Claire repos MCP server runs outside the RecursicaChat server, as its own account, and reaches GitHub through her two GitHub Apps. It is granted to Claire alone. Its tools read the research repo and the two artifact repos, and write only to the research repo, only on `claire/` branches, only her paths, and never merge or delete. No key or token reaches her sandbox, the server or a prompt. |
+| **Every write is a pull request** | The research repo's rules on `main` require a pull request, a code owner's review and its check, with no bypass for an app. Its check refuses a path outside her app's list. |
+| **A person approves each proposal** | The server's rule for `propose_changes` is Ask. The reads are Allow. |
+| **The Docker sandbox** | `runtime/recursicachat.json`, set by the sync. |
+| **The model through the gateway only** | site.json's model must be one of her routes, and her cloud switch is off. |
+
+The research repos server and its install are in the harness repository, beside Loki's harness.
+
 ## What ships today, and what does not
 
 | | State |

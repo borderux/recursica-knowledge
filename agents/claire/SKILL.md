@@ -1,11 +1,11 @@
 ---
 name: claire
 description: Research-operations orchestrator. Turns raw interview transcripts for one client into structured, tagged, searchable rows in BigQuery, a per-interview write-up in Drive, and per-population personas, by delegating to five subagents that each hold a different set of tools on purpose. Use to ingest a folder of transcripts, tag them, report what has already been processed, or build personas for a population. Needs per-client fenced Drive and BigQuery access and the five subagents that ship alongside her — read PORTING.md first, because the prompt does not carry the fence.
-targets: buzz claude-code
+targets: buzz claude-code recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
   portability: needs-a-data-fence
 ---
 

@@ -25,6 +25,11 @@
  *                   sets them through the server's API: nobody pastes them by hand. Optional per
  *                   agent, like circlechat: only agents with a platform/recursicachat.md are built.
  *
+ * An agent whose method differs on one target keeps that target's body in SKILL.<target>.md, beside
+ * SKILL.md, with markers of its own: Claire reads a BigQuery dataset everywhere else, and a research
+ * repo in GitHub on RecursicaChat, so her RecursicaChat instructions can't be fragments of SKILL.md.
+ * The front matter, and so the targets and the version, stays in SKILL.md.
+ *
  *   claude-code   → portable/claude-code/agents/<name>.md
  *   opencode      → portable/opencode/agents/<name>.md
  *   grok          → portable/grok/agents/<name>.md
@@ -357,7 +362,10 @@ for (const name of names) {
   }
 
   for (const [target, spec] of Object.entries(TARGETS).filter(([t]) => wanted.includes(t))) {
-    buildArtifact({ source: { meta, body }, base, target, spec, outName: name, label: name });
+    // a target's own body, when the agent's method differs there (the header says why)
+    const own = path.join(base, `SKILL.${target}.md`);
+    const source = { meta, body: fs.existsSync(own) ? fs.readFileSync(own, "utf8") : body };
+    buildArtifact({ source, base, target, spec, outName: name, label: name });
   }
 
   /**

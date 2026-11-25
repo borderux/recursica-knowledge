@@ -1,0 +1,14 @@
+{
+  "$comment": "Claire's settings on a RecursicaChat 2.0 server that belong to the agent, the same on every stack. circlechat/rc-sync.sh sets them through the server's API, with the instructions in portable/recursicachat/agents/claire/INSTRUCTIONS.md, built from SKILL.recursicachat.md and platform/recursicachat.md. The model and the monthly budget belong to the stack: agents.claire.recursicachat in the stack's site.json. Her repo tools come from the Claire repos MCP server, which an admin adds on the server and grants to Claire alone.",
+  "autonomy": "ask",
+  "$autonomyComment": "ask: Claire asks before each action that is not a read. She writes only through the Claire repos server's propose_changes, which the server's rule for that tool asks a person to approve as well.",
+  "sandbox": "docker",
+  "$sandboxComment": "docker: each turn runs in a container, never on the server itself. Claire needs no command in it: her tools run on the server's gateway.",
+  "starters": [
+    "Analyze the study [study id]",
+    "Continue the analysis",
+    "Which studies have no analysis yet?",
+    "What can you do?"
+  ],
+  "$startersComment": "The suggestions an empty chat with Claire shows. Each turn does one step, one interview and one pass, so \"Continue the analysis\" starts the next step. A starter with [placeholders] opens a fill-in dialog."
+}
