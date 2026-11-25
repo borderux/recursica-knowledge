@@ -104,7 +104,7 @@ export function localStacks(home, computer) {
 
 // The kit's step with updates.follow "main" (follow-main.mjs). RecursicaChat runs on the control
 // computer only, so a helper has no server to wait for.
-async function followStep({ env, site, control, stacks, chat, state }) {
+async function followStep({ env, site, control, stacks, chat, state, kitRepo }) {
   const { followMain, realDeps } = await import("./follow-main.mjs");
   const { afterUpgrade, ownerIds, prepareGateway, stackPaths } = await import("./root-steps.mjs");
   const { serverQuiet } = await import("./quiet.mjs");
@@ -116,7 +116,7 @@ async function followStep({ env, site, control, stacks, chat, state }) {
   const local = stacks.map((st) => ({ ...st, ...stackPaths(env.OWNER_HOME, st.ccDir) }));
   const deps = realDeps({ env, stacks: local, afterUpgrade, prepare });
   const result = await followMain({
-    computer: env.COMPUTER, control: control && local.length > 0, state, ...deps,
+    computer: env.COMPUTER, control: control && local.length > 0, state, kitRepo, ...deps,
     quiet: () => (control ? serverQuiet(site) : { quiet: true, why: "" }),
     post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
   });
@@ -127,8 +127,8 @@ async function followStep({ env, site, control, stacks, chat, state }) {
 // owner, in the kit checkout, with no replace objects and no text conversion.
 async function rootCopiesStep() {
   const { ROOT_COPIES, helperKit, refreshRootCopies, verifiedOnMain } = await import("./root-copies.mjs");
-  const { gitAsOwner, githubRepo } = await import("./follow-main.mjs");
-  return async ({ env, chat, state }) => {
+  const { gitAsOwner } = await import("./follow-main.mjs");
+  return async ({ env, chat, state, kitRepo }) => {
     const git = (...a) => {
       const r = spawnSync("sudo", ["-u", env.OWNER, "-H", ...gitAsOwner(env.KIT, ["--no-replace-objects", ...a])], { maxBuffer: 64 << 20 });
       return r.status === 0 ? r.stdout : null;
@@ -143,13 +143,12 @@ async function rootCopiesStep() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     };
-    const repo = githubRepo(String(git("remote", "get-url", "origin") ?? ""));
     const done = await refreshRootCopies({
-      computer: env.COMPUTER, commit, state,
+      computer: env.COMPUTER, commit, state, kitRepo, remote: String(git("remote", "get-url", "origin") ?? "").trim(),
       copies: ROOT_COPIES.filter((c) => !(other && c.name === "agent-stacks-apply")),
       cat: (type, id) => git("cat-file", type, id),
       show: (rev, file) => git("show", "--no-textconv", `${rev}:${file}`),
-      verify: (c) => verifiedOnMain({ repo, commit: c, get }),
+      verify: (c, repo) => verifiedOnMain({ repo, commit: c, get }),
       post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
     });
     for (const name of done) console.log(`${name}: replaced with the kit's file at ${commit.slice(0, 7)}`);
@@ -190,6 +189,10 @@ async function main() {
   const rootCopies = await rootCopiesStep();
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
+  // The kit's GitHub repo, read only from root's /etc/agent-cluster.conf (kit-repo.mjs).
+  const { kitRepo: readKitRepo } = await import("./kit-repo.mjs");
+  const kitRepo = readKitRepo();
+  if (kitRepo.old) console.log(`kit repo: /etc/agent-cluster.conf has no KIT_REPO yet, so the job uses ${kitRepo.repo}. Run install-cluster.sh to write the setting.`);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
   // The cluster's own site.json, for the quiet check and the kit's updates.follow setting.
   let site = {}; try { site = JSON.parse(fs.readFileSync(siteFile(env.OWNER_HOME), "utf8")); } catch {}
@@ -232,12 +235,12 @@ async function main() {
   await dailySummary({ env, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text) }).catch((e) => console.error(`daily summary: ${e.message}`));
   // The kit checkout follows main. The step runs last, so the update job loads no module from the new commit.
   if (followsMain(site)) {
-    await followStep({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit follows main: ${e.message}`));
+    await followStep({ env, site, control, stacks, chat, state, kitRepo }).catch((e) => console.error(`kit follows main: ${e.message}`));
     await restartKit({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit restarts: ${e.message}`));
   }
   // Each root-owned copy of a kit file gets the file's text at the checkout's commit (root-copies.mjs).
   // The step runs after the follow step, so the copies match the commit the checkout moved to.
-  await rootCopies({ env, chat, state }).catch((e) => console.error(`root copies: ${e.message}`));
+  await rootCopies({ env, chat, state, kitRepo }).catch((e) => console.error(`root copies: ${e.message}`));
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
   console.log(`${new Date().toISOString()} updater: done`);
 }

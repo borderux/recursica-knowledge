@@ -4,8 +4,10 @@
 // (release-gate.mjs), and the step does nothing.
 //
 // Each hour, on a computer whose kit follows main:
-//   1. As the owner, git fetches origin/main in the kit checkout. Nothing new: the step ends.
-//   2. GitHub must show each new commit as verified. Any other commit stops the update, and the
+//   1. The checkout's origin must name the kit's repo, KIT_REPO in /etc/agent-cluster.conf
+//      (kit-repo.mjs). An origin that names another repo stops the update, and the cluster's channel gets one alert. As the owner, git
+//      then fetches origin/main in the kit checkout. Nothing new: the step ends.
+//   2. GitHub must show each new commit in the kit's repo as verified. Any other commit stops the update, and the
 //      cluster's channel hears once about each commit that stops the update.
 //   3. The update waits until RecursicaChat 2.0 is quiet, the rule of the image pins and Homebrew
 //      updates (quiet.mjs). The channel hears once about each update that waits.
@@ -47,6 +49,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { siteFile } from "../kit/stack-paths.mjs";
 import { notice } from "./notice.mjs";
+import { originOk } from "./kit-repo.mjs";
 
 // git in the kit checkout, as the owner, with umask 022. On Ubuntu, sudo's session can set umask 002
 // (pam_umask), so a file git wrote was group-writable, and check-kit.sh then refused the checkout
@@ -276,12 +279,6 @@ export function touchedSetups(files, { control, carried = [] } = {}) {
   return ORDER.filter((s) => (control || s !== "setup-host.sh") && (carried.includes(s) || SETUPS[s].some(hit)));
 }
 
-// The GitHub repo of the kit checkout's origin, as "owner/name", or "" for a remote off GitHub.
-export function githubRepo(remote) {
-  const m = String(remote).trim().match(/github\.com[/:]([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+?)(\.git)?$/);
-  return m ? m[1] : "";
-}
-
 // Whether GitHub shows each new commit as verified. GitHub's compare view must list exactly the
 // commits git fetched, and the old commit must be an ancestor of the new one.
 //   shas: the new commits from git rev-list old..new
@@ -353,13 +350,14 @@ export function decide({ head, target, ancestor, branch, mainAncestor }) {
 //   hostUpgrade(): { ok, output, problems } of setup-host.sh --upgrade with root's steps, for each
 //   local stack, with KIT_HOLD_NETWORK=1
 //   kit: the kit checkout's folder; platform: process.platform
+//   kitRepo: the kit's repo from root's /etc/agent-cluster.conf, as kit-repo.mjs kitRepo() gives it
 //   applied(setup): the kit commit of the setup's last run by hand (network_applied), or ""
 //   installed(): a fingerprint of the installed firewall rule files (INSTALLED_RULES)
 //   state: the update job's state object, changed in place (state.follow)
 //   returns a short word for the log: none, stopped, waiting, updated, failed
 //   tidy(): { status } of removing group and other write in the checkout, after each fast-forward
 //   now(): the time in ms, for the notices' 24 hours
-export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state, kit = "", platform = process.platform, applied = async () => "", installed = async () => "", tidy = async () => ({ status: 0 }), now = () => Date.now() }) {
+export async function followMain({ computer, control, git, get, quiet, post, sudoFree, setup, hostUpgrade, state, kit = "", kitRepo = { problem: "the update job got no kit repo" }, platform = process.platform, applied = async () => "", installed = async () => "", tidy = async () => ({ status: 0 }), now = () => Date.now() }) {
   const follow = state.follow ?? {};
   const g = (...a) => { const r = git(...a); return { ...r, out: String(r.stdout ?? "").trim() }; };
   // Network changes that wait for a person: each one a person applied clears, and an unsent post is sent.
@@ -386,6 +384,8 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
     }, post, now());
   };
   await tellNetwork();
+  // The origin must name the kit's repo before git fetches from the origin (kit-repo.mjs).
+  if (!(await originOk({ computer, remote: g("remote", "get-url", "origin").out, kit: kitRepo, state, post, now: now() }))) { state.follow = follow; return "stopped"; }
   const fetched = g("fetch", "--quiet", "origin", "main");
   if (fetched.status !== 0) { console.error(`kit follows main: git fetch failed: ${String(fetched.stderr ?? "").trim()}`); return "none"; }
   const head = g("rev-parse", "HEAD").out, target = g("rev-parse", "refs/remotes/origin/main").out;
@@ -402,7 +402,7 @@ export async function followMain({ computer, control, git, get, quiet, post, sud
 
   // 2. Every new commit must be verified by GitHub.
   const shas = g("rev-list", `${head}..${target}`).out.split("\n").filter(Boolean);
-  const v = await checkVerified({ repo: githubRepo(g("remote", "get-url", "origin").out), from: head, to: target, shas, get });
+  const v = await checkVerified({ repo: kitRepo.repo, from: head, to: target, shas, get });
   if (v.error) { console.error(`kit follows main: ${v.error}. The next hour asks again.`); save(); return "none"; }
   if (!v.ok) {
     await tell(`unverified:${v.sha}`, `:rotating_light: Kit on ${computer} stays at ${short(head)}: commit ${short(v.sha)} on main stops the update. ${v.reason}. A person checks the commit before the kit moves past the commit.`);

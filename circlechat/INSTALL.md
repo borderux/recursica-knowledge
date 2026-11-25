@@ -113,6 +113,9 @@ Update the forks by hand. For the knowledge repo:
 2. Fetch the releases: `git fetch upstream --tags`.
 3. Merge the release into the fork, on a branch, and open a pull request.
 4. After the merge, rerun the setup scripts from "Install", step 3.
+5. On a fork off GitHub, rerun `circlechat/deploy/install-secrets-helper.sh <runner account>`, and `circlechat/tenant/setup-pc.sh` on Linux or WSL. On a fork on GitHub, the hourly update job replaces the root-owned helpers from the fork's verified commits.
+
+**The update job checks each kit commit against the fork's repo on GitHub.** `install-cluster.sh` writes the fork's repo to `/etc/agent-cluster.conf` as root, from `repos.knowledge` in site.json. After a change to `repos.knowledge`, rerun `install-cluster.sh` on each computer. The kit checkout's `origin` must name the same repo. Any other `origin` stops the update job's kit steps, and the cluster's channel gets one alert. See "The kit's repo" in `circlechat/README.md`.
 
 A release with a new first number (a major version) can change settings. Read the release notes first.
 

@@ -4,7 +4,10 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { SETUPS, checkVerified, decide, followMain, githubRepo, lastLines, networkChanges, networkCode, networkSteps, realDeps, resultPost, strayNetworkLines, touchedSetups } from "./follow-main.mjs";
+import { SETUPS, checkVerified, decide, followMain, lastLines, networkChanges, networkCode, networkSteps, realDeps, resultPost, strayNetworkLines, touchedSetups } from "./follow-main.mjs";
+// The kit's repo in root's /etc/agent-cluster.conf, for the tests.
+const KIT_REPO = "acme/kit";
+const KIT_ORIGIN = `https://github.com/${KIT_REPO}.git`;
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const kitRoot = path.join(here, "../..");
@@ -20,13 +23,6 @@ test("each setup runs again only for a change to a file the setup reads, and a h
   assert.deepEqual(touchedSetups(["circlechat/rustdesk/setup-rustdesk.sh"], { control: false }), ["setup-node.sh"]);
   assert.deepEqual(touchedSetups(["circlechat/kit/lib.shx"], { control: false }), [], "a file name must match the whole name");
   assert.deepEqual(touchedSetups(["README.md"], { control: false, carried: ["install-cluster.sh"] }), ["install-cluster.sh"], "a setup an earlier update left runs again");
-});
-
-test("the GitHub repo comes from the origin's address, and a remote off GitHub has none", () => {
-  assert.equal(githubRepo("https://github.com/acme/kit.git"), "acme/kit");
-  assert.equal(githubRepo("git@github.com:acme/kit.git\n"), "acme/kit");
-  assert.equal(githubRepo("https://github.com/acme/kit"), "acme/kit");
-  assert.equal(githubRepo("https://git.acme.com/acme/kit.git"), "");
 });
 
 const commit = (sha, verified = true, reason = verified ? "valid" : "unsigned") => ({ sha, commit: { verification: { verified, reason } } });
@@ -129,7 +125,7 @@ function repos({ hold = true } = {}) {
 function world(r, over = {}) {
   const posts = [], setups = [];
   const deps = {
-    computer: "machine-2", control: false, state: {}, git: r.git, get: r.get,
+    computer: "machine-2", control: false, state: {}, kitRepo: { repo: KIT_REPO }, git: r.git, get: r.get,
     quiet: async () => ({ quiet: true, why: "" }),
     post: async (text) => { posts.push(text); return { ok: true }; },
     sudoFree: async () => true,
@@ -137,8 +133,8 @@ function world(r, over = {}) {
     hostUpgrade: async () => { setups.push("setup-host.sh --upgrade"); return { ok: true, output: "", problems: [] }; },
     ...over,
   };
-  // The origin's address is a folder, not GitHub, so the tests name a GitHub repo instead.
-  const git = (...a) => (a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: "https://github.com/acme/kit.git\n" } : r.git(...a));
+  // The origin's address is a folder, not GitHub, so the tests name the kit's repo instead.
+  const git = (...a) => (a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `${KIT_ORIGIN}\n` } : r.git(...a));
   return { posts, setups, deps: { ...deps, git: over.git ?? git } };
 }
 
@@ -170,6 +166,79 @@ test("a commit GitHub doesn't verify stops the update, with one alert", async ()
   assert.match(w.posts[0], new RegExp(`^:rotating_light: Kit on machine-2 stays at ${old.slice(0, 7)}: commit ${bad.slice(0, 7)} on main stops the update\\. GitHub shows the commit as not verified`));
   assert.equal(await followMain(w.deps), "stopped");
   assert.equal(w.posts.length, 1, "the same commit is announced once");
+});
+
+test("GitHub's check asks the kit's repo from root's file, and a fork's computer follows the fork", async () => {
+  for (const repo of ["acme/kit", "acme/kit-fork"]) {
+    const r = repos();
+    const urls = [];
+    const git = (...a) => (a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `https://github.com/${repo}.git\n` } : r.git(...a));
+    const w = world(r, { git, kitRepo: { repo }, get: async (url) => { urls.push(url); return r.get(url); } });
+    const sha = r.push("README.md", "later\n");
+    assert.equal(await followMain(w.deps), "updated", repo);
+    assert.equal(r.head(), sha);
+    assert.equal(urls.length, 1);
+    assert.ok(urls[0].startsWith(`https://api.github.com/repos/${repo}/compare/`), urls[0]);
+    assert.ok(!w.posts.some((p) => p.includes("origin names")));
+  }
+});
+
+test("an origin changed to another repo moves nothing, fetches nothing, and posts one alert", async () => {
+  for (const origin of ["https://github.com/acme/other.git", "git@github.com:acme/kit-fork.git", `https://acme.com/github.com/${KIT_REPO}.git`, "/srv/git/kit.git"]) {
+    const r = repos();
+    const calls = [], urls = [];
+    const git = (...a) => { calls.push(a[0]); return a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `${origin}\n` } : r.git(...a); };
+    // GitHub would verify every commit in the other repo.
+    const w = world(r, { git, get: async (url) => { urls.push(url); return r.get(url); } });
+    const old = r.head();
+    r.push("circlechat/setup-node.sh");
+    assert.equal(await followMain(w.deps), "stopped", origin);
+    assert.equal(r.head(), old, "the kit stays where it was");
+    assert.ok(!calls.includes("fetch"), "git fetches nothing from the other repo");
+    assert.deepEqual(urls, [], "GitHub is never asked");
+    assert.deepEqual(w.setups, []);
+    assert.equal(w.posts.length, 1);
+    assert.match(w.posts[0], new RegExp(`^:rotating_light: Kit on machine-2: the kit checkout's origin names .*, not ${KIT_REPO}, the kit's repo in /etc/agent-cluster\\.conf\\. The update job moves the checkout to no new commit and replaces no root-owned helper\\.`));
+    assert.ok(!w.posts[0].includes(origin), "the alert never shows the origin's address");
+    assert.equal(await followMain(w.deps), "stopped");
+    assert.equal(w.posts.length, 1, "the same origin alerts once");
+  }
+});
+
+test("a kit repo root's file can't give stops the update before git fetches", async () => {
+  for (const [kitRepo, alert] of [
+    [{ problem: "/etc/agent-cluster.conf is not a plain file that only root can change. Run install-cluster.sh, which writes the file as root" }, /is not a plain file that only root can change/],
+    [{ repo: "" }, /the kit's repo is off GitHub \(repos\.knowledge in site\.json\), so GitHub can verify no kit commit/],
+  ]) {
+    const r = repos();
+    const calls = [];
+    const git = (...a) => { calls.push(a[0]); return a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `${KIT_ORIGIN}\n` } : r.git(...a); };
+    const w = world(r, { git, kitRepo });
+    const old = r.head();
+    r.push("README.md", "later\n");
+    assert.equal(await followMain(w.deps), "stopped");
+    assert.equal(r.head(), old);
+    assert.ok(!calls.includes("fetch"));
+    assert.equal(w.posts.length, 1);
+    assert.match(w.posts[0], alert);
+  }
+});
+
+test("an origin set back to the kit's repo updates again, and a later change alerts at once", async () => {
+  const r = repos();
+  let origin = "https://github.com/acme/other.git";
+  const git = (...a) => (a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `${origin}\n` } : r.git(...a));
+  const w = world(r, { git });
+  const sha = r.push("README.md", "later\n");
+  assert.equal(await followMain(w.deps), "stopped");
+  origin = KIT_ORIGIN;
+  assert.equal(await followMain(w.deps), "updated");
+  assert.equal(r.head(), sha);
+  assert.equal(w.deps.state.kitOrigin, undefined, "the kit's repo clears the alert's record");
+  origin = "https://github.com/acme/other.git";
+  r.push("README.md", "newer\n");
+  assert.equal(await followMain(w.deps), "stopped");
+  assert.equal(w.posts.filter((p) => p.includes("origin names")).length, 2);
 });
 
 test("an update waits until RecursicaChat is quiet, and says so once", async () => {
@@ -614,7 +683,7 @@ test("after each fast-forward, the update clears group and other write in the ch
     const real = realDeps({ env, stacks: [], afterUpgrade: () => [], prepare: () => "", spawn: noSudo, platform: "linux" });
     const order = [];
     // An older git without the umask: the fast-forward leaves group-writable files, and the clean-up removes the write.
-    const git = (...a) => { order.push(`git ${a[0]}`); return a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: "https://github.com/acme/kit.git\n" } : r.git(...a); };
+    const git = (...a) => { order.push(`git ${a[0]}`); return a[0] === "remote" && a[1] === "get-url" ? { status: 0, stdout: `${KIT_ORIGIN}\n` } : r.git(...a); };
     const w = world(r, { git, tidy: () => { order.push("tidy"); return real.tidy(); } });
     assert.equal(await followMain(w.deps), "none");
     assert.ok(!order.includes("tidy"), "no update, no clean-up");

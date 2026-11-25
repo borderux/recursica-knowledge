@@ -7,6 +7,9 @@ import path from "node:path";
 import { fileAt, helperKit, objectId, realFiles, refreshRootCopies, treeEntries, verifiedOnMain } from "./root-copies.mjs";
 
 const SRC = "circlechat/deploy/apply-secrets.sh";
+// The kit's repo in root's /etc/agent-cluster.conf, for the tests.
+const KIT_REPO = "acme/kit";
+const KIT_ORIGIN = `https://github.com/${KIT_REPO}.git`;
 
 // A kit checkout in a temporary folder, with real git, and an installed copy beside the checkout.
 function kit() {
@@ -26,15 +29,15 @@ function kit() {
     return String(git("rev-parse", "HEAD")).trim();
   };
   const dest = path.join(bin, "agent-stacks-apply");
-  const posts = [], asked = [];
-  const run = (c, { verify = async () => ({ ok: true }), state = {}, show = (rev, f) => git("show", "--no-textconv", `${rev}:${f}`) } = {}) => refreshRootCopies({
-    computer: "machine-1", commit: c, state,
+  const posts = [], asked = [], repos = [];
+  const run = (c, { verify = async () => ({ ok: true }), state = {}, remote = KIT_ORIGIN, kitRepo = { repo: KIT_REPO }, show = (rev, f) => git("show", "--no-textconv", `${rev}:${f}`) } = {}) => refreshRootCopies({
+    computer: "machine-1", commit: c, state, remote, kitRepo,
     copies: [{ name: "agent-stacks-apply", dest, src: SRC }],
     cat: (type, id) => git("cat-file", type, id), show,
-    verify: async (x) => { asked.push(x); return verify(x); },
+    verify: async (x, repo) => { asked.push(x); repos.push(repo); return verify(x); },
     post: async (text) => { posts.push(text); return { ok: true }; },
   });
-  return { repo, dest, commit, run, posts, asked, git };
+  return { repo, dest, commit, run, posts, asked, repos, git };
 }
 
 test("a changed source replaces the copy, with the copy's path, owner and mode, and one line in the channel", async () => {
@@ -54,7 +57,8 @@ test("a changed source replaces the copy, with the copy's path, owner and mode, 
   assert.deepEqual(fs.readdirSync(path.dirname(k.dest)), ["agent-stacks-apply"], "no new file is left beside the copy");
   assert.deepEqual(k.posts, [`:arrows_counterclockwise: Kit on machine-1: ${k.dest} now runs ${SRC} from ${c.slice(0, 7)}.`]);
   assert.deepEqual(k.asked, [c]);
-  assert.equal(state.rootCopies.verified, c, "GitHub is asked once for each commit");
+  assert.equal(state.rootCopies.verified, `${KIT_REPO}@${c}`, "GitHub is asked once for each commit in each repo");
+  assert.deepEqual(k.repos, [KIT_REPO], "GitHub is asked about the kit's repo from root's file");
 });
 
 test("an edited file in the checkout never reaches the copy", async () => {
@@ -121,6 +125,53 @@ test("bytes from git that don't match the commit's ids never reach the copy", as
   assert.equal(String(fileAt({ ...real, file: SRC })), "new helper\n");
 });
 
+test("an origin changed to another repo replaces no copy, asks GitHub nothing, and posts one alert", async () => {
+  const k = kit();
+  fs.writeFileSync(k.dest, "old helper\n");
+  const c = k.commit("new helper\n");
+  const state = {};
+  // GitHub would verify the commit in the other repo.
+  for (let i = 0; i < 2; i++) assert.deepEqual(await k.run(c, { state, remote: "https://github.com/acme/recursica-knowledge.git" }), []);
+  assert.equal(fs.readFileSync(k.dest, "utf8"), "old helper\n");
+  assert.deepEqual(k.asked, []);
+  assert.equal(k.posts.length, 1, "the same origin alerts once");
+  assert.match(k.posts[0], new RegExp(`^:rotating_light: Kit on machine-1: the kit checkout's origin names the GitHub repo acme/recursica-knowledge, not ${KIT_REPO}, the kit's repo in /etc/agent-cluster\\.conf\\.`));
+  // The follow step's alert for the same origin counts: the channel hears once in all.
+  const shared = { kitOrigin: { key: `origin:${KIT_REPO}:acme/recursica-knowledge`, at: Date.now() } };
+  assert.deepEqual(await k.run(c, { state: shared, remote: "https://github.com/acme/recursica-knowledge.git" }), []);
+  assert.equal(k.posts.length, 1);
+  // The origin set back to the kit's repo: the copy gets the commit's file, and the record clears.
+  assert.deepEqual(await k.run(c, { state }), ["agent-stacks-apply"]);
+  assert.equal(fs.readFileSync(k.dest, "utf8"), "new helper\n");
+  assert.equal(state.kitOrigin, undefined);
+  assert.deepEqual(k.asked, [c]);
+});
+
+test("a fork's computer replaces the copy from the fork's repo, and a file root can't trust replaces nothing", async () => {
+  const k = kit();
+  fs.writeFileSync(k.dest, "old helper\n");
+  const c = k.commit("fork's helper\n");
+  const fork = { remote: "git@github.com:acme/kit-fork.git", kitRepo: { repo: "acme/kit-fork" } };
+  assert.deepEqual(await k.run(c, { ...fork, kitRepo: { problem: "/etc/agent-cluster.conf is missing. Run install-cluster.sh" } }), []);
+  assert.deepEqual(await k.run(c, { ...fork, kitRepo: { repo: "" } }), []);
+  assert.equal(fs.readFileSync(k.dest, "utf8"), "old helper\n");
+  assert.deepEqual(k.asked, []);
+  assert.match(k.posts[0], /\/etc\/agent-cluster\.conf is missing\. Run install-cluster\.sh\. The update job moves the checkout to no new commit and replaces no root-owned helper\./);
+  assert.match(k.posts[1], /the kit's repo is off GitHub/);
+  assert.deepEqual(await k.run(c, fork), ["agent-stacks-apply"]);
+  assert.equal(fs.readFileSync(k.dest, "utf8"), "fork's helper\n");
+  assert.deepEqual(k.repos, ["acme/kit-fork"]);
+});
+
+test("an origin at another repo posts nothing while every copy matches the commit", async () => {
+  const k = kit();
+  const c = k.commit("helper\n");
+  fs.writeFileSync(k.dest, "helper\n");
+  assert.deepEqual(await k.run(c, { remote: "https://git.acme.com/acme/kit.git" }), []);
+  assert.deepEqual(k.posts, [], "a fork's computer with current helpers hears nothing");
+  assert.deepEqual(k.asked, []);
+});
+
 test("a git object's id and a tree's entries", () => {
   assert.equal(objectId("blob", Buffer.from("")), "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
   const id = "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391";
@@ -137,7 +188,6 @@ test("GitHub must show the commit as verified and on main", async () => {
   assert.deepEqual(await verifiedOnMain({ repo: "acme/kit", commit: sha, get: answers(verified, { status: "identical" }) }), { ok: true });
   assert.match((await verifiedOnMain({ repo: "acme/kit", commit: sha, get: answers(verified, { status: "diverged" }) })).reason, /main on GitHub doesn't hold the commit/);
   assert.match((await verifiedOnMain({ repo: "acme/kit", commit: sha, get: answers({ sha, commit: { verification: { verified: false, reason: "unsigned" } } }, { status: "ahead" }) })).reason, /not verified \(unsigned\)/);
-  assert.match((await verifiedOnMain({ repo: "", commit: sha, get: answers(verified, {}) })).reason, /not on GitHub/);
   assert.match((await verifiedOnMain({ repo: "acme/kit", commit: sha, get: async () => { throw new Error("HTTP 503"); } })).error, /HTTP 503/);
   const urls = [];
   await verifiedOnMain({ repo: "acme/kit", commit: sha, get: async (u) => { urls.push(u); return u.includes("/compare/") ? { status: "ahead" } : verified; } });
@@ -154,7 +204,7 @@ test("the copy is replaced in one rename, never through a link", async () => {
   // A link at the copy's path stays as the link is.
   const files = { ...realFiles, read: () => Buffer.from("other\n") };
   const done = await refreshRootCopies({
-    computer: "machine-1", commit: "b".repeat(40), state: {}, files,
+    computer: "machine-1", commit: "b".repeat(40), state: {}, files, remote: KIT_ORIGIN, kitRepo: { repo: KIT_REPO },
     copies: [{ name: "agent-stacks-disk", dest, src: "circlechat/tenant/disk-helper.sh" }],
     cat: () => { throw new Error("git is never asked"); }, show: () => blob, verify: async () => ({ ok: true }),
     post: async (t) => { posts.push(t); return { ok: true }; },
