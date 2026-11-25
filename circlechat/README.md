@@ -1082,7 +1082,7 @@ A helper computer hosts no stack, so with `"releases"` the update job never move
 
 **With `"main"`, the update job takes six steps each hour, as root, on each computer** (`cluster/follow-main.mjs`):
 
-1. The kit checkout's `origin` must name the kit's repo, `borderux/recursica-knowledge`, as "The kit's repo" describes. The job then fetches `origin/main` into the kit checkout, as the owner. Each of the job's git commands runs with umask 022, so no file git writes is writable by the group. With no new commit, the job stops here.
+1. The kit checkout's `origin` must name the kit's repo, `KIT_REPO` in `/etc/agent-cluster.conf`, as "The kit's repo" describes. The job then fetches `origin/main` into the kit checkout, as the owner. Each of the job's git commands runs with umask 022, so no file git writes is writable by the group. With no new commit, the job stops here.
 2. GitHub must show each new commit as verified. One commit that GitHub doesn't verify stops the whole update, and the kit checkout stays where the checkout was. The cluster's channel, `SLACK_CHANNEL_ID`, gets one alert for each such commit.
 3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears about each update that waits once, then again every 24 hours while the update waits. A helper runs no RecursicaChat server, so a helper never waits.
 4. The kit checkout fast-forwards to the new commit. After the fast-forward, the job removes group and other write in the checkout (`chmod -R go-w`), so the next hour's kit check passes. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
@@ -1101,11 +1101,17 @@ The job never runs `rc-deploy`. A new RecursicaChat 2.0 server still waits for `
 
 #### The kit's repo
 
-**GitHub's checks ask one fixed repo, `borderux/recursica-knowledge`** (`KIT_REPO` in `cluster/kit-repo.mjs`). The owner can change the kit checkout's `origin`. An `origin` at another repo could then pass GitHub's checks with that repo's own verified commits. So no check reads the repo's name from `origin`.
+**GitHub's checks ask the kit's repo in root's own file, `/etc/agent-cluster.conf`** (`KIT_REPO`, `cluster/kit-repo.mjs`). The owner can change the kit checkout's `origin` and the stack's site.json. An `origin` at another repo could then pass GitHub's checks with that repo's own verified commits. So the update job reads the repo's name only from root's file.
 
-**An `origin` that names another repo stops the update job's kit steps.** The checkout moves to no new commit, and no root-owned helper is replaced. The cluster's channel gets one alert, then again for another repo or after 24 hours. The alert never shows the `origin` address, which can hold a token. The follow step alerts each hour the step runs. The helper step alerts only when a helper differs from the kit checkout's commit.
+- `install-cluster.sh` writes `KIT_REPO` as root, from `repos.knowledge` in site.json. Without `repos.knowledge`, the setting is `borderux/recursica-knowledge`.
+- A fork on GitHub gets the fork's own repo, such as `acme/recursica-knowledge`. The fork's computers then follow the fork, and the helpers come from the fork's verified commits.
+- A fork off GitHub gets an empty `KIT_REPO`. GitHub can verify no commit there, so the kit steps stop, as the next paragraph describes.
+- The update job refuses a `/etc/agent-cluster.conf` that root doesn't own, or that the group or other accounts can change.
+- A file from before the setting has no `KIT_REPO` line. Until `install-cluster.sh` runs again, the job uses `borderux/recursica-knowledge`.
 
-**A fork of the kit stays on the fork's own updates.** On a fork's computers, rerun `install-secrets-helper.sh` and `setup-pc.sh` by hand after each kit change, as `INSTALL.md` describes. Otherwise, set `origin` back: `git remote set-url origin https://github.com/borderux/recursica-knowledge.git` in the kit checkout.
+**An `origin` that names another repo stops the update job's kit steps.** The checkout moves to no new commit, and no root-owned helper is replaced. The same stop holds for a `KIT_REPO` off GitHub and for a file the job refuses. The cluster's channel gets one alert, then again for another reason or after 24 hours. The alert never shows the `origin` address, which can hold a token. The follow step alerts each hour the step runs. The helper step alerts only when a helper differs from the kit checkout's commit.
+
+**To change the kit's repo, set `repos.knowledge` in site.json, and rerun `install-cluster.sh`.** To keep the repo, set `origin` back with `git remote set-url origin https://github.com/<owner>/<name>.git` in the kit checkout.
 
 #### Kit services after an update
 

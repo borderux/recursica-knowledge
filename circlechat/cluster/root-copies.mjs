@@ -10,8 +10,8 @@
 //   2. The owner can also edit the objects in git's own folder. So root checks the commit, each
 //      folder (git's tree) and the file against the id each one has in the commit (fileAt).
 //   3. A copy with the same bytes needs nothing, and GitHub isn't asked.
-//   4. Before root replaces a copy, the checkout's origin must name the kit's repo (KIT_REPO,
-//      kit-repo.mjs). An origin that names another repo replaces no copy, and the cluster's channel
+//   4. Before root replaces a copy, the checkout's origin must name the kit's repo, KIT_REPO in
+//      /etc/agent-cluster.conf (kit-repo.mjs). An origin that names another repo replaces no copy, and the cluster's channel
 //      gets one alert.
 //   5. GitHub must then show the commit as verified and on main in the kit's repo. GitHub is asked
 //      once for each commit.
@@ -21,7 +21,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { KIT_REPO, isKitRepo, originOk } from "./kit-repo.mjs";
+import { isRepo, originOk } from "./kit-repo.mjs";
 import { notice } from "./notice.mjs";
 
 // Each root-owned copy, with the script that installs the copy the first time:
@@ -84,10 +84,10 @@ export function fileAt({ commit, file, cat, show }) {
 }
 
 // Whether GitHub shows the commit as verified, and main on GitHub holds the commit.
-//   repo: the kit's repo, KIT_REPO, for every caller but the tests
+//   repo: the kit's repo, KIT_REPO in /etc/agent-cluster.conf
 //   get(url): the parsed JSON of one GitHub API page
 //   returns { ok: true }, { ok: false, reason }, or { error } when GitHub can't be asked
-export async function verifiedOnMain({ repo = KIT_REPO, commit, get }) {
+export async function verifiedOnMain({ repo, commit, get }) {
   try {
     const c = await get(`https://api.github.com/repos/${repo}/commits/${commit}`);
     if (c?.sha !== commit) return { ok: false, reason: "GitHub has no such commit" };
@@ -123,11 +123,13 @@ export const realFiles = {
 // One hourly run of the refresh. Every outside effect comes through the arguments, for the tests:
 //   commit: the kit checkout's commit, from git rev-parse HEAD
 //   remote: the address of the checkout's origin, from git remote get-url origin
-//   cat, show: as in fileAt; verify(commit): verifiedOnMain's answer for the commit
+//   kitRepo: the kit's repo from root's /etc/agent-cluster.conf, as kit-repo.mjs kitRepo() gives it
+//   verify(commit, repo): verifiedOnMain's answer for the commit in the kit's repo
+//   cat, show: as in fileAt
 //   files: { lstat, read, replace } as in realFiles; post(text): one post in the cluster's channel
 //   state: the update job's state object, changed in place (state.rootCopies)
 //   returns the names of the copies the job replaced
-export async function refreshRootCopies({ computer, commit, remote, copies = ROOT_COPIES, cat, show, verify, files = realFiles, post, state, now = Date.now }) {
+export async function refreshRootCopies({ computer, commit, remote, kitRepo = { problem: "the update job got no kit repo" }, copies = ROOT_COPIES, cat, show, verify, files = realFiles, post, state, now = Date.now }) {
   const rc = (state.rootCopies ??= {});
   const due = [];
   for (const c of copies) {
@@ -140,19 +142,21 @@ export async function refreshRootCopies({ computer, commit, remote, copies = ROO
     if (Buffer.compare(bytes, files.read(c.dest)) !== 0) due.push({ ...c, bytes, st });
   }
   if (!due.length) {
-    if (isKitRepo(remote)) delete state.kitOrigin;
+    if (!kitRepo.problem && isRepo(remote, kitRepo.repo)) delete state.kitOrigin;
     return [];
   }
-  if (!(await originOk({ computer, remote, state, post, now: now() }))) return [];
-  if (rc.verified !== commit) {
-    const v = await verify(commit);
+  if (!(await originOk({ computer, remote, kit: kitRepo, state, post, now: now() }))) return [];
+  // GitHub is asked once for each commit in each repo.
+  const asked = `${kitRepo.repo}@${commit}`;
+  if (rc.verified !== asked) {
+    const v = await verify(commit, kitRepo.repo);
     if (v.error) { console.error(`root copies: ${v.error}. The next hour asks again.`); return []; }
     if (!v.ok) {
       const names = due.map((c) => c.name);
       await notice(rc, "told", `unverified:${commit}`, `:rotating_light: Kit on ${computer}: ${list(names)} ${names.length === 1 ? "keeps" : "keep"} the old version. The kit checkout is at ${short(commit)}, and ${v.reason}. A person checks the checkout.`, post, now());
       return [];
     }
-    rc.verified = commit;
+    rc.verified = asked;
   }
   const done = [];
   for (const c of due) {

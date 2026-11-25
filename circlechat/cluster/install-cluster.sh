@@ -21,17 +21,20 @@ NODE_BIN="$(command -v node)"
 for t in tcpdump age; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
 
 # AGENTS: each computer's cluster agent, at the computer's Tailscale address (kit/peers.mjs agentPeers).
+# KIT_REPO: the kit's GitHub repo, from site.json's repos.knowledge (kit-repo.mjs siteKitRepo).
 INFO="$(node --input-type=module -e '
   import fs from "node:fs";
   const { agentPeers } = await import(process.argv[3]);
+  const { siteKitRepo } = await import(process.argv[4]);
   const s = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
   const me = s.nodes.find((n) => n.name === process.argv[2]);
   if (!me) { console.error(`no computer ${process.argv[2]} in site.json`); process.exit(1); }
   const agents = Object.entries(agentPeers(s, me.name)).map(([name, url]) => `${name}=${url}`).join(",");
   // The fields are split on \x1f, not a tab: read collapses empty fields between tabs.
-  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? "", me.slack_icon ?? "", me.router ?? ""].join("\x1f"));
-' "$SITE" "$NODE" "$HERE/../kit/peers.mjs")"
-IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXPECTED_ROUTER <<<"$INFO"
+  console.log([me.control ? "control" : "helper", agents, s.security?.evidence_recipient ?? "", s.backup?.remote ?? "", s.site?.timezone ?? "", me.slack_icon ?? "", me.router ?? "", siteKitRepo(s)].join("\x1f"));
+' "$SITE" "$NODE" "$HERE/../kit/peers.mjs" "$HERE/kit-repo.mjs")"
+IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXPECTED_ROUTER KIT_REPO <<<"$INFO"
+[ -n "$KIT_REPO" ] || echo "repos.knowledge in site.json is off GitHub, so GitHub can verify no kit commit. The update job moves the kit checkout to no new commit and replaces no root-owned helper."
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
 CANARY_PORTS="2222, 2121, 8088"
@@ -71,6 +74,7 @@ CLUSTER_TZ=$CLUSTER_TZ
 SLACK_ICON=$SLACK_ICON
 EXPECTED_ROUTER=$EXPECTED_ROUTER
 DOCKER_CONFIG=$HOME/.docker
+KIT_REPO=$KIT_REPO
 PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CONF
 [ -f /etc/agent-cluster.env ] || sudo install -m 600 -o root /dev/null /etc/agent-cluster.env

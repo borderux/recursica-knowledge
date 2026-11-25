@@ -16,13 +16,13 @@ const SHA = "0123456789abcdef0123456789abcdef01234567";
 // A copy of the kit files install-cluster.sh reads, a home folder with site.json, and a stand-in for
 // each outside command. The copy sits outside the repository, so the kit check (kit/check-kit.sh)
 // reads only the copy.
-function sandbox(system) {
+function sandbox(system, site = example) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "install-cluster-"));
   const kit = path.join(dir, "kit"), home = path.join(dir, "home"), bin = path.join(dir, "bin"), log = path.join(dir, "calls.log");
   for (const d of ["circlechat/kit", "circlechat/cluster/firewall"]) fs.cpSync(path.join(kitRoot, d), path.join(kit, d), { recursive: true });
-  fs.copyFileSync(path.join(here, "install-cluster.sh"), path.join(kit, "circlechat/cluster/install-cluster.sh"));
+  for (const f of ["install-cluster.sh", "kit-repo.mjs", "notice.mjs"]) fs.copyFileSync(path.join(here, f), path.join(kit, "circlechat/cluster", f));
   fs.mkdirSync(path.join(home, "circlechat"), { recursive: true });
-  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify(example));
+  fs.writeFileSync(path.join(home, "circlechat/site.json"), JSON.stringify(site));
   fs.mkdirSync(bin);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   // sudo runs nothing. tee and install read their input, as the real commands do, and cat finds no file.
@@ -38,7 +38,7 @@ function sandbox(system) {
   const calls = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
   const marker = path.join(home, ".recursica-kit/network-applied/install-cluster.sh");
   const written = (name) => { try { return fs.readFileSync(path.join(dir, `tee-${name}`), "utf8"); } catch { return ""; } };
-  return { run, calls, marker, written };
+  return { run, calls, marker, written, home };
 }
 
 // The calls that change the firewall: a rule load, a write to pf.conf or the rule files, and the
@@ -87,4 +87,25 @@ test("install-cluster.sh writes each computer's cluster agent at the computer's 
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.match(s.written("agent-cluster.conf"), new RegExp(`^AGENTS=${example.nodes[0].name}=http://${example.nodes[0].tailnet_address}:7500,${example.nodes[1].name}=http://127\\.0\\.0\\.1:7500$`, "m"));
   assert.doesNotMatch(s.written("agent-cluster.conf"), /host\.docker\.internal/);
+});
+
+test("install-cluster.sh writes the kit's GitHub repo as root, from site.json's repos.knowledge", () => {
+  const cases = [
+    [example.repos.knowledge, "borderux/recursica-knowledge"],
+    ["https://github.com/acme/kit-fork", "acme/kit-fork"],
+    [undefined, "borderux/recursica-knowledge"],
+    ["https://git.acme.com/acme/kit.git", ""],
+  ];
+  for (const [knowledge, repo] of cases) {
+    const site = structuredClone(example);
+    if (knowledge === undefined) delete site.repos.knowledge; else site.repos.knowledge = knowledge;
+    const s = sandbox("Linux", site);
+    const r = s.run({ KIT_HOLD_NETWORK: "1" });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    // sudo tee writes the file, so root owns the file.
+    assert.match(s.calls(), /^sudo tee \/etc\/agent-cluster\.conf$/m);
+    assert.match(s.written("agent-cluster.conf"), new RegExp(`^KIT_REPO=${repo.replace("/", "\\/")}$`, "m"), String(knowledge));
+    assert.equal((s.written("agent-cluster.conf").match(/^KIT_REPO=/gm) ?? []).length, 1);
+    if (!repo) assert.match(r.stdout, /repos\.knowledge in site\.json is off GitHub/);
+  }
 });
