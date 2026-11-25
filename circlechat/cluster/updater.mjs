@@ -127,7 +127,7 @@ async function followStep({ env, site, control, stacks, chat, state }) {
 // owner, in the kit checkout, with no replace objects and no text conversion.
 async function rootCopiesStep() {
   const { ROOT_COPIES, helperKit, refreshRootCopies, verifiedOnMain } = await import("./root-copies.mjs");
-  const { gitAsOwner, githubRepo } = await import("./follow-main.mjs");
+  const { gitAsOwner } = await import("./follow-main.mjs");
   return async ({ env, chat, state }) => {
     const git = (...a) => {
       const r = spawnSync("sudo", ["-u", env.OWNER, "-H", ...gitAsOwner(env.KIT, ["--no-replace-objects", ...a])], { maxBuffer: 64 << 20 });
@@ -143,13 +143,12 @@ async function rootCopiesStep() {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     };
-    const repo = githubRepo(String(git("remote", "get-url", "origin") ?? ""));
     const done = await refreshRootCopies({
-      computer: env.COMPUTER, commit, state,
+      computer: env.COMPUTER, commit, state, remote: String(git("remote", "get-url", "origin") ?? "").trim(),
       copies: ROOT_COPIES.filter((c) => !(other && c.name === "agent-stacks-apply")),
       cat: (type, id) => git("cat-file", type, id),
       show: (rev, file) => git("show", "--no-textconv", `${rev}:${file}`),
-      verify: (c) => verifiedOnMain({ repo, commit: c, get }),
+      verify: (c) => verifiedOnMain({ commit: c, get }),
       post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
     });
     for (const name of done) console.log(`${name}: replaced with the kit's file at ${commit.slice(0, 7)}`);

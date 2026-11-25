@@ -113,6 +113,7 @@ Update the forks by hand. For the knowledge repo:
 2. Fetch the releases: `git fetch upstream --tags`.
 3. Merge the release into the fork, on a branch, and open a pull request.
 4. After the merge, rerun the setup scripts from "Install", step 3.
+5. Rerun `circlechat/deploy/install-secrets-helper.sh <runner account>`, and `circlechat/tenant/setup-pc.sh` on Linux or WSL. The update job replaces the root-owned helpers only for a checkout of Border UX's repo. On a fork's computer, the job posts one alert when a helper differs from the fork's commit.
 
 A release with a new first number (a major version) can change settings. Read the release notes first.
 

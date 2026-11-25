@@ -1082,7 +1082,7 @@ A helper computer hosts no stack, so with `"releases"` the update job never move
 
 **With `"main"`, the update job takes six steps each hour, as root, on each computer** (`cluster/follow-main.mjs`):
 
-1. The job fetches `origin/main` into the kit checkout, as the owner. Each of the job's git commands runs with umask 022, so no file git writes is writable by the group. With no new commit, the job stops here.
+1. The kit checkout's `origin` must name the kit's repo, `borderux/recursica-knowledge`, as "The kit's repo" describes. The job then fetches `origin/main` into the kit checkout, as the owner. Each of the job's git commands runs with umask 022, so no file git writes is writable by the group. With no new commit, the job stops here.
 2. GitHub must show each new commit as verified. One commit that GitHub doesn't verify stops the whole update, and the kit checkout stays where the checkout was. The cluster's channel, `SLACK_CHANNEL_ID`, gets one alert for each such commit.
 3. The update waits until RecursicaChat 2.0 is quiet, as "Updates that interrupt work" describes. The channel hears about each update that waits once, then again every 24 hours while the update waits. A helper runs no RecursicaChat server, so a helper never waits.
 4. The kit checkout fast-forwards to the new commit. After the fast-forward, the job removes group and other write in the checkout (`chmod -R go-w`), so the next hour's kit check passes. A checkout on a release tag moves to the `main` branch first. A checkout on another branch, or with commits main lacks, stays, and the channel gets one alert.
@@ -1098,6 +1098,14 @@ A helper computer hosts no stack, so with `"releases"` the update job never move
 The job never runs `rc-deploy`. A new RecursicaChat 2.0 server still waits for `sudo rc-deploy` by hand.
 
 **A setup runs again only when the owner has password-free sudo.** Each of the three setups calls sudo as the owner. Without password-free sudo, the channel's line names each command to run by hand. On the control computer, `setup-host.sh --upgrade` still runs, with root's own steps, as in an upgrade. The line asks for the full `setup-host.sh` only when the change adds or removes a service or a job.
+
+#### The kit's repo
+
+**GitHub's checks ask one fixed repo, `borderux/recursica-knowledge`** (`KIT_REPO` in `cluster/kit-repo.mjs`). The owner can change the kit checkout's `origin`. An `origin` at another repo could then pass GitHub's checks with that repo's own verified commits. So no check reads the repo's name from `origin`.
+
+**An `origin` that names another repo stops the update job's kit steps.** The checkout moves to no new commit, and no root-owned helper is replaced. The cluster's channel gets one alert, then again for another repo or after 24 hours. The alert never shows the `origin` address, which can hold a token. The follow step alerts each hour the step runs. The helper step alerts only when a helper differs from the kit checkout's commit.
+
+**A fork of the kit stays on the fork's own updates.** On a fork's computers, rerun `install-secrets-helper.sh` and `setup-pc.sh` by hand after each kit change, as `INSTALL.md` describes. Otherwise, set `origin` back: `git remote set-url origin https://github.com/borderux/recursica-knowledge.git` in the kit checkout.
 
 #### Kit services after an update
 
@@ -1190,7 +1198,7 @@ Each hour, after the kit step, the update job takes five steps for each installe
 1. Root reads the kit file at the kit checkout's commit with `git show <commit>:<path>`, as the owner. Root never copies a file from the checkout, because the owner can edit the checkout's files.
 2. Root checks the commit, each folder and the file against the ids in the commit. The owner can edit git's own folder too, so a changed object stops the copy.
 3. A copy with the same bytes as the kit file needs nothing.
-4. For a copy that differs, GitHub must show the commit as verified and on main. GitHub is asked once for each commit. A commit GitHub doesn't verify replaces no copy, and the cluster's channel gets one alert.
+4. For a copy that differs, the kit checkout's `origin` must name the kit's repo, as "The kit's repo" describes. GitHub must show the commit as verified and on main in the kit's repo. GitHub is asked once for each commit. A commit GitHub doesn't verify replaces no copy, and the cluster's channel gets one alert.
 5. The new copy replaces the old copy in one rename. The copy keeps the old copy's path, owner, group and mode. The cluster's channel gets one line for each copy the job replaced.
 
 The job replaces only a copy a person installed. A computer without the copy gets none. The firewall's copies in `/var/lib/agent-cluster` wait for a person, as "A kit that follows main" describes.
