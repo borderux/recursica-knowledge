@@ -219,10 +219,17 @@ changed_any() { local n; for n in ${2//,/ }; do [[ "$1" == *" $n "* ]] && return
 # rotation knows the new key when the rotation starts the run, and the hash shows nothing of the
 # key. The run restarts kev-engine only when KEV_API_KEY changed, so a second run of the same
 # rotation restarts nothing.
-KEV_PORT="$("$NODE_BIN" -e '
+# The engine's address is the --host in the kev-engine service's command in site.json, as the
+# engine listens there only. No --host is the engine's own default, 127.0.0.1. An engine on every
+# address (0.0.0.0 or ::) answers on 127.0.0.1 or ::1.
+read -r KEV_HOST KEV_PORT < <("$NODE_BIN" -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  console.log((s.nodes ?? []).find((x) => x.name === process.argv[2])?.kev?.port ?? 8009);
-' "$SITE" "$COMPUTER")"
+  const n = (s.nodes ?? []).find((x) => x.name === process.argv[2]);
+  const sv = (n?.services ?? []).find((v) => /^kev-engine(-|$)/.test(v.name));
+  const m = /(?:^|\s)--host(?:=|\s+)(\S+)/.exec(sv?.command ?? "");
+  const host = { "0.0.0.0": "127.0.0.1", "::": "::1", "[::]": "::1" }[m?.[1]] ?? m?.[1]?.replace(/^\[|\]$/g, "") ?? "127.0.0.1";
+  console.log(`${host} ${n?.kev?.port ?? 8009}`);
+' "$SITE" "$COMPUTER")
 KEV_SERVICES=""
 for sv in $SERVICE_READS; do
   name="${sv%%:*}" reads="${sv#*:}"
@@ -266,17 +273,18 @@ kev_counts() {
   "$NODE_BIN" -e '
     let key = "";
     process.stdin.on("data", (d) => (key += d)).on("end", async () => {
-      const port = process.argv[1];
+      const [host, port] = process.argv.slice(1);
+      const at = `${host.includes(":") ? `[${host}]` : host}:${port}`;
       try {
-        const r = await fetch(`http://127.0.0.1:${port}/v1/models`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000) });
+        const r = await fetch(`http://${at}/v1/models`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10000) });
         if (r.status === 401) { console.log("kev-engine refused the key in the secrets file, so the engine runs with another key"); process.exit(1); }
-        if (!r.ok) { console.log(`kev-engine answered ${r.status} on port ${port}`); process.exit(1); }
+        if (!r.ok) { console.log(`kev-engine answered ${r.status} at ${at}`); process.exit(1); }
         const b = (await r.json()).models?.[0]?.batches;
         if (typeof b?.queued !== "number" || typeof b?.requests !== "number") { console.log("kev-engine reports no request counts"); process.exit(1); }
         console.log(`${b.queued} ${b.requests}`);
-      } catch (e) { console.log(`kev-engine does not answer on port ${port} (${e.message})`); process.exit(1); }
+      } catch (e) { console.log(`kev-engine does not answer at ${at} (${e.message})`); process.exit(1); }
     });
-  ' "$KEV_PORT"
+  ' "$KEV_HOST" "$KEV_PORT"
 }
 
 # The connections open to the engine's port on this computer.

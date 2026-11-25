@@ -577,7 +577,7 @@ circlechat/deploy/rotate-tokens.sh --repo <owner>/<stacks repo> --site <stack fo
 | Environments      | Read and write: the command saves the environment's secrets |
 | Metadata          | Read-only, which GitHub always sets                         |
 
-Leave every other permission at "No access". Delete the token after the rotation.
+Leave every other permission at "No access". Delete the token after the rotation. The command starts each run on `main`, so the token needs no Contents permission.
 
 **The command changes one token at a time, and deploys each token before the next one.** Each Deploy secrets run writes every secret in the environment. Changing all three tokens at once would switch all three in the first run.
 
@@ -591,7 +591,7 @@ Leave every other permission at "No access". Delete the token after the rotation
 **kev-engine stops only for a key rotation, and only while Barb isn't running and the engine handles no request.** The rotation is the only program that restarts kev-engine. A rotation's run passes `kev_rotation` to the secrets helper, with the SHA-256 of the new key as proof. The helper restarts kev-engine only when the proof matches the new key and the key changed. The helper checks two things before writing anything:
 
 - **Barb isn't running.** The control computer's cluster agent reads Barb's state from the RecursicaChat server's database, and reports the state in `/status`. No agent named Barb passes. A Barb with no message queued or in a turn, and no service request open, passes too. A database the agent can't read fails the check.
-- **The engine is idle.** The helper takes three readings over 10 seconds. No connection is open to the engine's port at any reading. The engine's `GET /v1/models` shows nothing queued, and the same count of answered requests at the first and last readings.
+- **The engine is idle.** The helper reads the engine at the `--host` in the kev-engine service's command in site.json. With no `--host`, or with 0.0.0.0, the helper reads the engine at 127.0.0.1. The helper takes three readings over 10 seconds. No connection is open to the engine's port at any reading. The engine's `GET /v1/models` shows nothing queued, and the same count of answered requests at the first and last readings.
 
 When a check fails, the run writes nothing and fails. The engine keeps running with the key in the engine's file. A connection that opens between the checks and the restart puts the old key back and fails the run.
 

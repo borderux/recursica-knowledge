@@ -98,7 +98,8 @@ start_run() {
   before="$(newest_run)"
   title="Deploy secrets: $ENV on $computer"
   case "$rotation" in "") ;; check) title="$title, key rotation check" ;; *) title="$title, key rotation" ;; esac
-  if ! out="$(ghx workflow run "$WORKFLOW" --repo "$REPO" -f stack="$ENV" -f computer="$computer" -f restart="$restart" -f kev_rotation="$rotation" 2>&1)"; then
+  # --ref main: without --ref, gh reads the repo's default branch, which needs Contents read.
+  if ! out="$(ghx workflow run "$WORKFLOW" --repo "$REPO" --ref main -f stack="$ENV" -f computer="$computer" -f restart="$restart" -f kev_rotation="$rotation" 2>&1)"; then
     case "$out" in *kev_rotation*|*"Unexpected inputs"*) echo "The Deploy secrets workflow in $REPO has no kev_rotation input. Copy the kit's circlechat/deploy/deploy-secrets.yml to the repo's .github/workflows/ first." >&2 ;;
       *) echo "GitHub refused to start Deploy secrets for $computer: $out" >&2 ;; esac
     return 1

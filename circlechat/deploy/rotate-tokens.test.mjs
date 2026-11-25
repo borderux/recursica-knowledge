@@ -39,11 +39,13 @@ if (a === "secret" && b === "set") {
 }
 if (a === "workflow" && b === "run") {
   const f = fields();
+  // Without --ref, gh reads the repo's default branch, which the one-day token can't read.
+  if (opt("--ref") === undefined) { save(); console.error("HTTP 403: Resource not accessible by personal access token (https://api.github.com/repos/" + opt("--repo") + ")"); process.exit(1); }
   if (st.noRotationInput) { save(); console.error('HTTP 422: Unexpected inputs provided: ["kev_rotation"]'); process.exit(1); }
   const mode = f.kev_rotation === "check" ? "check" : f.kev_rotation ? "rotation" : "plain";
   const id = 100 + st.runs.length + 1;
   const title = "Deploy secrets: " + f.stack + " on " + f.computer + (mode === "check" ? ", key rotation check" : mode === "rotation" ? ", key rotation" : "");
-  st.runs.push({ databaseId: id, displayTitle: title, inputs: f, mode, secrets: { ...st.secrets }, conclusion: st.results[f.computer + " " + mode] ?? "success" });
+  st.runs.push({ databaseId: id, displayTitle: title, inputs: f, ref: opt("--ref"), mode, secrets: { ...st.secrets }, conclusion: st.results[f.computer + " " + mode] ?? "success" });
   st.events.push({ run: f.computer, mode, restart: f.restart });
   save(); process.exit(0);
 }
@@ -97,6 +99,7 @@ test("a rotation checks kev-engine first, then deploys one token at a time in th
     assert.equal(plain[2].secrets.KEV_API_KEY, undefined);
     for (const x of st.runs.filter((y) => y.mode === "rotation")) assert.equal(x.inputs.kev_rotation, proof(st.secrets.KEV_API_KEY));
     for (const x of st.runs.filter((y) => y.mode === "check")) assert.equal(x.inputs.restart, "false");
+    assert.ok(st.runs.every((x) => x.ref === "main"), "each run starts on main, so gh needs no Contents permission to find the default branch");
     assert.ok(st.calls.every((c) => c.token), "gh gets the token in GH_TOKEN for every call");
     assert.ok(st.calls.every((c) => !c.args.join(" ").includes(TOKEN) && Object.values(st.secrets).every((v) => !c.args.join(" ").includes(v))), "no token or value on a command line");
     assert.deepEqual(leaks(st, r.stdout + r.stderr), [], "no token or value in the output");

@@ -614,7 +614,9 @@ test("a service that is missing or fails to restart is never reported as restart
 // computer's cluster agent, and stand-ins for ss and netstat that report the open connections.
 // The engine takes the key in the node secrets file at each restart that the systemctl or launchctl
 // stand-in records, as kev-engine reads KEV_API_KEY at its start.
-async function rotationWorld({ system = "Linux", barb = "none", oldKit = false, connections = 0, answering = false } = {}) {
+// listen is the address the stand-in engine listens on, and hostArg the --host in each kev-engine
+// service's command in site.json. With no hostArg, the command keeps no --host.
+async function rotationWorld({ system = "Linux", barb = "none", oldKit = false, connections = 0, answering = false, listen = "127.0.0.1", hostArg } = {}) {
   const w = await restartWorld({ system, installed: ["kev-engine", "jobd", "cluster-agent"] });
   const nodeEnv = path.join(w.home, ".recursica-node.env");
   fs.writeFileSync(nodeEnv, "KEV_API_KEY=old-kev-key\n", { mode: 0o600 });
@@ -634,13 +636,15 @@ async function rotationWorld({ system = "Linux", barb = "none", oldKit = false, 
     s.setHeader("content-type", "application/json");
     s.end(JSON.stringify({ ok: true, computer: control, services: [], ...(oldKit ? {} : { barb }) }));
   });
-  await new Promise((r) => kev.listen(0, "127.0.0.1", r));
+  await new Promise((r) => kev.listen(0, listen, r));
   await new Promise((r) => agent.listen(0, "127.0.0.1", r));
   // The site's engine listens on the stand-in's port, and the control computer's agent at 127.0.0.1.
   const siteFile = path.join(w.home, "circlechat", "site.json");
   const site = JSON.parse(fs.readFileSync(siteFile, "utf8"));
   for (const n of site.nodes) { if (n.kev) n.kev.port = kev.address().port; if (n.control) n.tailnet_address = "127.0.0.1"; }
-  site.nodes.find((n) => !n.control).services = [{ name: "kev-engine", command: "kev", dir: "/k", secret_env: ["KEV_API_KEY"] }];
+  const command = hostArg ? `uv run python -m kev.serve --port 8009 --host ${hostArg}` : "kev";
+  site.nodes.find((n) => !n.control).services = [{ name: "kev-engine", command, dir: "/k", secret_env: ["KEV_API_KEY"] }];
+  for (const v of site.nodes.find((n) => n.control).services ?? []) if (v.name === "kev-engine") v.command = command;
   fs.writeFileSync(siteFile, JSON.stringify(site));
   const count = path.join(w.home, "connections");
   fs.writeFileSync(count, String(connections));
@@ -751,6 +755,41 @@ test("a rotation's check reads the engine's counts with the key, and an engine o
     assert.equal(w.key(), "old-kev-key");
     assert.deepEqual(restarts(w.units()), []);
   } finally { w.close(); }
+});
+
+// An address on the loopback network other than 127.0.0.1 stands in for a Tailscale address.
+// Linux answers on all of 127.0.0.0/8; macOS answers on 127.0.0.1 only.
+test("a rotation reads kev-engine at the --host in site.json, on every computer", { skip: process.platform === "darwin" }, async () => {
+  for (const computer of [control, helperName]) {
+    let w = await rotationWorld({ listen: "127.0.0.2", hostArg: "127.0.0.2" });
+    try {
+      let r = await w.rotate(computer, "KEV_API_KEY=new-kev-key\n", ["check"]);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /  kev-engine is idle: /);
+      r = await w.rotate(computer, "KEV_API_KEY=new-kev-key\n", [proof("new-kev-key")]);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /  kev-engine answers with the new key after about 0 seconds\./);
+      assert.equal(w.engine.key, "new-kev-key");
+    } finally { w.close(); }
+    // An engine on one address, with no --host in site.json: the check asks 127.0.0.1 and fails.
+    w = await rotationWorld({ listen: "127.0.0.2" });
+    try {
+      const r = await w.rotate(computer, "KEV_API_KEY=new-kev-key\n", ["check"]);
+      assert.equal(r.status, 1);
+      assert.match(r.stdout, /  kev-engine is not idle: kev-engine does not answer at 127\.0\.0\.1:\d+ /);
+    } finally { w.close(); }
+  }
+});
+
+test("a rotation reads an engine on every address at 127.0.0.1", async () => {
+  for (const hostArg of ["0.0.0.0", "127.0.0.1"]) {
+    const w = await rotationWorld({ listen: "0.0.0.0", hostArg });
+    try {
+      const r = await w.rotate(helperName, "KEV_API_KEY=new-kev-key\n", ["check"]);
+      assert.equal(r.status, 0, r.stdout + r.stderr);
+      assert.match(r.stdout, /  kev-engine is idle: /);
+    } finally { w.close(); }
+  }
 });
 
 test("a changed JOBD_TOKEN or KEV_ENGINE_KEY in the control computer's .env recreates no gateway", async () => {
