@@ -7,8 +7,9 @@
 # change the copy. Lets <runner user> run that one command through sudo, with no password and
 # nothing else. Writes /etc/agent-stacks.conf: the account that owns the stacks (the user running
 # this script), the runner's account, the kit's folder, and the node binary. Safe to rerun after the
-# kit changes. The hourly update job (cluster/updater.mjs) reruns the script as root when the copy
-# differs from the kit. As root, the script keeps the owner and the node binary from the first run.
+# kit changes. The hourly update job replaces the copy with apply-secrets.sh at the kit checkout's
+# commit, once GitHub verifies the commit (cluster/root-copies.mjs). As root, the script keeps the
+# owner and the node binary from the first run.
 set -euo pipefail
 RUNNER="${1:?usage: install-secrets-helper.sh <runner user>}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
