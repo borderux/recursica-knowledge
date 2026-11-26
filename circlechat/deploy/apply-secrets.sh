@@ -356,6 +356,20 @@ if [[ " $ROLES " == *" control "* ]]; then
   for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     if has "$k"; then set_kv "$CC_DIR/.env" "$k" "$(val "$k")" || true; fi
   done
+  # The gateway's copy of KEV_ENGINE_KEY, for a program's Kev-engine requests (gateway/router.mjs).
+  # The router reads the file at each request, so a new key needs no restart. Only an existing,
+  # plain state folder gets the file; setup-host.sh makes the folder and writes the file there too.
+  KEV_GW="$CC_DIR/gateway-state"
+  if has KEV_ENGINE_KEY && [ -d "$KEV_GW" ] && [ ! -L "$KEV_GW" ]; then
+    if [ -f "$KEV_GW/kev-engine.key" ] && [ ! -L "$KEV_GW/kev-engine.key" ] && [ "$(cat "$KEV_GW/kev-engine.key")" = "$(val KEV_ENGINE_KEY)" ]; then
+      echo "  KEV_ENGINE_KEY unchanged in $KEV_GW/kev-engine.key"
+    else
+      tmp="$(mktemp "$KEV_GW/.new.XXXXXX")"; printf '%s\n' "$(val KEV_ENGINE_KEY)" > "$tmp"; chmod 600 "$tmp"
+      if [ "$(uname -s)" = Darwin ]; then "$CHOWN" -h "$OWNER" "$tmp"; fi
+      mv -f "$tmp" "$KEV_GW/kev-engine.key"
+      echo "  KEV_ENGINE_KEY -> $KEV_GW/kev-engine.key"
+    fi
+  fi
   # Cloud keys go to the gateway's secrets file, which root owns and only the gateway reads.
   KEYS_FILE="$CC_DIR/model-keys.env"
   for k in $NAMES; do

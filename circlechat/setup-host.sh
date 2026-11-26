@@ -161,6 +161,14 @@ if [ "$HELPER" = false ]; then
   # task's Model use setting with it (gateway/rc-tasks.mjs). The kit's recursicachat/install.sh
   # copies it into the server's own key file, /etc/recursicachat/gateway.key.
   sudo test -s "$GW_STATE/rc-tasks.key" || echo "rct_$(openssl rand -hex 24)" | sudo tee "$GW_STATE/rc-tasks.key" >/dev/null
+  # Kev-engine's key, for a program whose gateway block lists Kev's computers (gateway.kev): the
+  # router sends that program's Kev-engine requests with this key (gateway/router.mjs). It is
+  # KEV_ENGINE_KEY from .env. The router reads the file at each request; the secrets helper writes
+  # it too when the key changes.
+  if env_has KEV_ENGINE_KEY; then
+    sed -n 's/^KEV_ENGINE_KEY=//p' .env | tail -n 1 | sudo tee "$GW_STATE/kev-engine.key" >/dev/null
+    sudo chmod 600 "$GW_STATE/kev-engine.key"
+  fi
   # On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
   own_for_docker "$MODEL_KEYS" "$GW_STATE"
 fi

@@ -207,6 +207,24 @@ export function gatewayServices(site) {
   return (Array.isArray(list) ? list : []).filter((s) => s && typeof s === "object" && s.gateway !== undefined);
 }
 
+// The address a computer's Kev-engine listens on: the --host in its kev-engine service's command, or
+// the computer's address when the engine listens on every address or names none.
+export function kevHost(n) {
+  const svc = (Array.isArray(n?.services) ? n.services : []).find((x) => x?.name === "kev-engine");
+  const host = String(svc?.command ?? "").match(/--host[= ](\S+)/)?.[1];
+  return !host || host === "0.0.0.0" || host === "::" ? n.address : host;
+}
+const LOOPBACK = (h) => /^(127\.|localhost$|::1$|\[::1\]$)/.test(String(h));
+export const kevEngineUrl = (n) => { const h = kevHost(n); return `http://${String(h).includes(":") && !String(h).startsWith("[") ? `[${h}]` : h}:${n.kev.port}`; };
+// A service's Kev computers (gateway.kev), as gateway.json's list of engine URLs in the block's order:
+// the router sends the service's Kev-engine requests to them, best first (gateway/router.mjs).
+function svcKev(s, site) {
+  const names = s.gateway?.kev;
+  if (!Array.isArray(names) || !names.length) return {};
+  const byName = new Map((site.nodes ?? []).map((n) => [n.name, n]));
+  return { kev: names.map((name) => kevEngineUrl(byName.get(name))) };
+}
+
 // A task's "Model use" setting on the RecursicaChat 2.0 server. The kit declares the setting to the
 // server in a task-settings file (taskSettings, which recursicachat/install.sh installs as
 // /etc/recursicachat/task-settings.json), and the gateway reads each task's choice from the server's
@@ -242,7 +260,7 @@ export function gatewayConfig(site) {
   const agents = Object.fromEntries([
     ...[...handles].map((h) => [h, entry(h)]),
     ...rcAgents(site).map((h) => [rcHandle(h), entry(h)]),
-    ...gatewayServices(site).map((s) => [svcHandle(s.name), { routes: s.gateway.routes, cloud: false, key: null, service: true, max_parallel: s.gateway.max_parallel, daily_requests: s.gateway.daily_requests }]),
+    ...gatewayServices(site).map((s) => [svcHandle(s.name), { routes: s.gateway.routes, cloud: false, key: null, service: true, max_parallel: s.gateway.max_parallel, daily_requests: s.gateway.daily_requests, ...svcKev(s, site) }]),
   ].sort(([a], [b]) => a.localeCompare(b)));
   const services = gatewayServices(site).length > 0;
   const rcTasks = rcTaskSource(site);
@@ -591,9 +609,24 @@ export const SVC_MAX_DAILY = 1_000_000;
 // never reaches a cloud model.
 export function svcGatewayErrors(s, at, site = {}) {
   const g = s.gateway;
-  if (!g || typeof g !== "object" || Array.isArray(g)) return [`${at}.gateway must be an object: routes, max_parallel and daily_requests`];
+  if (!g || typeof g !== "object" || Array.isArray(g)) return [`${at}.gateway must be an object: routes, max_parallel, daily_requests and kev`];
   const errs = [];
-  for (const k of Object.keys(g)) if (!["routes", "max_parallel", "daily_requests"].includes(k)) errs.push(`${at}.gateway.${k} is not a setting: routes, max_parallel and daily_requests`);
+  for (const k of Object.keys(g)) if (!["routes", "max_parallel", "daily_requests", "kev"].includes(k)) errs.push(`${at}.gateway.${k} is not a setting: routes, max_parallel, daily_requests and kev`);
+  // gateway.kev: the computers whose Kev-engine the service's key may reach, best first. The gateway
+  // runs in Docker, so an engine it reaches listens beyond the computer's loopback address.
+  if (g.kev !== undefined) {
+    const byName = new Map((site.nodes ?? []).map((n) => [n?.name, n]));
+    if (!Array.isArray(g.kev) || !g.kev.length) errs.push(`${at}.gateway.kev must list at least one computer that runs Kev-engine, such as ["${(site.nodes ?? []).find((n) => n?.kev)?.name ?? "m1"}"]`);
+    else {
+      if (new Set(g.kev).size !== g.kev.length) errs.push(`${at}.gateway.kev lists a computer twice`);
+      for (const name of g.kev) {
+        const n = byName.get(name);
+        if (!n) errs.push(`${at}.gateway.kev: ${JSON.stringify(name)} is not one of site.json's nodes`);
+        else if (!Number.isInteger(n.kev?.port)) errs.push(`${at}.gateway.kev: node ${name} runs no Kev-engine (nodes[].kev.port)`);
+        else if (LOOPBACK(kevHost(n))) errs.push(`${at}.gateway.kev: node ${name}'s Kev-engine listens on ${kevHost(n)} only, which the gateway, in Docker, can't reach. Set the engine's --host to the computer's Tailscale address`);
+      }
+    }
+  }
   if (typeof s.name === "string" && svcHandle(s.name).length > 40) errs.push(`${at}.name must be at most 36 characters with a gateway block, for the gateway handle ${svcHandle(s.name)}`);
   const cluster = clusterModels(site);
   if (!Array.isArray(g.routes) || !g.routes.length) errs.push(`${at}.gateway.routes must list at least one of site.json's routes`);

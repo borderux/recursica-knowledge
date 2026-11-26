@@ -43,6 +43,14 @@
 // caps, such as every agent's, has no such limit. A program's key reaches only its own routes, never a
 // cloud model, and never a task: each of its requests is outside a task, so cluster only.
 //
+// A program's key may also reach Kev-engine, the model Kev asks its yes/no questions of, when its
+// gateway block in site.json lists Kev's computers (gateway.kev). Kev-engine speaks its own API, not
+// a model API, so LiteLLM never sees these requests: POST /v1/systemone goes to the engines in
+// gateway.json's list for the key, best first, with the engines' own key from <state>/kev-engine.key
+// in place of the program's key. The router reads that file at each request, so a new engine key
+// applies without a restart. An engine that can't be reached, or answers 429 or 5xx, passes the
+// request to the next one. The program's caps count these requests too.
+//
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
 // request, first cluster answer, switches and unsent switch reports) and service-counts.json (each capped key's day
@@ -64,6 +72,9 @@ const MINUTE = 60_000;
 export const SETTING_CACHE_MS = MINUTE;
 // The only LiteLLM paths a key reaches.
 export const MODEL_PATHS = new Set(["/v1/chat/completions", "/v1/completions", "/v1/messages"]);
+// Kev-engine's one path, for a program's key with Kev's computers in its gateway block.
+export const KEV_PATH = "/v1/systemone";
+export const KEV_KEY_FILE = "kev-engine.key";
 
 // --- addresses -----------------------------------------------------------------------------------
 function ipToBig(ip) {
@@ -415,6 +426,54 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     }
   }
 
+  // A Kev-engine request (KEV_PATH): only for a program's key whose gateway block lists Kev's
+  // computers. The body goes on unread, to each engine in turn, best first.
+  function kevUpstream(engine, raw, key, signal) {
+    return new Promise((resolve, reject) => {
+      const headers = { "content-type": "application/json", "content-length": raw.length, authorization: `Bearer ${key}` };
+      const r = http.request(new URL(KEV_PATH, engine), { method: "POST", headers, signal }, resolve);
+      r.on("error", reject);
+      r.end(raw);
+    });
+  }
+  async function kevRequest(req, res, who) {
+    const agent = config.agents?.[who.agent];
+    if (!agent) return fail(res, 403, "unknown_agent", `Agent ${who.agent} is not in site.json's agents, so the agent's key reaches no model.`);
+    const engines = Array.isArray(agent.kev) ? agent.kev : [];
+    if (!agent.service || !engines.length) return fail(res, 403, "route_not_allowed", `${who.agent} may not use Kev-engine: only a program whose gateway block lists Kev's computers (gateway.kev) may.`);
+    const chunks = []; let size = 0;
+    for await (const c of req) { size += c.length; if (size > 50_000_000) return fail(res, 413, "too_large", "The request is too large."); chunks.push(c); }
+    const raw = Buffer.concat(chunks);
+    let key = "";
+    try { key = fs.readFileSync(path.join(stateDir, KEV_KEY_FILE), "utf8").trim(); } catch { /* no key yet */ }
+    if (!key) return fail(res, 503, "no_kev_key", `The gateway has no Kev-engine key yet (${KEV_KEY_FILE} in its state folder). Deploy KEV_ENGINE_KEY to the control computer.`);
+    if (capped(agent)) {
+      const slot = caps.take(who.agent, agent);
+      if (!slot.ok) {
+        log({ task: null, agent: who.agent, route: "kev", key: null, model: null, status: 429, reason: slot.type });
+        return fail(res, 429, slot.type, slot.message, slot.retryAfter ? { "retry-after": String(slot.retryAfter) } : {});
+      }
+      res.once("close", slot.release);
+    }
+    const gone = new AbortController();
+    res.on("close", () => { if (!res.writableEnded) gone.abort(); });
+    const tried = [];
+    for (const engine of engines) {
+      if (gone.signal.aborted) return;
+      let up;
+      try { up = await kevUpstream(engine, raw, key, gone.signal); } catch (e) { tried.push(`${engine}: ${e.code ?? e.message}`); continue; }
+      if (up.statusCode >= 500 || up.statusCode === 429) { up.resume(); tried.push(`${engine}: ${up.statusCode}`); continue; }
+      const skip = new Set(["connection", "transfer-encoding", "keep-alive", "content-length"]);
+      res.writeHead(up.statusCode, Object.fromEntries(Object.entries(up.headers).filter(([k]) => !skip.has(k))));
+      up.on("data", (c) => res.write(c));
+      up.on("end", () => { res.end(); log({ task: null, agent: who.agent, route: "kev", key: "cluster", server: engine, model: "kev-engine", status: up.statusCode }); });
+      up.on("error", () => res.destroy());
+      return;
+    }
+    log({ task: null, agent: who.agent, route: "kev", key: null, model: null, status: 502, reason: "no Kev-engine answered" });
+    if (!res.headersSent) fail(res, 502, "kev_unavailable", `No Kev-engine answered: ${tried.join("; ")}.`);
+  }
+
   async function serve(req, res, jobsPort) {
     try {
       const { pathname } = new URL(req.url, "http://gateway");
@@ -454,7 +513,8 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
         return res.end(JSON.stringify({ object: "list", data: routes.map((id) => ({ id, object: "model", owned_by: "cluster" })) }));
       }
       if (req.method === "POST" && MODEL_PATHS.has(pathname)) return await modelRequest(req, res, pathname, who);
-      return fail(res, 404, "not_found", "The gateway passes on only model requests: POST /v1/chat/completions, /v1/completions or /v1/messages.");
+      if (req.method === "POST" && pathname === KEV_PATH && !jobsPort) return await kevRequest(req, res, who);
+      return fail(res, 404, "not_found", "The gateway passes on only model requests: POST /v1/chat/completions, /v1/completions or /v1/messages, and POST /v1/systemone for Kev-engine.");
     } catch (e) {
       if (!res.headersSent) fail(res, 500, "internal", e.message);
     }

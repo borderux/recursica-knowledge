@@ -199,6 +199,38 @@ test("a service's gateway block takes local routes only, whole numbers in bounds
   bad((s) => { s.recursicachat.sessions = [{ email: "person-a@example.com", account: "_program", file: "/opt/program/run/example-service.gateway-key" }]; }, /gateway key file .* is another entry's file/);
 });
 
+// gateway.kev: the computers whose Kev-engine a service's key may reach, best first, as engine URLs in
+// gateway.json. The gateway runs in Docker, so an engine on a loopback address is refused.
+test("a service's gateway.kev gives gateway.json its Kev-engines' URLs, in the block's order", () => {
+  const s = withJudge();
+  s.recursicachat.services[0].gateway.kev = ["machine-2", "machine-1"];
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(render(s).gateway.agents["svc-example-service"].kev, ["http://machine-2.example.ts.net:8009", "http://host.docker.internal:8009"],
+    "machine-2 names no --host, so its address; machine-1 listens on 0.0.0.0, so its address too");
+  const own = withJudge();
+  own.nodes[1].services = [{ name: "kev-engine", command: "uv run python -m kev.serve --port 8009 --host 192.0.2.7" }];
+  own.recursicachat.services[0].gateway.kev = ["machine-2"];
+  assert.deepEqual(render(own).gateway.agents["svc-example-service"].kev, ["http://192.0.2.7:8009"], "an engine's own --host wins");
+  assert.equal(render(withJudge()).gateway.agents["svc-example-service"].kev, undefined, "no gateway.kev, no Kev-engine for the key");
+});
+
+test("a service's gateway.kev names computers that run a Kev-engine the gateway can reach, each once", () => {
+  const bad = (kev, re, change = () => {}) => {
+    const s = withJudge();
+    change(s);
+    s.recursicachat.services[0].gateway.kev = kev;
+    assert.match(validate(s).join("\n"), re);
+  };
+  bad([], /gateway\.kev must list at least one computer that runs Kev-engine/);
+  bad("machine-1", /gateway\.kev must list at least one computer/);
+  bad(["machine-1", "machine-1"], /gateway\.kev lists a computer twice/);
+  bad(["machine-9"], /"machine-9" is not one of site\.json's nodes/);
+  bad(["machine-2"], /node machine-2 runs no Kev-engine/, (s) => { delete s.nodes[1].kev; });
+  bad(["machine-1"], /Kev-engine listens on 127\.0\.0\.1 only, which the gateway, in Docker, can't reach/, (s) => {
+    s.nodes[0].services = s.nodes[0].services.map((x) => (x.name === "kev-engine" ? { ...x, command: x.command.replace("0.0.0.0", "127.0.0.1") } : x));
+  });
+});
+
 test("a stack with no model_keys block keeps working: its cloud route model becomes the default key", () => {
   const s = clone();
   delete s.model_keys;
