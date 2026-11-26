@@ -401,7 +401,7 @@ else
   uninstall_unit "rc-session$SUFFIX" >/dev/null
 fi
 # A service account for each program that drives agents on the server, from recursicachat.services
-# (rc-service.sh): the account, the agents it drives, and its token in the program's file. A token
+# (rc-service.sh): the account, the agents it drives, and its token in the program's file, or only a gateway key for a program that only asks models. A token
 # doesn't expire, so this runs here and when asked, not as a job. As root, because only root may run
 # the server's CLI and write the program's file.
 if [ "$(site_get recursicachat.services)" != "" ] && [ "$(site_get recursicachat.services)" != "[]" ]; then

@@ -1744,6 +1744,21 @@ an agent's answer, instead of running an agent turn:
   (`tools/kev`) works this way with `KEV_ENGINE_URLS` set to that address and `KEV_ENGINE_KEY` set to
   the program's gateway key.
 
+**A program that only asks models leaves `agents` out.** Such a program, an eval for one, drives no
+agent, so the server gets no service and no token for it, and its `file` is its gateway key file:
+
+```json
+{ "name": "example-eval", "account": "person-a", "file": "/opt/example-evals/example-eval.gateway-key",
+  "gateway": { "routes": ["judge"], "max_parallel": 4, "daily_requests": 5000, "kev": ["machine-2"] } }
+```
+
+- `rc-service.sh` writes the key to `file`, the entry's account's own, mode 400. The folder must
+  belong to root, with no write for the group or others, as for a token.
+- **To revoke the key,** remove the entry from site.json and rerun `setup-host.sh`. The gateway then
+  has no handle `svc-<name>`, and refuses the key at once. To drop the key's record as well, run
+  `sudo node circlechat/kit/rc-gateway-key.mjs revoke <gateway-state> svc-<name>`, and delete the
+  file. Neither step touches another entry's key or token.
+
 How the gateway key works:
 
 - **The key's gateway handle is `svc-<name>`.** The gateway lists the handle beside the agents'
