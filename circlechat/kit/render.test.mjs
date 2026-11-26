@@ -615,7 +615,7 @@ test("a site.json with one Ollama server, in the older form, keeps working", () 
   const s = clone();
   for (const n of s.nodes) delete n.servers, delete n.model_memory_gb;
   s.nodes[1].models = [{ id: "large-local", port: 11434, model: "your-large-model", context: 131072 }];
-  s.routes = { "local-large": ["machine-2/large-local"] };
+  s.routes = { "local-large": ["machine-2/large-local"], coder: ["machine-2/large-local"] };
   s.agents = { betty: { routes: ["local-large"] } };
   assert.deepEqual(validate(s), []);
   const { litellm, gateway } = render(s);
