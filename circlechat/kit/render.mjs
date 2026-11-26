@@ -280,12 +280,14 @@ export function gatewayConfig(site) {
     keys: Object.fromEntries(Object.entries(keys).map(([name, k]) => [name, { model: `key/${name}`, provider: k.provider }])),
     // Each route, and each cluster model, which an agent may also name as a route of its own.
     routes: Object.fromEntries([
-      ...Object.entries(site.routes ?? {}).map(([r, bs]) => [r, { local: bs.some(local) }]),
+      // a route's cluster models in order, for the spend log's estimate of the wait at a model server
+      ...Object.entries(site.routes ?? {}).map(([r, bs]) => [r, { local: bs.some(local), models: bs.filter(local) }]),
       ...[...cluster.keys()].map((b) => [b, { local: true }]),
     ]),
     // The server and the model behind each name LiteLLM reports, for the spend log.
     models: Object.fromEntries([
-      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model }]),
+      // and the server's parallel setting, the slots a model has: an mlx-lm server answers one at a time
+      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model, parallel: server.parallel ?? (server.kind === "mlx-lm" ? 1 : null) }]),
       ...Object.values(keys).map((k) => [`${k.provider}/${k.model}`, { server: k.provider, kind: "cloud", model: k.model }]),
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.

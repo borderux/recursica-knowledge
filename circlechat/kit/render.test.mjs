@@ -80,9 +80,20 @@ test("the gateway gets each agent's routes, cloud switch and key", () => {
   assert.deepEqual(g.agents.barb.key, "acme-grok");
   assert.deepEqual(g.fallback, { routes: [], cloud: false, key: null }, "a handle site.json does not list gets no route and no cloud model");
   assert.deepEqual(g.keys["acme-grok"], { model: "key/acme-grok", provider: "xai" });
-  assert.deepEqual(g.routes["local-large"], { local: true });
+  assert.deepEqual(g.routes["local-large"], { local: true, models: ["machine-2/ollama/large-local", "machine-1/ollama/small-local"] }, "a route's cluster models in order, for the spend log's wait at a model server");
   assert.deepEqual(g.routes["machine-2/mlx/large-mlx"], { local: true }, "an agent may name one cluster model as a route");
   assert.deepEqual(g.nodes, ["machine-2.example.ts.net"]);
+});
+
+test("the gateway gets each cluster model's slots, the server's parallel, for the spend log's wait at the model server", () => {
+  const s = clone();
+  s.nodes[0].servers[0].parallel = 4;
+  assert.deepEqual(validate(s), []);
+  const g = render(s).gateway;
+  assert.equal(g.models["machine-1/ollama/small-local"].parallel, 4);
+  assert.equal(g.models["machine-2/ollama/large-local"].parallel, null, "a server with no parallel in site.json: the server's default, unknown to the gateway");
+  assert.equal(g.models["machine-2/mlx/large-mlx"].parallel, 1);
+  assert.equal(g.models["xai/grok-4"].parallel, undefined, "a cloud model has no slots");
 });
 
 test("each agent on the RecursicaChat 2.0 server gets a gateway handle of its own, rc-<handle>, with the agent's routes and cloud switch", () => {
@@ -535,8 +546,8 @@ test("a computer runs several model servers, and an agent can name any server an
   assert.equal(mlx.model_info.id, "machine-2/mlx/large-mlx|machine-2/mlx/large-mlx");
   assert.deepEqual(gateway.agents.barb.routes, ["machine-2/mlx/large-mlx"]);
   // The spend log's server and model, for each name LiteLLM reports.
-  assert.deepEqual(gateway.models["machine-2/mlx/large-mlx"], { server: "machine-2/mlx", kind: "mlx-lm", model: "your-org/your-large-model-mlx" });
-  assert.deepEqual(gateway.models["machine-2/ollama/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model" });
+  assert.deepEqual(gateway.models["machine-2/mlx/large-mlx"], { server: "machine-2/mlx", kind: "mlx-lm", model: "your-org/your-large-model-mlx", parallel: 1 }, "an mlx-lm server answers one request at a time");
+  assert.deepEqual(gateway.models["machine-2/ollama/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model", parallel: null }, "no parallel in site.json: the server's own default, so no wait is estimated");
   assert.deepEqual(gateway.models["xai/grok-4"], { server: "xai", kind: "cloud", model: "grok-4" });
   // Moving an agent to another server and model is a site.json change.
   const s = clone();
@@ -616,7 +627,7 @@ test("a site.json with one Ollama server, in the older form, keeps working", () 
   const alias = litellm.model_list.find((m) => m.model_name === "local-large");
   assert.deepEqual([alias.litellm_params.model, alias.litellm_params.api_base, alias.model_info.id],
     ["hosted_vllm/your-large-model", "http://machine-2.example.ts.net:11434/v1", "local-large|machine-2/large-local"]);
-  assert.deepEqual(gateway.models["machine-2/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model" });
+  assert.deepEqual(gateway.models["machine-2/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model", parallel: null });
 });
 
 test("a client or demo stack's picked computers and limits are checked, against the cluster's site.json too", () => {

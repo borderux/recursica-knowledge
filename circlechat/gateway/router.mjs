@@ -66,6 +66,7 @@ import os from "node:os";
 import path from "node:path";
 import { decide, settingFromRow } from "./policy.mjs";
 import { loadKeys, taskKey, taskSecret, verify } from "./keys.mjs";
+import { createLanes, waitFields } from "./waits.mjs";
 import { SWITCH_REASONS, rcTasks } from "./rc-tasks.mjs";
 
 const MINUTE = 60_000;
@@ -196,6 +197,11 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   const secret = taskSecret(stateDir);
   const clocks = jsonFile(path.join(stateDir, "clocks.json"), {});
   const caps = createCaps({ stateDir, timeZone: config.timezone ?? "UTC", now });
+  // Each cluster model's slots, for the spend log's estimate of a request's wait at its model server
+  // (waits.mjs): the server's parallel setting from gateway.json, or none when site.json leaves it to
+  // the server. A route names its models in order; a request is counted on the first.
+  const lanes = createLanes((m) => config.models?.[m]?.parallel ?? null);
+  const backendOf = (route) => config.routes?.[route]?.models?.[0] ?? (config.models?.[route] ? route : null);
   const settings = new Map();
   let keys = {}, keysAt = null;
   const keyFile = path.join(stateDir, "agent-keys.json");
@@ -270,7 +276,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   }
 
   // Pass LiteLLM's answer to the caller, and read the model and token counts on the way past.
-  function relay(res, up, entry) {
+  function relay(res, up, entry, timing = null) {
     const skip = new Set(["connection", "transfer-encoding", "keep-alive", "content-length"]);
     res.writeHead(up.statusCode, Object.fromEntries(Object.entries(up.headers).filter(([k]) => !skip.has(k))));
     // LiteLLM's x-litellm-model-id header is "<name>|<model that answered>" (kit/render.mjs), and
@@ -305,9 +311,14 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     up.on("end", () => {
       if (!seen.model && whole.trim().startsWith("{")) { try { read(JSON.parse(whole)); } catch { /* not JSON */ } }
       res.end();
-      log({ ...entry, server: info?.server ?? null, model: info?.model ?? answered ?? seen.model, backend: answered, status: up.statusCode, input_tokens: seen.input, output_tokens: seen.output });
+      const endAt = now();
+      if (timing?.ticket) lanes.leave(timing.ticket, endAt);
+      log({ ...entry, server: info?.server ?? null, model: info?.model ?? answered ?? seen.model, backend: answered, status: up.statusCode, input_tokens: seen.input, output_tokens: seen.output, ...(timing ? waitFields({ ...timing, endAt }) : {}) });
     });
-    up.on("error", () => res.destroy());
+    up.on("error", () => {
+      if (timing?.ticket) lanes.leave(timing.ticket, now());
+      res.destroy();
+    });
   }
 
   const fail = (res, code, type, message, headers = {}) => {
@@ -317,6 +328,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   const wait = (ms, signal) => new Promise((r) => { const t = setTimeout(r, Math.max(0, ms)); signal.addEventListener("abort", () => { clearTimeout(t); r(); }, { once: true }); });
 
   async function modelRequest(req, res, pathname, who) {
+    const receivedAt = now();
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 50_000_000) return fail(res, 413, "too_large", "The request is too large."); }
     let body; try { body = JSON.parse(raw); } catch { return fail(res, 400, "bad_json", "The request body is not JSON."); }
@@ -374,14 +386,18 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     const UNPLACED = "the request could not be placed in one task";
     const d = !unsure ? picked.d : view.local ? { target: "cluster", reason: UNPLACED } : { target: "fail", reason: `no cluster model, and ${UNPLACED}` };
     const entry = { task, agent: who.agent, route, ...(unsure ? { tasks, reason: d.reason } : {}) };
+    // the tries the gateway sends for this request, the cloud's included
+    let tries = 0;
     const gone = new AbortController();
     res.on("close", () => { if (!res.writableEnded) gone.abort(); });
 
     const toCloud = async (reason) => {
       const model = config.keys?.[view.key]?.model;
       const sw = switchTo(task, clock, setting?.mode);
+      tries++;
+      const sentAt = now();
       const up = await upstream(req, pathname, { ...body, model }, gone.signal);
-      relay(res, up, { ...entry, key: view.key, reason, ...(sw ? { switch: sw } : {}) });
+      relay(res, up, { ...entry, key: view.key, reason, ...(sw ? { switch: sw } : {}) }, { receivedAt, sentAt, tries });
     };
 
     if (d.target === "fail") {
@@ -394,6 +410,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
       // The cluster. A request waits as long as the cluster needs; an error or a full model server
       // means try again, never the cloud. Only the task's wait (d.until) moves the request to the cloud.
       let delay = retryMs;
+      const backend = backendOf(route);
       for (;;) {
         if (gone.signal.aborted) return;
         const left = d.until === undefined ? null : d.until - now();
@@ -403,6 +420,9 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
         const onGone = () => stop.abort();
         gone.signal.addEventListener("abort", onGone, { once: true });
         const timer = left === null ? null : setTimeout(() => stop.abort(), left);
+        tries++;
+        const sentAt = now();
+        const ticket = backend ? lanes.enter(backend, sentAt) : null;
         try {
           const up = await upstream(req, pathname, { ...body, model: route }, stop.signal);
           if (timer) clearTimeout(timer);
@@ -410,8 +430,9 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
           // The cluster's answer starts the task, and ends the task's time on the cloud: the task's
           // next move to the cloud is a new switch.
           if (clock && !unsure && up.statusCode < 300 && (!clock.startedAt || clock.onCloud)) { clock.startedAt ??= now(); clock.onCloud = false; clocks.save(); }
-          return relay(res, up, { ...entry, key: "cluster" });
+          return relay(res, up, { ...entry, key: "cluster" }, { receivedAt, sentAt, ticket, tries });
         } catch {
+          if (ticket) lanes.leave(ticket, now());
           if (timer) clearTimeout(timer);
           if (gone.signal.aborted) return;
           if (stop.signal.aborted) continue;   // the task's wait ran out: the loop moves to the cloud
