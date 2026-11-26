@@ -527,7 +527,7 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 - A secret with the same value as the file's line stays as the line is, and the log says `<name> unchanged`.
 - With "restart" on, a service restarts only when a value that the service reads changed. jobd reads `JOBD_TOKEN`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. Each service in site.json reads the service's `secret_env`.
 - kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person. A key rotation is the one exception. See "Rotate the shared tokens".
-- A changed value in the control computer's `.env` restarts nothing. Each program reads `.env` at each run, and the model gateway reads none of the values.
+- A changed value in the control computer's `.env` restarts nothing. Each program reads `.env` at each run. The model gateway reads only its own copy of `KEV_ENGINE_KEY`, `kev-engine.key` in its state folder, which the deploy writes beside `.env`, and the gateway reads the copy at each request.
 - The log names the real result for each service: `restarted <service>`, `<service> is not installed`, `<service> failed to restart`, or a restart and then a stop. A failed restart fails the workflow.
 
 **A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that changes a control computer's cloud keys, the helper takes two steps:
@@ -545,7 +545,7 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                                              |
 | `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The stack's scripts, through the cluster's Slack app                                             |
-| `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | The copy of `KEV_API_KEY` for a program that calls kev-engine. No program calls kev-engine today |
+| `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | The copy of `KEV_API_KEY` for a program that calls kev-engine: the model gateway, for a program's `gateway.kev` (`gateway-state/kev-engine.key`) |
 | `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Each job runner. No program sends a port job today                                               |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | Each job runner, which sends each job's result to the webhook                                    |
 | `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents"                       |
@@ -1732,6 +1732,17 @@ an agent's answer, instead of running an agent turn:
 - The block needs `site.gateway_local_port`. The program asks the gateway at
   `http://127.0.0.1:<site.gateway_local_port>/v1`, with the key as `Authorization: Bearer <key>`.
 - With a gateway block, the entry's name is at most 36 characters.
+- `kev` (optional): the computers whose Kev-engine the program's key may reach, best first, such as
+  `"kev": ["machine-2"]`. Each one is a node with `kev.port`, whose engine listens beyond the
+  computer's loopback address: the gateway runs in Docker, so it can't reach an engine on
+  `127.0.0.1`. The program sends Kev-engine's own requests to
+  `http://127.0.0.1:<site.gateway_local_port>/v1/systemone` with its gateway key. The gateway sends
+  each one to the first engine, with the engines' own key, `KEV_ENGINE_KEY`, in place of the
+  program's key, and passes it to the next engine when one can't be reached or answers 429 or 5xx.
+  So the program never holds the engines' key, and the program's two caps count these requests too.
+  The spend log names the route `kev` and the engine, never a question or an answer. Kev itself
+  (`tools/kev`) works this way with `KEV_ENGINE_URLS` set to that address and `KEV_ENGINE_KEY` set to
+  the program's gateway key.
 
 How the gateway key works:
 
