@@ -13,13 +13,18 @@ const listen = (handler) => new Promise((r) => { const s = http.createServer(han
 const base = (s) => `http://127.0.0.1:${s.address().port}`;
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// LiteLLM stand-in: answers after the "hold" in the request's body (ms), or 503 while busy > 0.
+// LiteLLM stand-in for a model server with one slot: it answers one request at a time, each after
+// the "hold" in its body (ms), so a request that arrives during another waits for it. It answers 503
+// while busy > 0.
 let busy = 0;
+let slot = Promise.resolve();
 const litellm = await listen(async (req, res) => {
   let b = ""; for await (const c of req) b += c;
   const body = JSON.parse(b);
   if (busy > 0) { busy--; res.writeHead(503); return res.end("busy"); }
-  await pause(body.hold ?? 0);
+  const turn = slot.then(() => pause(body.hold ?? 0));
+  slot = turn;
+  await turn;
   res.writeHead(200, { "content-type": "application/json", "x-litellm-model-id": `${body.model}|m1/ollama/large` });
   res.end(JSON.stringify({ model: "openai/large", choices: [{ message: { content: "secret answer text" } }], usage: { prompt_tokens: 5, completion_tokens: 1 } }));
 });
@@ -47,6 +52,7 @@ const logs = async () => { await pause(30); return fs.readFileSync(spendLog, "ut
 
 test("a request sent while its model's one slot is busy logs the wait for the slot as its server wait", async () => {
   await Promise.all([ask(300), pause(20).then(() => ask(0))]);
+  // The first ends first: the server answers the second only after it.
   const [first, second] = (await logs()).slice(-2);
   assert.equal(first.server_wait_ms, 0);
   assert.ok(first.upstream_ms >= 300);
