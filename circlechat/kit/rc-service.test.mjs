@@ -333,7 +333,7 @@ test("rc-service.sh issues the service's gateway key into a file only its accoun
 test("recursicachat.services: an entry with a gateway block may leave agents out, and its file is its key file", () => {
   const only = { name: "example-eval", account: "_program", file: "/opt/program/run/example-eval.gateway-key", gateway: JUDGE };
   assert.deepEqual(rcServiceErrors({ services: [only] }, SITE), []);
-  assert.deepEqual(rcServices({ ...SITE, recursicachat: { services: [only] } })[0], ["example-eval", "_program", only.file, "", "svc-example-eval", only.file, "judge"], "the key file is the entry's file, and no agents");
+  assert.deepEqual(rcServices({ ...SITE, recursicachat: { services: [only] } })[0], ["example-eval", "_program", only.file, "-", "svc-example-eval", only.file, "judge"], "the key file is the entry's file, and no agents: never an empty field, which bash's read would drop");
   const { gateway, ...neither } = only;
   assert.ok(rcServiceErrors({ services: [neither] }, SITE).some((e) => /agents must list the handles of the agents it drives, or, for a program that only asks models/.test(e)), "no agents and no gateway block is still refused");
   assert.ok(rcServiceErrors({ services: [{ ...only, agents: [] }] }, SITE).some((e) => /must list the handles/.test(e)), "an empty agents list is not a program that only asks models");

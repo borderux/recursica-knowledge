@@ -124,9 +124,9 @@ one() {
   read -r owner mode <<<"$(stat_owner_mode "$dir")"
   # Only the folder's owner may change it: no write bit for the group or for others.
   [ "$owner" = "$ROOT_OWNER" ] && [ $((8#$mode & 8#022)) = 0 ] || { say "$name: $dir must belong to $ROOT_OWNER, with no write for the group or others"; return 1; }
-  # A program that only asks models (no agents in its entry): its file is its gateway key file, and
-  # the server gets no service and no token for it.
-  if [ "$file" = "$keyfile" ]; then
+  # A program that only asks models (no agents in its entry, "-" in the list): its file is its
+  # gateway key file, and the server gets no service and no token for it.
+  if [ "$agents" = - ] && [ "$file" = "$keyfile" ]; then
     gateway_key "$name" "$account" "$gw" "$keyfile" "$routes"
     return
   fi

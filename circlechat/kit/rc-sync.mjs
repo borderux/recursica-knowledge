@@ -66,8 +66,10 @@ export function rcSessions(site) {
 // Each service circlechat/rc-service.sh sets up: the name, the account, the file and the agents it
 // drives, comma-separated; then its gateway handle, the file for its gateway key, and the routes of
 // its gateway block, comma-separated, last, so a service with no block ends its line with nothing.
+// A program that only asks models drives no agent: its agents are "-", never an empty field, because
+// bash's read merges two tabs in a row and every later field would move one place.
 export function rcServices(site) {
-  return (site.recursicachat?.services ?? []).map((s) => [s.name, s.account, s.file, (s.agents ?? []).join(","),
+  return (site.recursicachat?.services ?? []).map((s) => [s.name, s.account, s.file, (s.agents ?? []).join(",") || "-",
     svcHandle(s.name), svcKeyFile(s), (s.gateway?.routes ?? []).join(",")]);
 }
 
