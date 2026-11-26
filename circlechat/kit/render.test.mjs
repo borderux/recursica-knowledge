@@ -199,6 +199,14 @@ test("a service's gateway block takes local routes only, whole numbers in bounds
   bad((s) => { s.recursicachat.sessions = [{ email: "person-a@example.com", account: "_program", file: "/opt/program/run/example-service.gateway-key" }]; }, /gateway key file .* is another entry's file/);
 });
 
+test("a program that only asks models gets its gateway handle, caps and Kev computers, and validates with no agents", () => {
+  const s = withJudge();
+  s.recursicachat.services.push({ name: "example-eval", account: "_program", file: "/opt/example-evals/example-eval.gateway-key", gateway: { routes: ["judge"], max_parallel: 4, daily_requests: 2000, kev: ["machine-2"] } });
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(render(s).gateway.agents["svc-example-eval"], { routes: ["judge"], cloud: false, key: null, service: true, max_parallel: 4, daily_requests: 2000, kev: ["http://machine-2.example.ts.net:8009"] });
+  assert.deepEqual(render(s).gateway.agents["svc-example-service"], { routes: ["judge"], cloud: false, key: null, service: true, max_parallel: 4, daily_requests: 5000 }, "the other program is unchanged");
+});
+
 // gateway.kev: the computers whose Kev-engine a service's key may reach, best first, as engine URLs in
 // gateway.json. The gateway runs in Docker, so an engine on a loopback address is refused.
 test("a service's gateway.kev gives gateway.json its Kev-engines' URLs, in the block's order", () => {

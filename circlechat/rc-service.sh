@@ -22,6 +22,8 @@
 #     A key stays while the file holds the key the gateway records for svc-<name>, so a rerun keeps
 #     it. --rotate <name> also makes a new gateway key. Without a gateway block, a key svc-<name>
 #     still has is revoked, and its file removed.
+#   - a program that only asks models, an entry with a gateway block and no agents, gets only its
+#     gateway key, in the entry's file itself: no service, no token and no agent on the server.
 # A failure for one entry says why and goes on to the next; the script then exits 1.
 # RC_SERVICE_ROOT_OWNER is for the tests: the account a folder must belong to (root).
 set -euo pipefail
@@ -122,6 +124,12 @@ one() {
   read -r owner mode <<<"$(stat_owner_mode "$dir")"
   # Only the folder's owner may change it: no write bit for the group or for others.
   [ "$owner" = "$ROOT_OWNER" ] && [ $((8#$mode & 8#022)) = 0 ] || { say "$name: $dir must belong to $ROOT_OWNER, with no write for the group or others"; return 1; }
+  # A program that only asks models (no agents in its entry, "-" in the list): its file is its
+  # gateway key file, and the server gets no service and no token for it.
+  if [ "$agents" = - ] && [ "$file" = "$keyfile" ]; then
+    gateway_key "$name" "$account" "$gw" "$keyfile" "$routes"
+    return
+  fi
 
   line="$(list_line "$name")"
   if [ -z "$line" ]; then

@@ -199,9 +199,13 @@ export function rcAgents(site) {
 // enforces both (gateway/router.mjs), and circlechat/rc-service.sh issues the handle's key.
 export const SVC_PREFIX = "svc-";
 export const svcHandle = (name) => `${SVC_PREFIX}${name}`;
+// A program that only asks models: an entry with a gateway block and no agents. It drives no agent,
+// so the server gets no service and no token for it, and its file is its gateway key file.
+export const gatewayOnly = (s) => s?.agents === undefined && s?.gateway !== undefined;
 // The file that holds the service's gateway key: beside the service's token file, in the same folder
-// that belongs to root, and like the token file, the service account's own, mode 400.
-export const svcKeyFile = (s) => `${String(s.file).replace(/\/[^/]*$/, "")}/${s.name}.gateway-key`;
+// that belongs to root, and like the token file, the service account's own, mode 400. A program that
+// only asks models keeps its key in its own file.
+export const svcKeyFile = (s) => (gatewayOnly(s) ? String(s.file) : `${String(s.file).replace(/\/[^/]*$/, "")}/${s.name}.gateway-key`);
 export function gatewayServices(site) {
   const list = site.recursicachat?.services;
   return (Array.isArray(list) ? list : []).filter((s) => s && typeof s === "object" && s.gateway !== undefined);
@@ -668,7 +672,8 @@ export function rcServiceErrors(rc, site = {}) {
     if (typeof s.name !== "string" || !RC_SERVICE_NAME.test(s.name)) errs.push(`${at}.name must be 2 to 40 of a-z, 0-9 and -, starting with a letter`);
     else if (names.has(s.name)) errs.push(`${at}.name ${s.name} is listed twice`);
     else names.add(s.name);
-    if (!Array.isArray(s.agents) || !s.agents.length) errs.push(`${at}.agents must list the handles of the agents it drives`);
+    if (gatewayOnly(s)) { /* a program that only asks models drives no agent */ }
+    else if (!Array.isArray(s.agents) || !s.agents.length) errs.push(`${at}.agents must list the handles of the agents it drives, or, for a program that only asks models, leave agents out and give a gateway block`);
     else
       for (const h of s.agents) {
         if (typeof h !== "string" || !/^[a-z0-9][a-z0-9_-]{0,36}$/.test(h)) errs.push(`${at}.agents: ${JSON.stringify(h)} is not an agent's handle`);
@@ -681,7 +686,7 @@ export function rcServiceErrors(rc, site = {}) {
       if (serverDirs.some((d) => s.file.startsWith(d))) errs.push(`${at}.file must be outside the server's folders`);
       if (files.has(s.file)) errs.push(`${at}.file is listed twice`);
       files.add(s.file);
-      if (s.gateway !== undefined && typeof s.name === "string") {
+      if (s.gateway !== undefined && typeof s.name === "string" && !gatewayOnly(s)) {
         if (files.has(svcKeyFile(s))) errs.push(`${at}: the gateway key file ${svcKeyFile(s)} is another entry's file`);
         files.add(svcKeyFile(s));
       }

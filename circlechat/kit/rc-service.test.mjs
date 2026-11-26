@@ -101,7 +101,7 @@ if (cmd === "service-list") {
 } else fail("unknown " + cmd);
 `;
 
-function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, oldToken = true, state, gateway, gwPort } = {}) {
+function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, oldToken = true, state, gateway, gwPort, only = false } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-"));
   const bin = path.join(dir, "bin");
   fs.mkdirSync(bin);
@@ -136,7 +136,7 @@ function setup({ account = ME, folderMode = 0o755, folderOwner = ME, services, o
       data: path.join(dir, "srv", "data"),
       node: path.join(bin, "server-node"),
       vault_key_file: key,
-      ...(services === null ? {} : { services: services ?? [{ ...ENTRY, account, file, ...(gateway ? { gateway } : {}) }] }),
+      ...(services === null ? {} : { services: services ?? (only ? [{ name: ENTRY.name, account, file: path.join(run, "example-service.gateway-key"), gateway }] : [{ ...ENTRY, account, file, ...(gateway ? { gateway } : {}) }]) }),
     },
   };
   const siteFile = path.join(dir, "site.json");
@@ -323,6 +323,43 @@ test("rc-service.sh issues the service's gateway key into a file only its accoun
     assert.equal(replaced.r.status, 0, replaced.out);
     assert.match(replaced.out, /the file holds no key the gateway knows/);
     assert.equal(loadKeys(gwState)["svc-example-service"].sha256, sha(replaced.key.trim()));
+  } finally {
+    server.close();
+    server.closeAllConnections?.();
+  }
+});
+
+// A program that only asks models: a gateway block and no agents. Its file is its gateway key file.
+test("recursicachat.services: an entry with a gateway block may leave agents out, and its file is its key file", () => {
+  const only = { name: "example-eval", account: "_program", file: "/opt/program/run/example-eval.gateway-key", gateway: JUDGE };
+  assert.deepEqual(rcServiceErrors({ services: [only] }, SITE), []);
+  assert.deepEqual(rcServices({ ...SITE, recursicachat: { services: [only] } })[0], ["example-eval", "_program", only.file, "-", "svc-example-eval", only.file, "judge"], "the key file is the entry's file, and no agents: never an empty field, which bash's read would drop");
+  const { gateway, ...neither } = only;
+  assert.ok(rcServiceErrors({ services: [neither] }, SITE).some((e) => /agents must list the handles of the agents it drives, or, for a program that only asks models/.test(e)), "no agents and no gateway block is still refused");
+  assert.ok(rcServiceErrors({ services: [{ ...only, agents: [] }] }, SITE).some((e) => /must list the handles/.test(e)), "an empty agents list is not a program that only asks models");
+  assert.ok(rcServiceErrors({ services: [only, { ...ENTRY, file: only.file }] }, SITE).some((e) => /file is listed twice/.test(e)), "its key file is no other entry's file");
+});
+
+test("rc-service.sh gives a program that only asks models its gateway key in its own file, and no service, token or agent on the server", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rc-service-only-"));
+  const gwState = path.join(dir, "state");
+  fs.mkdirSync(gwState);
+  const server = await liveGateway(gwState);
+  try {
+    const { goAsync, keyFile } = setup({ gateway: JUDGE, gwPort: server.address().port, only: true, oldToken: false });
+    const r = await goAsync([], { GW_STATE: gwState });
+    assert.equal(r.r.status, 0, r.out);
+    const key = r.key.trim();
+    assert.match(key, /^ccg_[0-9a-f]{48}$/);
+    assert.equal(r.keyMode, 0o400);
+    assert.equal(fs.statSync(keyFile).uid, os.userInfo().uid, "the entry's account owns the key file");
+    assert.equal(loadKeys(gwState)["svc-example-service"].sha256, sha(key));
+    assert.deepEqual(r.state, {}, "the server has no service for it");
+    assert.doesNotMatch(r.calls, /service-create|service-drive|service-token/, "no call to the server's service commands");
+    assert.deepEqual(r.files, ["example-service.gateway-key"], "no token file, and no temporary file left");
+    assert.ok(!r.out.includes(key), "the key is never in the output");
+    const again = await goAsync([], { GW_STATE: gwState });
+    assert.match(again.out, /the gateway key in .* is current/);
   } finally {
     server.close();
     server.closeAllConnections?.();
