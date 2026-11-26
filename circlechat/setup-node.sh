@@ -81,6 +81,7 @@ if [ -n "$JOBS" ]; then
     echo "$SECRETS holds a cloud key. Port jobs reach cloud models only through the gateway: remove the key from $SECRETS, then rerun."; exit 1
   fi
   GATEWAY_URL="$(jget gateway_url)"
+  check_vm_size "$(jget slots)" "$(jget memory_gb)"
   ROOT="$(cd "$HERE/.." && pwd)"
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
   load_env_file "$OUT/porter.env" || true
