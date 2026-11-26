@@ -665,3 +665,21 @@ test("Claire's RecursicaChat instructions come from SKILL.recursicachat.md, with
   const runtime = JSON.parse(fs.readFileSync(path.join(agentsDir, "claire", "runtime", "recursicachat.json"), "utf8"));
   assert.deepEqual([runtime.autonomy, runtime.sandbox], ["ask", "docker"]);
 });
+
+/**
+ * In the research repo, a term in lexicon/lexicon.json has no evidence field: its schema allows no
+ * other key. A term's evidence is the quotes that list it in `terms`, so Claire's RecursicaChat
+ * instructions say so, and never carry the Lexicon subagent's rule that each term carries an
+ * evidence array.
+ */
+test("Claire's RecursicaChat instructions take a term's evidence from the quotes pass, not an evidence field", () => {
+  const built = fs
+    .readFileSync(path.join(repoRoot, "portable", "recursicachat", "agents", "claire", "INSTRUCTIONS.md"), "utf8")
+    .replace(/\s+/g, " ");
+  assert.ok(built.includes("**A term's evidence comes from the quotes pass,** where each quote lists the terms it shows in its `terms`."), "the quotes-pass evidence rule");
+  assert.ok(built.includes("A term in the lexicon has no `evidence` field"), "no evidence field on a term");
+  assert.ok(built.includes("at least one quote in that study's `quotes.json` lists it in `terms`"), "every added term is quoted");
+  assert.ok(built.includes("Add a term only when Claire has a line to quote for it."), "a term only with a line to quote");
+  assert.ok(built.includes("Each term the terms pass added from this interview needs at least one quote that lists it."), "the quotes pass quotes each new term");
+  assert.doesNotMatch(built, /carries `evidence`|Drop any proposal that has no evidence|evidence array/i, "not the Lexicon subagent's evidence rule");
+});
