@@ -166,8 +166,10 @@ function loadFragments(file) {
 /**
  * Front matter, per target. Kept out of SKILL.md so each platform gets only its own keys.
  *
- * The claude-code artifact carries `model:` and `tools:` from `runtime/claude-code.json`
- * rather than leaving them for whoever reads PORTING.md. A file in `.claude/agents/` is a
+ * The claude-code artifact carries `model:` and `tools:`, with `tools:` from `runtime/claude-code.json`
+ * rather than left for whoever reads PORTING.md. `model:` is always `inherit`: an agent never names a
+ * model. The runtime file names a route by its role (`route`), which a stack's site.json maps to a
+ * model; in a plain Claude Code session the session's own model decides. A file in `.claude/agents/` is a
  * dispatchable agent, and its front matter is the only place a tool allowlist can live: drop
  * one in without a `tools:` line and it inherits the session's tools instead.
  *
@@ -186,13 +188,13 @@ function loadFragments(file) {
 function renderFrontmatter(kind, meta, runtime) {
   if (kind === "claude-code") {
     const lines = [`name: ${meta.name}`, `description: ${meta.description}`];
-    if (runtime?.model) lines.push(`model: ${runtime.model}`);
+    if (runtime) lines.push("model: inherit");
     if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
     return `---\n${lines.join("\n")}\n---\n\n`;
   }
   /**
-   * grok: the same keys as claude-code minus `model:`, whose values (`opus`, `sonnet`) name
-   * Claude models. Grok resolves the Claude tool names in `tools:` to its own tools.
+   * grok: the same keys as claude-code minus `model:`, which only Claude Code reads. Grok resolves
+   * the Claude tool names in `tools:` to its own tools.
    *
    * One Grok behavior makes the tool list fragile: a name Grok does not recognize makes Grok
    * keep the agent's whole toolset, Write and Edit included, rather than fail. A typo in Barb's

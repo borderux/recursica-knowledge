@@ -1,7 +1,7 @@
 ---
 name: porter
 description: Ports a change released in the golden Recursica adapter (Mantine v8) to the other Recursica adapters (MUI v7, Beam, Angular Material). Reads the Mantine release, builds one self-contained reference package per target adapter, dispatches one porter-adapter subagent per target in parallel, and publishes one summary with a pull request link per adapter. Never modifies the Mantine adapter and never merges. Use when a new Mantine adapter release is published.
-model: sonnet
+model: inherit
 tools: Read, Grep, Glob, Bash, Task, WebFetch
 ---
 

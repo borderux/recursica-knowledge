@@ -61,5 +61,5 @@ cache and her reports live there).
 
 ## Cost
 
-One clean full review of a ~200-line screen: roughly 25 Sonnet sub-agents. Early runs that
+One clean full review of a ~200-line screen: roughly 25 sub-agents. Early runs that
 hit the limits above cost several times that. Measure a single clean run before budgeting.

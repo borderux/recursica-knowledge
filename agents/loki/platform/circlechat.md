@@ -7,7 +7,7 @@ English. CircleChat builds Loki's persona from SKILL.md alone. Loki's settings o
 in ../runtime/hermes.md.
 
 An earlier version told Loki, step by step, to write each file with `write_file`, check the file,
-and attach the file with a `share_to_task` action. On gpt-oss that procedure failed: Loki wrote the
+and attach the file with a `share_to_task` action. On the local model Loki ran on then, that procedure failed: Loki wrote the
 tool calls as action entries, called a tool that does not exist, and never wrote a file. See
 ../runtime/hermes.md.
 -->
