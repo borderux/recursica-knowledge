@@ -224,6 +224,9 @@ test("a key reaches only its agent's routes; another name means the agent's firs
   assert.equal((await ask(keys.betty, "key/porter")).status, 403);
   await ask(keys.betty, "claude-sonnet-5-5");
   assert.equal(seen.at(-1).model, "local-large");
+  assert.equal((await lastLog()).asked, "claude-sonnet-5-5", "the spend log keeps a name that is no route: agents ask for a route, never a model");
+  await ask(keys.betty, "local-large");
+  assert.equal((await lastLog()).asked, undefined, "a route by name logs no asked");
 });
 
 test("an unknown or revoked key gets nothing, and revoking one agent leaves the others working", async () => {

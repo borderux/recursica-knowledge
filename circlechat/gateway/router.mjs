@@ -326,17 +326,23 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     if (!agent) return fail(res, 403, "unknown_agent", `Agent ${who.agent} is not in site.json's agents, so the agent's key reaches no model.`);
     const routes = agent.routes ?? [];
     let route = body.model;
+    // An agent asks for a route by its role, never a model. A name that is no route, such as a
+    // model's name, goes to the agent's first route, and the spend log keeps the name as `asked`, so
+    // an agent or a tool that still names a model shows up there.
+    let asked = null;
     if (!routes.includes(route)) {
       if (config.routes?.[route] || String(route).startsWith("key/")) return fail(res, 403, "route_not_allowed", `Agent ${who.agent} may use ${routes.join(", ") || "no route"}, not ${route}.`);
+      asked = body.model == null ? "(none)" : String(body.model).slice(0, 80);
       route = routes[0];
     }
+    const askedField = asked === null ? {} : { asked };
     if (!route) return fail(res, 403, "no_route", `Agent ${who.agent} has no route in site.json.`);
     // A key with caps: refused at once past either cap, and counted otherwise. The slot is free
     // again when the answer ends or the caller goes.
     if (capped(agent)) {
       const slot = caps.take(who.agent, agent);
       if (!slot.ok) {
-        log({ task: null, agent: who.agent, route, key: null, model: null, status: 429, reason: slot.type });
+        log({ task: null, agent: who.agent, route, ...askedField, key: null, model: null, status: 429, reason: slot.type });
         return fail(res, 429, slot.type, slot.message, slot.retryAfter ? { "retry-after": String(slot.retryAfter) } : {});
       }
       res.once("close", slot.release);
@@ -376,6 +382,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     const entry = { task, agent: who.agent, route, ...(unsure ? { tasks, reason: d.reason } : {}) };
     const gone = new AbortController();
     res.on("close", () => { if (!res.writableEnded) gone.abort(); });
+    Object.assign(entry, askedField);
 
     const toCloud = async (reason) => {
       const model = config.keys?.[view.key]?.model;
