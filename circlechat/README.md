@@ -811,6 +811,7 @@ Keep `site.gateway_port + 1` free on a Mac. The config check refuses `site.port`
 - the key's name, or `cluster` for a cluster model
 - the route, and the server and model that answered: `server` is `<node>/<server id>` for a cluster model, or the provider for a cloud model
 - `backend`: the model's name in `site.json`, such as `machine-2/mlx/large-mlx`
+- `asked`: the name a request gave when it named no route, such as a model's name, cut to 80 characters. The request went to the agent's first route. An agent asks for a route by its role and never names a model, so `asked` shows an agent or a tool that still does.
 - the status and the token counts
 - `switch`: `{ "n": <n>, "reason": "stalled" | "cloud_from_start" }` on the request that moved its task to the cloud, the task's n-th move
 - where the request's time went, in milliseconds:
