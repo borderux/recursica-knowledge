@@ -18,6 +18,8 @@
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
     "them in order, so the last entry is the fallback. A backend is \"<node>/<server id>/<model id>\":",
     "a route lists only the cluster's own models. A cloud model never joins a route.",
+    "An agent never names a model: it asks for a route by its role, such as coder, judge, general,",
+    "fast, reasoning or vision, and this file maps each route to models. Porter's port jobs ask for coder.",
     "",
     "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
     "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
@@ -198,6 +200,9 @@
     "local-small": [
       "machine-1/ollama/small-local",
       "machine-2/ollama/large-local"
+    ],
+    "coder": [
+      "machine-1/ollama/small-local"
     ]
   },
   "model_keys": {
@@ -227,6 +232,9 @@
     },
     "barb": {
       "routes": ["machine-2/mlx/large-mlx"]
+    },
+    "porter": {
+      "routes": ["coder"]
     }
   },
   "porter": {
