@@ -813,8 +813,15 @@ Keep `site.gateway_port + 1` free on a Mac. The config check refuses `site.port`
 - `backend`: the model's name in `site.json`, such as `machine-2/mlx/large-mlx`
 - the status and the token counts
 - `switch`: `{ "n": <n>, "reason": "stalled" | "cloud_from_start" }` on the request that moved its task to the cloud, the task's n-th move
+- where the request's time went, in milliseconds:
+  - `gateway_wait_ms`: from the request's arrival to the send of the try that answered it. It holds the gateway's retries and back-offs while the cluster is busy or down.
+  - `upstream_ms`: from that send to the answer's end, the model server's wait and work together.
+  - `server_wait_ms`, for a cluster model: the request's estimated wait for a free slot at the model server, part of `upstream_ms`. `ahead` is the place in that queue, when the request waited.
+  - `tries`: the tries the gateway sent, the cloud's included.
 
 The log holds no prompt and no answer.
+
+**The model server's wait is an estimate.** LiteLLM's answer drops Ollama's own timings, so the gateway counts the requests it sends to each cluster model. A model has the slots of its server's `parallel` in site.json, and an mlx-lm server has one. A request sent while every slot is busy waits until the oldest request ahead of it ends. A request to a route counts on the route's first cluster model. Requests that reach the server some other way, such as a bench, don't count, so the estimate is a floor. A server with no `parallel` in site.json uses its own default, which the gateway can't see, so its requests log no `server_wait_ms`.
 
 ### The key check
 
