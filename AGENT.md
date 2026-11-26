@@ -435,8 +435,12 @@ Three rules the build enforces so you do not have to remember them:
 - **Every artifact is name-checked before it is written.** Generated files in a public repo
   are the category that gets read least closely.
 
-**The claude-code artifact carries `model:` and `tools:`, derived from `runtime/claude-code.json`
-rather than written a second time.** A file in `.claude/agents/` is a dispatchable agent and its
+**The claude-code artifact carries `model:` and `tools:`.** `tools:` is derived from
+`runtime/claude-code.json` rather than written a second time. `model:` is always `inherit`: **an
+agent never names a model.** The runtime file names a route by its role (`coder`, `judge`,
+`general`, `fast`, `reasoning` or `vision`), which a stack's site.json maps to a model, and in a
+plain Claude Code session the session's own model decides. `scripts/build-agents.test.mjs` fails on
+a model name in an agent's runtime or platform files. A file in `.claude/agents/` is a dispatchable agent and its
 front matter is the only place a tool allowlist can live — without one it inherits the session's
 tools. That was a documentation gap for four of these agents and a broken guarantee for Barb,
 whose entire property is the absence of `Write` and `Edit`. `scripts/build-agents.test.mjs`

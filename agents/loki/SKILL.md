@@ -5,7 +5,7 @@ targets: circlechat, recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.4.0
+  version: 0.4.1
   portability: needs-a-data-fence
 ---
 

@@ -15,7 +15,7 @@ cat > "$CC/site.json" <<JSON
   "site": { "public_host": "ci.example.ts.net", "port": 8080, "proxy": "other" },
   "repos": { "knowledge": "https://github.com/borderux/recursica-knowledge", "app": "https://github.com/octocat/Hello-World", "app_dir": "Hello-World", "app_github": "octocat/Hello-World" },
   "nodes": [ { "name": "ci", "os": "linux", "control": true, "address": "host.docker.internal", "jobs": { "port": 7400, "slots": 1, "memory_gb": 2 } } ],
-  "routes": { "claude-sonnet": ["anthropic/claude-sonnet-5-5"] }
+  "routes": { "general": ["anthropic/claude-sonnet-5-5"] }
 }
 JSON
 # An older stack's Claude key in .env: setup-host.sh moves the key to the gateway's secrets file.

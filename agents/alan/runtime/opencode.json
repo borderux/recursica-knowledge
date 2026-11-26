@@ -3,12 +3,12 @@
   "agent": {
     "alan": {
       "mode": "primary",
-      "model": "anthropic/claude-sonnet-5-5",
       "permission": {
         "edit": "allow",
         "bash": "allow"
       }
     }
   },
+  "$routeComment": "No model here: an agent never names a model. Alan asks for the general route. To run him through a stack's gateway, give opencode a provider for the gateway and the model general; otherwise opencode uses the session's own model.",
   "$permissionComment": "Alan commits, pushes and opens pull requests, so bash is allowed. He must never merge — that is stated in the prompt and enforced by his forge credential, not here. opencode's permission model is coarse (allow/ask/deny per tool class) and cannot express 'git push yes, merge no'; scope the token instead."
 }

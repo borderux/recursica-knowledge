@@ -5,7 +5,7 @@ targets: buzz claude-code
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.1.1
   portability: needs-transcript-access
 ---
 

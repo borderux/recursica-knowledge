@@ -61,9 +61,31 @@ test("every claude-code artifact carries its runtime tool allowlist", () => {
     );
     assert.equal(
       frontmatter(artifact).model,
-      runtime.model,
-      `${name}.md model differs from runtime/claude-code.json`,
+      "inherit",
+      `${name}.md names a model: an agent never names a model`,
     );
+    assert.equal(runtime.model, undefined, `${name}'s runtime/claude-code.json names a model`);
+    assert.ok(ROLES.includes(runtime.route), `${name}'s runtime/claude-code.json asks for a route by role: ${ROLES.join(", ")}`);
+  }
+});
+
+/**
+ * An agent never names a model. It asks for a route by its role, and the stack's site.json maps
+ * the route to a model. A model name in an agent's runtime settings or instructions picks the
+ * model from outside the stack, which is what the rule takes away.
+ */
+const ROLES = ["coder", "judge", "general", "fast", "reasoning", "vision"];
+const MODEL_NAME = /\b(opus|sonnet|haiku|fable)\b|claude-(opus|sonnet|haiku|fable|\d)|gpt-oss|gpt-\d|qwen\d|grok-\d|llama\d|gemma\d|mistral|deepseek/i;
+test("no agent's runtime settings or instructions name a model", () => {
+  for (const name of agentNames) {
+    for (const dir of ["runtime", "platform"]) {
+      const d = path.join(agentsDir, name, dir);
+      if (!fs.existsSync(d)) continue;
+      for (const f of fs.readdirSync(d)) {
+        const lines = fs.readFileSync(path.join(d, f), "utf8").split("\n");
+        lines.forEach((l, i) => assert.doesNotMatch(l, MODEL_NAME, `agents/${name}/${dir}/${f}:${i + 1} names a model`));
+      }
+    }
   }
 });
 

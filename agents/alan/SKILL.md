@@ -4,7 +4,7 @@ description: Maintains the Recursica design knowledge. Takes feedback about the 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
   portability: portable
 ---
 

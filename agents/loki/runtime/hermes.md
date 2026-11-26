@@ -72,7 +72,7 @@ On a small local model Loki split one study across two folders, marked a two-int
 after one, and lost the link to a transcript to a malformed attachment. He did write a good
 transcript.
 
-On gpt-oss, a numbered procedure (write the file with `write_file`, check it with `ls -l` or
+On the local model he ran on then, a numbered procedure (write the file with `write_file`, check it with `ls -l` or
 `read_file`, attach it with a `share_to_task` action) failed too. He said four files were "created
 and attached to the task" without calling a tool, printed a raw tool call as his chat reply, wrote
 `write_file` and `read_file` as entries in his actions block, called a `run_code` tool that does

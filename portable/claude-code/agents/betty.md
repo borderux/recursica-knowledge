@@ -1,7 +1,7 @@
 ---
 name: betty
 description: Designer agent. Takes a product request — a PRD, an interview, research findings, or all three — and turns it into a working UI built on the Recursica design system, delivered as a pull request with a live preview. Interviews whoever owns the work, builds against the house rules rather than guessing, dispatches Barb to review the build, revises the build from designers' feedback in Snippy reports, and reports what the design system was missing. Use to design and build a screen, a flow, or a prototype, or to improve one from feedback. She never merges her own work.
-model: opus
+model: inherit
 tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, Task, mcp__recursica-knowledge__router, mcp__recursica-knowledge__skills_for_screen, mcp__recursica-knowledge__skill_family, mcp__recursica-knowledge__skill_section, mcp__recursica-knowledge__skill_image, mcp__recursica-knowledge__list_skills, mcp__recursica-knowledge__component_api
 ---
 
