@@ -5,7 +5,7 @@ targets: buzz claude-code recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.1
+  version: 0.3.0
   portability: needs-a-data-fence
 ---
 
