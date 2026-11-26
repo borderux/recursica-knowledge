@@ -48,7 +48,9 @@ const C = {
   docker: env.JOBD_DOCKER ?? "docker",
   node: env.JOBD_NODE_NAME ?? os.hostname(),
   repos: new Set((env.JOBD_ALLOWED_REPOS ?? "").split(",").map((s) => s.trim()).filter(Boolean)),
-  passEnv: (env.JOBD_PASS_ENV ?? "PORTER_MODEL")
+  // Settings passed to each job by name, comma-separated. None by default: a port job asks for the
+  // coder route (porter-job/run.sh), so no model setting reaches it.
+  passEnv: (env.JOBD_PASS_ENV ?? "")
     .split(",").map((s) => s.trim()).filter(Boolean),
   gateway: env.JOBD_GATEWAY_URL ?? "",
   githubTokenUrl: env.JOBD_GITHUB_TOKEN_URL ?? "",

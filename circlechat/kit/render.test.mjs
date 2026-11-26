@@ -76,7 +76,7 @@ test("the gateway gets each agent's routes, cloud switch and key", () => {
   const g = render(example).gateway;
   assert.deepEqual(g.agents.betty, { routes: ["local-large"], cloud: true, key: "default" });
   assert.deepEqual(g.agents.loki, { routes: ["local-small"], cloud: false, key: "default" });
-  assert.deepEqual(g.agents.porter, { routes: ["local-large", "local-small"], cloud: true, key: "porter" });
+  assert.deepEqual(g.agents.porter, { routes: ["coder"], cloud: true, key: "porter" }, "Porter asks for the coder route, by its role");
   assert.deepEqual(g.agents.barb.key, "acme-grok");
   assert.deepEqual(g.fallback, { routes: [], cloud: false, key: null }, "a handle site.json does not list gets no route and no cloud model");
   assert.deepEqual(g.keys["acme-grok"], { model: "key/acme-grok", provider: "xai" });
@@ -360,6 +360,20 @@ test("job runners are ordered by priority, and Porter gets its allowlist", () =>
   assert.equal(r.services["machine-2"].jobs.slots, 3);
 });
 
+test("porter needs a coder route, and Porter's own routes include it: port jobs ask for the coder route, never a model", () => {
+  const none = clone();
+  delete none.routes.coder;
+  delete none.agents.porter;
+  assert.ok(validate(none).some((e) => /porter needs a coder route in routes/.test(e)));
+  const other = clone();
+  other.agents.porter.routes = ["local-large"];
+  assert.ok(validate(other).some((e) => /agents\.porter\.routes must include coder: .* local-large/.test(e)), "the gateway would send a port job's requests to local-large");
+  const fallback = clone();
+  delete fallback.agents.porter;
+  delete fallback.model_keys.porter;
+  assert.deepEqual(validate(fallback), [], "with no routes of its own, Porter may use every route, coder included");
+});
+
 test("porter without a job runner, or with a bad target, is caught", () => {
   const s = clone();
   for (const n of s.nodes) delete n.jobs;
@@ -434,7 +448,7 @@ test("a client stack is local-only until the client's permission is recorded", (
   const errs = validate(s).join("\n");
   assert.match(errs, /is a cloud model, and this client stack has no recorded permission/);
   assert.match(errs, /model_keys: this client stack has no recorded permission/);
-  if (s.porter) assert.match(errs, /local-only client stack cannot run Porter/);
+  assert.doesNotMatch(errs, /Porter|porter/, "a local-only stack runs Porter on its local coder route");
   const local = clientStack();
   delete local.porter; delete local.model_keys;
   for (const k of Object.keys(local.routes)) local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/"));
@@ -620,7 +634,7 @@ test("a site.json with one Ollama server, in the older form, keeps working", () 
   const s = clone();
   for (const n of s.nodes) delete n.servers, delete n.model_memory_gb;
   s.nodes[1].models = [{ id: "large-local", port: 11434, model: "your-large-model", context: 131072 }];
-  s.routes = { "local-large": ["machine-2/large-local"] };
+  s.routes = { "local-large": ["machine-2/large-local"], coder: ["machine-2/large-local"] };
   s.agents = { betty: { routes: ["local-large"] } };
   assert.deepEqual(validate(s), []);
   const { litellm, gateway } = render(s);

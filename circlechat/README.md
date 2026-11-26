@@ -364,7 +364,7 @@ runner** (`circlechat/jobd`): one container per job, capped at the node's `jobs.
 A job runner only runs the porter job type for the repositories in `porter.targets`, so a
 request cannot run an arbitrary command. The job's secrets reach the container by name, never on
 a command line. Each job sends the job's model requests to the control computer's gateway, with
-the gateway key for the job's task. A job that runs out of memory ends as `out_of_memory` and is
+the gateway key for the job's task, and asks for the `coder` route, never a model ("Agents"). A job that runs out of memory ends as `out_of_memory` and is
 reported; the machine keeps running.
 
 **A job's container sees only the job's work folder.** Each job has two folders in the job runner's job folder, such as `~/.recursica-jobs`:
@@ -743,6 +743,10 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 
 - `routes`: the routes the agent's gateway key may use, or single cluster models (`<node>/<server id>/<model id>`). The agent asks for the first route. An agent that `agents` leaves out may use every route.
 - `cloud`: the agent's cloud switch, on by default. With the switch off, the gateway never calls a cloud model for the agent, whatever the task's setting says.
+
+**An agent never names a model.** It asks for a route by its role, and site.json maps each route to models. The roles are `coder`, `judge`, `general`, `fast`, `reasoning` and `vision`. A route lists the cluster's local models, so a request stays local unless the task's setting and the stack allow the cloud. The gateway sends a name that is not one of the agent's routes to the agent's first route.
+
+**Porter's port jobs ask for the `coder` route.** A stack with `porter` needs a `coder` route, and when `agents.porter.routes` is set, the list must include `coder`. The config check refuses either one missing. A local-only stack runs Porter on its local `coder` model.
 
 **Each agent has the agent's own gateway key.** `rc-sync.sh` makes the key for each RecursicaChat 2.0 agent, as "Agents on RecursicaChat 2.0" describes. The gateway keeps only a hash of each key. A gateway key reaches only the agent's routes, and works only from the stack's own containers and computers. No agent holds LiteLLM's master key. To revoke one agent's key, run `sudo node circlechat/gateway/keys.mjs revoke <CC_DIR>/gateway-state <handle>`. The other agents keep working. The next run of `rc-sync.sh` gives the agent a new key.
 

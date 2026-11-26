@@ -802,8 +802,7 @@ export function validate(site, { cluster } = {}) {
     if (b?.time !== undefined && !/^([01]\d|2[0-3]):[0-5]\d$/.test(b.time)) errs.push("backup.time must be HH:MM, in the computer's time zone");
   }
   // Cloud models on a client or demo stack need a recorded permission. Without the permission,
-  // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
-  // Claude).
+  // the stack runs local open-weight models only: no cloud route.
   // stall_minutes: the wait before "Local, then cloud if significantly delayed" moves a task to the
   // cloud. The cluster's own stack may set it alone, since its permission needs no record.
   const cm = t.cloud_models;
@@ -835,7 +834,6 @@ export function validate(site, { cluster } = {}) {
     for (const [route, backends] of Object.entries(site.routes ?? {})) {
       for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this ${t.kind} stack has no recorded permission for cloud models (site.cloud_models)`);
     }
-    if (site.porter) errs.push(`a local-only ${t.kind} stack cannot run Porter: Porter's port jobs need a cloud model. Record the permission in site.cloud_models first`);
   }
   for (const k of ["knowledge", "app", "app_dir", "app_github"]) if (!site.repos?.[k]) errs.push(`repos.${k} is required`);
   if (site.repos?.app_dir && !/^[A-Za-z0-9._-]+$/.test(site.repos.app_dir)) errs.push("repos.app_dir must be a plain folder name");
@@ -948,6 +946,12 @@ export function validate(site, { cluster } = {}) {
     if (!Array.isArray(p.targets) || !p.targets.length) errs.push("porter.targets needs at least one repository URL");
     for (const t of p.targets ?? []) if (!/^https:\/\/[^\s,]+$/.test(t)) errs.push(`porter.targets: "${t}" must be an https clone URL`);
     if (!nodes.some((n) => n.jobs)) errs.push("porter needs at least one node with a jobs block");
+    // A port job asks for the coder route, never a model (jobd/porter-job/run.sh). The gateway sends a
+    // name that is not one of the agent's routes to the agent's first route, so a missing route would
+    // quietly send port jobs to another model.
+    if (!site.routes?.coder?.length) errs.push("porter needs a coder route in routes: port jobs ask for the coder route, and site.json maps it to a model");
+    const pr = site.agents?.porter?.routes;
+    if (Array.isArray(pr) && !pr.includes("coder")) errs.push(`agents.porter.routes must include coder: port jobs ask for the coder route, and the gateway would send them to ${pr[0] ?? "no route"}`);
   }
   return errs;
 }

@@ -7,7 +7,12 @@ cd /work || exit 1
 
 : "${TARGET_REPO:?}" "${ANTHROPIC_BASE_URL:?}" "${ANTHROPIC_AUTH_TOKEN:?}" "${PORTER_REPORT:=/work/report.md}"
 # Claude Code sends its model requests to the stack's gateway, with the gateway key for the job's
-# task. The gateway picks the model from the task's "Cloud models" setting; the job holds no cloud key.
+# task. The job asks for the coder route, never a model: site.json maps the route to a model, and the
+# gateway keeps the request local unless the task's setting and the stack allow the cloud. The job
+# holds no cloud key. Each model name Claude Code would choose by itself, for subagents and its small
+# background requests, is the same route.
+ROUTE=coder
+export ANTHROPIC_DEFAULT_OPUS_MODEL="$ROUTE" ANTHROPIC_DEFAULT_SONNET_MODEL="$ROUTE" ANTHROPIC_DEFAULT_HAIKU_MODEL="$ROUTE" CLAUDE_CODE_SUBAGENT_MODEL="$ROUTE"
 export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 
 # GitHub: Porter's GitHub App token for the job's repo, from the stack's token service, with the
@@ -52,7 +57,7 @@ PROMPT="$(awk 'BEGIN{f=0} /^---$/{f++; next} f>=2' /porter/porter-adapter.md)"
 
 claude -p "$(cat /work/package.md)" \
   --append-system-prompt "$PROMPT" \
-  --model "${PORTER_MODEL:-sonnet}" \
+  --model "$ROUTE" \
   --dangerously-skip-permissions \
   --max-turns "${PORTER_MAX_TURNS:-400}" \
   --output-format json > /work/result.json 2> /work/claude.log

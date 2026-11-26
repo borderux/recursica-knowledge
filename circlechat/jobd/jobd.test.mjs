@@ -53,7 +53,7 @@ test("starts a job, refuses a second when full, reports and wakes the agent when
   const args = fs.readFileSync(path.join(state, `${id}.args`), "utf8").split("\n");
   assert.equal(args[args.indexOf("--env-file") + 1], gw);
   assert.equal(args[args.indexOf("-v") + 1], `${path.join(tmp, "jobs", id, "work")}:/work`);
-  assert.ok(args.includes("PORTER_MODEL"));
+  assert.ok(!args.includes("PORTER_MODEL"), "a model setting on the job runner never reaches a job: the job asks for the coder route");
   assert.ok(!args.includes("PORTER_GITHUB_PAT"), "a retired token never reaches a job");
   assert.ok(!args.some((a) => a.includes("ANTHROPIC_API_KEY") || a.includes(pkg.gateway_key)), "no cloud key and no key on the command line");
   assert.equal((await call("POST", "/jobs", pkg)).status, 429);
