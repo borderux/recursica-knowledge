@@ -113,12 +113,18 @@ term an `id`, the `term`, a plain `definition`, and any `synonyms` the transcrip
 interview in Spanish, write the term in English and put the Spanish word in `translations`, as
 `{"es": "..."}`. Add a term only when the lexicon does not hold it already.
 
+**A term's evidence comes from the quotes pass,** where each quote lists the terms it shows in its
+`terms`. A term in the lexicon has no `evidence` field: its schema allows no other key, and the check
+fails a term that has one. So every term Claire adds must be one she will quote: at least one quote in
+that study's `quotes.json` lists it in `terms`. Add a term only when Claire has a line to quote for it.
+
 **Quotes.** Take at most 15 quotes from one interview, each from a participant's or a stakeholder's
 turn, never the researcher's. A quote's `text` is copied from the turn exactly, every character, and
 the check fails one that is not. Give each quote its `interview`, its `turn` number, its `language`,
 and, for Spanish, an English `translation`. Tag each quote with tags from `tags/tags.json`. When no tag
 fits, add a new tag in the same step, with a `label` and a `description` that would fit other studies
-too. Link each term the quote uses in `terms`.
+too. Link each term the quote uses in `terms`. Each term the terms pass added from this interview
+needs at least one quote that lists it.
 
 **Findings.** A finding states one thing the study learned, in a `title` and a `summary` of two or
 three sentences. It cites the quotes that show it. Start each new finding as `"status": "draft"`. A
