@@ -367,6 +367,24 @@ a command line. Each job sends the job's model requests to the control computer'
 the gateway key for the job's task. A job that runs out of memory ends as `out_of_memory` and is
 reported; the machine keeps running.
 
+### The Docker VM's size
+
+**On a Mac, size the Docker VM for its jobs, plus 8 GB.** A Mac runs Docker in a Colima VM. The VM keeps the memory its guest has used, because the guest's file cache grows toward the VM's size and macOS doesn't take that memory back while the VM runs. Memory the VM holds is memory the models can't use. The VM needs room for its port jobs at their caps (`jobs.slots` × `jobs.memory_gb`), plus 8 GB for the stack's containers and the guest. `setup-node.sh` warns when the VM is bigger, and goes on. A job's container is capped at `jobs.memory_gb`, file cache included, and the guest has no swap, so a job that runs out of memory ends inside the VM, and macOS never swaps for it.
+
+**To shrink the VM,** pick a quiet time: the VM's restart stops the gateway and LiteLLM for a minute or two.
+
+1. **Check nothing is running.** No agent turn or job: the job runner's `/health` shows `"running":0`, and the spend log has no new lines for 10 minutes.
+2. **Write down the VM's disks,** to check afterwards that the VM kept them: `ls -li ~/.colima/_lima/_disks/colima/datadisk`, `docker images -q | wc -l`, `docker volume ls -q | wc -l`, and `docker ps -a --format '{{.Names}} {{.Status}}'`.
+3. **Set the new size** in `~/.colima/default/colima.yaml`, such as `memory: 40`. Colima's service (`io.recursica.colima`) starts the VM with that file and no size of its own.
+4. **Restart the service:** `sudo launchctl kickstart -k system/io.recursica.colima`. The service stops the VM cleanly, and launchd starts it again.
+5. **Check the VM was resized in place.**
+   - `colima list` shows the new size, and `docker info --format '{{.MemTotal}}'` shows a little less than it.
+   - The data disk has the same inode and size as before.
+   - The image and volume counts match, and each container is up again.
+   - A resize never needs `colima delete`, which deletes the data disk.
+6. **If the size didn't change,** stop the service with `sudo launchctl bootout system/io.recursica.colima`. Then run `colima start --profile default --memory 40` and `colima stop --profile default`, and start the service again with `sudo launchctl bootstrap system /Library/LaunchDaemons/io.recursica.colima.plist`.
+7. **To undo,** set the old size and restart the service the same way.
+
 **A job's container sees only the job's work folder.** Each job has two folders in the job runner's job folder, such as `~/.recursica-jobs`:
 
 - `<job>/`, mode 700, holds the job runner's files: `meta.json`, `gateway.env` and `job.log`.

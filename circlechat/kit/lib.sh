@@ -82,6 +82,26 @@ launchd_calendar() {
 }
 # network-code end
 
+# A Mac's Docker VM keeps the memory its guest has used: the guest's file cache grows toward the VM's
+# size, and macOS does not take that memory back while the VM runs. So the VM needs no more than the
+# job runner's jobs at their caps, plus VM_SPARE_GB for the stack's containers (LiteLLM, the gateway,
+# the filters) and the guest itself. A bigger VM holds memory the computer's models could use. The
+# setup warns and goes on; README.md, "The Docker VM's size", says how to shrink the VM. Linux runs
+# Docker on the host, with no VM, so nothing is checked there.
+#   check_vm_size <job slots> <job memory GB>
+VM_SPARE_GB=8
+check_vm_size() {
+  local slots="${1:-0}" gb="${2:-0}" mem want
+  [ "${VM_SIZE_OS:-$(uname -s)}" = Darwin ] || return 0
+  mem="$(docker info --format '{{.MemTotal}}' 2>/dev/null)" || return 0
+  [[ "$mem" =~ ^[0-9]+$ ]] || return 0
+  want="$(awk -v s="$slots" -v g="$gb" -v x="$VM_SPARE_GB" 'BEGIN { printf "%g", s * g + x }')"
+  if awk -v m="$mem" -v w="$want" 'BEGIN { exit !(m > w * 1073741824) }'; then
+    echo "Warning: the Docker VM${DOCKER_CONTEXT:+ ($DOCKER_CONTEXT)} has $(awk -v m="$mem" 'BEGIN { printf "%.0f", m / 1073741824 }') GiB, more than its jobs need: $slots job(s) at $gb GB each, plus $VM_SPARE_GB GB for the stack's containers, is $want GB. The VM keeps the memory it has used, which the models could have. Shrink it to $want GiB (README.md, \"The Docker VM's size\")."
+  fi
+  return 0
+}
+
 # A stack's limits make a large computer act like a smaller one (site.json, nodes[].limits). The
 # stack's Docker VM must be no bigger than the limits, or the stack runs faster than the smaller
 # computer would. Needs DOCKER_CONTEXT, the stack's VM; returns 1 with a message when too big.
