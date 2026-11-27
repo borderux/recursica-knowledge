@@ -133,6 +133,12 @@ A model that sets neither keeps the server's settings, as before. The first requ
 
 **Only site.json loads, unloads or resizes a model.** The gateway drops a caller's own `keep_alive`, `num_ctx` and Ollama's other load options (`gateway/router.mjs`, `LOAD_SETTINGS`). It drops them at the top of the request, inside the request's `options`, and inside its `extra_body`. Then LiteLLM adds site.json's values. So no agent or job can unload the model the cluster keeps loaded, or load a model with another context length. Other settings, such as `temperature`, pass through. The spend log lists what it dropped in `dropped`.
 
+**A model that can't think says `"thinking": false`.** Ollama refuses a request to think for a model that can't, with `"<model>" does not support thinking`. That covers OpenAI's `reasoning_effort` and `reasoning`, Ollama's `think`, and Anthropic's `thinking`, on Ollama's OpenAI-compatible chat API and on `/api/chat` alike. So the gateway drops those settings from a request for a route with such a model, at the top of the request and inside its `extra_body` (`gateway/router.mjs`, `REASONING_SETTINGS`), and the spend log lists them in `dropped`. A route whose models think, and a request that goes to a cloud model, keep them. Set it on a model of any server; `ollama show <model>` lists `thinking` under Capabilities for a model that thinks:
+
+```json
+{ "id": "coder-local", "model": "qwen3-coder:30b", "memory_gb": 72, "thinking": false }
+```
+
 **`parallel` stays a server setting.** Ollama sets the requests each model answers at once for the whole server. A model with its own `context_length` holds that context for each of the server's `parallel` requests. Count both in the model's `memory_gb`.
 
 **Every listed model counts in the memory check, so agents can use several models at once.** The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs. A model that unloads when idle still counts. Each time the model loads, the model needs its memory beside the models that stay loaded. Without that room, Ollama unloads another idle model to make room, even a model set to stay loaded.

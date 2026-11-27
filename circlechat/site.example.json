@@ -17,6 +17,7 @@
     "the kit's Ollama service on the control computer runs with them (circlechat/README.md, Model servers).",
     "A model on an ollama server can set its own context_length and keep_alive, such as \"10m\", so the",
     "model loads on its first request and unloads when idle. The gateway sends them with each request.",
+    "A model that can't think sets \"thinking\": false, and the gateway drops a request to think for it.",
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
     "them in order, so the last entry is the fallback. A backend is \"<node>/<server id>/<model id>\":",
     "a route lists only the cluster's own models. A cloud model never joins a route.",
