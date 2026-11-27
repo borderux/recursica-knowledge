@@ -252,7 +252,7 @@ test("the push sends the labels of every service's label folder, after main's la
   tokenFile(s);
   const decided = label(1, { person: { verdict: "wrong", by: "person-a", at: "2026-11-27T13:00:00Z", note: null } });
   const other = label(1, { id: "r2/1", review: "r2", agent: "betty" });
-  const a = labelDir(s, "labels-a", { "r1.jsonl": [label(0), label(1), decided], "r1-more.jsonl": [label(2)] });
+  const a = labelDir(s, "labels-a", { "r1.jsonl": [label(0), label(1), decided], "r3.jsonl": [label(2)] });
   const b = labelDir(s, "labels-b", { "r2.jsonl": [other] });
   s.setServices([service("review-a", a), service("review-b", b)]);
   s.setMainLabels(`${label(0)}\n`);
