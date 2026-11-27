@@ -267,10 +267,10 @@ test("the stack's files: their own repository, the server's restic password, and
   // the backup refuses a key-named file and the secrets' values before restic runs
   assert.ok(backup.indexOf('STEP="file check"') < backup.indexOf('STEP="restic backup"'));
   for (const t of [backup, restore]) for (const f of ["$KEY_FILE", "$PW_FILE"]) assert.ok(t.includes(`for secret in "${"$"}KEY_FILE" "${"$"}PW_FILE"`), f);
-  // the restore test: every file back, the kit's site check, Kev and the app
+  // the restore test: every file back, the kit's site check and the app; Kev no longer lives in the workspace
   assert.match(restore, /restic restore --tag "\$TAG" latest --target "\$OUT"/);
   assert.match(restore, /node "\$KIT\/kit\/render\.mjs" "\$R_SITE"/);
-  assert.match(restore, /\$R_WS\/kev\/package\.json/);
+  assert.doesNotMatch(restore, /\$R_WS\/kev/);
 });
 
 test("the stack's jobs: nightly at 04:00 after the server's backup, a monthly restore test, and labels install.sh reloads without touching the server", () => {

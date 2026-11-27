@@ -117,7 +117,7 @@ test("a failed export leaves current where it was, and removes its half-made fol
     c.main(sha("b"));
     assert.equal(await c.step(), "failed");
     assert.equal(currentCommit(c.dir), sha("a"));
-    assert.deepEqual(fs.readdirSync(c.dir).sort(), ["current", sha("a")]);
+    assert.deepEqual(fs.readdirSync(c.dir).sort(), [sha("a"), "current"]);
     assert.match(c.posts[0], /stays at aaaaaaa: the export of bbbbbbb failed\. npm ci in tools\/kev failed: npm ERR! the registry did not answer/);
   } finally { c.done(); }
 });
@@ -143,5 +143,5 @@ test("a link that leads out of the export is refused", () => {
 
 test("stale keeps the current export and the newest ones", () => {
   const e = (c, t) => ({ name: sha(c), exportedAt: t });
-  assert.deepEqual(stale([e("a", 1), e("b", 2), e("c", 3), e("d", 4), { name: "current", exportedAt: 0 }, { name: ".new-x", exportedAt: 0 }], sha("a")).sort(), [".new-x", sha("b")]);
+  assert.deepEqual(stale([e("a", 1), e("b", 2), e("c", 3), e("d", 4), e("e", 5), { name: "current", exportedAt: 0 }, { name: ".new-x", exportedAt: 0 }], sha("a")).sort(), [".new-x", sha("b")]);
 });

@@ -53,7 +53,7 @@ make_account() {
   if id -u "$name" >/dev/null 2>&1; then return 0; fi
   if [ "$OS" = Darwin ]; then
     for n in $(seq 401 499); do
-      if ! dscl . -search /Users UniqueID "$n" | grep -q . && ! dscl . -search /Groups PrimaryGroupID "$n" | grep -q .; then uid=$n; break; fi
+      if [ -z "$(dscl . -search /Users UniqueID "$n")" ] && [ -z "$(dscl . -search /Groups PrimaryGroupID "$n")" ]; then uid=$n; break; fi
     done
     [ -n "$uid" ] || { echo "No free id from 401 to 499 for $name."; return 1; }
     sudo dscl . -create "/Groups/$name" PrimaryGroupID "$uid"
