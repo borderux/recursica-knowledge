@@ -177,7 +177,7 @@ test("the nftables rules refuse a Tailscale source off tailscale0, outside WSL, 
   assert.ok(lines.includes('sudo install -m 755 -o root "$HERE/firewall/nft-load.sh" /var/lib/agent-cluster/nft-load.sh'), "a root-owned copy, inside the held firewall step");
   assert.ok(lines.includes("sudo bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft"), "install-cluster.sh loads the rules with nft-load.sh");
   assert.ok(!lines.includes("sudo nft -f /etc/agentguard.nft"), "never with nft -f alone, which empties the sets");
-  assert.ok(lines.includes('install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft" / root boot'), "the start-up job runs the copy, never the kit checkout's file");
+  assert.ok(lines.includes('install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft; $NODE_BIN /var/lib/agent-cluster/lists.mjs load" / root boot'), "the start-up job runs the copies, never the kit checkout's files");
   assert.ok(!install.includes("$HERE/firewall/nft-load.sh /etc/agentguard.nft"), "nothing loads the kit checkout's nft-load.sh");
   const step = install.slice(install.indexOf("# network-step begin: the firewall rules"), install.indexOf("# network-step end", install.indexOf("# network-step begin: the firewall rules")));
   for (const l of ['nft-load.sh" /var/lib/agent-cluster/nft-load.sh', "sudo bash /var/lib/agent-cluster/nft-load.sh", "install_unit agentguard-firewall"]) assert.ok(step.includes(l), `${l} is inside the held firewall step`);

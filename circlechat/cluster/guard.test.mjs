@@ -87,6 +87,29 @@ test("release opens the firewall and unseals; allow-source also remembers the ad
   assert.deepEqual((await g.tick()), { status: "normal", last: g.state.last });
 });
 
+// The firewall's lists empty at each restart, so the guard keeps both on disk, root-only, and the
+// start-up job loads them again (firewall/lists.mjs).
+test("the cut-off writes each blocked source to blocked-sources.json; allow-source moves the source to allowed-sources.json", async () => {
+  const file = (g, name) => path.join(g.stateDir, name);
+  const read = (g, name) => JSON.parse(fs.readFileSync(file(g, name), "utf8"));
+  const kept = setup(intruder);
+  await kept.g.tick(); kept.advance(11 * 60_000); await kept.g.tick();
+  assert.deepEqual(read(kept.g, "blocked-sources.json"), ["192.168.1.77"]);
+  assert.equal(fs.statSync(file(kept.g, "blocked-sources.json")).mode & 0o777, 0o600);
+  await kept.g.release(false);
+  assert.deepEqual(read(kept.g, "blocked-sources.json"), ["192.168.1.77"], "a plain release keeps the source blocked");
+
+  const moved = setup(intruder);
+  fs.writeFileSync(file(moved.g, "blocked-sources.json"), JSON.stringify(["203.0.113.10"]));
+  await moved.g.tick(); moved.advance(11 * 60_000); await moved.g.tick();
+  assert.deepEqual(read(moved.g, "blocked-sources.json"), ["203.0.113.10", "192.168.1.77"], "added to the earlier list");
+  await moved.g.release(true);
+  assert.deepEqual(read(moved.g, "blocked-sources.json"), ["203.0.113.10"]);
+  assert.deepEqual(read(moved.g, "allowed-sources.json"), ["192.168.1.77"]);
+  for (const name of ["blocked-sources.json", "allowed-sources.json"]) assert.equal(fs.statSync(file(moved.g, name)).mode & 0o777, 0o600, name);
+  assert.ok(!fs.readdirSync(moved.g.stateDir).some((f) => f.endsWith(".tmp")), "no temporary file left");
+});
+
 test("no lockdown without a connection no rule allows", async () => {
   const { g, notes } = setup([{ remote: "100.90.1.1", remotePort: 1, localPort: 22, process: "sshd" }]);
   assert.equal((await g.tick()).status, "normal");

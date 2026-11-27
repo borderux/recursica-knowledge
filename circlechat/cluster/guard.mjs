@@ -15,6 +15,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { suspicious } from "./classify.mjs";
+import { LIST_FILES, readList, writeList } from "./firewall/lists.mjs";
 
 export const WATCH_MS = 10 * 60_000;
 export const EXTEND_MS = 30 * 60_000;
@@ -28,6 +29,10 @@ export class Guard {
   get state() { try { return JSON.parse(fs.readFileSync(this.file("lockdown.json"), "utf8")); } catch { return { status: "normal" }; } }
   set state(s) { fs.writeFileSync(this.file("lockdown.json"), JSON.stringify(s, null, 2), { mode: 0o600 }); }
   get allowed() { try { return JSON.parse(fs.readFileSync(this.file("allowed-sources.json"), "utf8")); } catch { return []; } }
+  // The blocked and allowed addresses, kept on disk: the firewall's own lists empty at each restart,
+  // and the firewall's start-up job loads both files again (firewall/lists.mjs).
+  list(name) { return readList(this.file(LIST_FILES[name])); }
+  saveList(name, addresses) { writeList(this.file(LIST_FILES[name]), addresses); }
 
   // One check: called every minute, and whenever the decoys log a touch.
   async tick(canaryHits = []) {
@@ -90,6 +95,7 @@ export class Guard {
     const loaded = (await this.platform.lockdownFirewall(true)) ?? { ok: true };
     const blocks = [];
     for (const ip of s.sources) blocks.push({ ip, ...((await this.platform.block(ip)) ?? { ok: true }) });
+    this.saveList("blocked", [...this.list("blocked"), ...s.sources]);
     const fw = await this.platform.firewallState().catch((e) => ({ lockdown: false, blocked: [], error: e.message }));
     const problems = [];
     if (fw.enforced === false) problems.push("the main firewall rules don't use the agentguard anchor, so none of its rules apply");
@@ -129,8 +135,8 @@ export class Guard {
     if (s.status === "normal") return { ok: false, message: "no lockdown is active" };
     if (s.status === "watching") await this.cutOff("released while watching");
     if (allowSource) {
-      const allowed = new Set([...this.allowed, ...s.sources]);
-      fs.writeFileSync(this.file("allowed-sources.json"), JSON.stringify([...allowed], null, 2), { mode: 0o600 });
+      this.saveList("allowed", [...this.allowed, ...s.sources]);
+      this.saveList("blocked", this.list("blocked").filter((ip) => !s.sources.includes(ip)));
     }
     await this.platform.lockdownFirewall(false);
     if (allowSource) for (const ip of s.sources) await this.platform.unblock(ip);

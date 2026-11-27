@@ -40,6 +40,10 @@ jobs:
       # parse, a rerun keeps the sets' addresses, and a forged Tailscale source off tailscale0 drops.
       - name: The nftables rules with real nftables
         run: sudo -E env "PATH=$PATH" bash circlechat/ci/nft-check.sh
+      # The start-up job's load of the guard's lists (cluster/firewall/lists.mjs), with real nftables, into a
+      # throwaway table with no chain.
+      - name: The guard's lists load into real nftables
+        run: bash circlechat/ci/lists-load.sh
 
   smoke-install:
     name: Install a whole stack on a fresh machine
@@ -93,6 +97,9 @@ jobs:
       # real pf, in a throwaway anchor.
       - name: Loading pf rules again keeps the anchor's tables
         run: bash circlechat/ci/pf-tables.sh
+      # The same list load with the runner's real pf, into a throwaway anchor.
+      - name: The guard's lists load into real pf
+        run: bash circlechat/ci/lists-load.sh
       - name: A client disk image is created, opened and closed
         run: |
           printf 'ci-test-key-0123456789abcdefgh' | bash circlechat/tenant/disk-image.sh create citest 1g
