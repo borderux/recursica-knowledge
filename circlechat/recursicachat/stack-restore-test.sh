@@ -6,7 +6,7 @@
 # Restores the newest snapshot of stack-backup.sh into a folder only root can open, then checks:
 #   - every file the snapshot lists came back, and the snapshot holds site.json and the workspace;
 #   - site.json passes the kit's own site check (kit/render.mjs);
-#   - the workspace has Kev's code and the app the agents build in, each with its files;
+#   - the workspace has the app the agents build in, with its files;
 #   - no .env file and no file named like a key, and neither the vault key nor the restic password
 #     in any file.
 # Deletes the folder, and posts the result to the stack's Slack channel, pass or fail.
@@ -81,7 +81,6 @@ STEP="site.json"
 node "$KIT/kit/render.mjs" "$R_SITE" "$WORK/site-check" >/dev/null 2>&1 || fail "the restored site.json fails the kit's site check"
 
 STEP="workspace"
-[ -f "$R_WS/kev/package.json" ] || fail "the workspace has no Kev"
 app="$(/opt/recursicachat/node/v24.22.3/bin/node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write(String(s.repos?.app_dir??""))' "$R_SITE")"
 if [ -n "$app" ]; then
   [ -d "$R_WS/$app" ] && [ -n "$(find "$R_WS/$app" -type f -not -path '*/.git/*' | head -1)" ] || fail "the workspace has no files of the app, $app"
@@ -97,5 +96,5 @@ done
 
 STEP="newest backup's time"
 when="$(restic snapshots --tag "$TAG" --latest 1 --json | /opt/recursicachat/node/v24.22.3/bin/node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const t=JSON.parse(s).at(-1)?.time;const d=t?new Date(t):null;console.log(d&&!isNaN(d)?d.toISOString().slice(0,16).replace("T"," "):"unknown")})')"
-say ":white_check_mark: Test restore of the stack's files passed on $HOST. Newest backup: $when UTC. $got files, site.json passes the site check, Kev and the app are there, and no secret is in it."
+say ":white_check_mark: Test restore of the stack's files passed on $HOST. Newest backup: $when UTC. $got files, site.json passes the site check, the app is there, and no secret is in it."
 status ok "newest backup $when UTC restored, $got files"

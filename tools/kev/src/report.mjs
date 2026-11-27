@@ -70,5 +70,6 @@ export function toMarkdown(r, { ignoredHint = false } = {}) {
   out.push("");
   out.push(`_${r.skills.length} skills · ${r.files.length} files · ${r.usage.requests} engine calls` +
     ` (${r.usage.cacheHits} cached) · ~${Math.round(r.usage.input_tokens / 1000)}k input tokens · ${r.seconds}s · ${r.model}_`);
+  out.push(`_knowledge commit ${r.knowledge?.commit ?? r.commit ?? "unknown"}_`);
   return out.join("\n");
 }

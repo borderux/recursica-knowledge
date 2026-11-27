@@ -62,8 +62,8 @@ export const gitAsOwner = (kit, args) => ["/bin/sh", "-c", 'umask 022 && exec gi
 export const SETUPS = {
   "setup-host.sh": [
     "circlechat/setup-host.sh", "circlechat/kit/", "circlechat/egress/", "circlechat/gateway/", "circlechat/github/",
-    "circlechat/rc-service.sh", "circlechat/rc-session.sh", "circlechat/rc-sync.sh",
-    "circlechat/cluster/windows/install-wsl-boot.ps1", "tools/kev/",
+    "circlechat/rc-service.sh", "circlechat/rc-session.sh", "circlechat/rc-sync.sh", "circlechat/knowledge-mcp.sh",
+    "circlechat/cluster/windows/install-wsl-boot.ps1",
   ],
   "setup-node.sh": [
     "circlechat/setup-node.sh", "circlechat/kit/lib.sh", "circlechat/kit/render.mjs", "circlechat/egress/", "circlechat/jobd/porter-job/",

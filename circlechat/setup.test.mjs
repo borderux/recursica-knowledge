@@ -512,7 +512,10 @@ test("the full setup gives the app preview a tailnet-only address with tailscale
   assert.doesNotMatch(calls, /docker compose|kb-proposals/);
   assert.match(calls, /^docker run -d --name betty-proto /m);
   assert.match(r.stdout, /tailscale serve, tailnet only: https:\/\/stack\.example\.ts\.net:5173 passes to http:\/\/127\.0\.0\.1:5173 for the app preview\./);
-  assert.ok(fs.existsSync(path.join(s.home, "recursica-workspace", "recursica-knowledge", ".git")), "the workspace has the new name");
+  assert.ok(fs.existsSync(path.join(s.home, "recursica-workspace", example.repos.app_dir, ".git")), "the workspace has the new name");
+  // Every agent and program reads the skills from the knowledge MCP server, so the workspace holds no knowledge checkout.
+  assert.equal(fs.existsSync(path.join(s.home, "recursica-workspace", "recursica-knowledge")), false);
+  assert.doesNotMatch(calls, /^git clone .*recursica-knowledge/m);
   assert.equal(fs.existsSync(path.join(s.cc, "hermes-homes")), false);
   for (const u of ["agents-sync.service", "release-watch.service", "circlechat-boot.service", "backup.service"]) assert.equal(fs.existsSync(path.join(s.units, u)), false, u);
 });

@@ -28,6 +28,11 @@
 #      none (kit/rc-skills.mjs). Hermes's own hermes-agent and every skill that isn't bundled, such
 #      as one the agent learned, stay. Only while the server is quiet (cluster/quiet.mjs): no turn
 #      running and no one online. The engine sees the change at its next start; nothing restarts.
+#   5. The knowledge MCP server, with a recursicachat caller in site.json's knowledge block: registered
+#      on the server with the caller's key, and granted to the agents the caller lists
+#      (kit/rc-knowledge.mjs). The check reads the server's database and changes nothing. Only when
+#      something differs does the step sign in, as the caller's builder account, with a 10-minute
+#      session from the CLI, and end the account's sessions after. The tools' rules are an admin's.
 # Then a warning for each agent on the server whose model can use another agent's key.
 #
 # As root (the hourly job), the script runs only the server's CLI and the key step as root. The read
@@ -162,6 +167,27 @@ skills_step() {
   done 4<<<"$plan"
 }
 skills_step
+
+# 5. The knowledge MCP server, for the agents its recursicachat caller lists.
+knowledge_step() {
+  local line url builder agents api out code
+  line="$(as_owner "$KIT_NODE" "$HERE/kit/knowledge.mjs" recursicachat "$SITE")" || { echo "knowledge: FAILED: $line"; FAILED=1; return; }
+  [ -n "$line" ] || return 0
+  IFS=$'\t' read -r url builder agents api <<<"$line"
+  local key=/var/lib/recursica-knowledge/recursicachat.key record=/var/lib/recursica-knowledge/rc-registered.json
+  # The check reads the database only, as root, and never signs in.
+  out="$(as_root "$KIT_NODE" "$HERE/kit/rc-knowledge.mjs" check "$RC_DATA/circlechat.db" "$url" "$agents" "$key" "$record" </dev/null)" && code=0 || code=$?
+  printf '%s\n' "$out"
+  [ "$code" = 10 ] || { [ "$code" = 0 ] || FAILED=1; return; }
+  [ -z "$CHECK" ] || return 0
+  # The session goes from the CLI straight into the step's stdin, and never into a variable.
+  if ! rc_cli session "$builder" --minutes 10 2>/dev/null </dev/null | as_root "$KIT_NODE" "$HERE/kit/rc-knowledge.mjs" apply "$api" "$url" "$agents" "$key" "$record"; then
+    echo "knowledge: FAILED: the knowledge MCP server isn't registered on RecursicaChat yet (the lines above say why). $builder must be a builder account that isn't deactivated."
+    FAILED=1
+  fi
+  rc_cli end-sessions "$builder" </dev/null >/dev/null 2>&1 || { echo "knowledge: the sessions of $builder could NOT be ended: run the server's CLI end-sessions for the account."; FAILED=1; }
+}
+knowledge_step
 
 # Agents whose model can use another agent's key.
 rc_cli agent-models </dev/null | kit warn "$SITE" || true

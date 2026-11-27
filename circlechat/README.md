@@ -271,7 +271,7 @@ or `chmod -R` there would follow a symlink an agent put there, and change a file
 computer. So the kit keeps three rules:
 
 - **Every file the kit copies there comes from the kit checkout,** `~/recursica-knowledge`, never
-  from the workspace's checkout, which an agent can change. Kev's files are such a copy.
+  from a checkout in the workspace, which an agent can change.
 - **Every write there goes through `circlechat/kit/safe-files.mjs`.** A symlinked folder on the way
   to a file is refused, and nothing is written there. Each file is written as a new file, then
   moved into place, so a symlink at the file's own name is replaced and the file the symlink names
@@ -289,7 +289,7 @@ computer. So the kit keeps three rules:
 
 ### The kit checkout
 
-**Clone this repo to `~/recursica-knowledge`, and run each kit command from that checkout.** Root runs the kit's scripts. Kev, the app and the knowledge checkouts sit in the agents' workspace, `~/recursica-workspace`. An agent could change a checkout inside the workspace, and root would then run the change.
+**Clone this repo to `~/recursica-knowledge`, and run each kit command from that checkout.** Root runs the kit's scripts. The app's checkout sits in the agents' workspace, `~/recursica-workspace`. An agent could change a checkout inside the workspace, and root would then run the change.
 
 Each script below checks the kit checkout first, with `circlechat/kit/check-kit.sh`:
 
@@ -310,7 +310,15 @@ The refusal names the file and the command that fixes the checkout.
 
 A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout. Other accounts cannot rename or delete the owner's folder there.
 
-**The workspace keeps its own checkouts,** such as `~/recursica-workspace/recursica-knowledge`, which Kev reads, and the app the preview serves.
+**The workspace keeps its own checkout of the app the preview serves.** The workspace holds no knowledge checkout and no copy of Kev. Every agent and program reads the skills from the knowledge MCP server, and Kev runs from the server's export. See "The knowledge MCP server".
+
+**An older setup cloned `~/recursica-workspace/recursica-knowledge` and copied Kev to `~/recursica-workspace/kev`.** Nothing reads either folder now, and the setup leaves both alone. The clone was never updated after the clone, so its skills are stale. Remove both, as the owner, once nothing that ran from them is running:
+
+```sh
+rm -rf ~/recursica-workspace/recursica-knowledge ~/recursica-workspace/kev
+```
+
+On a computer set up while CircleChat 1.x ran, the workspace is `~/circlechat-workspace` until a person moves the folder.
 
 **No kit script runs git in the workspace, as the owner or as root.** An agent can change each checkout there, the checkout's git settings and hooks included, and git runs the hooks and the filters a checkout's settings name. So:
 
@@ -1203,6 +1211,7 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 - **Recursica's own software**, on a stack with `upgrade.auto`:
   - Each new kit release, a release of the knowledge repo: only after an approver approves the release in Slack. "Kit releases" describes the approval. A new major version asks in Slack first.
   - With `updates.follow` set to `"main"`, the kit checkout on every computer follows main instead. "A kit that follows main" describes the steps.
+  - With a `knowledge` block, the knowledge MCP server on the control computer serves each new verified commit on main, whatever `updates.follow` says. "The knowledge MCP server" describes the steps.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
 - **An update that interrupts work** waits, after its 7 days, until RecursicaChat 2.0 on the computer is quiet. "Updates that interrupt work" describes the wait.
@@ -1519,6 +1528,122 @@ Never paste `agents/<handle>/SKILL.md` in directly. It still holds unfilled
 `<!-- platform:NAME -->` markers, and pasting it silently drops whole passages — Barb once lost
 her identity line, her intake paragraph and her write fence that way.
 
+## The knowledge MCP server
+
+**One knowledge MCP server is the only way an agent or a program reads the skills.** It is
+`tools/knowledge-mcp/server.mjs` in its HTTP mode, as a service on the control computer:
+`http://127.0.0.1:<knowledge.port>/mcp`, read-only, on loopback only, with a key for each caller.
+Every answer names the knowledge commit it came from, so each review and each design can record the
+commit. The tools are in `tools/knowledge-mcp/README.md`.
+
+**site.json's `knowledge` block** sets it up, on the cluster's own stack only:
+
+```json
+"knowledge": {
+  "port": 4011,
+  "callers": [
+    { "name": "example-harness", "account": "_example", "file": "/opt/example/run/knowledge.key" },
+    { "name": "kev", "files": [{ "account": "_example", "file": "/opt/example/run/knowledge-kev.key" }] },
+    { "name": "recursicachat", "agents": ["betty", "barb"], "builder": "agent-setup@example.com" }
+  ]
+}
+```
+
+- **`port`:** the server's port on 127.0.0.1. The render refuses a port that another part of the
+  stack uses, such as `site.gateway_local_port` or the GitHub token service's port, 4010 by default.
+- **A caller with `account` and `file`:** one program, such as a harness service. Its key file
+  belongs to the account, mode 400, in a folder that belongs to root with no write for the group or
+  others. The program's own installer makes the folder.
+- **A caller with `files`:** a program that runs under several accounts, such as Kev, which each
+  design review runs. One key, with a copy in each account's own file.
+- **The `recursicachat` caller:** the RecursicaChat 2.0 server's own key, which the kit keeps in
+  `/var/lib/recursica-knowledge/recursicachat.key`, root's own. The agent sync registers the server
+  on RecursicaChat with that key, for the agents listed.
+
+### What setup-host.sh installs
+
+`setup-host.sh` runs `circlechat/knowledge-mcp.sh`, which makes what is missing:
+
+1. **Two system accounts,** with no login shell and no home. The server's account,
+   `_knowledgemcp` on a Mac and `knowledge-mcp` on Linux, only reads. The export account,
+   `_knowledgeexport` or `knowledge-export`, writes each export and nothing else.
+2. **The folders,** both root's: `/opt/recursica-knowledge` for the exports, and
+   `/var/lib/recursica-knowledge` for the keys' hashes and the export account's work folder.
+3. **The first export,** when there is none, as the update job makes each export (below). It needs
+   the kit's repo from `install-cluster.sh`'s `/etc/agent-cluster.conf`. Without the file, the first
+   export waits for the update job.
+4. **A key for each caller** (`circlechat/kit/knowledge-keys.mjs`), the way `rc-service.sh` makes a
+   service's gateway key. The server keeps only each key's SHA-256, in
+   `/var/lib/recursica-knowledge/keys.json`, which root and the server account's group can read.
+   The server reads the file again when the file changes, so a new key needs no restart. A key
+   stays while every one of the caller's files holds the key. A missing or changed file gets a new
+   key. A caller removed from site.json loses its key.
+5. **The service,** `knowledge-mcp`, as the server account: `/opt/recursica-knowledge/current`, on
+   127.0.0.1 at `knowledge.port`. Then a check: a request with no key gets 401.
+
+Without a `knowledge` block, the setup removes the service. The accounts, the exports and the key
+files stay.
+
+**To rotate one caller's key,** run `circlechat/knowledge-mcp.sh --rotate <caller>` as the owner. The
+old key stops working at once. A new `recursicachat` key also registers the server again on
+RecursicaChat, so an admin sets the tools' rules again (below).
+
+### The hourly export
+
+**The server serves one commit of the knowledge repo, read-only, from an export with no `.git`.**
+Each hour, the update job runs `circlechat/cluster/knowledge-export.mjs` on the control computer, as
+root:
+
+1. The kit checkout's origin must name the kit's repo. As the owner, git fetches origin/main in the
+   kit checkout. The knowledge repo is the kit's repo.
+2. GitHub must show main's new commit as verified, on main. Any other commit stops the step, and the
+   cluster's channel hears once.
+3. The owner's git writes `git archive` of the commit, and the export account unpacks it into a new
+   folder of the export account's own. Then, as the export account, `npm ci --omit=dev
+   --ignore-scripts` installs Kev's packages in `tools/kev`, so no package's install script runs.
+4. Root takes the folder: root owns every file, every account can read a file, and no account can
+   change one. A link that leads out of the export stops the step. The folder becomes
+   `/opt/recursica-knowledge/<commit>`, with `.knowledge-export.json`, which names the commit.
+5. A new link, renamed over `current` in one step, switches the server to the new commit. The server
+   resolves the link at the start of each call, so each call is answered from one commit, with no
+   restart.
+6. The three newest exports stay, so a call that began on an older export finishes on it. Older
+   exports are removed.
+7. When the server's own code, `tools/knowledge-mcp/server.mjs`, changed, the server restarts once
+   RecursicaChat is quiet. Until then, the old code serves the new commit.
+
+A failed export leaves `current` as it was. The channel hears once, and the next hour tries again.
+
+**Kev runs from the export:** `/opt/recursica-knowledge/current/tools/kev/bin/kev.mjs`, with
+`KNOWLEDGE_MCP_URL` and `KNOWLEDGE_MCP_KEY_FILE` set to the server and Kev's key file. Kev's code
+is code, so it runs from the export. Kev reads every skill through the server.
+
+### The server on RecursicaChat
+
+**The agent sync registers the server on the stack's RecursicaChat 2.0 server, for the agents the
+`recursicachat` caller lists** (`circlechat/kit/rc-knowledge.mjs`, step 5 of `rc-sync.sh`). The
+server's CLI has no command for an MCP server, so the sync works through the server's API:
+
+1. **The check** reads the server's database, read-only, and changes nothing. A sync that finds the
+   server registered with the current key and granted to the listed agents signs in to nothing.
+2. **The change,** only when the check finds a difference: the sync makes a 10-minute session for
+   the `builder` account with the server's CLI, as root. With that session, the sync adds the MCP
+   server `recursica-knowledge` (stored as `recursica_knowledge`), transport HTTP, with the
+   `AUTHORIZATION` secret `Bearer <key>`, and grants the server to the listed agents and to nothing
+   else. Then the sync ends the account's sessions. The key and the session never reach an argument,
+   a file or an output line.
+3. **A new key or a new address registers the server again:** the sync removes the old server and
+   adds a new one. The server keeps a secret the sync can't read, so the kit records the key's
+   SHA-256 and the server's id in `/var/lib/recursica-knowledge/rc-registered.json`.
+
+The builder account must be a builder, never an owner or an admin, and must not be deactivated
+while a change waits. `rc-sync.sh --check` reports what would change.
+
+**An admin allows the tools.** The server adds a new MCP server's tools switched off, and takes a
+tool's rule only from an admin. After each new registration, the sync prints each tool whose rule is
+not Allow. An admin sets each one to **Allow** in **Settings → MCP servers → recursica_knowledge**.
+Every tool only reads the skills.
+
 ## RecursicaChat 2.0
 
 The kit sets up, checks and backs up the stack's RecursicaChat 2.0 server and the agents on the server. The sections below describe each part.
@@ -1811,7 +1936,7 @@ Then start the server and the programs.
 
 **`stack-backup.sh` backs up the stack's `site.json` and the agents' shared workspace each night.**
 The workspace (`~/recursica-workspace`, or `~/circlechat-workspace` before a person moves the folder)
-holds Kev's code, the app the preview serves and the knowledge checkouts. CircleChat 1.x's nightly
+holds the app the preview serves and the agents' files, such as Barb's review notes. CircleChat 1.x's nightly
 backup was their only backup, and that backup is gone. The server's own backup holds only the server's data.
 
 - **Its own restic repository, `stack-files`,** on the same backup remote (`backup.remote` in
@@ -1824,7 +1949,7 @@ backup was their only backup, and that backup is gone. The server's own backup h
   restic keeps a link as a link and never follows one.
 - **`stack-restore-test.sh`,** on the 1st of each month, restores the newest snapshot into a folder
   only root opens. It checks that every file came back, that `site.json` passes the kit's site
-  check, that Kev and the app are there, and that no secret is in it. It posts the result in the
+  check, that the app is there, and that no secret is in it. It posts the result in the
   stack's Slack channel.
 
 To restore by hand: `restic restore --tag stack-files latest --target <folder>`, with

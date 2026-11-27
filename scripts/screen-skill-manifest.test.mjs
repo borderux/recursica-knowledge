@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { adapterImports, resolveImport, manifest, localGraph, skillFor } from "./screen-skill-manifest.mjs";
+import { adapterImports, resolveImport, manifest, manifestSources, localGraph, skillFor } from "./screen-skill-manifest.mjs";
 
 test("adapterImports reads a multi-line import and ignores other packages", () => {
   const source = `
@@ -227,5 +227,44 @@ test("an Angular screen reaches its skills through .ts imports", () => {
   assert.deepEqual(files, ["grid.ts", "screen.ts", path.join("ui", "index.ts")]);
   const slugs = manifest([screen]).skills.map((s) => s.slug);
   assert.ok(slugs.includes("recursica-skill-table") && slugs.includes("recursica-skill-tabs"));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("contents give the same skills as the same files on disk", () => {
+  // The knowledge MCP server's HTTP mode sends contents, because its account can't read the
+  // caller's files. A shorter skill list from contents would read as a cleaner screen.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
+  const screen = `import { DataTable } from './shell/DataTable'\nimport { Badge } from '@recursica/mantine-adapter'\n`;
+  const wrapper = `import { Table } from '@recursica/mantine-adapter'\n`;
+  fs.mkdirSync(path.join(dir, "shell"));
+  fs.writeFileSync(path.join(dir, "Screen.jsx"), screen);
+  fs.writeFileSync(path.join(dir, "shell", "DataTable.jsx"), wrapper);
+  const onDisk = manifest([path.join(dir, "Screen.jsx")]);
+  const sent = manifestSources([
+    { path: "src/Screen.jsx", text: screen },
+    { path: "src/shell/DataTable.jsx", text: wrapper },
+  ]);
+  assert.deepEqual(sent.skills, onDisk.skills);
+  assert.deepEqual(sent.imports, onDisk.imports);
+  assert.deepEqual(sent.files, ["src/Screen.jsx", "src/shell/DataTable.jsx"]);
+  assert.deepEqual(sent.uncovered.unsentFiles, []);
+  fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test("an import of a file that was not sent is reported, not skipped", () => {
+  const r = manifestSources([{ path: "src/Screen.jsx", text: `import { DataTable } from './shell/DataTable'\n` }]);
+  assert.deepEqual(r.uncovered.unsentFiles, ["src/shell/DataTable"]);
+  assert.throws(() => manifestSources([]), /non-empty/);
+  assert.throws(() => manifestSources([{ path: "a.jsx" }]), /path, text/);
+});
+
+test("a TypeScript screen reaches its shell through an import with no extension", () => {
+  // './Shell' names Shell.tsx. The list of extensions tried had no .tsx, so the shell, and the
+  // table it renders, were never read.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
+  fs.writeFileSync(path.join(dir, "Screen.tsx"), `import { Shell } from './Shell'\n`);
+  fs.writeFileSync(path.join(dir, "Shell.tsx"), `import { Table } from '@recursica/mantine-adapter'\n`);
+  const slugs = manifest([path.join(dir, "Screen.tsx")]).skills.map((s) => s.slug);
+  assert.ok(slugs.includes("recursica-skill-table"));
   fs.rmSync(dir, { recursive: true, force: true });
 });
