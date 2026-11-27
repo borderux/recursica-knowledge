@@ -6,7 +6,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { GRACE, JOBS, dailySummary, jobLine, summaryDue, summaryText, when } from "./daily-summary.mjs";
+import { GRACE, JOBS, NOTE_MAX, cleanNote, dailySummary, jobLine, readNote, summaryDue, summaryText, when } from "./daily-summary.mjs";
 import { readStatuses, writeStatus } from "../kit/job-status.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -123,8 +123,78 @@ test("dailySummary: only the jobs installed here, none on a computer without the
   assert.equal(await dailySummary({ env, state, now: NOW + 3 * 3600_000, dir, installed, log, post: async () => ({ ok: true }) }), "not due", "once a day");
 });
 
+// A program's state folder with a note in it, changed at the given moment.
+function noteFolder(note, changed = NOW - 3600_000) {
+  const state = folder();
+  const f = path.join(state, "health-note.json");
+  fs.writeFileSync(f, typeof note === "string" ? note : JSON.stringify(note));
+  fs.utimesSync(f, new Date(changed), new Date(changed));
+  return { name: "reporter", account: "_example", state, health_report: true };
+}
+
+test("a program's note on yesterday: read, cleaned and capped; another day, an old file or bad JSON adds nothing", () => {
+  const ok = noteFolder({ day: "2026-11-22", text: "All routes answered within their caps." });
+  assert.deepEqual(readNote(ok, "2026-11-22", NOW), { name: "reporter", day: "2026-11-22", text: "All routes answered within their caps." });
+  assert.equal(readNote(noteFolder({ day: "2026-11-21", text: "old" }), "2026-11-22", NOW), null, "a note on another day");
+  assert.equal(readNote(noteFolder({ day: "2026-11-22", text: "x" }, NOW - 37 * 3600_000), "2026-11-22", NOW), null, "a file older than 36 hours");
+  assert.equal(readNote(noteFolder("{ not json"), "2026-11-22", NOW), null);
+  assert.equal(readNote(noteFolder({ day: "2026-11-22", text: 7 }), "2026-11-22", NOW), null);
+  assert.equal(readNote(noteFolder({ day: "2026-11-22", text: "   " }), "2026-11-22", NOW), null, "an empty note");
+  assert.equal(readNote({ name: "reporter", state: path.join(folder(), "missing") }, "2026-11-22", NOW), null);
+  // a link in the note's place is never followed
+  const linked = folder();
+  fs.symlinkSync(path.join(ok.state, "health-note.json"), path.join(linked, "health-note.json"));
+  assert.equal(readNote({ name: "reporter", state: linked }, "2026-11-22", NOW), null);
+});
+
+test("a note never pings anyone, and is cut to 1,500 characters", () => {
+  const t = cleanNote("<!channel> <!here> <!everyone> <@U012ABCDEF> <!subteam^S1> <https://example.com|link> a\u0007b");
+  assert.ok(!/[<>]/.test(t), t);
+  assert.equal(t, "\u2039!channel\u203a \u2039!here\u203a \u2039!everyone\u203a \u2039@U012ABCDEF\u203a \u2039!subteam^S1\u203a \u2039https://example.com|link\u203a ab");
+  const long = cleanNote("a".repeat(NOTE_MAX + 500));
+  assert.equal([...long].length, NOTE_MAX);
+  assert.ok(long.endsWith("\u2026"));
+  assert.equal(cleanNote("line one\nline two"), "line one\nline two", "line breaks stay");
+});
+
+test("dailySummary: the note goes under the job lines, and a computer with no jobs posts the note alone", async () => {
+  const dir = folder();
+  writeStatus(dir, "recursicachat-backup", true, "snapshot f5bb9946, 120 archive entries", at("2026-11-23T08:30:00Z"));
+  const env = { CLUSTER_TZ: TZ, COMPUTER: "machine-1" };
+  const installed = (label) => label === "io.recursica.recursicachat-backup";
+  const service = noteFolder({ day: "2026-11-22", text: "Two requests met the daily cap. <!channel>" });
+  const posts = [];
+  const post = async (t) => (posts.push(t), { ok: true });
+  assert.equal(await dailySummary({ env, state: {}, now: NOW, dir, installed, post, log: () => {}, services: [service], tz: TZ }), "posted");
+  assert.equal(posts.at(-1), [
+    ":sunrise: Morning check on machine-1: nothing needs a look.",
+    ":white_check_mark: RecursicaChat backup: 03:30, snapshot f5bb9946, 120 archive entries",
+    "",
+    "*Note from reporter for 2026-11-22:*",
+    "Two requests met the daily cap. \u2039!channel\u203a",
+  ].join("\n"));
+
+  const state = {};
+  assert.equal(await dailySummary({ env, state, now: NOW, dir, installed: () => false, post, log: () => {}, services: [service], tz: TZ }), "posted");
+  assert.equal(posts.at(-1), "*Note from reporter for 2026-11-22:*\nTwo requests met the daily cap. \u2039!channel\u203a");
+  assert.equal(state.summaryDay, "2026-11-23");
+  assert.equal(state.summarySince, undefined, "no jobs, so no start time for them");
+
+  // no jobs and no note on yesterday: nothing posts, and the day stays open for a later note
+  const stale = noteFolder({ day: "2026-11-21", text: "old" });
+  const empty = {};
+  assert.equal(await dailySummary({ env, state: empty, now: NOW, dir, installed: () => false, post, log: () => {}, services: [stale], tz: TZ }), "none");
+  assert.equal(empty.summaryDay, undefined);
+  // a broken note never stops the job lines
+  const broken = noteFolder("{");
+  assert.equal(await dailySummary({ env, state: {}, now: NOW, dir, installed, post, log: () => {}, services: [broken], tz: TZ }), "posted");
+  assert.ok(!posts.at(-1).includes("Note from"));
+});
+
 test("the updater posts the summary each hour it is due, before it saves its state, and logs that it ran", () => {
   const src = fs.readFileSync(path.join(here, "updater.mjs"), "utf8");
   assert.ok(src.indexOf("dailySummary({ env, state") < src.lastIndexOf("fs.writeFileSync(stateFile"), "the posted day is saved");
+  assert.ok(src.indexOf("exportUsage({") < src.indexOf("dailySummary({ env, state"), "the usage export runs before the summary reads the note");
+  assert.match(src, /services: control \? healthServices\(site\) : \[\]/, "notes on the control computer only");
   assert.match(src, /console\.log\(`\$\{new Date\(\)\.toISOString\(\)\} updater: done`\)/);
 });
