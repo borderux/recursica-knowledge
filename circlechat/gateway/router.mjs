@@ -73,6 +73,30 @@ const MINUTE = 60_000;
 export const SETTING_CACHE_MS = MINUTE;
 // The only LiteLLM paths a key reaches.
 export const MODEL_PATHS = new Set(["/v1/chat/completions", "/v1/completions", "/v1/messages"]);
+// Settings that load, unload or resize a model on its server: Ollama's keep_alive and its load
+// options. site.json sets them for each model (kit/ollama.mjs), and the gateway's LiteLLM adds them to
+// every request for the model. A caller's own values are dropped: at the top of the request, in its
+// `options` and in its `extra_body`. So no client can unload a model the cluster keeps loaded, or load
+// one with another context length. Other settings, such as temperature, pass through.
+export const LOAD_SETTINGS = ["keep_alive", "num_ctx", "num_batch", "num_gpu", "main_gpu", "num_thread", "numa", "use_mmap", "use_mlock", "low_vram", "f16_kv", "num_keep"];
+const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+export function withoutLoadSettings(body) {
+  const dropped = [];
+  const strip = (o, at) => {
+    const out = { ...o };
+    for (const k of LOAD_SETTINGS) if (Object.hasOwn(out, k)) { dropped.push(at + k); delete out[k]; }
+    return out;
+  };
+  let out = strip(body, "");
+  for (const k of ["options", "extra_body"]) {
+    if (!isObject(out[k])) continue;
+    const inner = strip(out[k], `${k}.`);
+    if (k === "extra_body" && isObject(inner.options)) inner.options = strip(inner.options, "extra_body.options.");
+    out = { ...out, [k]: inner };
+  }
+  return { body: out, dropped };
+}
+
 // Kev-engine's one path, for a program's key with Kev's computers in its gateway block.
 export const KEV_PATH = "/v1/systemone";
 export const KEV_KEY_FILE = "kev-engine.key";
@@ -332,6 +356,9 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     let raw = "";
     for await (const c of req) { raw += c; if (raw.length > 50_000_000) return fail(res, 413, "too_large", "The request is too large."); }
     let body; try { body = JSON.parse(raw); } catch { return fail(res, 400, "bad_json", "The request body is not JSON."); }
+    if (!isObject(body)) return fail(res, 400, "bad_json", "The request body is not a JSON object.");
+    const loading = withoutLoadSettings(body);
+    body = loading.body;
     // A key for a handle site.json does not list gets no route and no cloud model: the gateway fails
     // closed, whatever an older gateway.json says about a fallback.
     const agent = config.agents?.[who.agent];
@@ -391,7 +418,7 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     // cloud is a switch, and a switch belongs to one task.
     const UNPLACED = "the request could not be placed in one task";
     const d = !unsure ? picked.d : view.local ? { target: "cluster", reason: UNPLACED } : { target: "fail", reason: `no cluster model, and ${UNPLACED}` };
-    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks, reason: d.reason } : {}) };
+    const entry = { task, agent: who.agent, route, ...(unsure ? { tasks, reason: d.reason } : {}), ...(loading.dropped.length ? { dropped: loading.dropped } : {}) };
     // the tries the gateway sends for this request, the cloud's included
     let tries = 0;
     const gone = new AbortController();

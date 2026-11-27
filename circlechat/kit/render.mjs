@@ -29,7 +29,7 @@
 // computers, so the stack's agents, jobs, models and Kev's model use only them. kit/stack-site.mjs
 // writes such a site.json from the cluster's. A chosen computer's limits (nodes[].limits) make it
 // act like a smaller computer, and placeStack() leaves out each model that does not fit.
-import { OLLAMA_SETTINGS, linuxOllamaErrors, linuxOllamaSpec, ollamaEnv, ollamaSettingErrors, trialServer } from "./ollama.mjs";
+import { OLLAMA_MODEL_SETTINGS, OLLAMA_SETTINGS, linuxOllamaErrors, linuxOllamaSpec, ollamaEnv, ollamaModelErrors, ollamaModelParams, ollamaSettingErrors, trialServer } from "./ollama.mjs";
 import fs from "node:fs";
 import net from "node:net";
 import { peerAddress } from "./peers.mjs";
@@ -112,6 +112,7 @@ export function egressAllow(site) {
 // The model servers a computer runs. site.json lists each server under the node's "servers", with
 // the models the server serves:
 //   { "id": "mlx", "kind": "mlx-lm", "port": 8081, "models": [{ "id": "qwen-32b", "model": "<name>", "memory_gb": 20 }] }
+// A model on an Ollama server may also set its own context_length and keep_alive (kit/ollama.mjs).
 // A route or an agent names one model as "<node>/<server id>/<model id>". An older site.json lists
 // "models" on the node instead, each with its own port; each model is then named "<node>/<model id>",
 // and the port 11434 counts as an Ollama server named ollama.
@@ -415,10 +416,19 @@ function serverErrors(n, { leaveOut = false } = {}) {
       mids.add(m.id);
       if (!m.model) errs.push(`${where}, model ${m.id}: model is required, the name the server knows the model by`);
       if (!(m.memory_gb > 0)) errs.push(`${where}, model ${m.id}: memory_gb must be the memory the model needs, in GB`);
+      errs.push(...ollamaModelErrors(sv, m, `${where}, model ${m.id}`));
     }
+  }
+  // A model's own context_length and keep_alive need the model under an Ollama server.
+  for (const m of n.models ?? []) {
+    const set = OLLAMA_MODEL_SETTINGS.filter((k) => m[k] !== undefined);
+    if (set.length) errs.push(`node ${n.name}, model ${m.id}: ${set.join(" and ")} ${set.length > 1 ? "need" : "needs"} the model under an Ollama server in servers, as circlechat/README.md, "Model servers", shows`);
   }
   errs.push(...linuxOllamaErrors(n));
   // Every model a node lists stays loaded, so agents can use several at once. The models must fit.
+  // A model with its own keep_alive, which unloads when idle, still counts: each time the model
+  // loads, it needs its memory beside the models that stay loaded. Without that room, Ollama
+  // unloads another idle model to load it, even one set to stay loaded.
   // An Ollama server with max_loaded_models keeps only that many models loaded at one time, so the
   // check counts the server's largest max_loaded_models models.
   const kept = [];
@@ -967,9 +977,12 @@ export function render(site) {
   // both serve at /v1. Unlike openai/, it also answers a request in Anthropic's format (a port
   // job's Claude Code) through that chat API.
   const WAIT = 86_400;
+  // A model on an Ollama server that sets its own context_length or keep_alive gets them in every
+  // request instead (kit/ollama.mjs, ollamaModelParams). Every other model keeps these parameters.
   const params = (b) => {
     const { n, server, m } = byKey.get(b);
-    return { model: `hosted_vllm/${m.model}`, api_base: url(n, server.port, "/v1"), api_key: "none", timeout: WAIT, stream_timeout: WAIT };
+    const base = { model: `hosted_vllm/${m.model}`, api_base: url(n, server.port, "/v1"), api_key: "none", timeout: WAIT, stream_timeout: WAIT };
+    return ((n.servers ?? []).includes(server) && ollamaModelParams(server, m, base)) || base;
   };
   // LiteLLM names the model that answered in the x-litellm-model-id header: "<name>|<model>", where
   // <model> is the cluster model (<node>/<server id>/<model id>) or the cloud model

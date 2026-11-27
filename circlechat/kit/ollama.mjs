@@ -39,6 +39,62 @@ export function ollamaEnv(sv) {
   return env;
 }
 
+// A model's own settings in site.json, on a model of an Ollama server. Each one overrides the
+// server's setting of the same name for that one model, so a large model can stay loaded while a
+// model used now and then loads on its first request and unloads when idle:
+//   context_length  the tokens each request to the model may hold
+//   keep_alive      how long the model stays loaded after its last request: "-1" keeps it loaded,
+//                   "0" unloads it after each answer, or a time, such as "10m"
+// A model that sets neither keeps the server's settings, as before.
+//
+// Ollama takes these per request, not per model, so the gateway's LiteLLM sends them with every
+// request for the model (ollamaModelParams). Ollama's OpenAI-compatible API, /v1, takes keep_alive
+// but no context length. Only Ollama's own chat API, /api/chat, takes both, as options.num_ctx and
+// keep_alive (Ollama 0.40.16: openai/openai.go, api/types.go).
+export const OLLAMA_MODEL_SETTINGS = ["context_length", "keep_alive"];
+
+/** The config check's problems with one model's own Ollama settings. */
+export function ollamaModelErrors(sv, m, where) {
+  const set = OLLAMA_MODEL_SETTINGS.filter((k) => m[k] !== undefined);
+  if (!set.length) return [];
+  if (sv.kind !== "ollama") return [`${where}: ${set.join(", ")} ${set.length > 1 ? "are Ollama settings" : "is an Ollama setting"}, and this server is ${sv.kind}`];
+  const errs = [];
+  if (m.context_length !== undefined && !(Number.isInteger(m.context_length) && m.context_length > 0)) errs.push(`${where}: context_length must be a whole number above 0, such as 65536`);
+  if (m.keep_alive !== undefined && !(["string", "number"].includes(typeof m.keep_alive) && String(m.keep_alive) !== "" && KEEP_ALIVE.test(String(m.keep_alive)))) {
+    errs.push(`${where}: keep_alive must be "-1", to keep the model loaded, "0", to unload the model after each answer, or a time such as "10m" or 600 (seconds)`);
+  }
+  return errs;
+}
+
+// A keep_alive as a request's JSON carries it. Ollama reads a number as seconds, and a string as a
+// Go duration, which needs a unit: the string "300" or "-1" would fail the request. So a value
+// without a unit goes as a number.
+const requestKeepAlive = (v) => (/^-?\d+$/.test(String(v)) ? Number(v) : String(v));
+
+/**
+ * The LiteLLM parameters that carry a model's own settings to Ollama, from the parameters the
+ * model gets without them (base: hosted_vllm/<model> at <server>/v1). Null when the model sets
+ * neither, so the model keeps exactly the parameters it had.
+ *   keep_alive only   the same /v1 API, with keep_alive in each request's body (extra_body).
+ *   context_length    Ollama's own chat API, /api/chat (LiteLLM's ollama_chat), with num_ctx and
+ *                     keep_alive in each request. drop_params lets LiteLLM leave out a request
+ *                     setting that API lacks, instead of refusing the request.
+ */
+export function ollamaModelParams(sv, m, base) {
+  if (sv.kind !== "ollama" || !OLLAMA_MODEL_SETTINGS.some((k) => m[k] !== undefined)) return null;
+  const keepAlive = m.keep_alive !== undefined ? requestKeepAlive(m.keep_alive) : undefined;
+  if (m.context_length === undefined) return { ...base, extra_body: { keep_alive: keepAlive } };
+  return {
+    model: `ollama_chat/${m.model}`,
+    api_base: base.api_base.replace(/\/v1$/, ""),
+    num_ctx: m.context_length,
+    ...(keepAlive !== undefined ? { keep_alive: keepAlive } : {}),
+    drop_params: true,
+    timeout: base.timeout,
+    stream_timeout: base.stream_timeout,
+  };
+}
+
 /** The node runs an Ollama server the kit installs: a Linux helper with a server of kind ollama. */
 export const kitRunsLinuxOllama = (n) => n.os === "linux" && !n.control && (n.servers ?? []).some((sv) => sv.kind === "ollama");
 

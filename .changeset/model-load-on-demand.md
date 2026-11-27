@@ -1,0 +1,5 @@
+---
+"@recursica/knowledge": patch
+---
+
+CircleChat kit: a model on an Ollama server can set its own `context_length` and `keep_alive`, so a model used now and then loads on its first request and unloads when idle. Each one overrides the server's setting of the same name, for that model alone. The large model keeps the server's settings and stays loaded. Ollama takes both settings with each request, so the gateway sends them with every request for the model. A model with `keep_alive` alone keeps Ollama's OpenAI-compatible API, `/v1`, with `keep_alive` in each request. That API takes no context length, so a model with `context_length` goes to Ollama's own chat API, `/api/chat`. A model that sets neither keeps the parameters it had. The config check refuses a wrong value, and a setting on a model of an mlx-lm server. A model that unloads when idle still counts in the memory check, because the model needs its memory each time it loads. The gateway drops a caller's own `keep_alive`, `num_ctx` and other model-loading options, and the spend log lists them in `dropped`, so only site.json's values load, unload or resize a model.

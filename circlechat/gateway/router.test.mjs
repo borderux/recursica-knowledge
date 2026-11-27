@@ -14,11 +14,14 @@ const base = (s) => `http://127.0.0.1:${s.address().port}`;
 // LiteLLM stand-in. A cluster model (a route name) answers as `behavior[route]` says; a cloud key
 // (key/<name>) always answers at once.
 const seen = [];
+// Each request's body, beside `seen`, for the tests of what reaches LiteLLM; `seen` keeps only the path and model.
+const bodies = [];
 const behavior = {};
 const litellm = await listen(async (req, res) => {
   let b = ""; for await (const c of req) b += c;
   const body = JSON.parse(b);
   seen.push({ path: req.url, model: body.model });
+  bodies.push(body);
   if (req.headers.authorization !== "Bearer sk-master") { res.writeHead(401); return res.end("no master key"); }
   const how = body.model.startsWith("key/") ? "ok" : (behavior[body.model]?.shift?.() ?? behavior[body.model] ?? "ok");
   if (how === "hang") return;   // a busy cluster: no answer yet
@@ -214,6 +217,31 @@ test("the port for port jobs takes only a task key, for every request", async ()
   assert.equal(r.status, 200);
   assert.equal((await fetch(`${base(jobs)}/key/generate`, { method: "POST", headers: { "x-api-key": key } })).status, 404);
   jobs.close();
+});
+
+test("a caller can't load, unload or resize a model: keep_alive and the load options are dropped, other settings pass", async () => {
+  db.tasks.betty = null;
+  const r = await ask(keys.betty, "local-large", { keep_alive: 0, num_ctx: 2048, temperature: 0.2, options: { num_ctx: 512, use_mlock: true, top_p: 0.9 }, extra_body: { keep_alive: "0s", options: { num_gpu: 0 }, seed: 7 } });
+  assert.equal(r.status, 200);
+  const sent = bodies.at(-1);
+  assert.equal(sent.keep_alive, undefined);
+  assert.equal(sent.num_ctx, undefined);
+  assert.equal(sent.temperature, 0.2);
+  assert.deepEqual(sent.options, { top_p: 0.9 });
+  assert.deepEqual(sent.extra_body, { options: {}, seed: 7 });
+  const log = await lastLog();
+  assert.deepEqual(log.dropped, ["keep_alive", "num_ctx", "options.num_ctx", "options.use_mlock", "extra_body.keep_alive", "extra_body.options.num_gpu"]);
+  // A request with none of them is sent as it came, and logs nothing dropped.
+  await ask(keys.betty, "local-large", { temperature: 0.1 });
+  assert.equal(bodies.at(-1).temperature, 0.1);
+  assert.equal((await lastLog()).dropped, undefined);
+  // The same rule on Anthropic's path, which Claude Code uses.
+  const m = await fetch(`${base(gw)}/v1/messages`, { method: "POST", headers: { authorization: `Bearer ${keys.betty}`, "content-type": "application/json" }, body: JSON.stringify({ model: "local-large", max_tokens: 10, keep_alive: -1, messages: [{ role: "user", content: "x" }] }) });
+  assert.equal(m.status, 200);
+  assert.equal(bodies.at(-1).keep_alive, undefined);
+  assert.equal(bodies.at(-1).max_tokens, 10);
+  const list = await fetch(`${base(gw)}/v1/chat/completions`, { method: "POST", headers: { authorization: `Bearer ${keys.betty}`, "content-type": "application/json" }, body: "[1]" });
+  assert.equal(list.status, 400, "a body that isn't an object is refused");
 });
 
 test("a key reaches only its agent's routes; another name means the agent's first route", async () => {

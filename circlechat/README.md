@@ -101,7 +101,43 @@ A compressed working memory, `"q8_0"` or `"q4_0"`, needs Ollama's flash attentio
 
 Each request that runs at once holds a context of its own in memory. Count the context in the model's `memory_gb`.
 
-**Every listed model stays loaded,** so agents can use several models at once. The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs.
+**A model on an Ollama server can set its own `context_length` and `keep_alive`.** Each one overrides the server's setting of the same name, for that model alone. So a large model can stay loaded, while a model used now and then loads on its first request and unloads when idle:
+
+```json
+{
+  "id": "ollama",
+  "kind": "ollama",
+  "port": 11434,
+  "context_length": 131072,
+  "parallel": 4,
+  "keep_alive": "-1",
+  "models": [
+    { "id": "large-local", "model": "your-large-model", "memory_gb": 84 },
+    {
+      "id": "coder-local",
+      "model": "your-coder-model",
+      "memory_gb": 40,
+      "context_length": 65536,
+      "keep_alive": "10m"
+    }
+  ]
+}
+```
+
+- `context_length`: the context length, in tokens, for each request to the model.
+- `keep_alive`: how long the model stays loaded after its last request. `"-1"` keeps the model loaded, and `"0"` unloads the model after each answer. Or give a time, such as `"10m"`, or a number of seconds, such as `600`.
+
+A model that sets neither keeps the server's settings, as before. The first request after a model unloads waits while Ollama loads the model.
+
+**Ollama takes these settings with each request, so the gateway sends them with every request for the model.** The gateway's LiteLLM sends a model with `keep_alive` alone to Ollama's OpenAI-compatible API, `/v1`, as before, with `keep_alive` in each request. That API takes no context length. So a model with `context_length` goes to Ollama's own chat API, `/api/chat`, which takes both settings. LiteLLM leaves out any request setting that API lacks, instead of refusing the request. Every other model keeps the OpenAI-compatible API.
+
+**Only site.json loads, unloads or resizes a model.** The gateway drops a caller's own `keep_alive`, `num_ctx` and Ollama's other load options (`gateway/router.mjs`, `LOAD_SETTINGS`). It drops them at the top of the request, inside the request's `options`, and inside its `extra_body`. Then LiteLLM adds site.json's values. So no agent or job can unload the model the cluster keeps loaded, or load a model with another context length. Other settings, such as `temperature`, pass through. The spend log lists what it dropped in `dropped`.
+
+**`parallel` stays a server setting.** Ollama sets the requests each model answers at once for the whole server. A model with its own `context_length` holds that context for each of the server's `parallel` requests. Count both in the model's `memory_gb`.
+
+**Every listed model counts in the memory check, so agents can use several models at once.** The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs. A model that unloads when idle still counts. Each time the model loads, the model needs its memory beside the models that stay loaded. Without that room, Ollama unloads another idle model to make room, even a model set to stay loaded.
+
+**By default, Ollama keeps up to 3 models loaded for each GPU, so 3 on a Mac.** A server without `max_loaded_models` lets the large model and two models that load on demand run together. With `max_loaded_models` at 1, each model that loads on demand unloads the large model.
 
 **An Ollama server with `max_loaded_models` keeps only that many models loaded.** For such a server, the config check counts only the server's largest `max_loaded_models` models. For example, a server lists two models of 5 GB and 3 GB, with `max_loaded_models` at 1. The check counts 5 GB for the server. Ollama unloads one model to load the other, so the first request to the other model waits for the load.
 
