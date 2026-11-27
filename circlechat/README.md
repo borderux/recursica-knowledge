@@ -1872,6 +1872,11 @@ without the program. List each program in site.json:
 - **`setup-host.sh` runs `circlechat/rc-service.sh` as root.** Through the server's root-only CLI it
   makes the service account, drives exactly the agents listed (an agent no longer listed answers
   for itself again), and writes the service's token into the file.
+- **Install the program first, then run `setup-host.sh`.** The program's installer makes the entry's
+  account and the root-owned folder for `file`. Until the account exists, `rc-service.sh` skips the
+  entry with one line, `<name>: skipped: there is no account <account> yet`, and the run still
+  passes, so site.json can list a program before the program is installed. The next run after the
+  install sets the entry up. `--rotate <name>` for an entry with no account fails.
 - **A token doesn't expire**, so the script makes one only when the file is missing or empty, or the
   server has no token for the service. `sudo OWNER=$(id -un) circlechat/rc-service.sh --rotate
 <name>` makes a new one, and the old one stops working at once.
