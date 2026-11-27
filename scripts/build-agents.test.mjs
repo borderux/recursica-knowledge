@@ -705,3 +705,32 @@ test("Claire's RecursicaChat instructions take a term's evidence from the quotes
   assert.ok(built.includes("Each term the terms pass added from this interview needs at least one quote that lists it."), "the quotes pass quotes each new term");
   assert.doesNotMatch(built, /carries `evidence`|Drop any proposal that has no evidence|evidence array/i, "not the Lexicon subagent's evidence rule");
 });
+
+/**
+ * On RecursicaChat 2.0 Betty works through the brief stage, and a chat reply of hers has one tool, propose_plan, for a plan.
+ * Her SKILL.md is a builder with a shell, a repo and Barb to dispatch, so her instructions there come
+ * from SKILL.recursicachat.md. Built from SKILL.md, they would claim tools she has no access to there,
+ * and hold tokens rc-sync refuses. The kit is public and Betty is the same agent anywhere, so her
+ * RecursicaChat files describe only Betty herself.
+ */
+test("Betty's RecursicaChat instructions come from SKILL.recursicachat.md: the brief stage, her messages, people decide", () => {
+  const raw = fs.readFileSync(path.join(repoRoot, "portable", "recursicachat", "agents", "betty", "INSTRUCTIONS.md"), "utf8");
+  const own = fs.readFileSync(path.join(agentsDir, "betty", "SKILL.recursicachat.md"), "utf8");
+  assert.ok(raw.startsWith(own.split("<!-- platform:")[0]), "the body is SKILL.recursicachat.md's");
+  assert.ok(raw.length <= 20_000, "rc-sync's MAX_INSTRUCTIONS");
+  assert.doesNotMatch(raw, /\{\{|@[A-Z0-9_]+@|<!-- platform:/, "no token and no marker: rc-sync refuses a token");
+  const built = raw.replace(/\s+/g, " ");
+  assert.ok(built.includes("`@betty brief <design slug>`"), "the brief message");
+  for (const m of ["status", "stop"]) assert.ok(built.includes(`\`@betty ${m}\``), `the ${m} message`);
+  assert.ok(built.includes("**Betty's one tool in a chat reply is `propose_plan`.**"), "one tool: the plan");
+  assert.ok(built.includes("Betty never picks an option for them, and never calls one option the best one."), "people decide");
+  assert.ok(built.includes("**Approve** and **Ask for a change**"), "the brief's approval");
+  assert.ok(built.includes("from the branch `betty/<slug>`"), "the record's pull request");
+  assert.ok(built.includes("A person merges the pull request, never Betty."), "never merges");
+  assert.doesNotMatch(built, /write_file|task_comment|update_task|create_task|component_api|screen-skill-manifest|BETTY_GITHUB_TOKEN|HEARTBEAT_OK/, "no tool of her other targets");
+  const buzz = fs.readFileSync(path.join(repoRoot, "buzz-agents", "agents", "betty", "SYSTEM_PROMPT.md"), "utf8");
+  assert.doesNotMatch(buzz, /`@betty brief <design slug>`/, "her Buzz prompt is still SKILL.md's");
+  const runtime = JSON.parse(fs.readFileSync(path.join(agentsDir, "betty", "runtime", "recursicachat.json"), "utf8"));
+  assert.deepEqual([runtime.autonomy, runtime.sandbox, runtime.model], ["ask", "docker", undefined]);
+  assert.ok(runtime.starters.includes("@betty brief [design slug]"), "the brief starter");
+});

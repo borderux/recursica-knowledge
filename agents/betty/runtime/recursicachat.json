@@ -1,0 +1,13 @@
+{
+  "$comment": "Betty's settings on a RecursicaChat 2.0 server that belong to the agent, the same on every stack. circlechat/rc-sync.sh sets them through the server's API, with the instructions in portable/recursicachat/agents/betty/INSTRUCTIONS.md, built from SKILL.recursicachat.md and platform/recursicachat.md. The model and the monthly budget belong to the stack: agents.betty.recursicachat in the stack's site.json, where the model is a route.",
+  "autonomy": "ask",
+  "$autonomyComment": "ask: Betty asks before each action that is not a read. A chat reply of hers has one tool, propose_plan, for posting a plan, so a question before any other action means a turn went outside her work.",
+  "sandbox": "docker",
+  "$sandboxComment": "docker: each turn runs in a container, never on the server itself. Betty needs no command in it.",
+  "starters": [
+    "@betty brief [design slug]",
+    "@betty status",
+    "What can you do?"
+  ],
+  "$startersComment": "The suggestions an empty chat with Betty shows. A starter with [placeholders] opens a fill-in dialog. The first two are her own messages, with the mention, so they read the same in a direct message and in a channel."
+}
