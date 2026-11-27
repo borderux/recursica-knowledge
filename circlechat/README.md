@@ -899,6 +899,49 @@ The log holds no prompt and no answer.
 
 **The model server's wait is an estimate.** LiteLLM's answer drops Ollama's own timings, so the gateway counts the requests it sends to each cluster model. A model has the slots of its server's `parallel` in site.json, and an mlx-lm server has one. A request sent while every slot is busy waits until the oldest request ahead of it ends. A request to a route counts on the route's first cluster model. Requests that reach the server some other way, such as a bench, don't count, so the estimate is a floor. A server with no `parallel` in site.json uses its own default, which the gateway can't see, so its requests log no `server_wait_ms`.
 
+### A health report's usage export
+
+**A program that writes a health note on the cluster gets each day's usage in its own folder.** The program's account can't read the spend log or the cluster agent's files, because the stack's folder and `/var/lib/agent-cluster` are closed to it. Set `"health_report": true` on the program's entry in `recursicachat.services`, with `account` and `state`:
+
+```json
+{ "name": "example-reporter", "account": "_example", "file": "/opt/example/run/example-reporter.gateway-key",
+  "job": "io.example.reporter", "state": "/opt/example/home/state", "health_report": true,
+  "gateway": { "routes": ["judge"], "max_parallel": 2, "daily_requests": 500 } }
+```
+
+The config check refuses a `health_report` that is not `true` or `false`, and `true` without `state` or `account`.
+
+**Every 5 minutes, the cluster agent on the control computer takes a usage sample** (`cluster/usage.mjs`). Each sample is one JSON line in `/var/lib/agent-cluster/usage/samples-<day>.jsonl`, the day in the cluster's time zone:
+
+```json
+{"time":"2026-11-22T12:00:00.000Z","vms":[{"profile":"default","status":"Running","memory_gb":64,"used_gb":23.4}],"models":[{"name":"large-model:1b","size_gb":66.1,"expires_at":"2026-11-22T12:05:00.000Z"}]}
+```
+
+- `vms`: each Docker VM in the cluster's own Colima folder, `~/.colima`, never a client stack's. `memory_gb` is the VM's size from `colima list`, and `used_gb` is MemTotal less MemAvailable from the VM's `/proc/meminfo`. A stopped VM, or an `ssh` that fails, has `used_gb` null. `vms` is null when `colima list` fails, and on a computer that isn't a Mac.
+- `models`: each model the control computer's Ollama holds loaded, from Ollama's `/api/ps`, with the time Ollama unloads it, or null. `models` is null when Ollama doesn't answer within 5 seconds.
+- A GB is 1024³ bytes, rounded to one decimal.
+
+**Each hour, the updater on the control computer copies each finished day into the program's folder** (`cluster/usage-export.mjs`). A day runs from midnight to midnight in the cluster's time zone. The updater checks the last 3 finished days, so a computer that was off catches up. `<state>/usage/<day>/` gets:
+
+- `spend.jsonl`: the spend log's lines whose `time` falls on the day, as the gateway wrote them. A line without a readable time is left out.
+- `samples.jsonl`: the day's usage samples, or an empty file.
+- `limits.json`: `timezone`, `day`, and the settings at the time of the copy:
+  - `keys`: each gateway handle, such as `svc-example-reporter`, with `routes`, `max_parallel` and `daily_requests`, null when the handle has none.
+  - `routes`: site.json's `routes`, each with its models.
+  - `models`: each cluster model, `<node>/<server>/<model id>`, with `model`, `memory_gb`, `keep_alive` and `context_length` (the model's own, else its server's, else null), `server_parallel` and `server_max_loaded_models`.
+  - `nodes`: each computer's `model_memory_gb`.
+- `done`: an empty file, written last. A day with `done` is complete and is never written again.
+
+The updater writes as the program's account, never as root, so a link in the program's folder can't send root's writes elsewhere. Each folder is mode 700, and each file is mode 600 and takes its place in one step. The program's account reads only its own folder. No file holds a key, a prompt or an answer. The sample files and the day folders are kept for 15 days.
+
+**The morning summary adds the program's note on yesterday.** The program writes `<state>/health-note.json` before 07:00 in the cluster's time zone:
+
+```json
+{ "day": "2026-11-22", "text": "One line or a short paragraph on the day." }
+```
+
+The summary adds a blank line, `*Note from <name> for <day>:*` and the text. The text is cut to 1,500 characters. Each `<` and `>` becomes `‹` and `›`, so no mention, channel ping or link in the note pings anyone. A note on another day, a file changed more than 36 hours ago, a link in the file's place, or a file that doesn't parse adds nothing. A control computer with no backup jobs posts the note alone.
+
 ### The key check
 
 **The test restores run the key check, `circlechat/gateway/key-check.mjs`.** The check fails when a cloud key is in a backup. The check finds a key by the exact values in `model-keys.env` and by the shapes of the providers' keys. The report names each place and the kind of key, never the key. Remove each key the check finds, and rotate the key in the provider's console.
@@ -1775,7 +1818,8 @@ at its first hourly run from 07:00 in the cluster's time zone: the night's two b
 snapshots and times, the last two restore tests, and each job that failed or didn't run on time. A
 daily job is late after 27 hours, a monthly one after 31 days and 3 hours. A missing summary means
 posting broke. Only the jobs installed on the computer are listed, so a computer without them posts
-none.
+none. On the control computer, the summary also adds the note of each program with
+`health_report`, and posts a note even without jobs ("A health report's usage export").
 
 To test each path with one post:
 
@@ -1844,6 +1888,9 @@ service-revoke`) also stops the service driving its agents.
   program's launchd job, such as `"job": "io.example.program"`. `state` is the folder that holds only
   the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's
   account. `rc-clear` deletes everything in that folder, after copying it aside.
+- **An entry with `state` may also set `"health_report": true`.** The program then gets each day's
+  usage in `<state>/usage/<day>/`, and its note goes in the morning summary ("A health report's
+  usage export").
 
 **A program that asks a model directly gets a gateway key of its own,** from a `gateway` block in the
 program's entry. A program asks a model directly for a short check, such as a yes-or-no question about

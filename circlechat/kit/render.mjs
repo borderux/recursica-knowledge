@@ -624,6 +624,8 @@ export function rcSessionErrors(rc) {
 // launchd job, which rc-clear stops and starts, and state, the folder that holds only the program's
 // state, which rc-clear copies aside and clears. All four of an entry's name, job, account and state
 // land in rc-clear.sh, a root script, so each shape allows no space, quote, colon or dollar sign.
+// A third optional setting, health_report: true, gives the program each finished day's usage in
+// <state>/usage/<day>/ and its note in the morning summary (cluster/usage-export.mjs).
 const RC_SERVICE_NAME = /^[a-z][a-z0-9-]{1,39}$/;
 const RC_SERVICE_JOB = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 // The bounds of a service's gateway caps: requests at once, and requests per day.
@@ -679,7 +681,16 @@ export function rcServiceErrors(rc, site = {}) {
   rc.services.forEach((s, i) => {
     const at = `recursicachat.services[${i}]`;
     if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
-    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state and gateway`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway", "health_report"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state, gateway and health_report`);
+    // health_report: the updater copies each day's usage into <state>/usage, as the account, and the
+    // morning summary posts the program's note (cluster/usage-export.mjs, cluster/daily-summary.mjs).
+    if (s.health_report !== undefined) {
+      if (typeof s.health_report !== "boolean") errs.push(`${at}.health_report must be true or false: true gives the program each day's usage in its state folder, and its note in the morning summary`);
+      else if (s.health_report) {
+        if (s.state === undefined) errs.push(`${at}.health_report needs state, the program's folder that gets the usage export in usage/<day>/`);
+        if (s.account === undefined) errs.push(`${at}.health_report needs account, the account that owns the usage export`);
+      }
+    }
     if (s.gateway !== undefined) errs.push(...svcGatewayErrors(s, at, site));
     if (s.job !== undefined) {
       if (typeof s.job !== "string" || !RC_SERVICE_JOB.test(s.job)) errs.push(`${at}.job must be the program's launchd job, such as io.example.program`);

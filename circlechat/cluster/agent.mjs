@@ -2,7 +2,8 @@
 // reads the decoys' log, carries out the actions the Slack app sends, and runs scheduled reboots.
 // It watches the other computers' agents, and reports this computer's stacks and kit services in
 // /status (monitor.mjs, services.mjs). A kit service that restarts more than 3 times in an hour
-// gets one post in the cluster's channel.
+// gets one post in the cluster's channel. On the control computer, it samples the cluster's own
+// Docker VMs and Ollama's loaded models every 5 minutes (usage.mjs).
 //
 // Settings come from /etc/agent-cluster.env (root only), written by install-cluster.sh:
 //   COMPUTER, CLUSTER_TOKEN, AGENT_BIND (addresses to listen on), AGENT_PORT,
@@ -23,16 +24,18 @@ import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 import { requireKit } from "./kit-check.mjs";
 import { TAG, approve } from "./release-gate.mjs";
-import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
+import { DEFAULT_STACK_NAME, clusterStackName, ollamaService } from "../kit/render.mjs";
 import { agentPeers } from "../kit/peers.mjs";
 import { RestartWatch, restartCounts, serviceChecks, serviceStates } from "./services.mjs";
 import { agentState } from "./quiet.mjs";
 import { siteFile, stackDir, tenantStacks } from "../kit/stack-paths.mjs";
+import { UsageSampler, readModels, readVms, takeSample } from "./usage.mjs";
 
 //   services(): [{ name, state }] of this computer's kit services, for /status; restarts: RestartWatch
 //   barb(): Barb's state on the control computer's RecursicaChat server (quiet.mjs agentState), for
 //     /status, or null on any other computer. A kev-engine key rotation reads it (deploy/apply-secrets.sh).
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], services = async () => [], barb = async () => null, restarts, egress, network }) {
+//   usage: the usage sampler (usage.mjs UsageSampler), which samples on the control computer only
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], services = async () => [], barb = async () => null, restarts, egress, network, usage }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -87,6 +90,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
     if (egress) await egress.tick().catch((e) => console.error(`egress: ${e.message}`));
     if (network) await network.tick().catch((e) => console.error(`network check: ${e.message}`));
     if (restarts) await restarts.tick().catch((e) => console.error(`restart check: ${e.message}`));
+    if (usage) await usage.tick().catch((e) => console.error(`usage sample: ${e.message}`));
     const r = readReboot();
     if (r && r.at <= now()) {
       fs.rmSync(rebootFile, { force: true });
@@ -177,9 +181,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const running = async (c) => (await run("docker", ["inspect", "-f", "{{.State.Running}}", c])).trim() === "true";
   const restarts = new RestartWatch({ computer: env.COMPUTER, stateFile: path.join(stateDir, "restarts.json"), post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text),
     read: () => restartCounts(checks(), { run, mac: IS_MAC }) });
+  // The usage sample, every 5 minutes on the control computer: the cluster's own Colima VMs, as the
+  // owner, and the models the control computer's Ollama holds loaded. A failed command gives null.
+  const control = () => { const s = site(); return s?.nodes?.some((n) => n.name === env.COMPUTER && n.control) ? s : null; };
+  const runOrNull = (cmd, args) => new Promise((resolve) => execFile(cmd, args, { timeout: 30_000 }, (err, out) => resolve(err ? null : out)));
+  const usage = new UsageSampler({ dir: path.join(stateDir, "usage"), tz: clusterTz(env), control,
+    sample: (s, t) => takeSample({ now: t,
+      vms: () => (IS_MAC ? readVms({ run: runOrNull, owner: env.OWNER, ownerHome: env.OWNER_HOME, envPath: env.PATH }) : null),
+      models: () => readModels({ port: ollamaService(s)?.port }) }) });
   // The stacks this computer is the control computer of, each checked on this computer.
   const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME, { computer: env.COMPUTER }),
-    services: () => serviceStates(checks(), { running }), restarts, egress, network,
+    services: () => serviceStates(checks(), { running }), restarts, egress, network, usage,
     // Barb's state, on the control computer only: the computer that runs the RecursicaChat server.
     barb: async () => { const s = site(); return s?.nodes?.some((n) => n.name === env.COMPUTER && n.control) ? agentState(s, "barb") : null; } });
   const srv = agent.server();
