@@ -25,6 +25,8 @@ grant to save a message.
 | `portable/claude-code/agents/{barb,checker,feisty}.md` | Barb, who reviews what Betty builds — same directory, all three |
 | `agents/betty/runtime/claude-code.json` | model, tool allowlist, and why each absence is deliberate |
 | `buzz-agents/agents/betty/SYSTEM_PROMPT.md` | the Buzz prompt |
+| `portable/recursicachat/agents/betty/INSTRUCTIONS.md` | RecursicaChat 2.0: see below |
+| `agents/betty/runtime/recursicachat.json` | her autonomy, sandbox and starters on RecursicaChat 2.0 |
 
 Both prompt files are generated from `agents/betty/SKILL.md` by
 `node scripts/build-agents.mjs`. Edit the source, not the artifact. The build overwrites the
@@ -66,6 +68,35 @@ the session's working directory for the target repository. The plugin starts the
 **Grok allows one level of subagents by default.** Betty dispatches Barb, and Barb dispatches her
 checkers, so the chain needs two levels. Set `[subagents] max_depth = 2` in `~/.grok/config.toml`.
 Grok reads this setting only from the user's own config, so the plugin cannot set the depth.
+
+## On RecursicaChat 2.0
+
+**On RecursicaChat 2.0, Betty works through the brief stage.** Her instructions there are
+`portable/recursicachat/agents/betty/INSTRUCTIONS.md`, built from `SKILL.recursicachat.md` and
+`platform/recursicachat.md`, not from `SKILL.md`. Her `SKILL.md` is a builder with a shell, a knowledge
+checkout and a repo, and a chat reply of hers on RecursicaChat has one tool, propose_plan, for posting a plan. `circlechat/rc-sync.sh` sets
+the instructions, with the autonomy, the sandbox and the starters in `runtime/recursicachat.json`, and the
+model, a route, and the monthly budget in the stack's site.json (`agents.betty.recursicachat`).
+
+People work with her through three messages: `@betty brief <design slug>` starts the brief stage or picks
+it up, `@betty status` says where it is, and `@betty stop` stops it at the
+next step. In the brief stage she pins the inputs, makes the facts sheet, asks each conflict as a
+"Needs you" question with its options as buttons, writes the brief, and asks people to approve it. The
+map and the prototype stages come later, and her instructions say so.
+
+The fence on RecursicaChat 2.0 rests on these settings, each held outside the prompt:
+
+| Setting | How the setting holds |
+|---|---|
+| **No tools in a chat reply** | Her chat replies hold no tool that reads or writes a repo. |
+| **Her two GitHub Apps** | One reads the research repo and the artifact repos. The other writes only to prototype repos. No key or token reaches her sandbox, the server or a prompt. |
+| **Reviewed research only** | She reads only reviewed findings and personas from the research repo, and only their ids, titles, summaries, goals and frustrations. Never a quote or a transcript. |
+| **People decide** | Each conflict and the brief's approval are "Needs you" questions a person answers with buttons. |
+| **Every write is a pull request** | One pull request per design, from `betty/<slug>`, in the project's private prototype repo. A person merges it, never Betty. A person creates each prototype repo. |
+| **The Docker sandbox** | `runtime/recursicachat.json`, set by the sync. |
+| **The model through the gateway only** | site.json's model must be one of her routes, with her cloud switch off. |
+
+Her Buzz prompt, her Claude Code agent and her CircleChat persona are unchanged.
 
 ## What she is not given, on purpose
 
