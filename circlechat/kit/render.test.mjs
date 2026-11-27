@@ -630,6 +630,77 @@ test("an Ollama server's settings are checked, and the kit's Ollama service gets
   assert.deepEqual(ollamaService(old), { port: 11434, env: [] });
 });
 
+test("a model's own context_length and keep_alive reach Ollama in every request for the model", () => {
+  const s = clone();
+  const mac = s.nodes.find((n) => n.name === "machine-2");
+  const ollama = mac.servers.find((x) => x.kind === "ollama");
+  Object.assign(ollama, { context_length: 131072, parallel: 4, keep_alive: "-1" });
+  ollama.models.push({ id: "coder-local", model: "qwen3-coder:30b", memory_gb: 10, keep_alive: "10m" });
+  s.routes.coder = ["machine-2/ollama/coder-local"];
+  assert.deepEqual(validate(s), []);
+  const params = (r, name) => r.litellm.model_list.find((m) => m.model_name === name).litellm_params;
+  let r = render(s);
+  // A model that sets neither keeps exactly the parameters it had, and the server's settings.
+  assert.deepEqual(params(r, "machine-2/ollama/large-local"),
+    { model: "hosted_vllm/your-large-model", api_base: "http://machine-2.example.ts.net:11434/v1", api_key: "none", timeout: 86_400, stream_timeout: 86_400 });
+  // keep_alive alone: the same OpenAI-compatible API, with keep_alive in each request's body.
+  const keepOnly = { model: "hosted_vllm/qwen3-coder:30b", api_base: "http://machine-2.example.ts.net:11434/v1", api_key: "none", timeout: 86_400, stream_timeout: 86_400, extra_body: { keep_alive: "10m" } };
+  assert.deepEqual(params(r, "machine-2/ollama/coder-local"), keepOnly);
+  assert.deepEqual(params(r, "coder"), keepOnly, "the route gets the model's settings too");
+  // Ollama reads a string as a Go duration, which needs a unit, so a value without one goes as a number.
+  for (const [v, sent] of [["-1", -1], [-1, -1], ["0", 0], ["600", 600], [600, 600], ["1h30m", "1h30m"]]) {
+    ollama.models[1].keep_alive = v;
+    assert.deepEqual(validate(s), [], String(v));
+    assert.deepEqual(params(render(s), "coder").extra_body, { keep_alive: sent }, String(v));
+  }
+  // context_length: Ollama's own chat API, the only one that takes a context length per request.
+  Object.assign(ollama.models[1], { context_length: 65536, keep_alive: "10m" });
+  assert.deepEqual(validate(s), []);
+  r = render(s);
+  const native = { model: "ollama_chat/qwen3-coder:30b", api_base: "http://machine-2.example.ts.net:11434", num_ctx: 65536, keep_alive: "10m", drop_params: true, timeout: 86_400, stream_timeout: 86_400 };
+  assert.deepEqual(params(r, "machine-2/ollama/coder-local"), native);
+  assert.deepEqual(params(r, "coder"), native);
+  assert.equal(r.litellm.model_list.find((m) => m.model_name === "coder").model_info.id, "coder|machine-2/ollama/coder-local", "the spend log still names the model");
+  delete ollama.models[1].keep_alive;
+  assert.ok(!("keep_alive" in params(render(s), "coder")), "without keep_alive, the server's keep_alive applies");
+  assert.equal(params(render(s), "local-large").model, "hosted_vllm/your-large-model", "the other models keep the OpenAI-compatible API");
+});
+
+test("the config check refuses a model's wrong context_length or keep_alive, and still counts a model that unloads when idle", () => {
+  const s = clone();
+  const mac = s.nodes.find((n) => n.name === "machine-2");
+  const ollama = mac.servers.find((x) => x.kind === "ollama");
+  const mlx = mac.servers.find((x) => x.kind === "mlx-lm");
+  Object.assign(ollama.models[0], { context_length: 0, keep_alive: "forever" });
+  let errs = validate(s).join("\n");
+  assert.match(errs, /node machine-2, server ollama, model large-local: context_length must be a whole number above 0, such as 65536/);
+  assert.match(errs, /node machine-2, server ollama, model large-local: keep_alive must be "-1", to keep the model loaded, "0", to unload the model after each answer, or a time such as "10m" or 600 \(seconds\)/);
+  for (const v of [1.5, "65536", -1]) {
+    Object.assign(ollama.models[0], { context_length: v, keep_alive: "10m" });
+    assert.match(validate(s).join("\n"), /model large-local: context_length must be a whole number above 0/, String(v));
+  }
+  // A setting with a space or a quote never reaches a request.
+  Object.assign(ollama.models[0], { context_length: 65536, keep_alive: "1h; rm -rf ~" });
+  assert.match(validate(s).join("\n"), /model large-local: keep_alive must be/);
+  delete ollama.models[0].context_length, delete ollama.models[0].keep_alive;
+  mlx.models[0].keep_alive = "10m";
+  mlx.models[0].context_length = 65536;
+  errs = validate(s).join("\n");
+  assert.match(errs, new RegExp(`node machine-2, server mlx, model ${mlx.models[0].id}: context_length, keep_alive are Ollama settings, and this server is mlx-lm`));
+  delete mlx.models[0].keep_alive, delete mlx.models[0].context_length;
+  assert.deepEqual(validate(s), []);
+  // A model that loads on demand still needs its memory each time it loads, beside the others.
+  ollama.models.push({ id: "coder-local", model: "qwen3-coder:30b", memory_gb: 20, keep_alive: "10m", context_length: 65536 });
+  assert.match(validate(s).join("\n"), /node machine-2: the loaded models need 100 GB, and the node gives its models 96 GB \(model_memory_gb\): ollama\/large-local 40 GB, ollama\/coder-local 20 GB, mlx\/large-mlx 40 GB/);
+  // In the older form, a model has no server to take the settings.
+  const old = clone();
+  for (const n of old.nodes) delete n.servers, delete n.model_memory_gb;
+  old.nodes[1].models = [{ id: "large-local", port: 11434, model: "your-large-model", keep_alive: "10m" }];
+  old.routes = { "local-large": ["machine-2/large-local"], coder: ["machine-2/large-local"] };
+  old.agents = { betty: { routes: ["local-large"] } };
+  assert.match(validate(old).join("\n"), /node machine-2, model large-local: keep_alive needs the model under an Ollama server in servers/);
+});
+
 test("a site.json with one Ollama server, in the older form, keeps working", () => {
   const s = clone();
   for (const n of s.nodes) delete n.servers, delete n.model_memory_gb;
