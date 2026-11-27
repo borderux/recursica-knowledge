@@ -24,6 +24,8 @@
 #     still has is revoked, and its file removed.
 #   - a program that only asks models, an entry with a gateway block and no agents, gets only its
 #     gateway key, in the entry's file itself: no service, no token and no agent on the server.
+# An entry whose account doesn't exist yet is skipped with a note: the program's installer makes the
+# account, and a later run sets the entry up. --rotate for such an entry fails.
 # A failure for one entry says why and goes on to the next; the script then exits 1.
 # RC_SERVICE_ROOT_OWNER is for the tests: the account a folder must belong to (root).
 set -euo pipefail
@@ -118,7 +120,14 @@ gateway_key() {
 # Sets up one service. Returns 1, with a line that says why.
 one() {
   local name="$1" account="$2" file="$3" agents="$4" gw="$5" keyfile="$6" routes="$7" dir tmp owner mode line err a have need=""
-  id -u "$account" >/dev/null 2>&1 || { say "$name: there is no account $account"; return 1; }
+  # A program's installer makes its account. Until then the entry waits: one note, and the run goes on
+  # and passes, so site.json can list the program before the program is installed. --rotate for it
+  # still fails, since a person asked for that service by name.
+  if ! id -u "$account" >/dev/null 2>&1; then
+    if [ "$ROTATE" = "$name" ]; then say "$name: there is no account $account, so no new token or key"; return 1; fi
+    say "$name: skipped: there is no account $account yet. Install the program first, which makes the account, then run setup-host.sh (or this script) again"
+    return 0
+  fi
   dir="$(dirname "$file")"
   [ -d "$dir" ] && [ ! -L "$dir" ] || { say "$name: the folder $dir is missing"; return 1; }
   read -r owner mode <<<"$(stat_owner_mode "$dir")"

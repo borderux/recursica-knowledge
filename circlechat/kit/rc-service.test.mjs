@@ -247,9 +247,21 @@ test("rc-service.sh keeps the old file and says why: no token, an unknown agent,
   assert.match(writable.out, /no write for the group or others/);
   assert.equal(writable.calls, "", "nothing is asked of the server");
 
+});
+
+// A program's installer makes its account, so site.json can list the program first: the entry waits
+// with a note, and the run passes. --rotate for that entry still fails.
+test("rc-service.sh skips a service whose account doesn't exist yet, with a note, and the run passes", () => {
   const noAccount = setup({ account: "_no-such-account" }).go();
-  assert.equal(noAccount.r.status, 1);
-  assert.match(noAccount.out, /there is no account _no-such-account/);
+  assert.equal(noAccount.r.status, 0, noAccount.out);
+  assert.match(noAccount.out, /example-service: skipped: there is no account _no-such-account yet\. Install the program first, which makes the account, then run setup-host\.sh \(or this script\) again/);
+  assert.equal(noAccount.calls, "", "nothing is asked of the server");
+  assert.equal(noAccount.text, "old-token\n", "the file is left as it was");
+
+  const rotate = setup({ account: "_no-such-account" }).go(["--rotate", "example-service"]);
+  assert.equal(rotate.r.status, 1);
+  assert.match(rotate.out, /example-service: there is no account _no-such-account, so no new token or key/);
+  assert.equal(rotate.calls, "");
 });
 
 test("rc-service.sh does nothing without services in site.json, and refuses a bad argument", () => {
