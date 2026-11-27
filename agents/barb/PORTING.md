@@ -163,6 +163,28 @@ an `ambiguousImports` entry in a report.
 rendering a table through a shared wrapper imports no adapter table itself. If she is wired to a
 single file, the rules that matter most will be missing and the report will look clean.
 
+## On RecursicaChat 2.0
+
+**On RecursicaChat 2.0, Barb runs every review in one fixed order and never skips Kev.** Her instructions
+there are `portable/recursicachat/agents/barb/INSTRUCTIONS.md`, built from `SKILL.recursicachat.md` and
+`platform/recursicachat.md`, not from `SKILL.md`. Her `SKILL.md` runs the manifest script and Kev in a
+shell, fans out to subagents, and skips Kev on a large file or a full review, and a chat reply of hers on
+RecursicaChat has one tool, propose_plan, for posting a plan. The order there is the code checks, then Kev's first pass, then one checker per
+skill, then Feisty on every finding, with her own `checker` and `feisty` prompts. `circlechat/rc-sync.sh`
+sets the instructions, with the autonomy, the sandbox and the starters in `runtime/recursicachat.json`,
+and the model, a route, and the monthly budget in the stack's site.json (`agents.barb.recursicachat`).
+
+People ask for a review with `@barb review <screen path or pull request>`, such as
+`@barb review acme/example-app#12` or `@barb review acme/example-app src/screens/orders.tsx`. The report
+gives the findings, the checks not made, and the adapter issues, drafted for a person to file. A person
+answers a finding with `@barb right <n>` or `@barb wrong <n> <why>`, and those answers become Kev's
+training labels. **Screenshots are not reviewed yet:** each rule that only a rendered page can answer is
+listed as not checked.
+
+**Her one property holds there as well.** A chat reply of hers has one tool, propose_plan, for posting a plan, so she cannot write. She
+writes nothing to the app or the skills, posts her report in the chat, and files no issue. Her Buzz
+prompt, her Claude Code agent and her CircleChat persona are unchanged.
+
 ## What she cannot do, wherever she runs
 
 - **Judge rules only a rendered page can answer** — centering beyond the maximum width, a region

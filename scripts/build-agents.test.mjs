@@ -707,6 +707,35 @@ test("Claire's RecursicaChat instructions take a term's evidence from the quotes
 });
 
 /**
+ * On RecursicaChat 2.0 Barb runs every review in one fixed order and never skips Kev, and a chat reply
+ * of hers has one tool, propose_plan, for a plan. Her SKILL.md runs the review with a shell, subagents and a Kev that a large
+ * file or a full review skips, so her instructions there come from SKILL.recursicachat.md. Built from
+ * SKILL.md, they would claim tools she has no access to there, and contradict that order.
+ */
+test("Barb's RecursicaChat instructions come from SKILL.recursicachat.md: the fixed order, never Kev skipped, no tools", () => {
+  const raw = fs.readFileSync(path.join(repoRoot, "portable", "recursicachat", "agents", "barb", "INSTRUCTIONS.md"), "utf8");
+  const own = fs.readFileSync(path.join(agentsDir, "barb", "SKILL.recursicachat.md"), "utf8");
+  assert.ok(raw.startsWith(own.split("<!-- platform:")[0]), "the body is SKILL.recursicachat.md's");
+  assert.ok(raw.length <= 20_000, "rc-sync's MAX_INSTRUCTIONS");
+  assert.doesNotMatch(raw, /\{\{|@[A-Z0-9_]+@|<!-- platform:/, "no token and no marker: rc-sync refuses a token");
+  const built = raw.replace(/\s+/g, " ");
+  assert.ok(built.includes("`@barb review <screen path or pull request>`"), "the review message");
+  assert.ok(built.includes("`@barb right <n>`") && built.includes("`@barb wrong <n> <why>`"), "the answers to a finding");
+  assert.ok(built.includes("the answers become the labels that train Kev"), "answers are Kev's labels");
+  assert.ok(built.includes("No step is skipped, and Kev is never skipped."), "Kev is never skipped");
+  const order = ["**The code checks.**", "**Kev's first pass.**", "**One checker per skill.**", "**Feisty on every finding.**"].map((s) => built.indexOf(s));
+  assert.ok(order.every((i, k) => i > -1 && (k === 0 || i > order[k - 1])), "the fixed order");
+  assert.ok(built.includes("**Screenshots are not reviewed yet.**"), "no screenshot review yet");
+  assert.ok(built.includes("Barb never files an issue."), "adapter issues are drafts for a person");
+  assert.ok(built.includes("**Barb's one tool in a chat reply is `propose_plan`.**"), "one tool: the plan");
+  assert.doesNotMatch(built, /entry file is under 300 lines|screen-skill-manifest|KEV_ENGINE|share_files|\/workspace|delegated sub-task/, "nothing of her other targets");
+  const buzz = fs.readFileSync(path.join(repoRoot, "buzz-agents", "agents", "barb", "SYSTEM_PROMPT.md"), "utf8");
+  assert.doesNotMatch(buzz, /`@barb review <screen path or pull request>`/, "her Buzz prompt is still SKILL.md's");
+  const runtime = JSON.parse(fs.readFileSync(path.join(agentsDir, "barb", "runtime", "recursicachat.json"), "utf8"));
+  assert.deepEqual([runtime.autonomy, runtime.sandbox, runtime.model], ["ask", "docker", undefined]);
+});
+
+/**
  * On RecursicaChat 2.0 Betty works through the brief stage, and a chat reply of hers has one tool, propose_plan, for a plan.
  * Her SKILL.md is a builder with a shell, a repo and Barb to dispatch, so her instructions there come
  * from SKILL.recursicachat.md. Built from SKILL.md, they would claim tools she has no access to there,
