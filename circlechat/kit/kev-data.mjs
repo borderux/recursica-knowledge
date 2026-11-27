@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Kev's review data: Barb's Kev disagreement notes, kept in a private repo (data.repo in
-// site.json), never in the knowledge repo or any public repo. push-data.sh and pull-kev-notes.sh
+// Kev's review data: the design reviews' Kev labels and Barb's Kev disagreement notes, kept in a
+// private repo (data.repo in site.json), never in the knowledge repo or any public repo. push-data.sh and pull-kev-notes.sh
 // call this file for each step that talks to GitHub's API. No dependencies.
 //
 //   node kev-data.mjs check <owner/name> <knowledge repo URL>
@@ -42,13 +42,13 @@ export async function checkRepo({ repo, knowledge, token, fetch = globalThis.fet
 }
 
 // Opens the pull request, and closes each older one from a notes branch: each branch holds every
-// note, so the newest pull request replaces the older ones.
+// label and note, so the newest pull request replaces the older ones.
 export async function openPull({ repo, branch, token, fetch = globalThis.fetch }) {
   const h = { ...headers(token), "content-type": "application/json" };
   const body = JSON.stringify({
-    title: `Kev disagreement notes, ${branch.slice(NOTES_BRANCH_PREFIX.length)}`,
+    title: `Kev review data, ${branch.slice(NOTES_BRANCH_PREFIX.length)}`,
     head: branch, base: "main",
-    body: "Barb's Kev disagreement notes, pushed by the kev-data-push job. Read each note before you merge: Kev's training reads the notes on main only.",
+    body: "Kev labels from the design reviews (kev-labels.jsonl) and Barb's Kev disagreement notes, pushed by the kev-data-push job. Read each new label and note before you merge: Kev's training reads only what is on main, and only the labels whose run is \"review\".",
   });
   const r = await fetch(`${API}/repos/${repo}/pulls`, { method: "POST", headers: h, body });
   if (!r.ok) throw new Error(`GitHub answered ${r.status} to the pull request for ${branch}`);
@@ -58,7 +58,7 @@ export async function openPull({ repo, branch, token, fetch = globalThis.fetch }
     for (const old of await open.json()) {
       const ref = old.head?.ref ?? "";
       if (old.number === pr.number || !ref.startsWith(NOTES_BRANCH_PREFIX) || old.head?.repo?.full_name?.toLowerCase() !== repo.toLowerCase()) continue;
-      await fetch(`${API}/repos/${repo}/issues/${old.number}/comments`, { method: "POST", headers: h, body: JSON.stringify({ body: `Replaced by #${pr.number}, which holds every note.` }) });
+      await fetch(`${API}/repos/${repo}/issues/${old.number}/comments`, { method: "POST", headers: h, body: JSON.stringify({ body: `Replaced by #${pr.number}, which holds every label and note.` }) });
       await fetch(`${API}/repos/${repo}/pulls/${old.number}`, { method: "PATCH", headers: h, body: JSON.stringify({ state: "closed" }) });
     }
   }
