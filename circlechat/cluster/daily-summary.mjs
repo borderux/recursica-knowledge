@@ -10,9 +10,17 @@
 //
 // Only the jobs installed on this computer are listed (their LaunchDaemon). A computer with none
 // posts no summary. A post that fails is logged, and the next hourly run tries again.
+//
+// On the control computer, each program with health_report in site.json may leave a note on
+// yesterday in <state>/health-note.json: { "day": "<YYYY-MM-DD>", "text": "..." }. The summary adds
+// the note under the job lines. A computer with no jobs still posts a note. The program writes
+// the note, so the text is untrusted: it is cut to 1,500 characters, and no mention or link in it
+// pings anyone. A note for another day, a note older than 36 hours, or a file that doesn't parse
+// adds nothing.
 import fs from "node:fs";
 import { STATUS_DIR, readStatuses } from "../kit/job-status.mjs";
 import { clusterTz } from "./actions.mjs";
+import { addDays } from "./usage.mjs";
 
 const HOUR = 3600_000;
 const DAY = 24 * HOUR;
@@ -69,18 +77,60 @@ export function summaryText({ computer, jobs, statuses, now, tz, since }) {
   return [head, ...lines.map((l) => l.line)].join("\n");
 }
 
+export const NOTE_MAX = 1500;
+export const NOTE_MAX_AGE = 36 * HOUR;
+const NOTE_FILE_MAX = 64 * 1024;
+
+/**
+ * A note's text, safe to post: Slack reads <...> as a mention, a channel ping or a link, so each
+ * angle bracket becomes a look-alike that Slack shows as text. Control characters other than line
+ * breaks and tabs go. The text is cut to NOTE_MAX characters, the last one an ellipsis.
+ */
+export function cleanNote(text) {
+  const t = String(text).replace(/</g, "\u2039").replace(/>/g, "\u203a").replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "").trim();
+  const chars = [...t];
+  return chars.length > NOTE_MAX ? chars.slice(0, NOTE_MAX - 1).join("") + "\u2026" : t;
+}
+
+/**
+ * A program's note on a day, as { name, day, text }, or null. The file is read without following a
+ * link, and only when it is a plain file of at most 64 KB changed within NOTE_MAX_AGE.
+ */
+export function readNote(service, day, now) {
+  let fd;
+  try {
+    fd = fs.openSync(`${service.state}/health-note.json`, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW | fs.constants.O_NONBLOCK);
+    const st = fs.fstatSync(fd);
+    if (!st.isFile() || st.size > NOTE_FILE_MAX || now - st.mtimeMs > NOTE_MAX_AGE) return null;
+    const j = JSON.parse(fs.readFileSync(fd, "utf8"));
+    if (!j || j.day !== day || typeof j.text !== "string") return null;
+    const text = cleanNote(j.text);
+    return text ? { name: service.name, day, text } : null;
+  } catch { return null; } finally { if (fd !== undefined) fs.closeSync(fd); }
+}
+
+/** A note's lines in the summary. */
+export const noteText = (n) => `*Note from ${n.name} for ${n.day}:*\n${n.text}`;
+
 /**
  * Posts the summary when it is due. state is the updater's state: summaryDay, the last day it
  * posted, and summarySince, when it first ran here. Returns "none", "not due", "posted" or "failed".
+ *   services: the programs with health_report (usage-export.mjs healthServices), on the control computer
+ *   tz: the cluster's time zone
  */
-export async function dailySummary({ env, state, post, now = Date.now(), dir = STATUS_DIR, installed = (label) => fs.existsSync(`/Library/LaunchDaemons/${label}.plist`), log = (line) => console.log(line) }) {
+export async function dailySummary({ env, state, post, now = Date.now(), dir = STATUS_DIR, installed = (label) => fs.existsSync(`/Library/LaunchDaemons/${label}.plist`), log = (line) => console.log(line), services = [], tz = clusterTz(env) }) {
   const jobs = JOBS.filter((j) => installed(j.label));
-  if (!jobs.length) return "none";
-  state.summarySince ??= now;
-  const tz = clusterTz(env);
+  if (!jobs.length && !services.length) return "none";
+  if (jobs.length) state.summarySince ??= now;
   const { due, day } = summaryDue(state, now, tz);
   if (!due) return "not due";
-  const text = summaryText({ computer: env.COMPUTER || "this computer", jobs, statuses: readStatuses(dir), now, tz, since: state.summarySince });
+  const notes = services.map((s) => readNote(s, addDays(day, -1), now)).filter(Boolean).map(noteText);
+  // Without jobs and without a note, nothing posts, and a note written later this day still posts.
+  if (!jobs.length && !notes.length) return "none";
+  const text = [
+    ...(jobs.length ? [summaryText({ computer: env.COMPUTER || "this computer", jobs, statuses: readStatuses(dir), now, tz, since: state.summarySince })] : []),
+    ...notes,
+  ].join("\n\n");
   const r = await Promise.resolve()
     .then(() => post(text))
     .catch((e) => ({ ok: false, error: e.message }));

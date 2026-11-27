@@ -57,6 +57,20 @@ test("recursicachat.services: a name, its agents, a non-root account and a file 
   assert.ok(recursicachatErrors({ site: {}, recursicachat: { services: [{ ...ENTRY, account: "root" }] } }).some((e) => /not root/.test(e)), "the site check runs it");
 });
 
+test("recursicachat.services health_report: true or false, and true needs state and account", () => {
+  const STATEFUL = { ...ENTRY, job: "io.example.program", state: "/opt/program/home/state" };
+  assert.deepEqual(rcServiceErrors({ services: [{ ...STATEFUL, health_report: true }] }), []);
+  assert.deepEqual(rcServiceErrors({ services: [{ ...ENTRY, health_report: false }] }), [], "false needs nothing");
+  const errs = (entry) => rcServiceErrors({ services: [entry] });
+  assert.ok(errs({ ...STATEFUL, health_report: "yes" }).some((e) => /health_report must be true or false/.test(e)));
+  assert.ok(errs({ ...STATEFUL, health_report: 1 }).some((e) => /health_report must be true or false/.test(e)));
+  assert.ok(errs({ ...ENTRY, health_report: true }).some((e) => /health_report needs state/.test(e)));
+  const noAccount = { ...STATEFUL };
+  delete noAccount.account;
+  assert.ok(errs({ ...noAccount, health_report: true }).some((e) => /health_report needs account/.test(e)));
+  assert.ok(!errs({ ...STATEFUL, health_report: true }).some((e) => /is not a setting/.test(e)), "health_report is a setting");
+});
+
 test("rc-sync.mjs services prints one tab-separated line for each entry", async () => {
   assert.deepEqual(rcServices({ recursicachat: { services: [{ ...ENTRY, agents: ["designer", "writer"] }] } }), [[ENTRY.name, ENTRY.account, ENTRY.file, "designer,writer", "svc-example-service", KEY_FILE, ""]]);
   assert.deepEqual(rcServices({ recursicachat: { services: [{ ...ENTRY, gateway: { routes: ["judge", "local-small"], max_parallel: 2, daily_requests: 10 } }] } })[0].slice(4), ["svc-example-service", KEY_FILE, "judge,local-small"], "the routes come last");
