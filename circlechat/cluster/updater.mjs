@@ -25,7 +25,11 @@
 //     checkout's commit, read from git and verified by GitHub (root-copies.mjs). The cluster's channel
 //     gets one line for each copy the job replaced.
 //   - Each morning, the cluster's channel gets a summary of this computer's backups and restore
-//     tests, and of any job that didn't run on time (daily-summary.mjs).
+//     tests, and of any job that didn't run on time (daily-summary.mjs). On the control computer,
+//     the summary adds the note of each program with health_report in site.json.
+//   - On the control computer, each program with health_report gets each finished day's usage in
+//     its own state folder: the spend log's lines, the usage samples and the gateway's caps
+//     (usage-export.mjs).
 //   - A Kev engine never stops on its own. A change to a running engine's unit, held by
 //     setup-node.sh, gets one post with the command a person runs (held-restarts.mjs).
 import { spawnSync } from "node:child_process";
@@ -234,8 +238,17 @@ async function main() {
       }
     }
   }
+  // Each program with health_report gets each finished day's usage, on the control computer, before
+  // the morning summary reads the program's note (usage-export.mjs).
+  const { clusterTz } = await import("./actions.mjs");
+  const { exportUsage, healthServices } = await import("./usage-export.mjs");
+  const tz = clusterTz(env);
+  if (control) {
+    await exportUsage({ site, tz, spendLog: path.join(stackDir(env.OWNER_HOME), "gateway-logs/spend.jsonl"), samplesDir: path.join(path.dirname(stateFile), "usage") })
+      .catch((e) => console.error(`usage export: ${e.message}`));
+  }
   const { dailySummary } = await import("./daily-summary.mjs");
-  await dailySummary({ env, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text) }).catch((e) => console.error(`daily summary: ${e.message}`));
+  await dailySummary({ env, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text), services: control ? healthServices(site) : [], tz }).catch((e) => console.error(`daily summary: ${e.message}`));
   // The kit checkout follows main. The step runs last, so the update job loads no module from the new commit.
   if (followsMain(site)) {
     await followStep({ env, site, control, stacks, chat, state, kitRepo }).catch((e) => console.error(`kit follows main: ${e.message}`));

@@ -113,6 +113,7 @@ export function egressAllow(site) {
 // the models the server serves:
 //   { "id": "mlx", "kind": "mlx-lm", "port": 8081, "models": [{ "id": "qwen-32b", "model": "<name>", "memory_gb": 20 }] }
 // A model on an Ollama server may also set its own context_length and keep_alive (kit/ollama.mjs).
+// A model that can't think sets "thinking": false, on a server of any kind (thinkingErrors).
 // A route or an agent names one model as "<node>/<server id>/<model id>". An older site.json lists
 // "models" on the node instead, each with its own port; each model is then named "<node>/<model id>",
 // and the port 11434 counts as an Ollama server named ollama.
@@ -288,7 +289,8 @@ export function gatewayConfig(site) {
     // The server and the model behind each name LiteLLM reports, for the spend log.
     models: Object.fromEntries([
       // and the server's parallel setting, the slots a model has: an mlx-lm server answers one at a time
-      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model, parallel: server.parallel ?? (server.kind === "mlx-lm" ? 1 : null) }]),
+      // and a model that can't think, so the gateway drops a request to think on its routes
+      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model, parallel: server.parallel ?? (server.kind === "mlx-lm" ? 1 : null), ...(m.thinking === false ? { thinking: false } : {}) }]),
       ...Object.values(keys).map((k) => [`${k.provider}/${k.model}`, { server: k.provider, kind: "cloud", model: k.model }]),
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
@@ -387,6 +389,11 @@ export function cloudAllowed(site) {
 }
 const kindWord = (site) => (site.site?.kind === "demo" ? "demo" : "client");
 
+// "thinking": false marks a model that can't think. Ollama refuses a request to think for such a
+// model, so the gateway drops a request's reasoning settings on the model's routes (gateway/router.mjs,
+// REASONING_SETTINGS). A model that leaves it out, or sets true, gets them as sent.
+const thinkingErrors = (m, where) => (m.thinking === undefined || typeof m.thinking === "boolean" ? [] : [`${where}: thinking must be true or false: false for a model that can't think, so the gateway drops a request to think`]);
+
 // One node's model servers: each server's kind, port and models, and whether the models the
 // node loads fit the memory the node gives its models (model_memory_gb).
 function serverErrors(n, { leaveOut = false } = {}) {
@@ -417,8 +424,10 @@ function serverErrors(n, { leaveOut = false } = {}) {
       if (!m.model) errs.push(`${where}, model ${m.id}: model is required, the name the server knows the model by`);
       if (!(m.memory_gb > 0)) errs.push(`${where}, model ${m.id}: memory_gb must be the memory the model needs, in GB`);
       errs.push(...ollamaModelErrors(sv, m, `${where}, model ${m.id}`));
+      errs.push(...thinkingErrors(m, `${where}, model ${m.id}`));
     }
   }
+  for (const m of n.models ?? []) errs.push(...thinkingErrors(m, `node ${n.name}, model ${m.id}`));
   // A model's own context_length and keep_alive need the model under an Ollama server.
   for (const m of n.models ?? []) {
     const set = OLLAMA_MODEL_SETTINGS.filter((k) => m[k] !== undefined);
@@ -615,6 +624,8 @@ export function rcSessionErrors(rc) {
 // launchd job, which rc-clear stops and starts, and state, the folder that holds only the program's
 // state, which rc-clear copies aside and clears. All four of an entry's name, job, account and state
 // land in rc-clear.sh, a root script, so each shape allows no space, quote, colon or dollar sign.
+// A third optional setting, health_report: true, gives the program each finished day's usage in
+// <state>/usage/<day>/ and its note in the morning summary (cluster/usage-export.mjs).
 const RC_SERVICE_NAME = /^[a-z][a-z0-9-]{1,39}$/;
 const RC_SERVICE_JOB = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
 // The bounds of a service's gateway caps: requests at once, and requests per day.
@@ -693,7 +704,16 @@ export function rcServiceErrors(rc, site = {}) {
   rc.services.forEach((s, i) => {
     const at = `recursicachat.services[${i}]`;
     if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
-    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway", "kev_labels"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state, gateway and kev_labels`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway", "health_report", "kev_labels"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state, gateway, health_report and kev_labels`);
+    // health_report: the updater copies each day's usage into <state>/usage, as the account, and the
+    // morning summary posts the program's note (cluster/usage-export.mjs, cluster/daily-summary.mjs).
+    if (s.health_report !== undefined) {
+      if (typeof s.health_report !== "boolean") errs.push(`${at}.health_report must be true or false: true gives the program each day's usage in its state folder, and its note in the morning summary`);
+      else if (s.health_report) {
+        if (s.state === undefined) errs.push(`${at}.health_report needs state, the program's folder that gets the usage export in usage/<day>/`);
+        if (s.account === undefined) errs.push(`${at}.health_report needs account, the account that owns the usage export`);
+      }
+    }
     if (s.gateway !== undefined) errs.push(...svcGatewayErrors(s, at, site));
     if (s.kev_labels !== undefined) {
       errs.push(...svcKevLabelsErrors(s, at, site, serverDirs));

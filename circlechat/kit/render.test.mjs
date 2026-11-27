@@ -666,6 +666,30 @@ test("a model's own context_length and keep_alive reach Ollama in every request 
   assert.equal(params(render(s), "local-large").model, "hosted_vllm/your-large-model", "the other models keep the OpenAI-compatible API");
 });
 
+test("a model that can't think says so in site.json, and gateway.json carries it for the gateway", () => {
+  const s = clone();
+  const mac = s.nodes.find((n) => n.name === "machine-2");
+  const ollama = mac.servers.find((x) => x.kind === "ollama");
+  const mlx = mac.servers.find((x) => x.kind === "mlx-lm");
+  ollama.models[0].thinking = false;
+  mlx.models[0].thinking = true;
+  assert.deepEqual(validate(s), []);
+  const g = render(s).gateway;
+  assert.equal(g.models["machine-2/ollama/large-local"].thinking, false);
+  assert.ok(!("thinking" in g.models["machine-2/mlx/large-mlx"]), "true is the default: a model that thinks needs nothing in gateway.json");
+  assert.ok(!("thinking" in g.models["machine-1/ollama/small-local"]), "a model that leaves it out gets nothing either");
+  for (const v of ["false", 0, null, "no"]) {
+    ollama.models[0].thinking = v;
+    assert.match(validate(s).join("\n"), /node machine-2, server ollama, model large-local: thinking must be true or false/, String(v));
+  }
+  // The older form, with models on the node, is checked too.
+  const old = clone();
+  const c = old.nodes.find((n) => n.control);
+  c.models = [{ id: "large-local", port: 11434, model: "x", memory_gb: 10, thinking: "off" }];
+  delete c.servers;
+  assert.match(validate(old).join("\n"), /model large-local: thinking must be true or false/);
+});
+
 test("the config check refuses a model's wrong context_length or keep_alive, and still counts a model that unloads when idle", () => {
   const s = clone();
   const mac = s.nodes.find((n) => n.name === "machine-2");

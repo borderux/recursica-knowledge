@@ -37,16 +37,9 @@ IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXP
 [ -n "$KIT_REPO" ] || echo "repos.knowledge in site.json is off GitHub, so GitHub can verify no kit commit. The update job moves the kit checkout to no new commit and replaces no root-owned helper."
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
-CANARY_PORTS="2222, 2121, 8088"
-# RustDesk's direct-address ports, 21118 and 21119: refused from everywhere once every computer
-# reaches the others through the cluster's RustDesk server (remote_access.direct_ip false).
-DIRECT_IP="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.remote_access?.direct_ip === false ? "off" : "on")' "$SITE")"
-NFT_DIRECT=""; PF_DIRECT=""
-if [ "$DIRECT_IP" = off ]; then
-  # Two rules: GNU sed turns \n into a line break.
-  NFT_DIRECT='    tcp dport { 21118, 21119 } drop comment "rustdesk direct"\n    udp dport { 21118, 21119 } drop comment "rustdesk direct"'
-  PF_DIRECT='block in quick proto { tcp udp } to port { 21118 21119 }'
-fi
+# The decoys' ports, and the rules for RustDesk's direct-address ports (remote_access.direct_ip).
+# shellcheck source=circlechat/cluster/firewall/rules.sh
+. "$HERE/firewall/rules.sh" "$SITE"
 # On Linux, Tailscale's addresses pass only from tailscale0, Tailscale's interface: a packet that
 # claims a Tailscale address on another interface is refused as a forged source. WSL has no
 # tailscale0, because Tailscale runs on Windows, so in WSL the rules check only the address
@@ -79,8 +72,10 @@ PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/us
 CONF
 [ -f /etc/agent-cluster.env ] || sudo install -m 600 -o root /dev/null /etc/agent-cluster.env
 
-# Firewall rules, loaded now and at every start-up. With KIT_HOLD_NETWORK=1 the rules wait for a
-# person (network_held, kit/lib.sh).
+# Firewall rules, loaded now and at every start-up. After the rules, the guard's blocked and allowed
+# addresses load from /var/lib/agent-cluster (firewall/lists.mjs): the firewall keeps its lists in memory
+# only, so a restart empties them. With KIT_HOLD_NETWORK=1 the rules wait for a person (network_held,
+# kit/lib.sh).
 # network-step begin: the firewall rules
 if network_held "the firewall rules, pf.conf and the agentguard-firewall start-up job"; then :
 elif [ "$OS" = Linux ]; then
@@ -89,19 +84,22 @@ elif [ "$OS" = Linux ]; then
   # update changes them only when a person applies the firewall rules.
   sudo install -m 644 -o root "$HERE/firewall/nft-lockdown.nft" /var/lib/agent-cluster/nft-lockdown.nft
   sudo install -m 755 -o root "$HERE/firewall/nft-load.sh" /var/lib/agent-cluster/nft-load.sh
+  sudo install -m 644 -o root "$HERE/firewall/lists.mjs" /var/lib/agent-cluster/lists.mjs
   # The rules delete the agentguard table and make the table again; nft-load.sh keeps the addresses
   # in the blocked and allowed sets, so a rerun of this script unblocks nothing.
   sudo bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft
-  install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft" / root boot
+  sudo "$NODE_BIN" /var/lib/agent-cluster/lists.mjs load
+  install_unit agentguard-firewall "bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft; $NODE_BIN /var/lib/agent-cluster/lists.mjs load" / root boot
   if grep -qi microsoft /proc/version; then
     echo "Windows side: run circlechat/cluster/windows/install-windows-guard.ps1 once in an Administrator PowerShell."
     echo "  With the RustDesk server on this computer, add -RustDeskServer. With remote_access.direct_ip false, add -BlockRustDeskDirect."
   fi
 else
   for f in base lockdown; do
-    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/^@RUSTDESK_DIRECT@\$/$PF_DIRECT/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
+    pf_rules "$f" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
   sudo install -m 644 -o root "$HERE/firewall/pf-main.sh" /var/lib/agent-cluster/pf-main.sh
+  sudo install -m 644 -o root "$HERE/firewall/lists.mjs" /var/lib/agent-cluster/lists.mjs
   bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf | sudo tee /var/lib/agent-cluster/pf-main.conf >/dev/null
   # The main rules skip loopback and load the agentguard anchor (firewall/pf-main.sh). A backup of
   # macOS's own rules stays in /etc/pf.conf.agentguard-backup.
@@ -114,7 +112,8 @@ else
   # needs. A macOS update replaces /etc/pf.conf with Apple's own, which has neither, and the
   # agentguard anchor's rules then never apply. The guard alerts each minute it finds them unused.
   PF_BOOT=/var/lib/agent-cluster/pf-main.conf
-  install_unit agentguard-firewall "bash /var/lib/agent-cluster/pf-main.sh < /etc/pf.conf > $PF_BOOT.new && mv $PF_BOOT.new $PF_BOOT; pfctl -E -f $PF_BOOT; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf" / root boot
+  install_unit agentguard-firewall "bash /var/lib/agent-cluster/pf-main.sh < /etc/pf.conf > $PF_BOOT.new && mv $PF_BOOT.new $PF_BOOT; pfctl -E -f $PF_BOOT; pfctl -a agentguard -f /var/lib/agent-cluster/pf-base.conf; $NODE_BIN /var/lib/agent-cluster/lists.mjs load" / root boot
+  sudo "$NODE_BIN" /var/lib/agent-cluster/lists.mjs load
 fi
 # network-step end
 

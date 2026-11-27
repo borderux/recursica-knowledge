@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { SETUPS, checkVerified, decide, followMain, lastLines, networkChanges, networkCode, networkSteps, realDeps, resultPost, strayNetworkLines, touchedSetups } from "./follow-main.mjs";
+import { INSTALLED_RULES, NOT_IN_APPLY, SETUPS, checkVerified, decide, followMain, lastLines, mergeWaiting, networkChanges, networkCode, networkCommands, networkSteps, realDeps, resultPost, strayNetworkLines, touchedSetups } from "./follow-main.mjs";
 // The kit's repo in root's /etc/agent-cluster.conf, for the tests.
 const KIT_REPO = "acme/kit";
 const KIT_ORIGIN = `https://github.com/${KIT_REPO}.git`;
@@ -454,6 +454,40 @@ test("the applied commit comes from the setup's run by hand, and the installed r
   assert.equal(deps.installed(), before);
   files["/etc/agentguard.nft"] = "table v2";
   assert.notEqual(deps.installed(), before);
+});
+
+// The start-up job's copy of the guard's list loader changes only in install-cluster.sh's firewall
+// step, run by hand, so a new copy clears the waiting firewall rules too.
+test("the installed rules' fingerprint follows the root-owned copy of lists.mjs on both platforms", () => {
+  for (const platform of ["darwin", "linux"]) {
+    assert.ok(INSTALLED_RULES[platform].includes("/var/lib/agent-cluster/lists.mjs"), platform);
+    const files = { "/var/lib/agent-cluster/lists.mjs": "// v1" };
+    const read = (f) => { if (!(f in files)) throw new Error("ENOENT"); return files[f]; };
+    const env = { COMPUTER: "machine-2", OWNER: "owner", OWNER_HOME: "/home/owner", KIT: "/home/owner/kit", PATH: "/usr/bin" };
+    const deps = realDeps({ env, stacks: [], afterUpgrade: () => [], prepare: () => "", read, platform });
+    const before = deps.installed();
+    files["/var/lib/agent-cluster/lists.mjs"] = "// v2";
+    assert.notEqual(deps.installed(), before, platform);
+  }
+});
+
+// lists.mjs sits in firewall/, so a change to it reruns install-cluster.sh, waits as a network change,
+// and asks for install-cluster.sh by hand: the held firewall step installs the start-up job's
+// root-owned copy, and the apply script never does.
+test("a change to the guard's list loader, firewall/lists.mjs, waits for install-cluster.sh by hand", () => {
+  const file = "circlechat/cluster/firewall/lists.mjs";
+  assert.ok(NOT_IN_APPLY.includes(file));
+  assert.ok(touchedSetups([file], { control: false }).includes("install-cluster.sh"));
+  const changes = changesOf(file, "// v1\n", "// v2\n", { control: false });
+  assert.deepEqual(changes, [{ setup: "install-cluster.sh", file, what: ["the firewall rules"], whole: false, byHand: true }]);
+  const waiting = mergeWaiting({}, changes);
+  assert.equal(waiting["install-cluster.sh"].byHand, true, "a new installed rule file alone never clears it");
+  const [cmd] = networkCommands({ waiting, computer: "machine-1", kit: "/home/owner/kit", platform: "darwin", applyScript: true });
+  assert.equal(cmd.undo, true);
+  assert.match(cmd.text, /after --confirm run `\/home\/owner\/kit\/circlechat\/cluster\/install-cluster\.sh machine-1` for lists\.mjs/);
+  const [linux] = networkCommands({ waiting, computer: "machine-2", kit: "/home/owner/kit", platform: "linux", applyScript: false });
+  assert.match(linux.text, /^`\/home\/owner\/kit\/circlechat\/cluster\/install-cluster\.sh machine-2` applies the firewall rules/);
+  assert.ok(!fs.existsSync(path.join(path.dirname(new URL(import.meta.url).pathname), "lists.mjs")), "no lists.mjs left outside firewall/");
 });
 
 const FIREWALL = "circlechat/cluster/firewall/pf-base.conf";

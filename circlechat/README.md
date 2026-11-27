@@ -133,6 +133,12 @@ A model that sets neither keeps the server's settings, as before. The first requ
 
 **Only site.json loads, unloads or resizes a model.** The gateway drops a caller's own `keep_alive`, `num_ctx` and Ollama's other load options (`gateway/router.mjs`, `LOAD_SETTINGS`). It drops them at the top of the request, inside the request's `options`, and inside its `extra_body`. Then LiteLLM adds site.json's values. So no agent or job can unload the model the cluster keeps loaded, or load a model with another context length. Other settings, such as `temperature`, pass through. The spend log lists what it dropped in `dropped`.
 
+**A model that can't think says `"thinking": false`.** Ollama refuses a request to think for a model that can't, with `"<model>" does not support thinking`. That covers OpenAI's `reasoning_effort` and `reasoning`, Ollama's `think`, and Anthropic's `thinking`, on Ollama's OpenAI-compatible chat API and on `/api/chat` alike. So the gateway drops those settings from a request for a route with such a model, at the top of the request and inside its `extra_body` (`gateway/router.mjs`, `REASONING_SETTINGS`), and the spend log lists them in `dropped`. A route whose models think, and a request that goes to a cloud model, keep them. Set it on a model of any server; `ollama show <model>` lists `thinking` under Capabilities for a model that thinks:
+
+```json
+{ "id": "coder-local", "model": "qwen3-coder:30b", "memory_gb": 72, "thinking": false }
+```
+
 **`parallel` stays a server setting.** Ollama sets the requests each model answers at once for the whole server. A model with its own `context_length` holds that context for each of the server's `parallel` requests. Count both in the model's `memory_gb`.
 
 **Every listed model counts in the memory check, so agents can use several models at once.** The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs. A model that unloads when idle still counts. Each time the model loads, the model needs its memory beside the models that stay loaded. Without that room, Ollama unloads another idle model to make room, even a model set to stay loaded.
@@ -893,6 +899,49 @@ The log holds no prompt and no answer.
 
 **The model server's wait is an estimate.** LiteLLM's answer drops Ollama's own timings, so the gateway counts the requests it sends to each cluster model. A model has the slots of its server's `parallel` in site.json, and an mlx-lm server has one. A request sent while every slot is busy waits until the oldest request ahead of it ends. A request to a route counts on the route's first cluster model. Requests that reach the server some other way, such as a bench, don't count, so the estimate is a floor. A server with no `parallel` in site.json uses its own default, which the gateway can't see, so its requests log no `server_wait_ms`.
 
+### A health report's usage export
+
+**A program that writes a health note on the cluster gets each day's usage in its own folder.** The program's account can't read the spend log or the cluster agent's files, because the stack's folder and `/var/lib/agent-cluster` are closed to it. Set `"health_report": true` on the program's entry in `recursicachat.services`, with `account` and `state`:
+
+```json
+{ "name": "example-reporter", "account": "_example", "file": "/opt/example/run/example-reporter.gateway-key",
+  "job": "io.example.reporter", "state": "/opt/example/home/state", "health_report": true,
+  "gateway": { "routes": ["judge"], "max_parallel": 2, "daily_requests": 500 } }
+```
+
+The config check refuses a `health_report` that is not `true` or `false`, and `true` without `state` or `account`.
+
+**Every 5 minutes, the cluster agent on the control computer takes a usage sample** (`cluster/usage.mjs`). Each sample is one JSON line in `/var/lib/agent-cluster/usage/samples-<day>.jsonl`, the day in the cluster's time zone:
+
+```json
+{"time":"2026-11-22T12:00:00.000Z","vms":[{"profile":"default","status":"Running","memory_gb":64,"used_gb":23.4}],"models":[{"name":"large-model:1b","size_gb":66.1,"expires_at":"2026-11-22T12:05:00.000Z"}]}
+```
+
+- `vms`: each Docker VM in the cluster's own Colima folder, `~/.colima`, never a client stack's. `memory_gb` is the VM's size from `colima list`, and `used_gb` is MemTotal less MemAvailable from the VM's `/proc/meminfo`. A stopped VM, or an `ssh` that fails, has `used_gb` null. `vms` is null when `colima list` fails, and on a computer that isn't a Mac.
+- `models`: each model the control computer's Ollama holds loaded, from Ollama's `/api/ps`, with the time Ollama unloads it, or null. `models` is null when Ollama doesn't answer within 5 seconds.
+- A GB is 1024³ bytes, rounded to one decimal.
+
+**Each hour, the updater on the control computer copies each finished day into the program's folder** (`cluster/usage-export.mjs`). A day runs from midnight to midnight in the cluster's time zone. The updater checks the last 3 finished days, so a computer that was off catches up. `<state>/usage/<day>/` gets:
+
+- `spend.jsonl`: the spend log's lines whose `time` falls on the day, as the gateway wrote them. A line without a readable time is left out.
+- `samples.jsonl`: the day's usage samples, or an empty file.
+- `limits.json`: `timezone`, `day`, and the settings at the time of the copy:
+  - `keys`: each gateway handle, such as `svc-example-reporter`, with `routes`, `max_parallel` and `daily_requests`, null when the handle has none.
+  - `routes`: site.json's `routes`, each with its models.
+  - `models`: each cluster model, `<node>/<server>/<model id>`, with `model`, `memory_gb`, `keep_alive` and `context_length` (the model's own, else its server's, else null), `server_parallel` and `server_max_loaded_models`.
+  - `nodes`: each computer's `model_memory_gb`.
+- `done`: an empty file, written last. A day with `done` is complete and is never written again.
+
+The updater writes as the program's account, never as root, so a link in the program's folder can't send root's writes elsewhere. Each folder is mode 700, and each file is mode 600 and takes its place in one step. The program's account reads only its own folder. No file holds a key, a prompt or an answer. The sample files and the day folders are kept for 15 days.
+
+**The morning summary adds the program's note on yesterday.** The program writes `<state>/health-note.json` before 07:00 in the cluster's time zone:
+
+```json
+{ "day": "2026-11-22", "text": "One line or a short paragraph on the day." }
+```
+
+The summary adds a blank line, `*Note from <name> for <day>:*` and the text. The text is cut to 1,500 characters. Each `<` and `>` becomes `‹` and `›`, so no mention, channel ping or link in the note pings anyone. A note on another day, a file changed more than 36 hours ago, a link in the file's place, or a file that doesn't parse adds nothing. A control computer with no backup jobs posts the note alone.
+
 ### The key check
 
 **The test restores run the key check, `circlechat/gateway/key-check.mjs`.** The check fails when a cloud key is in a backup. The check finds a key by the exact values in `model-keys.env` and by the shapes of the providers' keys. The report names each place and the kind of key, never the key. Remove each key the check finds, and rotate the key in the provider's console.
@@ -922,7 +971,7 @@ On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as a b
 
 `~/recursica-knowledge/circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
 
-- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On macOS the guard's rules sit in the `agentguard` anchor, and they apply only while the main pf rules use that anchor. A macOS update replaces `/etc/pf.conf` with Apple's own, which doesn't use it, so each start-up builds the main rules again from `/etc/pf.conf` with `firewall/pf-main.sh`. Each minute the guard checks that the main rules use the anchor, and posts one loud alert when they don't. On Linux, the rules delete the `agentguard` table and make the table again, which empties the blocked and allowed sets. So `install-cluster.sh` and the start-up job load the rules with `firewall/nft-load.sh`, which adds each set's addresses back in the same `nft -f`, and a rerun unblocks nothing. The start-up job runs a root-owned copy in `/var/lib/agent-cluster`, made when a person applies the firewall rules, so a kit update changes it only then. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell, after Tailscale is up.
+- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On macOS the guard's rules sit in the `agentguard` anchor, and they apply only while the main pf rules use that anchor. A macOS update replaces `/etc/pf.conf` with Apple's own, which doesn't use it, so each start-up builds the main rules again from `/etc/pf.conf` with `firewall/pf-main.sh`. Each minute the guard checks that the main rules use the anchor, and posts one loud alert when they don't. On Linux, the rules delete the `agentguard` table and make the table again, which empties the blocked and allowed sets. So `install-cluster.sh` and the start-up job load the rules with `firewall/nft-load.sh`, which adds each set's addresses back in the same `nft -f`, and a rerun unblocks nothing. The start-up job runs a root-owned copy in `/var/lib/agent-cluster`, made when a person applies the firewall rules, so a kit update changes it only then. The firewall keeps the blocked and allowed addresses in memory only, so a restart empties both lists. The guard writes each list to a root-only file, `/var/lib/agent-cluster/blocked-sources.json` and `allowed-sources.json`, whenever the guard blocks or allows an address. After the rules, `install-cluster.sh` and the start-up job load both files with `/var/lib/agent-cluster/lists.mjs`, a root-owned copy of `cluster/firewall/lists.mjs` made in the same held step, never the kit checkout's file. The copy imports nothing from the kit, only node's own modules. The loader sits in `firewall/`, so the update job holds a change to the loader and posts it as a network change, with `install-cluster.sh` to run by hand. An entry that isn't an address is skipped with one log line, and the other entries still load. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell, after Tailscale is up.
 - **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown. The fake SSH login's host keys live in `/var/lib/opencanary`, a folder only root reads, each key mode 600. `install-cluster.sh` moves keys an earlier install left in `/var/tmp` (`cluster/canary-keys.sh`), so the decoy keeps the decoy's fingerprint.
 - **The cluster agent:** each minute, the agent checks incoming connections, the decoys and the other computers' stacks. The agent also runs each scheduled reboot.
 - **The update job,** hourly: one job for every kind of update.
@@ -935,18 +984,69 @@ On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as a b
 - pf keeps a record of each connection it lets through. A connection opened before the rules load has no record. pf then misses the connection's opening settings and drops the connection's next packets. Colima's ssh link from the Mac into the VM is one such connection.
 - Only programs on the Mac itself reach loopback. No rule in the anchor needs loopback, so skipping loopback opens nothing to other computers.
 
-**A Tailscale address passes only on Tailscale's interface.** The office network can send a packet that claims a Tailscale address, `100.64.0.0/10` or `fd7a:115c:a1e0::/48`. A rule that checks only the address lets that packet in. Each rule names Tailscale's interface too:
+**On a Mac, a Tailscale address passes from Tailscale's interface, whatever its number.** Tailscale takes the first free `utun` number at each start, and macOS has no interface groups. A rule that names `utun` interfaces can miss Tailscale's interface after a restart, and pf then refuses every connection over Tailscale, remote access too. So `pf-base.conf` and `pf-lockdown.conf` work the other way round, in two steps:
+
+1. A packet that claims a Tailscale address, `100.64.0.0/10` or `fd7a:115c:a1e0::/48`, on a physical interface is refused: `block in log quick on $physical_if inet from 100.64.0.0/10`. Such a packet is a forged source from the office network.
+2. Tailscale's addresses then pass with no interface named: `pass in quick inet from 100.64.0.0/10`. Only a virtual interface, such as Tailscale's `utun` interface or another VPN's, can still carry a Tailscale address.
+
+pf has no wildcard for interface names, so `physical_if` lists the names: `en0` to `en31` for Ethernet, Wi-Fi and each Thunderbolt or USB port and adapter, `bridge0` to `bridge7` for Thunderbolt Bridge, `bridge100` to `bridge107` for the bridges that macOS's virtual-machine networking makes, `awdl0` and `llw0` for Wi-Fi's peer-to-peer links, such as AirDrop's, and `ap1` for Wi-Fi's access-point interface. A Mac numbers its ports past `en10` already, so the list leaves room. pf takes a rule for an interface the Mac doesn't have. The blocked table and the rule for RustDesk's direct-address ports come before both steps.
+
+**On Windows and Linux, a Tailscale address passes only on Tailscale's interface.** The office network can send a packet that claims a Tailscale address. A rule that checks only the address lets that packet in, so each rule names Tailscale's interface too:
 
 | Computer | Tailscale's interface                                | Rule                                                                                                 |
 | -------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| A Mac    | A `utun` interface                                   | `pass in quick on $tailscale_if`, for `utun0` to `utun31`                                            |
 | Windows  | The `Tailscale` adapter                              | "AgentGuard: Tailscale peers" names the `Tailscale` adapter                                          |
 | WSL      | No adapter: a Hyper-V firewall rule takes no adapter | "AgentGuard: Tailscale peers to WSL" takes the computer's own Tailscale addresses as local addresses |
 | Linux    | `tailscale0`                                         | `iifname != "tailscale0" ip saddr 100.64.0.0/10 drop`, before the Tailscale accepts                  |
 
-macOS has no interface groups, and Tailscale takes the first free `utun` number, so the rule lists 32 `utun` numbers. On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. On Linux, the nftables rules refuse a Tailscale address on every interface but `tailscale0`, in the input chain and in the forward chain that Docker's published ports use, then pass the address. In WSL the nftables rules check only the address: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface, never on `tailscale0`.
+On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. On Linux, the nftables rules refuse a Tailscale address on every interface but `tailscale0`, in the input chain and in the forward chain that Docker's published ports use, then pass the address. In WSL the nftables rules check only the address: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface, never on `tailscale0`.
 
 **In WSL with mirrored networking, loopback traffic arrives on `loopback0`, not on `lo`.** WSL sends `127.0.0.1` and `::1` through `loopback0`, by way of Windows' own loopback. Windows' loopback traffic, such as `tailscale serve`, arrives on `loopback0` too. So the nftables rules accept `loopback0` right after `lo`, and only from `127.0.0.0/8` and `::1`. Every kit service on `127.0.0.1` needs the rule in WSL, such as RustDesk's console, the job runner and the cluster agent. CircleChat and the app preview behind `tailscale serve` need the rule too. The lockdown rules let the same loopback traffic leave on `loopback0`. Without the rule, a connection to `127.0.0.1` in WSL times out, and `tailscale serve` answers 502.
+
+### Loading a Mac's new firewall rules with an automatic undo
+
+**`circlechat/cluster/firewall/pf-apply-tailnet.sh` loads the Mac's new pf rules, and puts the old rules back after 5 minutes unless confirmed.** A mistake in the rules can cut off a remote operator, so the script never loads rules with no way back. Rerunning `install-cluster.sh` loads the same rules with no undo. Run the script on the Mac, as root, from a RustDesk or SSH session over Tailscale:
+
+```bash
+sudo ~/recursica-knowledge/circlechat/cluster/firewall/pf-apply-tailnet.sh
+```
+
+The script reads the owner's `site.json` where `install-cluster.sh` reads it: `~/recursica-stack/site.json`, or `~/circlechat/site.json` on a computer a person has not moved yet (`kit/stack-paths.sh`). The owner's home comes from `/etc/agent-cluster.conf`. `--site <site.json>` names another file. The script prints one line for each step:
+
+```text
+Rendered the new rules from <kit>/circlechat/cluster/firewall with <owner home>/recursica-stack/site.json.
+Checked the new base and lockdown rules with pfctl -n: both parse.
+The change to the base rules:
+  <the diff between the installed rules and the new rules>
+Saved the undo copy: /var/lib/agent-cluster/pf-apply/old-base.conf.
+Armed the undo: the launchd job io.recursica.pf-apply-undo puts the old rules back at 14:05.
+Loaded the new rules into the agentguard anchor. The installed rules stay the old ones until --confirm.
+Next: open a NEW RustDesk or SSH session over Tailscale, and in that session run: sudo <kit>/circlechat/cluster/firewall/pf-apply-tailnet.sh --confirm
+With no --confirm by 14:05, the old rules come back.
+```
+
+Then open a new RustDesk or SSH session over Tailscale. A new session that connects proves the new rules let Tailscale in. In the new session, run:
+
+```bash
+sudo ~/recursica-knowledge/circlechat/cluster/firewall/pf-apply-tailnet.sh --confirm
+```
+
+```text
+This session comes from <Tailscale address>, a Tailscale address.
+Cancelled the undo job io.recursica.pf-apply-undo.
+Installed the new rules as /var/lib/agent-cluster/pf-base.conf and /var/lib/agent-cluster/pf-lockdown.conf. The boot job loads the new base rules at each start-up.
+Confirmed. The old rules stay in /var/lib/agent-cluster/pf-apply.last/old-base.conf.
+```
+
+In a RustDesk session's terminal, the first line reads "This session has no SSH address: a terminal on the Mac's own screen, such as RustDesk's." `--confirm` refuses an SSH session from outside `100.64.0.0/10` and `fd7a:115c:a1e0::/48`, and refuses the SSH session that ran the apply.
+
+**With no `--confirm` in 5 minutes, the old rules come back.** The undo job loads the undo copy back into the `agentguard` anchor, adds one line to `/var/lib/agent-cluster/pf-apply.log`, and deletes the job's plist. A launchd job runs the undo, so the undo runs after the terminal, the SSH session or the RustDesk session closes. A lost remote session reconnects over Tailscale once the old rules are back.
+
+- **A restart before `--confirm` comes back with the old rules.** Until `--confirm`, `/var/lib/agent-cluster/pf-base.conf` stays the old file, and the boot job loads that file.
+- **The script never fights the guard.** The script refuses to apply during a lockdown. During the 5 minutes, the guard's cut-off loads the lockdown rules, and the guard's release loads the installed, old base rules. After either load, the undo leaves the anchor as the guard set the anchor, and `--confirm` refuses.
+- **The blocked and allowed addresses stay.** A load keeps the anchor's tables, so the script never touches the blocked or allowed addresses.
+
+`--status` shows a pending apply: the undo's time, whether the anchor holds the new rules, and whether the undo job is loaded. `--undo` puts the old rules back at once. The script refuses a second apply while one is pending.
 
 ### Remote access
 
@@ -1246,7 +1346,7 @@ The job posts again only for a newer network change, with every change that stil
 
 **Removing CircleChat 1.x's jobs is a held step.** The step in `setup-host.sh` removes the `circlechat-boot`, `backup`, `restore-test`, `release-watch` and `agents-sync` jobs. Removing a job can stop work that runs, so the update job skips the step and posts it. A run of `setup-host.sh` by hand removes the jobs. A job that is already gone needs no sudo.
 
-**The waiting change clears once a person applies the change.** A setup run by hand with no hold writes the kit's commit to `~/.recursica-kit/network-applied/<setup>` as the setup's last step. The job clears the setup's waiting change once that commit holds the change. For the firewall rules, the job also clears the change when the installed rule files change, as `pf-apply-tailnet.sh --confirm` installs them: `/var/lib/agent-cluster/pf-base.conf` and `pf-lockdown.conf` on a Mac, `/etc/agentguard.nft` and `/var/lib/agent-cluster/nft-lockdown.nft` on Linux.
+**The waiting change clears once a person applies the change.** A setup run by hand with no hold writes the kit's commit to `~/.recursica-kit/network-applied/<setup>` as the setup's last step. The job clears the setup's waiting change once that commit holds the change. For the firewall rules, the job also clears the change when the installed rule files change, as `pf-apply-tailnet.sh --confirm` installs them: `/var/lib/agent-cluster/pf-base.conf` and `pf-lockdown.conf` on a Mac, `/etc/agentguard.nft` and `/var/lib/agent-cluster/nft-lockdown.nft` and `nft-load.sh` on Linux. The copy of the guard's list loader, `/var/lib/agent-cluster/lists.mjs`, counts on both. A change to the loader itself, `firewall/lists.mjs`, clears only when `install-cluster.sh` runs by hand, since the apply scripts never install the copy.
 
 **A Kev engine's restart waits for a person, and the channel hears once a day while the restart waits.** `setup-node.sh` never restarts a running Kev engine on its own, as "Machines" describes. A held change is recorded in `~/.recursica-kit/held-restarts/<service>`, by a run by hand or by the update job's run. Each hour, on every computer, the update job reads the records and posts once for each held change, with what would change and the command to run by hand: `KIT_RESTART_KEV=1 <kit>/circlechat/setup-node.sh <computer>` (`cluster/held-restarts.mjs`). The job posts again for a newer change, or 24 hours after the last post. The record clears once a person runs that command, or once the engine's unit no longer changes. A client or demo stack's run, with `TENANT`, prints the line and records nothing, since the update job runs the setup for the cluster's own stack only.
 
@@ -1751,7 +1851,8 @@ at its first hourly run from 07:00 in the cluster's time zone: the night's two b
 snapshots and times, the last two restore tests, and each job that failed or didn't run on time. A
 daily job is late after 27 hours, a monthly one after 31 days and 3 hours. A missing summary means
 posting broke. Only the jobs installed on the computer are listed, so a computer without them posts
-none.
+none. On the control computer, the summary also adds the note of each program with
+`health_report`, and posts a note even without jobs ("A health report's usage export").
 
 To test each path with one post:
 
@@ -1804,6 +1905,11 @@ without the program. List each program in site.json:
 - **`setup-host.sh` runs `circlechat/rc-service.sh` as root.** Through the server's root-only CLI it
   makes the service account, drives exactly the agents listed (an agent no longer listed answers
   for itself again), and writes the service's token into the file.
+- **Install the program first, then run `setup-host.sh`.** The program's installer makes the entry's
+  account and the root-owned folder for `file`. Until the account exists, `rc-service.sh` skips the
+  entry with one line, `<name>: skipped: there is no account <account> yet`, and the run still
+  passes, so site.json can list a program before the program is installed. The next run after the
+  install sets the entry up. `--rotate <name>` for an entry with no account fails.
 - **A token doesn't expire**, so the script makes one only when the file is missing or empty, or the
   server has no token for the service. `sudo OWNER=$(id -un) circlechat/rc-service.sh --rotate
 <name>` makes a new one, and the old one stops working at once.
@@ -1827,6 +1933,9 @@ service-revoke`) also stops the service driving its agents.
   program's launchd job, such as `"job": "io.example.program"`. `state` is the folder that holds only
   the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's
   account. `rc-clear` deletes everything in that folder, after copying it aside.
+- **An entry with `state` may also set `"health_report": true`.** The program then gets each day's
+  usage in `<state>/usage/<day>/`, and its note goes in the morning summary ("A health report's
+  usage export").
 
 **A program that asks a model directly gets a gateway key of its own,** from a `gateway` block in the
 program's entry. A program asks a model directly for a short check, such as a yes-or-no question about
