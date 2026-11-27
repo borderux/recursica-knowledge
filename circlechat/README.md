@@ -606,15 +606,15 @@ The helper starts in `/`, so no command the owner runs prints `getcwd` errors fr
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
-| Secret in GitHub                                | File the helper writes                                                                               | Read by                                                                                          |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                                              |
-| `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The stack's scripts, through the cluster's Slack app                                             |
+| Secret in GitHub                                | File the helper writes                                                                               | Read by                                                                                                                                          |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT` | `model-keys.env` on the control computer                                                             | The model gateway, and nothing else                                                                                                              |
+| `SLACK_BOT_TOKEN`                               | `.env` on the control computer, for each stack                                                       | The stack's scripts, through the cluster's Slack app                                                                                             |
 | `KEV_ENGINE_KEY`                                | `.env` on the control computer                                                                       | The copy of `KEV_API_KEY` for a program that calls kev-engine: the model gateway, for a program's `gateway.kev` (`gateway-state/kev-engine.key`) |
-| `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Each job runner. No program sends a port job today                                               |
-| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | Each job runner, which sends each job's result to the webhook                                    |
-| `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents"                       |
-| `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                                      |
+| `JOBD_TOKEN`                                    | `.env` on the control computer, and the node secrets file                                            | Each job runner. No program sends a port job today                                                                                               |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`         | `.env` on the control computer, and the node secrets file                                            | Each job runner, which sends each job's result to the webhook                                                                                    |
+| `APP_KEY_<AGENT>`, such as `APP_KEY_ALAN`       | `/var/lib/agent-stacks/github-apps/<environment>/<agent>.pem` on the control computer, owned by root | The GitHub token service, and nothing else. See "GitHub access for agents"                                                                       |
+| `KEV_API_KEY`                                   | The node secrets file                                                                                | Kev's model                                                                                                                                      |
 
 The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. The workflow passes every `APP_KEY_<AGENT>` secret in the environment too. The Kev notes push's key is `APP_KEY_KEV_DATA`, written to `kev-data.pem` in the same folder. `CC_CHECK_PASSWORD` belonged to CircleChat 1.x's agent check: the helper writes nothing for the secret, and asks for the secret's removal.
 
@@ -1350,14 +1350,46 @@ Don't commit a real `site.json`, an `.env`, a machine name, an address or a key.
 
 ### Kev's review data
 
-A design review writes Kev disagreement notes to `reviews/kev-disagreements.md` in the workspace. The notes name rules and file paths, and can quote the application's code. The notes never go to this repo or to any other public repo. A person reviews each change before Kev trains on it.
+Each design review teaches Kev, the quick first pass that leads Barb's checkers. Each review's harness writes Kev labels: one line per thing Kev's first pass said, with what the full review found. CircleChat 1.x's Barb also wrote Kev disagreement notes to `reviews/kev-disagreements.md` in the workspace. The labels and the notes name rules and file paths, and can quote the application's code. They never go to this repo or to any other public repo. A person reviews each change before Kev trains on it.
 
 With `data.repo` in `site.json`, such as `your-org/recursica-kev-data`, the setup installs two jobs on the control computer:
 
-| Job              | When       | What it does                                                                                                                                                                                                                        |
-| ---------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kev-data-push`  | Each hour  | Pushes new notes to a new `kev-notes/<date>-<time>` branch of the repo, and opens a pull request into `main`. The new pull request holds every note, and it closes the job's older open pull requests. The job never pushes `main`. |
-| `kev-notes-pull` | Each night | The first step of Kev's training. It writes the notes on the repo's `main` branch to `$CC_DIR/kev-reviewed/kev-disagreements.md`. It reads no other branch, so notes that wait for review never reach training.                     |
+| Job              | When       | What it does                                                                                                                                                                                                                                                                          |
+| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kev-data-push`  | Each hour  | Pushes new labels and notes to a new `kev-notes/<date>-<time>` branch of the repo, and opens a pull request into `main`. The new pull request holds every label and note, and it closes the job's older open pull requests. The job never pushes `main`.                              |
+| `kev-notes-pull` | Each night | The first step of Kev's training. It writes the labels on the repo's `main` branch to `$CC_DIR/kev-reviewed/kev-labels.jsonl`, and the notes to `$CC_DIR/kev-reviewed/kev-disagreements.md`. It reads no other branch, so labels and notes that wait for review never reach training. |
+
+**Each review's harness writes its labels into a label folder of its own.** The harness's entry in `recursicachat.services` names the folder, such as `"kev_labels": "/opt/program/kev-labels"` (see "A program that drives an agent"). The harness's installer makes the folder belong to the service's account and the group `staff`, mode 0750, and each file in it 0640, so the push, which runs as the stack's owner, can read the labels. The push gathers every `*.jsonl` file in every label folder. It refuses, with one line that names the path:
+
+- a folder that is a symlink, belongs to another account than the entry's `account`, is writable by its group or others, or sits in a git checkout;
+- a file that is a symlink, has a second hard link, belongs to another account, or is writable by its group or others;
+- a file with any line that isn't a real-review label (below).
+
+Nothing from a refused folder or file is pushed. Every other folder and file still is, and the job then exits 1, so the refusal shows.
+
+**Every real review feeds Kev, and no eval run ever can.** Each label says which it came from, in `run`: `"review"` for a real review, `"eval"` for an eval run. An eval run writes its labels only to its own results folder, never to a label folder. A file with any line whose `run` isn't `"review"`, or any line that isn't a label, is refused whole, with the file's name and the count of such lines. The nightly job filters again: it keeps only the lines on `main` that are labels with `"run": "review"`, and prints the count it dropped. So an eval label can't reach training, even if a person merged one.
+
+**Kev labels, version 1.** One JSON object per line, UTF-8, with these fields:
+
+| Field                             | What it holds                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `v`                               | `1`.                                                                                                                                                    |
+| `run`                             | `"review"` or `"eval"`. Only `"review"` lines reach the repo or training.                                                                               |
+| `id`                              | `<review id>/<n>`: the review and the label's number in it. A later line with the same `id` replaces the earlier one, such as a person's decision.      |
+| `at`                              | The time, such as `2026-11-27T12:00:00Z`.                                                                                                               |
+| `agent`                           | The harness that ran the review: `"barb"` or `"betty"`.                                                                                                 |
+| `review`                          | The review's id.                                                                                                                                        |
+| `repo`, `commit`, `file`, `lines` | The repo as `owner/name`, the commit's full sha, the file, and `[from, to]`, or `null` when no lines are named.                                         |
+| `skill`, `item`                   | The skill and its checklist item, word for word.                                                                                                        |
+| `kev`                             | `{ "said": "lead" \| "unsure" \| "clear" \| "none", "score": <number or null> }`: what Kev's first pass said; `"none"` when Kev set the item aside.     |
+| `outcome`                         | `"confirmed"`, `"refuted"`, `"unsettled"` or `"not-raised"`, from the checkers and Feisty. A miss is `"confirmed"` with `kev.said` other than `"lead"`. |
+| `evidence`                        | The checker's evidence, or `null`.                                                                                                                      |
+| `feisty`                          | `{ "reason": ..., "correction": ... }`: Feisty's reason.                                                                                                |
+| `person`                          | `null`, or `{ "verdict": "right" \| "wrong", "by": ..., "at": ..., "note": ... }`. A person's verdict outranks Feisty's.                                |
+
+A label holds no prompt text, no model reply beyond the evidence and Feisty's reason, no secret and no token.
+
+**The branch's `kev-labels.jsonl` is main's file, then each new line.** Lines are compared whole, and each one goes once, in order. So a person's decision, a later line with the same `id`, stays after the earlier line. A run with no new label and no new note, or the same ones as the job's last pull request, pushes nothing.
 
 Without `data.repo`, neither job runs. An earlier setting, `data.kev_disagreements_branch`, pushed the notes to a branch of this public repo. The config check now refuses it.
 
@@ -1370,6 +1402,7 @@ To turn on the jobs:
 3. Create the push's GitHub App. `node circlechat/github/manifest.mjs kev-data` prints the app's manifest and the steps. The app has Contents and Pull requests, both read and write, and Metadata read. Install the app on the notes repo only.
 4. Save the app's private key as `APP_KEY_KEV_DATA` in the stack's GitHub environment. Send the key to `gh secret set` on stdin, never on a command line or on screen. Then delete the downloaded key file with `shred`.
 5. Set `data.repo` and `data.github_app` in `site.json`. `data.github_app` holds the app's `app_id`, `installation_id` and `slug`.
+   Set `kev_labels` in each review harness's entry in `recursicachat.services`.
 6. Deploy the secrets (see "Secrets in GitHub"), and rerun `setup-host.sh`.
 
 **The push's token covers only `data.repo`, and lasts at most one hour.** The token service (see "GitHub access for agents") makes the token, with Contents and Pull requests only. site.json can't add a permission. The service writes the token to `$CC_DIR/kev-data.env` as `KEV_DATA_GITHUB_TOKEN`, with mode 600, and renews the token 15 minutes before the token ends. No agent, container or other job reads that file. The jobs give the token to git in the environment, never on a command line or in the clone's settings. Each notes commit uses the app's bot identity, `<app-slug>[bot]`.
@@ -1783,6 +1816,13 @@ without the program. List each program in site.json:
 - **An agent has at most one service.** To hand an agent back to the people who use it, take it out
   of the entry and run the script again. Revoking the service's token on the server (`cli.ts
 service-revoke`) also stops the service driving its agents.
+- **An entry may name `kev_labels`, the folder where the program writes Kev labels,** such as
+  `"kev_labels": "/opt/program/kev-labels"`. The hourly push sends them to `data.repo` for a
+  person's review (see "Kev's review data"). The config check takes a full path only, on the
+  cluster's own stack with `data.repo` set, and refuses a folder in the server's folders, in the
+  entry's `state`, in another entry's label folder, or in a checkout or stack folder, such as
+  `recursica-knowledge`, `recursica-stack` or `recursica-workspace`. The folder belongs to the
+  entry's account and the group `staff`, mode 0750.
 - **An entry may also name the program's `job` and `state`, for `sudo rc-clear` only.** `job` is the
   program's launchd job, such as `"job": "io.example.program"`. `state` is the folder that holds only
   the program's state, such as `"state": "/opt/program/home/state"`, and it belongs to the entry's
@@ -1827,8 +1867,17 @@ an agent's answer, instead of running an agent turn:
 agent, so the server gets no service and no token for it, and its `file` is its gateway key file:
 
 ```json
-{ "name": "example-eval", "account": "person-a", "file": "/opt/example-evals/example-eval.gateway-key",
-  "gateway": { "routes": ["judge"], "max_parallel": 4, "daily_requests": 5000, "kev": ["machine-2"] } }
+{
+  "name": "example-eval",
+  "account": "person-a",
+  "file": "/opt/example-evals/example-eval.gateway-key",
+  "gateway": {
+    "routes": ["judge"],
+    "max_parallel": 4,
+    "daily_requests": 5000,
+    "kev": ["machine-2"]
+  }
+}
 ```
 
 - `rc-service.sh` writes the key to `file`, the entry's account's own, mode 400. The folder must

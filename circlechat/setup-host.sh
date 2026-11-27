@@ -408,9 +408,10 @@ if [ "$(site_get recursicachat.services)" != "" ] && [ "$(site_get recursicachat
   sudo OWNER="$(id -un)" CC_DIR="$CC_DIR" SITE="$SITE" KIT_NODE="$(command -v node)" "$HERE/rc-service.sh" ||
     echo "Setting up a RecursicaChat service failed (the lines above say why). Fix it, then run: sudo OWNER=\$(id -un) $HERE/rc-service.sh"
 fi
-# Kev's review data, with data.repo in site.json: each hour, Barb's notes go to a new branch of
-# that private repo, with a pull request for a person to review. Each night, the reviewed notes
-# come from the repo's main branch, for Kev's training. Without data.repo, neither job runs.
+# Kev's review data, with data.repo in site.json: each hour, the review harnesses' Kev labels (each
+# service's kev_labels folder) and Barb's notes go to a new branch of that private repo, with a pull
+# request for a person to review. Each night, the reviewed labels and notes come from the repo's
+# main branch, for Kev's training. Without data.repo, neither job runs.
 if [ -n "$(site_get data.repo)" ]; then
   install_unit "kev-data-push$SUFFIX" "$ENVS $HERE/kit/push-data.sh" "$CC_DIR" "$(id -un)" hourly
   install_unit "kev-notes-pull$SUFFIX" "$ENVS $HERE/kit/pull-kev-notes.sh" "$CC_DIR" "$(id -un)" "*-*-* 01:30"

@@ -659,6 +659,28 @@ export function svcGatewayErrors(s, at, site = {}) {
   if (site.site?.gateway_local_port === undefined) errs.push(`${at}.gateway needs site.gateway_local_port: the service reaches the gateway there`);
   return errs;
 }
+// A service's kev_labels: the folder its harness writes Kev labels to, for the hourly push
+// (push-data.sh, kev-labels.mjs). Only the cluster's own stack with data.repo pushes Kev's review
+// data, so only there. The folder sits outside the server's folders, the program's state (sudo
+// rc-clear clears it), and every checkout and stack folder, where a label could be committed or
+// reach training without a person's review: the push itself also refuses a folder in a git checkout.
+export const KEV_LABELS_NOT_IN = [".git", "recursica-knowledge", "recursica-stack", "circlechat", "recursica-workspace", "circlechat-workspace", "tenants", "kev-data-private", "kev-reviewed"];
+export function svcKevLabelsErrors(s, at, site = {}, serverDirs = []) {
+  const d = s.kev_labels;
+  const errs = [];
+  if (typeof d !== "string" || !/^\/[A-Za-z0-9._/-]+$/.test(d) || d.split("/").includes("..")) errs.push(`${at}.kev_labels must be the full path of the folder the program writes its Kev labels to, such as /opt/program/kev-labels`);
+  else {
+    const dir = `${d.replace(/\/+$/, "")}/`;
+    if (dir === "/") errs.push(`${at}.kev_labels must be a folder of the program's own, not /`);
+    if (serverDirs.some((x) => dir.startsWith(x))) errs.push(`${at}.kev_labels must be outside the server's folders`);
+    const inside = d.split("/").find((p) => KEV_LABELS_NOT_IN.includes(p));
+    if (inside) errs.push(`${at}.kev_labels must be outside every checkout and stack folder, and ${d} is in ${inside}`);
+    if (typeof s.state === "string" && (dir.startsWith(`${s.state.replace(/\/+$/, "")}/`) || `${s.state.replace(/\/+$/, "")}/`.startsWith(dir))) errs.push(`${at}.kev_labels must be apart from state: sudo rc-clear clears state`);
+  }
+  if (site.site?.tenant !== undefined || ["client", "demo"].includes(site.site?.kind)) errs.push(`${at}.kev_labels is for the cluster's own stack only: review data from a client's or a demo's code never leaves its stack`);
+  else if (!site.data?.repo) errs.push(`${at}.kev_labels needs data.repo: the labels go only to that private repo, for a person to review`);
+  return errs;
+}
 export function rcServiceErrors(rc, site = {}) {
   if (rc.services === undefined) return [];
   if (!Array.isArray(rc.services)) return ["recursicachat.services must be a list"];
@@ -667,11 +689,18 @@ export function rcServiceErrors(rc, site = {}) {
   const driven = new Map();
   const files = new Set((Array.isArray(rc.sessions) ? rc.sessions : []).map((s) => s?.file));
   const serverDirs = [rc.app ?? RC_DEFAULTS.app, rc.data ?? RC_DEFAULTS.data].map((d) => String(d).replace(/\/+$/, "") + "/");
+  const labelDirs = new Set();
   rc.services.forEach((s, i) => {
     const at = `recursicachat.services[${i}]`;
     if (!s || typeof s !== "object" || Array.isArray(s)) return void errs.push(`${at} must be an object`);
-    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state and gateway`);
+    for (const k of Object.keys(s)) if (!["name", "agents", "account", "file", "job", "state", "gateway", "kev_labels"].includes(k)) errs.push(`${at}.${k} is not a setting: name, agents, account, file, job, state, gateway and kev_labels`);
     if (s.gateway !== undefined) errs.push(...svcGatewayErrors(s, at, site));
+    if (s.kev_labels !== undefined) {
+      errs.push(...svcKevLabelsErrors(s, at, site, serverDirs));
+      const dir = `${String(s.kev_labels).replace(/\/+$/, "")}/`;
+      if (labelDirs.has(dir)) errs.push(`${at}.kev_labels is another entry's folder: each service has a label folder of its own`);
+      labelDirs.add(dir);
+    }
     if (s.job !== undefined) {
       if (typeof s.job !== "string" || !RC_SERVICE_JOB.test(s.job)) errs.push(`${at}.job must be the program's launchd job, such as io.example.program`);
       else if (s.job.startsWith("io.recursica.recursicachat")) errs.push(`${at}.job must be the program's launchd job, not one of the server's own`);
