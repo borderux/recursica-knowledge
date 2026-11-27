@@ -80,22 +80,34 @@ export const MODEL_PATHS = new Set(["/v1/chat/completions", "/v1/completions", "
 // one with another context length. Other settings, such as temperature, pass through.
 export const LOAD_SETTINGS = ["keep_alive", "num_ctx", "num_batch", "num_gpu", "main_gpu", "num_thread", "numa", "use_mmap", "use_mlock", "low_vram", "f16_kv", "num_keep"];
 const isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
-export function withoutLoadSettings(body) {
+// A copy of the body without the named settings, at the top and inside extra_body, and with
+// `options` also inside options and extra_body.options; and the paths it dropped, for the spend log.
+function withoutSettings(body, names, { options = false } = {}) {
   const dropped = [];
   const strip = (o, at) => {
     const out = { ...o };
-    for (const k of LOAD_SETTINGS) if (Object.hasOwn(out, k)) { dropped.push(at + k); delete out[k]; }
+    for (const k of names) if (Object.hasOwn(out, k)) { dropped.push(at + k); delete out[k]; }
     return out;
   };
   let out = strip(body, "");
-  for (const k of ["options", "extra_body"]) {
+  for (const k of options ? ["options", "extra_body"] : ["extra_body"]) {
     if (!isObject(out[k])) continue;
     const inner = strip(out[k], `${k}.`);
-    if (k === "extra_body" && isObject(inner.options)) inner.options = strip(inner.options, "extra_body.options.");
+    if (options && k === "extra_body" && isObject(inner.options)) inner.options = strip(inner.options, "extra_body.options.");
     out = { ...out, [k]: inner };
   }
   return { body: out, dropped };
 }
+export const withoutLoadSettings = (body) => withoutSettings(body, LOAD_SETTINGS, { options: true });
+// Settings that ask a model to think before it answers: OpenAI's reasoning_effort and reasoning,
+// Ollama's think, and Anthropic's thinking. Ollama refuses each of them for a model that can't think,
+// with 400 "<model> does not support thinking", on its OpenAI-compatible chat API and on /api/chat
+// (Ollama 0.40.16, server/routes.go). A model that site.json marks "thinking": false (kit/render.mjs)
+// gets none of them: for a route with such a model, the gateway drops them at the top of the request
+// and inside its extra_body before the request goes to the cluster. The spend log lists them in
+// `dropped`. A route whose models think, and a request that goes to a cloud model, keep them.
+export const REASONING_SETTINGS = ["reasoning_effort", "reasoning", "think", "thinking"];
+export const withoutReasoning = (body) => withoutSettings(body, REASONING_SETTINGS);
 
 // Kev-engine's one path, for a program's key with Kev's computers in its gateway block.
 export const KEV_PATH = "/v1/systemone";
@@ -225,7 +237,11 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
   // (waits.mjs): the server's parallel setting from gateway.json, or none when site.json leaves it to
   // the server. A route names its models in order; a request is counted on the first.
   const lanes = createLanes((m) => config.models?.[m]?.parallel ?? null);
-  const backendOf = (route) => config.routes?.[route]?.models?.[0] ?? (config.models?.[route] ? route : null);
+  // A route's cluster models in order; an agent may also name one cluster model as its route.
+  const clusterOf = (route) => config.routes?.[route]?.models ?? (config.models?.[route] ? [route] : []);
+  const backendOf = (route) => clusterOf(route)[0] ?? null;
+  // A route with a model that can't think: LiteLLM may send a request to any of the route's models.
+  const cantThink = (route) => clusterOf(route).some((b) => config.models?.[b]?.thinking === false);
   const settings = new Map();
   let keys = {}, keysAt = null;
   const keyFile = path.join(stateDir, "agent-keys.json");
@@ -376,6 +392,8 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
     }
     const askedField = asked === null ? {} : { asked };
     if (!route) return fail(res, 403, "no_route", `Agent ${who.agent} has no route in site.json.`);
+    // What goes to the cluster: without a request to think, for a route with a model that can't.
+    const reasoning = cantThink(route) ? withoutReasoning(body) : { body, dropped: [] };
     // A key with caps: refused at once past either cap, and counted otherwise. The slot is free
     // again when the answer ends or the caller goes.
     if (capped(agent)) {
@@ -458,13 +476,14 @@ export function createGateway({ config, db = noTasks(), litellm, litellmKey = ""
         const sentAt = now();
         const ticket = backend ? lanes.enter(backend, sentAt) : null;
         try {
-          const up = await upstream(req, pathname, { ...body, model: route }, stop.signal);
+          const up = await upstream(req, pathname, { ...reasoning.body, model: route }, stop.signal);
           if (timer) clearTimeout(timer);
           if (up.statusCode >= 500 || up.statusCode === 429) { up.resume(); throw new Error(`cluster answered ${up.statusCode}`); }
           // The cluster's answer starts the task, and ends the task's time on the cloud: the task's
           // next move to the cloud is a new switch.
           if (clock && !unsure && up.statusCode < 300 && (!clock.startedAt || clock.onCloud)) { clock.startedAt ??= now(); clock.onCloud = false; clocks.save(); }
-          return relay(res, up, { ...entry, key: "cluster" }, { receivedAt, sentAt, ticket, tries });
+          const dropped = [...loading.dropped, ...reasoning.dropped];
+          return relay(res, up, { ...entry, key: "cluster", ...(dropped.length ? { dropped } : {}) }, { receivedAt, sentAt, ticket, tries });
         } catch {
           if (ticket) lanes.leave(ticket, now());
           if (timer) clearTimeout(timer);

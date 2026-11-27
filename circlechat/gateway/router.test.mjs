@@ -244,6 +244,49 @@ test("a caller can't load, unload or resize a model: keep_alive and the load opt
   assert.equal(list.status, 400, "a body that isn't an object is refused");
 });
 
+test("a route with a model that can't think gets no request to think; the spend log names what was dropped", async () => {
+  db.tasks.betty = null;
+  db.tasks.loki = null;
+  // local-small's model can't think (site.json "thinking": false); local-large's can.
+  const cfg = structuredClone(config);
+  cfg.routes["local-small"].models = ["m1/mlx/local-small"];
+  cfg.routes["local-large"].models = ["m1/ollama/local-large"];
+  cfg.models["m1/mlx/local-small"].thinking = false;
+  const g = await listen(createGateway({ config: cfg, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, now, retryMs: 20 }));
+  const post = (key, p, body) => fetch(`${base(g)}${p}`, { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" }, body: JSON.stringify(body) });
+  try {
+    const think = { reasoning_effort: "medium", reasoning: { effort: "high" }, think: true, temperature: 0.2, keep_alive: 0, extra_body: { think: "high", reasoning_effort: "low", seed: 7 } };
+    let r = await post(keys.loki, "/v1/chat/completions", { model: "local-small", messages: [{ role: "user", content: "secret prompt text" }], ...think });
+    assert.equal(r.status, 200);
+    let sent = bodies.at(-1);
+    for (const k of ["reasoning_effort", "reasoning", "think", "keep_alive"]) assert.equal(sent[k], undefined, k);
+    assert.equal(sent.temperature, 0.2, "other settings pass");
+    assert.deepEqual(sent.extra_body, { seed: 7 });
+    let log = await lastLog();
+    assert.deepEqual(log.dropped, ["keep_alive", "reasoning_effort", "reasoning", "think", "extra_body.reasoning_effort", "extra_body.think"]);
+    assert.doesNotMatch(fs.readFileSync(spendLog, "utf8"), /secret prompt text|"medium"|"high"/, "the log names the settings, never their values");
+    // Anthropic's path, which Claude Code uses: its thinking block is dropped too.
+    r = await post(keys.loki, "/v1/messages", { model: "local-small", max_tokens: 10, thinking: { type: "enabled", budget_tokens: 1024 }, messages: [{ role: "user", content: "x" }] });
+    assert.equal(r.status, 200);
+    assert.equal(bodies.at(-1).thinking, undefined);
+    assert.equal(bodies.at(-1).max_tokens, 10);
+    assert.deepEqual((await lastLog()).dropped, ["thinking"]);
+    // A route whose model thinks keeps every reasoning setting, and logs nothing dropped.
+    r = await post(keys.betty, "/v1/chat/completions", { model: "local-large", messages: [{ role: "user", content: "x" }], reasoning_effort: "medium", think: true });
+    assert.equal(r.status, 200);
+    sent = bodies.at(-1);
+    assert.equal(sent.reasoning_effort, "medium");
+    assert.equal(sent.think, true);
+    assert.equal((await lastLog()).dropped, undefined);
+    // A route with no such request is sent as it came.
+    await post(keys.loki, "/v1/chat/completions", { model: "local-small", messages: [{ role: "user", content: "x" }], temperature: 0.1 });
+    assert.equal(bodies.at(-1).temperature, 0.1);
+    assert.equal((await lastLog()).dropped, undefined);
+  } finally {
+    g.close();
+  }
+});
+
 test("a key reaches only its agent's routes; another name means the agent's first route", async () => {
   db.tasks.betty = null;
   const r = await ask(keys.betty, "local-small");

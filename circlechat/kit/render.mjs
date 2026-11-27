@@ -113,6 +113,7 @@ export function egressAllow(site) {
 // the models the server serves:
 //   { "id": "mlx", "kind": "mlx-lm", "port": 8081, "models": [{ "id": "qwen-32b", "model": "<name>", "memory_gb": 20 }] }
 // A model on an Ollama server may also set its own context_length and keep_alive (kit/ollama.mjs).
+// A model that can't think sets "thinking": false, on a server of any kind (thinkingErrors).
 // A route or an agent names one model as "<node>/<server id>/<model id>". An older site.json lists
 // "models" on the node instead, each with its own port; each model is then named "<node>/<model id>",
 // and the port 11434 counts as an Ollama server named ollama.
@@ -288,7 +289,8 @@ export function gatewayConfig(site) {
     // The server and the model behind each name LiteLLM reports, for the spend log.
     models: Object.fromEntries([
       // and the server's parallel setting, the slots a model has: an mlx-lm server answers one at a time
-      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model, parallel: server.parallel ?? (server.kind === "mlx-lm" ? 1 : null) }]),
+      // and a model that can't think, so the gateway drops a request to think on its routes
+      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model, parallel: server.parallel ?? (server.kind === "mlx-lm" ? 1 : null), ...(m.thinking === false ? { thinking: false } : {}) }]),
       ...Object.values(keys).map((k) => [`${k.provider}/${k.model}`, { server: k.provider, kind: "cloud", model: k.model }]),
     ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
@@ -387,6 +389,11 @@ export function cloudAllowed(site) {
 }
 const kindWord = (site) => (site.site?.kind === "demo" ? "demo" : "client");
 
+// "thinking": false marks a model that can't think. Ollama refuses a request to think for such a
+// model, so the gateway drops a request's reasoning settings on the model's routes (gateway/router.mjs,
+// REASONING_SETTINGS). A model that leaves it out, or sets true, gets them as sent.
+const thinkingErrors = (m, where) => (m.thinking === undefined || typeof m.thinking === "boolean" ? [] : [`${where}: thinking must be true or false: false for a model that can't think, so the gateway drops a request to think`]);
+
 // One node's model servers: each server's kind, port and models, and whether the models the
 // node loads fit the memory the node gives its models (model_memory_gb).
 function serverErrors(n, { leaveOut = false } = {}) {
@@ -417,8 +424,10 @@ function serverErrors(n, { leaveOut = false } = {}) {
       if (!m.model) errs.push(`${where}, model ${m.id}: model is required, the name the server knows the model by`);
       if (!(m.memory_gb > 0)) errs.push(`${where}, model ${m.id}: memory_gb must be the memory the model needs, in GB`);
       errs.push(...ollamaModelErrors(sv, m, `${where}, model ${m.id}`));
+      errs.push(...thinkingErrors(m, `${where}, model ${m.id}`));
     }
   }
+  for (const m of n.models ?? []) errs.push(...thinkingErrors(m, `node ${n.name}, model ${m.id}`));
   // A model's own context_length and keep_alive need the model under an Ollama server.
   for (const m of n.models ?? []) {
     const set = OLLAMA_MODEL_SETTINGS.filter((k) => m[k] !== undefined);
