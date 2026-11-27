@@ -28,6 +28,9 @@
 //     tests, and of any job that didn't run on time (daily-summary.mjs).
 //   - A Kev engine never stops on its own. A change to a running engine's unit, held by
 //     setup-node.sh, gets one post with the command a person runs (held-restarts.mjs).
+//   - With a knowledge block in the cluster's site.json, the control computer's knowledge MCP server
+//     serves each new verified commit on the knowledge repo's main: an export of the commit,
+//     switched in one step (knowledge-export.mjs). This follows main whatever updates.follow says.
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -189,6 +192,7 @@ async function main() {
   const { runUpgrade } = await import("./root-steps.mjs");
   // Loaded before the follow step, so the job loads no module from the new commit.
   const rootCopies = await rootCopiesStep();
+  const { runExport } = await import("./knowledge-export.mjs");
   const { HELD_DIR, readHeld, tellHeld } = await import("./held-restarts.mjs");
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
@@ -240,6 +244,13 @@ async function main() {
   if (followsMain(site)) {
     await followStep({ env, site, control, stacks, chat, state, kitRepo }).catch((e) => console.error(`kit follows main: ${e.message}`));
     await restartKit({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit restarts: ${e.message}`));
+  }
+  // The knowledge MCP server's export of main's newest commit, on the control computer.
+  if (control && site.knowledge) {
+    const { serverQuiet: quietNow } = await import("./quiet.mjs");
+    await runExport({ env, kitRepo, state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text), quiet: () => quietNow(site) })
+      .then((word) => console.log(`knowledge export: ${word}`))
+      .catch((e) => console.error(`knowledge export: ${e.message}`));
   }
   // Kev engine restarts that wait for a person, after the follow step, so a hold from the setup the
   // step just ran posts this hour (held-restarts.mjs).

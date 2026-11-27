@@ -30,12 +30,20 @@ looking like it helped. **There is deliberately no search tool here.**
 | Tool                | What it answers                                                                                                                                                                                                                                                            |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `router`            | The decision order, the precedence when rules collide, and when to stop and ask. Call it first.                                                                                                                                                                            |
-| `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged.                                                                                                                                                                                  |
+| `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. Takes `sources`, each file as `{ path, text }`; stdio also takes `files`, absolute paths.                                                                                         |
 | `skill_family`      | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, open questions and, for a component, its inventory and "When not to use …" table, at about a quarter of the size — for when the full family will not fit (see below). |
 | `skill_section`     | One section of one skill, for the reasoning behind a contract item.                                                                                                                                                                                                        |
+| `skill_text`        | One whole SKILL.md, frontmatter included: `{ slug, group, path, text }`. For a checker that walks one skill's checklist, never for building a screen.                                                                                                                      |
+| `agent_prompt`      | One agent's built prompt, `portable/claude-code/agents/<name>.md`: `{ name, path, text }`. Only `barb`, `betty`, `checker` and `feisty`; any other name is refused.                                                                                                       |
+| `knowledge_info`    | The commit served now: `{ commit, committedAt, servedSince }`.                                                                                                                                                                                                             |
 | `skill_image`       | One image a skill ships, such as a layout template. A served skill lists its images under `images`.                                                                                                                                                                        |
 | `list_skills`       | Slugs, categories and one-line descriptions, for when there are no files to compute from.                                                                                                                                                                                  |
-| `component_api`     | Real prop types from the adapter version a given project installs.                                                                                                                                                                                                         |
+| `component_api`     | Real prop types from the adapter version a project installs. Takes `packages`, each installed adapter package's `package.json` text and declaration files; stdio also takes `project_root`.                                                                               |
+
+**Every answer names the knowledge commit it came from.** A tools/call result carries
+`structuredContent.commit`, the 40-character commit, and its text ends with the line
+`knowledge commit: <commit>`. An error names the commit too. A review or a design records the
+commit, so a finding can be traced to the rules it was checked against.
 
 `skills_for_screen` **imports** `scripts/screen-skill-manifest.mjs` rather than reimplementing
 it. That is a correctness requirement: Barb computes applicability with the same module, and a
@@ -58,11 +66,11 @@ family will not fit, and fetch each component's Accessibility section with it.
 Responses carry no frontmatter. The description is for choosing a skill, and repeating it for
 every skill in a family cost 6% of the response. `list_skills` still returns it.
 
-## Registering it
+## Two modes
 
-On Claude Code, run `npm run mcp:install` in the checkout. It registers the server for every
-project, and `npm run agents:install` runs the same step. By hand, the server needs no arguments
-when it runs from the checkout. Use an absolute path.
+**stdio, for a person's Claude Code.** On Claude Code, run `npm run mcp:install` in the checkout.
+It registers the server for every project, and `npm run agents:install` runs the same step. By
+hand, the server needs no arguments when it runs from the checkout. Use an absolute path.
 
 ```json
 {
@@ -79,7 +87,31 @@ when it runs from the checkout. Use an absolute path.
 
 Set `KNOWLEDGE_ROOT` only if you are running the file from somewhere other than the checkout it
 belongs to. It exits non-zero when it cannot find `skills/`, rather than starting up and serving
-an empty corpus.
+an empty corpus. In stdio mode the commit is the checkout's `HEAD`, read with git, and files the
+checkout changed but did not commit are served as they are.
+
+**HTTP, the service.** `node server.mjs --http` serves MCP Streamable HTTP at
+`http://127.0.0.1:<KNOWLEDGE_MCP_PORT>/mcp`. On the cluster, the kit runs it as a service of its
+own: see "The knowledge MCP server" in `circlechat/README.md`.
+
+- **Loopback only.** The server binds 127.0.0.1, and no setting moves it. It refuses a request
+  with an `Origin` header, or with a `Host` other than `127.0.0.1` or `localhost` at its port.
+- **A key per caller.** Each request carries `Authorization: Bearer <key>`. A request without a
+  known key gets HTTP 401 and nothing else. `KNOWLEDGE_MCP_KEYS` names a JSON file of each
+  caller's key hash, `{ "callers": { "<name>": { "sha256": "<hex>" } } }`. The server reads the
+  file again whenever the file changes, so a new key needs no restart. The log names the caller
+  of each call, and never a key.
+- **Stateless.** A client may send `initialize`, `tools/list` and `tools/call` as plain JSON-RPC
+  POSTs, with `Accept: application/json, text/event-stream`. Each answer is `application/json`,
+  with no session id. A notification gets 202. GET gets 405.
+- **Contents, never paths.** The service runs as its own account, which cannot read a caller's
+  files. `skills_for_screen` takes `sources` and `component_api` takes `packages`. The service
+  refuses `files` and `project_root` and leaves them out of `tools/list`.
+- **One commit per answer.** `KNOWLEDGE_ROOT` is a link to one export, such as
+  `/opt/recursica-knowledge/current`. The server resolves the link once at the start of each call,
+  so a call reads one commit, and the next call follows the link to a new export with no restart.
+  An export names its commit in `.knowledge-export.json`. The service refuses to answer from a tree
+  that names no commit.
 
 ## Two failure shapes it refuses
 
@@ -87,7 +119,8 @@ Both were chosen because they produce an answer that looks like a good one:
 
 - **A screen path that is not on disk is an error, not an empty manifest.** An empty skill set is
   indistinguishable from a screen with nothing on it, and it is how an unreviewed screen gets a
-  clean review.
+  clean review. With `sources`, a local import of a file that was not sent is listed under
+  `uncovered.unsentFiles`.
 - **A component with no declaration in the installed adapter is reported as absent**, with the
   adapters that were searched. A prop documented in a skill and missing from the installed
   package is a problem to find before building on it.

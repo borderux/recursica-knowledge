@@ -5,7 +5,7 @@
 #   - The stack's folder holds site.json, .env, model-keys.env, kit-out/ and gateway-state/:
 #     ~/recursica-stack for the cluster's own stack, and ~/tenants/<name>/stack for a client or demo
 #     stack.
-#   - The agents' workspace holds Kev, the app and the knowledge checkouts: ~/recursica-workspace,
+#   - The agents' workspace holds the app's checkout and the agents' files: ~/recursica-workspace,
 #     and ~/tenants/<name>/workspace for a client or demo stack.
 #
 # CircleChat 1.x named the folders ~/circlechat, ~/tenants/<name>/circlechat and

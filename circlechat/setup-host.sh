@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Set up (or update: safe to rerun) the CONTROL machine of a deployment: the model gateway, the
-# agents' shared workspace with Kev and the app preview, and the background jobs that keep it all
-# current, the RecursicaChat 2.0 server's jobs included. Linux or macOS. Everything specific to the
+# agents' shared workspace with the app preview, the knowledge MCP server, and the background jobs
+# that keep it all current, the RecursicaChat 2.0 server's jobs included. Linux or macOS. Everything specific to the
 # deployment comes from site.json.
 #
 #   1. Put the config at $CC_DIR/site.json (start from circlechat/site.example.json). $CC_DIR is the
@@ -109,7 +109,6 @@ GATEWAY_SERVE=false
 if [ "$OS" = Darwin ]; then case "${DOCKER_CONTEXT:-$(docker context show 2>/dev/null)}" in colima*) GATEWAY_SERVE=true ;; esac; fi
 JOBS_LOCAL_PORT=$((GATEWAY_PORT + 1))
 TS_HOST="$(site_get site.public_host)"
-KNOWLEDGE_REPO="$(site_get repos.knowledge)"
 APP_REPO_URL="$(site_get repos.app)"
 
 mkdir -p "$CC_DIR"
@@ -333,19 +332,10 @@ mkdir -p "$WS"
 # The workspace's checkouts. The setup clones each one once, when nothing is at its path, and never
 # runs git in a checkout after that.
 clone_once() { [ -e "$2" ] || [ -L "$2" ] || git clone "${@:3}" "$1" "$2"; }
-# The knowledge checkout, which Kev reads.
-clone_once "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
-# The application the app preview serves.
+# The application the app preview serves. The workspace holds no knowledge checkout: every agent and
+# program reads the skills from the knowledge MCP server (knowledge-mcp.sh), and Kev runs from the
+# server's export.
 clone_once "$APP_REPO_URL" "$WS/$APP_REPO"
-
-# Kev, the quick first pass of a design review. Copied out of the kit's checkout so its cache and
-# node_modules never land in a repository. The copy never follows a symlink in the workspace
-# (kit/safe-files.mjs). Its engines are listed in site.json.
-if [ -d "$HERE/../tools/kev" ]; then
-  node "$HERE/kit/safe-files.mjs" mkdir "$WS" "$WS/kev"
-  node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$HERE/../tools/kev/."
-  docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
-fi
 
 # A port another stack already uses stops the setup here, before anything restarts.
 port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(betty-proto$SUFFIX|cc-gateway$SUFFIX)\$" || true; }
@@ -381,6 +371,13 @@ fi
 # now runs both, hourly.
 uninstall_unit "images$SUFFIX" >/dev/null
 uninstall_unit "upgrade$SUFFIX" >/dev/null
+# The knowledge MCP server, with a knowledge block in site.json (knowledge-mcp.sh): the one way every
+# agent and program reads the skills, on 127.0.0.1, with a key for each caller. The cluster's own
+# stack only. Before the agent sync, which registers the server on RecursicaChat with its key.
+if [ -z "${TENANT:-}" ]; then
+  CC_DIR="$CC_DIR" SITE="$SITE" "$HERE/knowledge-mcp.sh" ||
+    echo "Setting up the knowledge MCP server failed (the lines above say why). Fix it, then run setup-host.sh again."
+fi
 # The agents on the stack's RecursicaChat 2.0 server, with a recursicachat block in site.json: each
 # agent's instructions, model, autonomy, sandbox and monthly budget, from the kit and site.json
 # (rc-sync.sh), through the server's root-only CLI. Now, then hourly. The job runs as root, because

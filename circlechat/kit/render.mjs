@@ -39,6 +39,7 @@ import { repoOf } from "./kev-data.mjs";
 import { DEFAULT_TOKEN_PORT, hasApps, validateApps, validateDataApp } from "../github/apps.mjs";
 import { rustdeskErrors, rustdeskSpec } from "../rustdesk/rustdesk.mjs";
 import { DEFAULT_STALL_MINUTES, MODEL_USE_SETTING } from "../gateway/rc-tasks.mjs";
+import { knowledgeErrors } from "./knowledge.mjs";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
@@ -786,6 +787,8 @@ export function validate(site, { cluster } = {}) {
   }
   errs.push(...gatewayLocalPortErrors(site));
   errs.push(...recursicachatErrors(site));
+  // The knowledge MCP server on the control computer (kit/knowledge.mjs).
+  errs.push(...knowledgeErrors(site));
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
   // The cluster's time zone for reboot times in Slack (cluster/actions.mjs), an IANA name.
   if (t.timezone !== undefined) { try { new Intl.DateTimeFormat("en-US", { timeZone: t.timezone }); } catch { errs.push(`site.timezone "${t.timezone}" must be a time zone name, such as Europe/Berlin`); } }
@@ -1076,6 +1079,8 @@ export function render(site) {
     `PREVIEW_PORT=${st.preview_port ?? 5173}`,
     `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
     `GATEWAY_LOCAL_PORT=${st.gateway_local_port ?? ""}`,
+    // The knowledge MCP server's port on 127.0.0.1, with a knowledge block (kit/knowledge.mjs).
+    `KNOWLEDGE_PORT=${site.knowledge?.port ?? ""}`,
     `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
     `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
     `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,

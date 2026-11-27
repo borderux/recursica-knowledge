@@ -6,8 +6,10 @@ const num = (name, fallback) => {
 };
 
 export const config = {
-  // The recursica-knowledge checkout: the directory holding scripts/screen-skill-manifest.mjs.
-  knowledgeDir: process.env.KNOWLEDGE_DIR ?? "",
+  // The knowledge MCP server, the one way Kev reads the skills (src/knowledge.mjs), and the file
+  // that holds Kev's key for it.
+  knowledgeUrl: process.env.KNOWLEDGE_MCP_URL ?? "",
+  knowledgeKeyFile: process.env.KNOWLEDGE_MCP_KEY_FILE ?? "",
   // Where relative screen paths in a chat message resolve from.
   appRoot: process.env.APP_ROOT ?? process.cwd(),
   // Kev-engine: the local model server. Any System One-compatible server works here.

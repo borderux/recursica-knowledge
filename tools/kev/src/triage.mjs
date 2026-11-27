@@ -7,16 +7,18 @@ import {
   APPLIES_GUIDE, appliesHere, breaksHere, CHUNK_GUIDE, checkableFromSource,
   createEngine, missingOnScreen, SCREEN_GUIDE,
 } from "./engine.mjs";
-import { runManifest } from "./manifest.mjs";
+import { knowledgeClient } from "./knowledge.mjs";
+import { loadKnowledge } from "./manifest.mjs";
 import { pool } from "./pool.mjs";
 import { brief, loadSkill } from "./skill.mjs";
 
 const qid = (i) => `item_${i}`;
 const hasMarkup = (u) => /<[A-Za-z][\w.]*[\s/>]/.test(u.text);
 
-export async function triage(screenFiles, { root } = {}) {
+export async function triage(screenFiles, { root, knowledge } = {}) {
   const started = Date.now();
-  const m = runManifest(config.knowledgeDir, screenFiles);
+  const k = await loadKnowledge(knowledge ?? knowledgeClient({ url: config.knowledgeUrl, keyFile: config.knowledgeKeyFile }), screenFiles);
+  const m = k.manifest;
   const displayRoot = root ?? path.dirname(m.entries[0] ?? process.cwd());
   const screen = readScreen(m.files, displayRoot);
   const allUnits = units(screen, config.fileMaxLines, config.chunkLines, config.chunkOverlap);
@@ -24,7 +26,7 @@ export async function triage(screenFiles, { root } = {}) {
   const screenFits = lineCount(screen) <= config.screenMaxLines;
   const screenState = screenFits ? whole(screen) : null;
   const engine = createEngine();
-  const skills = m.skills.map(loadSkill);
+  const skills = k.skills.map(loadSkill);
 
   // 1. Which design-rules skills does this screen actually touch? Component skills were matched
   //    by an import, so they always apply. Everything else is asked once per unit, all skills in
@@ -115,6 +117,9 @@ export async function triage(screenFiles, { root } = {}) {
   return {
     model: engine.model,
     mock: config.mock,
+    // The knowledge commit every skill and the manifest came from, in both places a reader looks.
+    knowledge: { commit: k.commit },
+    commit: k.commit,
     entries: m.entries.map((f) => path.relative(displayRoot, f) || f),
     files: screen.map((f) => f.rel),
     uncovered: m.uncovered,

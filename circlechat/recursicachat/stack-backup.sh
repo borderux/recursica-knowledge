@@ -1,6 +1,6 @@
 #!/bin/bash
 # Nightly backup of the stack's own files: site.json in the stack's folder, and the agents' shared
-# workspace (Kev's code, the app the agents build in, the knowledge checkouts). install.sh renders it
+# workspace (the app the agents build in, and the agents' files). install.sh renders it
 # from site.json and installs it as /opt/recursicachat/bin/stack-backup.sh, root:wheel 755. Root runs it
 # from io.recursica.stack-backup at 04:00, after the RecursicaChat server's backup at 03:30.
 #

@@ -317,12 +317,9 @@ export function localGraph(entry, seen = new Set()) {
   if (seen.has(abs) || !fs.existsSync(abs)) return seen;
   seen.add(abs);
   const source = fs.readFileSync(abs, "utf8");
-  for (const m of source.matchAll(/(?:from|import)\s*["'](\.[^"']+)["']/g)) {
+  for (const m of source.matchAll(LOCAL_IMPORT)) {
     const target = path.resolve(path.dirname(abs), m[1]);
-    for (const candidate of [
-      target, `${target}.jsx`, `${target}.js`, `${target}.ts`,
-      path.join(target, "index.jsx"), path.join(target, "index.ts"),
-    ]) {
+    for (const candidate of localCandidates(target, path)) {
       if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) { localGraph(candidate, seen); break; }
     }
   }
@@ -340,10 +337,66 @@ export function manifest(entries) {
   // The screen plus every local file it reaches. See `localGraph` for why one file is not enough.
   const files = new Set();
   for (const e of entries) for (const f of localGraph(e)) files.add(f);
+  const texts = [...files].map((f) => fs.readFileSync(f, "utf8"));
+  return {
+    entries: entries.map((f) => path.relative(ROOT, f)),
+    files: [...files].map((f) => path.relative(ROOT, f)).sort(),
+    ...skillSet(texts),
+  };
+}
 
+// The relative imports of one source file, as the specifiers written in the file.
+const LOCAL_IMPORT = /(?:from|import)\s*["'](\.[^"']+)["']/g;
+
+// The files a relative import can name, in the order they are tried. `.tsx` is in the list: a
+// TypeScript screen that imports its shell as './Shell' reached no shell before it was.
+function localCandidates(target, p) {
+  return [
+    target, `${target}.jsx`, `${target}.tsx`, `${target}.js`, `${target}.ts`,
+    p.join(target, "index.jsx"), p.join(target, "index.tsx"), p.join(target, "index.js"), p.join(target, "index.ts"),
+  ];
+}
+
+/**
+ * The skill set for source files given as contents, not paths: `[{ path, text }]`. The knowledge
+ * MCP server's HTTP mode uses this form, because the server's account cannot read a caller's files.
+ * `path` is a label, such as the file's path in the caller's checkout. Relative imports are followed
+ * between the given files the way `localGraph` follows them on disk. An import that reaches no
+ * given file is listed under `uncovered.unsentFiles`, so a screen sent without its shell is reported
+ * rather than reviewed as if the shell had nothing on it.
+ *
+ * Returns what `manifest()` returns for the same files on disk, with each path as its label.
+ */
+export function manifestSources(sources) {
+  if (!Array.isArray(sources) || sources.length === 0) throw new Error("sources must be a non-empty list of { path, text }");
+  const byLabel = new Map();
+  for (const s of sources) {
+    if (!s || typeof s.path !== "string" || !s.path || typeof s.text !== "string") throw new Error("each source must be { path, text }, both strings");
+    byLabel.set(path.posix.normalize(s.path), s.text);
+  }
+  const files = new Set();
+  const unsent = new Set();
+  const walk = (label) => {
+    if (files.has(label)) return;
+    files.add(label);
+    for (const m of byLabel.get(label).matchAll(LOCAL_IMPORT)) {
+      const target = path.posix.normalize(path.posix.join(path.posix.dirname(label), m[1]));
+      const hit = localCandidates(target, path.posix).find((c) => byLabel.has(c));
+      if (hit) walk(hit);
+      else unsent.add(target);
+    }
+  };
+  for (const label of byLabel.keys()) walk(label);
+  const result = { entries: [...byLabel.keys()], files: [...files].sort(), ...skillSet([...files].map((f) => byLabel.get(f))) };
+  result.uncovered.unsentFiles = [...unsent].sort();
+  return result;
+}
+
+/** The imports, the skills and what is uncovered, for the texts of every file a screen reaches. */
+function skillSet(texts) {
   const imports = new Set();
-  for (const f of files) {
-    for (const name of adapterImports(fs.readFileSync(f, "utf8"))) imports.add(name);
+  for (const text of texts) {
+    for (const name of adapterImports(text)) imports.add(name);
   }
 
   const resolved = [...imports].sort().map(resolveImport);
@@ -370,8 +423,6 @@ export function manifest(entries) {
 
   const skills = [...seen].sort().map((slug) => ({ slug, path: locate(slug) }));
   return {
-    entries: entries.map((f) => path.relative(ROOT, f)),
-    files: [...files].map((f) => path.relative(ROOT, f)).sort(),
     imports: resolved,
     skills,
     // Never a silent drop. An import nobody mapped and a skill named by a cross-link but absent

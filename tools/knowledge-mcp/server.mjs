@@ -25,54 +25,124 @@
 // or not.
 //
 // ---------------------------------------------------------------------------------------
+// Two modes:
+//
+//   node server.mjs           stdio, for a person's Claude Code. Reads the checkout it runs from.
+//   node server.mjs --http    the service: MCP Streamable HTTP at http://127.0.0.1:<port>/mcp,
+//                             stateless, on loopback only, with a key per caller. Callers send
+//                             file contents, never paths: the server's account can't read theirs.
+//
+// Every tools/call answer names the knowledge commit it served: `structuredContent.commit`, and
+// the text ends with the line `knowledge commit: <40-hex>`. Each call is answered wholly from one
+// commit. KNOWLEDGE_ROOT may be a link that the kit's hourly update moves to a new export
+// (circlechat/kit/knowledge-export.mjs); the link is resolved once at the start of each call, and
+// the old export stays on disk for a while, so a call never reads two commits.
+//
 // Env:
-//   KNOWLEDGE_ROOT   the recursica-knowledge checkout. Defaults to this file's own repository,
-//                    which is correct whenever the server runs from the checkout.
+//   KNOWLEDGE_ROOT        the knowledge tree: a checkout, or an export such as
+//                         /opt/recursica-knowledge/current. Defaults to this file's own repository.
+//   KNOWLEDGE_MCP_PORT    --http: the port on 127.0.0.1
+//   KNOWLEDGE_MCP_KEYS    --http: the callers' key hashes, { "callers": { "<name>": { "sha256" } } }.
+//                         Read again whenever the file changes, so a new key needs no restart.
 //
 // Zero dependencies, on purpose: the same reason the drive fence has none. This is the surface
 // every design decision gets made against, and it should be auditable in one file.
 
+import crypto from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import http from 'node:http'
 import path from 'node:path'
 import { createInterface } from 'node:readline'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const SERVER_NAME = 'recursica-knowledge'
-const SERVER_VERSION = '0.1.0'
+const SERVER_VERSION = '0.2.0'
 const DEFAULT_PROTOCOL = '2024-11-05'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(process.env.KNOWLEDGE_ROOT || path.join(HERE, '..', '..'))
-const SKILLS = path.join(ROOT, 'skills')
 const CATEGORIES = ['meta', 'design-rules', 'psychology', 'components']
 const ROUTER_SLUG = 'recursica-skill-design-router'
+const STARTED = new Date()
+// The file an export carries beside its tree (circlechat/kit/knowledge-export.mjs): the commit and
+// the commit's date. A git archive has no .git, so the export says which commit it is.
+export const EXPORT_FILE = '.knowledge-export.json'
+const SHA = /^[0-9a-f]{40}$/
+
+// The agent prompts agent_prompt serves: the design reviewer's and the designer's, and the review's
+// checkers. Every other agent's prompt is refused, because several of them work on client data and
+// their prompts describe that data's fences.
+export const AGENT_PROMPTS = ['barb', 'betty', 'checker', 'feisty']
 
 function logf(...parts) {
   process.stderr.write(`[${SERVER_NAME}] ${parts.join(' ')}\n`)
 }
 
-if (!fs.existsSync(SKILLS)) {
-  logf(`no skills/ under ${ROOT} — set KNOWLEDGE_ROOT to the recursica-knowledge checkout`)
-  process.exit(1)
-}
-
 export { TOOLS }
 
-// The manifest is imported rather than reimplemented, and that is a correctness requirement
-// rather than tidiness. Barb computes applicability with this same module; a second
-// implementation here would drift from hers, and the drift would be silent — a review that
-// checked the wrong set of skills reads exactly like a review that found nothing.
-const manifestModule = await import(
-  path.join(ROOT, 'scripts', 'screen-skill-manifest.mjs')
-)
-const { manifest, crossLinks } = manifestModule
+// ---------------------------------------------------------------- one commit per call
+
+/**
+ * The tree one call is answered from: the knowledge root resolved through any link, the commit it
+ * holds, the commit's date, and since when the root has pointed at it. Taken once at the start of
+ * each call, and every read in the call goes through `root`.
+ */
+export function snapshot(knowledgeRoot = ROOT) {
+  const root = fs.realpathSync(knowledgeRoot)
+  if (!fs.existsSync(path.join(root, 'skills'))) throw new Error(`no skills/ under ${root}`)
+  let commit = null
+  let committedAt = null
+  try {
+    const meta = JSON.parse(fs.readFileSync(path.join(root, EXPORT_FILE), 'utf8'))
+    if (SHA.test(meta.commit)) ({ commit, committedAt = null } = meta)
+  } catch {
+    // Not an export: a checkout, read with git below.
+  }
+  if (!commit) {
+    try {
+      const out = execFileSync('git', ['-C', root, 'log', '-1', '--format=%H %cI'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+      const [h, at] = out.split(' ')
+      if (SHA.test(h)) { commit = h; committedAt = at ?? null }
+    } catch {
+      // No git here. The commit stays unknown, and the HTTP mode refuses to serve it.
+    }
+  }
+  let servedSince = STARTED.toISOString()
+  try {
+    const st = fs.lstatSync(knowledgeRoot)
+    if (st.isSymbolicLink()) servedSince = st.mtime.toISOString()
+  } catch {
+    // The root itself is the tree.
+  }
+  return { root, skills: path.join(root, 'skills'), commit, committedAt, servedSince }
+}
+
+// The manifest module of one tree. It is imported rather than reimplemented, and that is a
+// correctness requirement rather than tidiness. Barb computes applicability with this same module;
+// a second implementation here would drift from hers, and the drift would be silent — a review
+// that checked the wrong set of skills reads exactly like a review that found nothing. Each export
+// has its own copy, and the call uses the copy of the commit it serves.
+function manifestModule(snap) {
+  return import(pathToFileURL(path.join(snap.root, 'scripts', 'screen-skill-manifest.mjs')).href)
+}
+
+// The cross-link parser. A call parses links with its own commit's manifest module (callTool loads
+// it into the snapshot). A helper called directly, as the tests do, uses the parser of the tree
+// the server started on.
+let crossLinksAtStart = null
+async function loadCrossLinks() {
+  crossLinksAtStart = (await manifestModule(snapshot())).crossLinks
+}
+const crossLinks = (text, snap) => (snap?.manifest?.crossLinks ?? crossLinksAtStart)(text)
 
 // ---------------------------------------------------------------- skills on disk
 
 /** Where a skill slug lives, or null if no skill of that name is on disk. */
-function locate(slug) {
+function locate(slug, snap = snapshot()) {
+  if (typeof slug !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(slug)) return null
   for (const category of CATEGORIES) {
-    const p = path.join(SKILLS, category, slug, 'SKILL.md')
+    const p = path.join(snap.skills, category, slug, 'SKILL.md')
     if (fs.existsSync(p)) return p
   }
   return null
@@ -119,23 +189,24 @@ function skillImages(dir, prefix = '') {
  * A skill as served. `body` is the text after the frontmatter: the frontmatter's description is
  * for choosing a skill, and once one is chosen it is about 250 tokens of repetition per skill —
  * 6% of an ordinary screen's family. It is still returned, once, as `description`, where
- * list_skills needs it.
+ * list_skills needs it. `text` is the whole file, for skill_text.
  */
-function readSkill(slug) {
-  const where = locate(slug)
+function readSkill(slug, snap = snapshot()) {
+  const where = locate(slug, snap)
   if (!where) return null
   const text = fs.readFileSync(where, 'utf8')
   const meta = frontmatter(text)
-  const links = crossLinks(text)
+  const links = crossLinks(text, snap)
   return {
     slug,
-    path: path.relative(ROOT, where),
+    path: path.relative(snap.root, where),
     category: path.basename(path.dirname(path.dirname(where))),
     description: meta.description ?? null,
     loadTheseToo: links.needs,
     seeAlso: links.ifUsed,
     images: skillImages(path.dirname(where)),
     body: text.replace(/^---\n[\s\S]*?\n---\n+/, ''),
+    text,
   }
 }
 
@@ -195,7 +266,7 @@ function served(skill, detail) {
 }
 
 /** A skill and everything its cross-links reach, breadth-first. Never one file alone. */
-function family(slugs) {
+function family(slugs, snap = snapshot()) {
   const seen = new Set()
   const missing = []
   const out = []
@@ -203,7 +274,7 @@ function family(slugs) {
   while (queue.length) {
     const slug = queue.shift()
     if (seen.has(slug)) continue
-    const skill = readSkill(slug)
+    const skill = readSkill(slug, snap)
     if (!skill) {
       missing.push(slug)
       continue
@@ -215,10 +286,10 @@ function family(slugs) {
   return { skills: out, missing: [...new Set(missing)] }
 }
 
-function allSlugs() {
+function allSlugs(snap = snapshot()) {
   const out = []
   for (const category of CATEGORIES) {
-    const dir = path.join(SKILLS, category)
+    const dir = path.join(snap.skills, category)
     if (!fs.existsSync(dir)) continue
     for (const entry of fs.readdirSync(dir)) {
       if (fs.existsSync(path.join(dir, entry, 'SKILL.md'))) out.push({ slug: entry, category })
@@ -237,13 +308,18 @@ function allSlugs() {
  * the adapter package re-exports them wrapped in the underlying library's own type. Reading only
  * the adapter gives you `RecursicaOverStyled<Omit<ButtonProps, ...> & RecursicaButtonProps>`,
  * which names the answer without containing it.
+ *
+ * Each package is `{ name, version, read(rel), where(rel) }`: `read` gives a file's text or null,
+ * by its path inside the package, and `where` names the file in the answer.
  */
+const isAdapter = (name) => /adapter/.test(name) && name !== 'adapter-tester'
+
 function adapterPackages(projectRoot) {
   const scope = path.join(projectRoot, 'node_modules', '@recursica')
   if (!fs.existsSync(scope)) return []
   return fs
     .readdirSync(scope)
-    .filter((n) => /adapter/.test(n) && n !== 'adapter-tester')
+    .filter(isAdapter)
     .map((name) => {
       const dir = path.join(scope, name)
       let version = null
@@ -252,8 +328,39 @@ function adapterPackages(projectRoot) {
       } catch {
         /* a package with no readable manifest is still worth reporting by name */
       }
-      return { name, version, dir }
+      const read = (rel) => {
+        const f = path.join(dir, rel)
+        return fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : null
+      }
+      return { name, version, read, where: (rel) => path.relative(projectRoot, path.join(dir, rel)) }
     })
+}
+
+/**
+ * The same packages from contents a caller sent: `[{ name, package_json, files: [{ path, text }] }]`.
+ * `name` is the package's name, with or without the @recursica/ scope; each file's path is its path
+ * inside the package, such as dist/index.d.ts.
+ */
+export function sentPackages(packages) {
+  if (!Array.isArray(packages)) throw new Error('packages must be a list of { name, package_json, files: [{ path, text }] }')
+  return packages
+    .map((p) => {
+      if (!p || typeof p.name !== 'string') throw new Error('each package needs its name, such as @recursica/adapter-common')
+      const name = p.name.replace(/^@recursica\//, '')
+      let version = null
+      try {
+        version = JSON.parse(String(p.package_json ?? '')).version ?? null
+      } catch {
+        /* reported by name, as on disk */
+      }
+      const files = new Map()
+      for (const f of p.files ?? []) {
+        if (!f || typeof f.path !== 'string' || typeof f.text !== 'string') throw new Error(`${p.name}: each file must be { path, text }`)
+        files.set(path.posix.normalize(f.path.replace(/^\.\//, '')), f.text)
+      }
+      return { name, version, read: (rel) => files.get(rel) ?? null, where: (rel) => `node_modules/@recursica/${name}/${rel}` }
+    })
+    .filter((p) => isAdapter(p.name))
 }
 
 /** Declaration blocks naming a component, pulled out of a `.d.ts` bundle. */
@@ -277,47 +384,36 @@ function declarationsFor(dts, component) {
   return blocks
 }
 
-function componentApi(component, projectRoot) {
-  const packages = adapterPackages(projectRoot)
+/** The files component_api reads in one package, by their paths inside it. */
+export const componentFiles = (component) => [`dist/src/components/${component}/Recursica${component}Props.d.ts`, 'dist/index.d.ts']
+
+function componentApiFrom(component, packages, where) {
+  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(String(component ?? ''))) throw new Error('component must be a component name as exported, such as Button')
   if (packages.length === 0) {
     throw new Error(
-      `no @recursica adapter installed under ${projectRoot}. Run the project's install first — ` +
+      `no @recursica adapter installed ${where}. Run the project's install first — ` +
       `reading prop types from another project's version is how you build against an API this ` +
       `one does not ship.`,
     )
   }
 
+  const [directFile, bundleFile] = componentFiles(component)
   const found = []
   for (const pkg of packages) {
     // The per-component file in adapter-common is the precise answer when it exists.
-    const direct = path.join(
-      pkg.dir, 'dist', 'src', 'components', component, `Recursica${component}Props.d.ts`,
-    )
-    if (fs.existsSync(direct)) {
-      found.push({
-        package: pkg.name,
-        version: pkg.version,
-        source: path.relative(projectRoot, direct),
-        declarations: [fs.readFileSync(direct, 'utf8').trim()],
-      })
+    const direct = pkg.read(directFile)
+    if (direct !== null) {
+      found.push({ package: pkg.name, version: pkg.version, source: pkg.where(directFile), declarations: [direct.trim()] })
       continue
     }
-    const bundle = path.join(pkg.dir, 'dist', 'index.d.ts')
-    if (!fs.existsSync(bundle)) continue
-    const declarations = declarationsFor(fs.readFileSync(bundle, 'utf8'), component)
-    if (declarations.length) {
-      found.push({
-        package: pkg.name,
-        version: pkg.version,
-        source: path.relative(projectRoot, bundle),
-        declarations,
-      })
-    }
+    const bundle = pkg.read(bundleFile)
+    if (bundle === null) continue
+    const declarations = declarationsFor(bundle, component)
+    if (declarations.length) found.push({ package: pkg.name, version: pkg.version, source: pkg.where(bundleFile), declarations })
   }
 
   return {
     component,
-    project_root: projectRoot,
     adapters_installed: packages.map((p) => `${p.name}@${p.version ?? '?'}`),
     found,
     // Absence is an answer, and it is the one worth acting on: a prop documented in a skill but
@@ -330,7 +426,15 @@ function componentApi(component, projectRoot) {
   }
 }
 
+function componentApi(component, projectRoot) {
+  return { ...componentApiFrom(component, adapterPackages(projectRoot), `under ${projectRoot}`), project_root: projectRoot }
+}
+
 // ---------------------------------------------------------------- tools
+
+// Inputs that name a path on the caller's computer. The stdio server runs as the person, so it can
+// read their files; the service can't, and refuses them.
+const STDIO_ONLY = { skills_for_screen: ['files'], component_api: ['project_root'] }
 
 const TOOLS = [
   {
@@ -341,10 +445,11 @@ const TOOLS = [
       'guess. Load this FIRST, before any other Recursica skill, for any UI work larger than a ' +
       'single component. It routes and arbitrates; it never replaces the owning skill.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-    handler() {
-      const skill = readSkill(ROUTER_SLUG)
-      if (!skill) throw new Error(`${ROUTER_SLUG} is not on disk under ${SKILLS}`)
-      return skill
+    handler(_args, snap = snapshot()) {
+      const skill = readSkill(ROUTER_SLUG, snap)
+      if (!skill) throw new Error(`${ROUTER_SLUG} is not on disk under ${snap.skills}`)
+      const { text, ...rest } = skill
+      return rest
     },
   },
   {
@@ -355,23 +460,41 @@ const TOOLS = [
       "skill's cross-links, plus the design rules that apply to every screen. Use this instead " +
       'of deciding for yourself which components are on the screen; a component that arrived ' +
       'from a scaffolding example does not feel placed and is exactly the one that gets missed. ' +
-      'Returns slugs and paths, not bodies — pass the slugs to skill_family. Read `uncovered`: ' +
-      'an import nothing mapped is reported there rather than silently dropped.',
+      'Send each file as `sources`: its path, as a label, and its text, with every local file the ' +
+      'screen imports. Returns slugs and paths, not bodies — pass the slugs to skill_family. Read ' +
+      '`uncovered`: an import nothing mapped, and a local import of a file not sent, are reported ' +
+      'there rather than silently dropped.',
     inputSchema: {
       type: 'object',
       properties: {
+        sources: {
+          type: 'array',
+          description: 'The screen files and the local files they import, each as { path, text }. The path is a label, such as the path in your checkout.',
+          minItems: 1,
+          items: {
+            type: 'object',
+            properties: { path: { type: 'string' }, text: { type: 'string' } },
+            required: ['path', 'text'],
+            additionalProperties: false,
+          },
+        },
         files: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Absolute paths to the screen files. Relative paths resolve against the server process, which is not your project.',
+          description: 'stdio only: absolute paths to the screen files. Relative paths resolve against the server process, which is not your project.',
           minItems: 1,
         },
       },
-      required: ['files'],
       additionalProperties: false,
     },
-    handler({ files }) {
-      if (!Array.isArray(files) || files.length === 0) throw new Error('files must be a non-empty array')
+    async handler({ sources, files }, snap = snapshot()) {
+      const m = snap.manifest ?? (await manifestModule(snap))
+      if (sources !== undefined) {
+        if (files !== undefined) throw new Error('send sources or files, not both')
+        if (typeof m.manifestSources !== 'function') throw new Error(`the manifest script at commit ${snap.commit ?? 'unknown'} takes no file contents`)
+        return m.manifestSources(sources)
+      }
+      if (!Array.isArray(files) || files.length === 0) throw new Error('sources must be a non-empty list of { path, text }')
       const missing = files.filter((f) => !fs.existsSync(f))
       if (missing.length) {
         throw new Error(
@@ -380,7 +503,7 @@ const TOOLS = [
           `an empty skill set that looks like a clean answer.`,
         )
       }
-      return manifest(files)
+      return m.manifest(files)
     },
   },
   {
@@ -416,10 +539,10 @@ const TOOLS = [
       required: ['slugs'],
       additionalProperties: false,
     },
-    handler({ slugs, detail = 'full' }) {
+    handler({ slugs, detail = 'full' }, snap = snapshot()) {
       if (!Array.isArray(slugs) || slugs.length === 0) throw new Error('slugs must be a non-empty array')
       if (!['full', 'contract'].includes(detail)) throw new Error('detail must be "full" or "contract"')
-      const { skills, missing } = family(slugs)
+      const { skills, missing } = family(slugs, snap)
       if (skills.length === 0) {
         throw new Error(`no skill on disk named: ${missing.join(', ')}. Call list_skills for the real names.`)
       }
@@ -450,14 +573,61 @@ const TOOLS = [
       required: ['slug', 'heading'],
       additionalProperties: false,
     },
-    handler({ slug, heading }) {
-      const skill = readSkill(slug)
+    handler({ slug, heading }, snap = snapshot()) {
+      const skill = readSkill(slug, snap)
       if (!skill) throw new Error(`no skill on disk named ${slug}. Call list_skills for the real names.`)
       const text = section(`\n${skill.body}`, heading)
       if (text === null) {
         throw new Error(`${slug} has no section "${heading}". It has: ${headings(skill.body).join('; ')}`)
       }
       return { slug, heading, text: text.trim() }
+    },
+  },
+  {
+    name: 'skill_text',
+    description:
+      'The whole SKILL.md of one skill, frontmatter included, exactly as the commit holds it — for ' +
+      'a checker that walks one skill\'s checklist, or a code check that reads a rule. To build or ' +
+      'review a screen, use skill_family instead: one skill alone is the failure that tool prevents.',
+    inputSchema: {
+      type: 'object',
+      properties: { slug: { type: 'string', description: 'Skill slug, e.g. recursica-skill-table.' } },
+      required: ['slug'],
+      additionalProperties: false,
+    },
+    handler({ slug }, snap = snapshot()) {
+      const skill = readSkill(slug, snap)
+      if (!skill) throw new Error(`no skill on disk named ${slug}. Call list_skills for the real names.`)
+      return { slug, group: skill.category, path: skill.path, text: skill.text }
+    },
+  },
+  {
+    name: 'agent_prompt',
+    description:
+      `One agent's built prompt for Claude Code, portable/claude-code/agents/<name>.md, front ` +
+      `matter included. Only these agents: ${AGENT_PROMPTS.join(', ')}.`,
+    inputSchema: {
+      type: 'object',
+      properties: { name: { type: 'string', enum: AGENT_PROMPTS, description: 'The agent, e.g. checker.' } },
+      required: ['name'],
+      additionalProperties: false,
+    },
+    handler({ name }, snap = snapshot()) {
+      if (!AGENT_PROMPTS.includes(name)) throw new Error(`no prompt served for ${JSON.stringify(name)}. This server serves only: ${AGENT_PROMPTS.join(', ')}`)
+      const rel = path.posix.join('portable', 'claude-code', 'agents', `${name}.md`)
+      const file = path.join(snap.root, rel)
+      if (!fs.existsSync(file)) throw new Error(`${rel} is not in commit ${snap.commit ?? 'unknown'}`)
+      return { name, path: rel, text: fs.readFileSync(file, 'utf8') }
+    },
+  },
+  {
+    name: 'knowledge_info',
+    description:
+      'Which knowledge commit this server serves now: the commit, its date, and since when the ' +
+      'server has served it. Every other answer names its commit too.',
+    inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    handler(_args, snap = snapshot()) {
+      return { committedAt: snap.committedAt, servedSince: snap.servedSince }
     },
   },
   {
@@ -474,19 +644,21 @@ const TOOLS = [
       required: ['slug', 'image'],
       additionalProperties: false,
     },
-    handler({ slug, image }) {
-      const skill = readSkill(slug)
+    handler({ slug, image }, snap = snapshot()) {
+      const skill = readSkill(slug, snap)
       if (!skill) throw new Error(`no skill on disk named ${slug}. Call list_skills for the real names.`)
       // Only a listed image, so no path can reach outside the skill's folder.
       if (!skill.images.includes(image)) {
         throw new Error(`${slug} has no image "${image}". It has: ${skill.images.join('; ') || 'none'}`)
       }
-      const file = path.join(ROOT, path.dirname(skill.path), image)
+      const file = path.join(snap.root, path.dirname(skill.path), image)
+      const mimeType = IMAGE_TYPES[path.extname(image).toLowerCase()]
       return {
         content: [
           { type: 'text', text: `${slug}/${image}` },
-          { type: 'image', data: fs.readFileSync(file).toString('base64'), mimeType: IMAGE_TYPES[path.extname(image).toLowerCase()] },
+          { type: 'image', data: fs.readFileSync(file).toString('base64'), mimeType },
         ],
+        structured: { slug, image, mimeType },
       }
     },
   },
@@ -497,11 +669,12 @@ const TOOLS = [
       'right slug when you do not have screen files to compute from. Descriptions only — call ' +
       'skill_family for the rules themselves.',
     inputSchema: { type: 'object', properties: {}, additionalProperties: false },
-    handler() {
+    handler(_args, snap = snapshot()) {
+      const all = allSlugs(snap)
       return {
-        count: allSlugs().length,
-        skills: allSlugs().map(({ slug, category }) => {
-          const skill = readSkill(slug)
+        count: all.length,
+        skills: all.map(({ slug, category }) => {
+          const skill = readSkill(slug, snap)
           return { slug, category, description: skill?.description ?? null }
         }),
       }
@@ -510,25 +683,53 @@ const TOOLS = [
   {
     name: 'component_api',
     description:
-      "A component's real prop types, read from the Recursica adapter the given project " +
-      'actually installs — not from prose, and not from another project\'s version. Use it ' +
-      'before building on a prop a skill mentions: a prop documented in a skill and absent from ' +
-      'the installed package is a problem to find first rather than after. Absence is reported, ' +
-      'never treated as nothing to say.',
+      "A component's real prop types, read from the Recursica adapter the project actually " +
+      'installs — not from prose, and not from another project\'s version. Use it before ' +
+      'building on a prop a skill mentions: a prop documented in a skill and absent from the ' +
+      'installed package is a problem to find first rather than after. Absence is reported, ' +
+      'never treated as nothing to say. Send `packages`: each installed @recursica adapter ' +
+      'package (adapter-common included, adapter-tester left out) with its package.json text and ' +
+      `the files it has of: ${componentFiles('<Component>').join(', ')}.`,
     inputSchema: {
       type: 'object',
       properties: {
         component: { type: 'string', description: 'Component name as exported, e.g. Button.' },
+        packages: {
+          type: 'array',
+          description: 'The installed adapter packages, each as { name, package_json, files: [{ path, text }] }, with each path inside the package, e.g. dist/index.d.ts.',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string' },
+              package_json: { type: 'string' },
+              files: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: { path: { type: 'string' }, text: { type: 'string' } },
+                  required: ['path', 'text'],
+                  additionalProperties: false,
+                },
+              },
+            },
+            required: ['name'],
+            additionalProperties: false,
+          },
+        },
         project_root: {
           type: 'string',
-          description: 'Absolute path to the project whose node_modules to read.',
+          description: 'stdio only: absolute path to the project whose node_modules to read.',
         },
       },
-      required: ['component', 'project_root'],
+      required: ['component'],
       additionalProperties: false,
     },
-    handler({ component, project_root: projectRoot }) {
-      if (!component || !projectRoot) throw new Error('component and project_root are both required')
+    handler({ component, packages, project_root: projectRoot }) {
+      if (packages !== undefined) {
+        if (projectRoot !== undefined) throw new Error('send packages or project_root, not both')
+        return componentApiFrom(component, sentPackages(packages), 'among the packages sent')
+      }
+      if (!component || !projectRoot) throw new Error('component and packages are both required')
       if (!fs.existsSync(projectRoot)) throw new Error(`no such directory: ${projectRoot}`)
       return componentApi(component, path.resolve(projectRoot))
     },
@@ -537,82 +738,228 @@ const TOOLS = [
 
 const TOOL_BY_NAME = new Map(TOOLS.map((t) => [t.name, t]))
 
+/** The tool list a mode advertises: the service leaves out the inputs that name a caller's path. */
+export function toolList(mode = 'stdio') {
+  return TOOLS.map(({ name, description, inputSchema }) => {
+    const drop = mode === 'http' ? STDIO_ONLY[name] ?? [] : []
+    if (!drop.length) return { name, description, inputSchema }
+    const properties = Object.fromEntries(Object.entries(inputSchema.properties).filter(([k]) => !drop.includes(k)))
+    const required = [...new Set([...(inputSchema.required ?? []), ...(name === 'skills_for_screen' ? ['sources'] : ['packages'])])]
+    return { name, description, inputSchema: { ...inputSchema, properties, required } }
+  })
+}
+
 // ---------------------------------------------------------------- jsonrpc
 
-function send(message) {
-  process.stdout.write(`${JSON.stringify(message)}\n`)
-}
+const commitLine = (commit) => `knowledge commit: ${commit ?? 'unknown'}`
 
-function respond(id, result) {
-  send({ jsonrpc: '2.0', id, result })
-}
-
-function respondError(id, code, message) {
-  send({ jsonrpc: '2.0', id, error: { code, message } })
-}
-
-async function handleRequest(msg) {
-  const { id, method, params } = msg
-
-  switch (method) {
-    case 'initialize': {
-      const requested = params?.protocolVersion
-      respond(id, {
-        protocolVersion: typeof requested === 'string' ? requested : DEFAULT_PROTOCOL,
-        capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
-        instructions:
-          'The Recursica design system\'s own rules, served from the knowledge checkout rather ' +
-          'than from a copy. Call `router` FIRST for any UI work larger than a single ' +
-          'component — it holds the decision order, the precedence when rules collide, and the ' +
-          'rule that matters most: never resolve uncertainty by choosing silently. Then ' +
-          '`skills_for_screen` on the real files to compute what applies, and `skill_family` ' +
-          'for the rules. `skill_family` always returns a skill together with everything its ' +
-          '"Related skills" names — a component skill without its design rules reliably ' +
-          'produces something individually correct and collectively wrong, so this server will ' +
-          'not hand you one alone. Use `component_api` for real prop types from the version a ' +
-          'project installs. These skills are the only knowledge here: never answer a build ' +
-          'question from a DOCS.md, and never cite one.',
-      })
-      return
+/**
+ * One tools/call, answered wholly from one commit. Returns the MCP result: the content, with the
+ * commit line last, and `structuredContent` with `commit`. A tool error is a result too, so the
+ * agent sees it and can correct course, and it names the commit as well.
+ */
+export async function callTool(name, args, { mode = 'stdio', knowledgeRoot = ROOT } = {}) {
+  let snap
+  try {
+    snap = snapshot(knowledgeRoot)
+  } catch (err) {
+    return { content: [{ type: 'text', text: `ERROR: ${err.message}\n\n${commitLine(null)}` }], structuredContent: { error: err.message, commit: null }, isError: true }
+  }
+  const { commit } = snap
+  try {
+    // The service never serves a tree it can't name: an answer it can't trace is the failure the
+    // commit exists to prevent.
+    if (mode === 'http' && !commit) throw new Error(`the knowledge tree at ${snap.root} names no commit (no ${EXPORT_FILE} and no git)`)
+    snap.manifest = await manifestModule(snap)
+    const tool = TOOL_BY_NAME.get(name)
+    if (!tool) throw new Error(`unknown tool: ${name}`)
+    const given = args ?? {}
+    if (mode === 'http') {
+      const refused = (STDIO_ONLY[name] ?? []).filter((k) => given[k] !== undefined)
+      if (refused.length) throw new Error(`${refused.join(', ')} names a path on your computer, which this server can't read. Send the contents instead (tools/list shows how)`)
     }
-
-    case 'ping':
-      respond(id, {})
-      return
-
-    case 'tools/list':
-      respond(id, {
-        tools: TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
-      })
-      return
-
-    case 'tools/call': {
-      const tool = TOOL_BY_NAME.get(params?.name)
-      if (!tool) {
-        respondError(id, -32602, `unknown tool: ${params?.name}`)
-        return
-      }
-      try {
-        const result = await tool.handler(params.arguments || {})
-        // A tool that returns MCP content blocks itself, such as skill_image, is passed through.
-        if (Array.isArray(result?.content)) respond(id, { content: result.content })
-        else respond(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] })
-      } catch (err) {
-        logf(`tool ${tool.name} failed:`, err.message)
-        // A tool error, not a protocol error, so the agent sees it and can correct course.
-        respond(id, { content: [{ type: 'text', text: `ERROR: ${err.message}` }], isError: true })
-      }
-      return
+    const result = await tool.handler(given, snap)
+    // A tool that returns MCP content blocks itself, such as skill_image, is passed through.
+    if (Array.isArray(result?.content)) {
+      const content = result.content.map((c, i) => (i === 0 && c.type === 'text' ? { ...c, text: `${c.text}\n\n${commitLine(commit)}` } : c))
+      return { content, structuredContent: { ...result.structured, commit } }
     }
-
-    default:
-      respondError(id, -32601, `method not found: ${method}`)
+    const structuredContent = { ...result, commit }
+    return { content: [{ type: 'text', text: `${JSON.stringify(structuredContent, null, 2)}\n\n${commitLine(commit)}` }], structuredContent }
+  } catch (err) {
+    logf(`tool ${name} failed:`, err.message)
+    return { content: [{ type: 'text', text: `ERROR: ${err.message}\n\n${commitLine(commit)}` }], structuredContent: { error: err.message, commit }, isError: true }
   }
 }
 
-// Only when run as a command. Without this guard the stdio loop starts on import, so a test
-// file importing a helper would also attach a reader to the test runner's stdin and never exit.
+const INSTRUCTIONS =
+  'The Recursica design system\'s own rules, served from one knowledge commit rather ' +
+  'than from a copy. Call `router` FIRST for any UI work larger than a single ' +
+  'component — it holds the decision order, the precedence when rules collide, and the ' +
+  'rule that matters most: never resolve uncertainty by choosing silently. Then ' +
+  '`skills_for_screen` on the real files to compute what applies, and `skill_family` ' +
+  'for the rules. `skill_family` always returns a skill together with everything its ' +
+  '"Related skills" names — a component skill without its design rules reliably ' +
+  'produces something individually correct and collectively wrong, so this server will ' +
+  'not hand you one alone. Use `component_api` for real prop types from the version a ' +
+  'project installs. These skills are the only knowledge here: never answer a build ' +
+  'question from a DOCS.md, and never cite one. Every answer names the knowledge commit ' +
+  'it came from.'
+
+/**
+ * The answer to one JSON-RPC message, or null for a notification. `context.caller` names the
+ * caller in the HTTP mode's log.
+ */
+export async function handleMessage(msg, { mode = 'stdio', caller = '' } = {}) {
+  if (!msg || typeof msg !== 'object' || msg.jsonrpc !== '2.0' || typeof msg.method !== 'string') {
+    return { jsonrpc: '2.0', id: msg?.id ?? null, error: { code: -32600, message: 'invalid request' } }
+  }
+  const { id, method, params } = msg
+  if (id === undefined || id === null) return null
+  const ok = (result) => ({ jsonrpc: '2.0', id, result })
+  switch (method) {
+    case 'initialize': {
+      const requested = params?.protocolVersion
+      return ok({
+        protocolVersion: typeof requested === 'string' ? requested : DEFAULT_PROTOCOL,
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: { name: SERVER_NAME, version: SERVER_VERSION },
+        instructions: INSTRUCTIONS,
+      })
+    }
+    case 'ping':
+      return ok({})
+    case 'tools/list':
+      return ok({ tools: toolList(mode) })
+    case 'tools/call': {
+      if (!TOOL_BY_NAME.has(params?.name)) return { jsonrpc: '2.0', id, error: { code: -32602, message: `unknown tool: ${params?.name}` } }
+      const started = Date.now()
+      const result = await callTool(params.name, params.arguments || {}, { mode })
+      if (mode === 'http') {
+        logf(`caller=${caller} tool=${params.name} commit=${result.structuredContent?.commit ?? 'unknown'} ${result.isError ? 'error' : 'ok'} ${Date.now() - started}ms`)
+      }
+      return ok(result)
+    }
+    default:
+      return { jsonrpc: '2.0', id, error: { code: -32601, message: `method not found: ${method}` } }
+  }
+}
+
+// ---------------------------------------------------------------- HTTP: keys
+
+const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex')
+
+/**
+ * The callers' key hashes, read again whenever the file changes. The server holds hashes only:
+ * a key itself is never in its memory beyond one request, never logged, never written.
+ */
+export function keyring(file) {
+  let stamp = ''
+  let callers = []
+  const load = () => {
+    let st
+    try {
+      st = fs.statSync(file)
+    } catch {
+      if (stamp !== 'missing') logf(`no keys file at ${file}: every request is refused`)
+      stamp = 'missing'
+      callers = []
+      return
+    }
+    const now = `${st.mtimeMs}:${st.size}:${st.ino}`
+    if (now === stamp) return
+    stamp = now
+    try {
+      const j = JSON.parse(fs.readFileSync(file, 'utf8'))
+      callers = Object.entries(j.callers ?? {})
+        .filter(([name, c]) => /^[a-z0-9][a-z0-9-]{0,39}$/.test(name) && /^[0-9a-f]{64}$/.test(c?.sha256 ?? ''))
+        .map(([name, c]) => ({ name, hash: Buffer.from(c.sha256) }))
+      logf(`keys: ${callers.length} caller(s): ${callers.map((c) => c.name).join(', ') || 'none'}`)
+    } catch (err) {
+      logf(`the keys file ${file} can't be read (${err.message}): every request is refused`)
+      callers = []
+    }
+  }
+  /** The caller's name for an Authorization header, or null. */
+  return (header) => {
+    load()
+    const m = /^Bearer ([A-Za-z0-9_-]{20,200})$/.exec(String(header ?? ''))
+    if (!m) return null
+    const got = Buffer.from(sha256(m[1]))
+    let who = null
+    // Every hash is compared, so the time taken says nothing about which one matched.
+    for (const c of callers) if (crypto.timingSafeEqual(c.hash, got) && !who) who = c.name
+    return who
+  }
+}
+
+// ---------------------------------------------------------------- HTTP: the service
+
+const MAX_BODY = 16 * 1024 * 1024
+
+/**
+ * The service: MCP Streamable HTTP, stateless, JSON answers only, on 127.0.0.1. Each POST to /mcp
+ * carries one JSON-RPC message, or a list of them. Refused, before anything is read:
+ *   - a Host other than 127.0.0.1 or localhost at the port, or any Origin: a browser page
+ *     reaching the port through a DNS name it controls;
+ *   - a request without a caller's key: 401, nothing served.
+ */
+export function createService({ keys, port }) {
+  const callerFor = keyring(keys)
+  const hosts = new Set([`127.0.0.1:${port}`, `localhost:${port}`])
+  return http.createServer((req, res) => {
+    const send = (code, body, headers = {}) => {
+      const text = body === undefined ? '' : JSON.stringify(body)
+      res.writeHead(code, { ...(text ? { 'content-type': 'application/json' } : {}), 'cache-control': 'no-store', ...headers })
+      res.end(text)
+    }
+    // A refusal reads nothing of the request's body.
+    const refuse = (code, body, headers) => {
+      req.resume()
+      send(code, body, headers)
+    }
+    const url = new URL(req.url ?? '/', 'http://127.0.0.1')
+    if (url.pathname !== '/mcp') return refuse(404, { error: 'not found' })
+    if (!hosts.has(String(req.headers.host ?? ''))) return refuse(403, { error: 'host refused' })
+    if (req.headers.origin !== undefined) return refuse(403, { error: 'origin refused' })
+    const caller = callerFor(req.headers.authorization)
+    if (!caller) return refuse(401, { error: 'a caller key is required' }, { 'www-authenticate': 'Bearer' })
+    // Stateless: there is no stream to open with GET, and no session to end with DELETE.
+    if (req.method !== 'POST') return refuse(405, { error: 'POST only' }, { allow: 'POST' })
+    let size = 0
+    const chunks = []
+    let tooBig = false
+    req.on('data', (c) => {
+      size += c.length
+      if (size > MAX_BODY) tooBig = true
+      else chunks.push(c)
+    })
+    req.on('end', async () => {
+      if (tooBig) return send(413, { error: `a request may carry at most ${MAX_BODY} bytes` })
+      let body
+      try {
+        body = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+      } catch {
+        return send(400, { jsonrpc: '2.0', id: null, error: { code: -32700, message: 'parse error' } })
+      }
+      try {
+        const list = Array.isArray(body) ? body : [body]
+        const answers = (await Promise.all(list.map((m) => handleMessage(m, { mode: 'http', caller })))).filter(Boolean)
+        // Only notifications: accepted, with nothing to answer.
+        if (!answers.length) return send(202)
+        send(200, Array.isArray(body) ? answers : answers[0])
+      } catch (err) {
+        logf('handler crashed:', err.stack || err.message)
+        send(500, { jsonrpc: '2.0', id: null, error: { code: -32603, message: 'internal error' } })
+      }
+    })
+  })
+}
+
+// ---------------------------------------------------------------- start
+
+// Only when run as a command. Without this guard the stdio loop starts on import, so a test file
+// importing a helper would also attach a reader to the test runner's stdin and never exit.
 //
 // Compared as real paths on both sides. `import.meta.url` is already resolved through symlinks
 // and `process.argv[1]` is not, so a plain string comparison fails wherever any component of the
@@ -630,34 +977,77 @@ function realOrSelf(p) {
 const invokedDirectly =
   process.argv[1] && realOrSelf(process.argv[1]) === realOrSelf(fileURLToPath(import.meta.url))
 
-if (invokedDirectly) start()
-
-function start() {
-const rl = createInterface({ input: process.stdin, terminal: false })
-
-rl.on('line', (line) => {
-  const trimmed = line.trim()
-  if (!trimmed) return
-
-  let msg
-  try {
-    msg = JSON.parse(trimmed)
-  } catch {
-    logf('dropped unparseable line')
-    return
-  }
-
-  if (msg.id === undefined || msg.id === null) return
-
-  handleRequest(msg).catch((err) => {
-    logf('handler crashed:', err.stack || err.message)
-    respondError(msg.id, -32603, `internal error: ${err.message}`)
-  })
-})
-
-rl.on('close', () => process.exit(0))
-
-logf(`ready — root=${ROOT} skills=${allSlugs().length} tools=${TOOLS.length}`)
+// The parser is read at import, so a test that imports a helper gets it too.
+try {
+  await loadCrossLinks()
+} catch (err) {
+  logf(`no knowledge tree at ${ROOT} (${err.message}) — set KNOWLEDGE_ROOT to the recursica-knowledge checkout or export`)
+  if (invokedDirectly) process.exit(1)
+  throw err
 }
 
-export { family, declarationsFor, componentApi, adapterPackages, readSkill, contract, served }
+if (invokedDirectly) {
+  if (process.argv.includes('--http')) startHttp()
+  else startStdio()
+}
+
+function startHttp() {
+  const port = Number(process.env.KNOWLEDGE_MCP_PORT)
+  const keys = process.env.KNOWLEDGE_MCP_KEYS
+  if (!Number.isInteger(port) || port < 1024 || port > 65535) {
+    logf('--http needs KNOWLEDGE_MCP_PORT, a port from 1024 to 65535')
+    process.exit(2)
+  }
+  if (!keys) {
+    logf('--http needs KNOWLEDGE_MCP_KEYS, the file of the callers\' key hashes')
+    process.exit(2)
+  }
+  const snap = snapshot()
+  if (!snap.commit) {
+    logf(`the knowledge tree at ${snap.root} names no commit (no ${EXPORT_FILE} and no git): nothing to serve`)
+    process.exit(1)
+  }
+  const server = createService({ keys, port })
+  server.on('error', (err) => {
+    logf(`can't listen on 127.0.0.1:${port}: ${err.message}`)
+    process.exit(1)
+  })
+  // Loopback only, always: no setting moves the service to another address.
+  server.listen(port, '127.0.0.1', () => {
+    logf(`ready — http://127.0.0.1:${port}/mcp root=${ROOT} commit=${snap.commit} skills=${allSlugs(snap).length} tools=${TOOLS.length}`)
+  })
+}
+
+function startStdio() {
+  const send = (message) => process.stdout.write(`${JSON.stringify(message)}\n`)
+  const rl = createInterface({ input: process.stdin, terminal: false })
+
+  rl.on('line', (line) => {
+    const trimmed = line.trim()
+    if (!trimmed) return
+
+    let msg
+    try {
+      msg = JSON.parse(trimmed)
+    } catch {
+      logf('dropped unparseable line')
+      return
+    }
+
+    if (msg.id === undefined || msg.id === null) return
+
+    handleMessage(msg)
+      .then((answer) => answer && send(answer))
+      .catch((err) => {
+        logf('handler crashed:', err.stack || err.message)
+        send({ jsonrpc: '2.0', id: msg.id, error: { code: -32603, message: `internal error: ${err.message}` } })
+      })
+  })
+
+  rl.on('close', () => process.exit(0))
+
+  const snap = snapshot()
+  logf(`ready — root=${ROOT} commit=${snap.commit ?? 'unknown'} skills=${allSlugs(snap).length} tools=${TOOLS.length}`)
+}
+
+export { family, declarationsFor, componentApi, adapterPackages, readSkill, contract, served, componentApiFrom }

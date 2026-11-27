@@ -81,7 +81,6 @@ STEP="site.json"
 node "$KIT/kit/render.mjs" "$R_SITE" "$WORK/site-check" >/dev/null 2>&1 || fail "the restored site.json fails the kit's site check"
 
 STEP="workspace"
-[ -f "$R_WS/kev/package.json" ] || fail "the workspace has no Kev"
 app="$(/opt/recursicachat/node/v24.22.3/bin/node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write(String(s.repos?.app_dir??""))' "$R_SITE")"
 if [ -n "$app" ]; then
   [ -d "$R_WS/$app" ] && [ -n "$(find "$R_WS/$app" -type f -not -path '*/.git/*' | head -1)" ] || fail "the workspace has no files of the app, $app"

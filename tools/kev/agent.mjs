@@ -1,7 +1,7 @@
 // CircleChat socket-mode agent. Outbound WebSocket, so it runs fine behind NAT or a VPN.
 //
 //   CC_BOT_TOKEN=cc_…  WSS=wss://<host>/agent-socket  CC_URL=https://<host>
-//   KNOWLEDGE_DIR=/path/to/recursica-knowledge  APP_ROOT=/path/to/app  TYPESAFE_API_KEY=…
+//   KNOWLEDGE_MCP_URL=http://127.0.0.1:4011/mcp  KNOWLEDGE_MCP_KEY_FILE=/path/to/key  APP_ROOT=/path/to/app  TYPESAFE_API_KEY=…
 //   node agent.mjs
 //
 // Mention it with screen paths: "@kev src/routes/Users.jsx"

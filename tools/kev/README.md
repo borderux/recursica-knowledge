@@ -18,7 +18,7 @@ designer sees a screen.
 
 | Barb                      | kev                                                                                                                                                                                             |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Manifest picks the skills | Same script, same output. Never judged.                                                                                                                                                         |
+| Manifest picks the skills | Same script, same output, from the knowledge MCP server. Never judged.                                                                                                                           |
 | One `checker` per skill   | Code splits the screen into line-numbered chunks. Kev-engine answers one yes/no per checklist item per chunk. A second pass asks, over the whole screen, whether something required is missing. |
 | `feisty` refutes findings | Not replaced. Anything likely is reported as a **lead**, not a finding. Full Barb confirms.                                                                                                     |
 | `file:line`               | A line range (the chunk). Full Barb pins the line.                                                                                                                                              |
@@ -29,7 +29,10 @@ It never hands full Barb a list of skills to check. Barb's own rules reject a na
 
 ## Steps
 
-1. Manifest picks the skills (unchanged from Barb).
+1. Manifest picks the skills (unchanged from Barb). Kev asks the knowledge MCP server, which runs
+   the manifest script on the screen's files and gives each skill's text. Every answer names the
+   knowledge commit, and the report names it too: `knowledge.commit`, and `commit`, in `--json`. When the server moves to a new commit during a
+   run, Kev reads every skill again on the new commit, once; a second move fails the run.
 2. Design-rules skills are dropped if no file on the screen builds what they cover
    (`KEV_APPLIES`, lenient). Component skills always stay: an import matched them.
 3. Items code can't decide (browser-only, or about process like "the test was applied") are set
@@ -48,9 +51,16 @@ It never hands full Barb a list of skills to check. Barb's own rules reject a na
 
 ## Run it
 
+Kev reads the skills only through the knowledge MCP server, `tools/knowledge-mcp/server.mjs` in
+its HTTP mode, with a key of its own. On the cluster, the kit runs the server and makes Kev's key
+(circlechat/README.md, "The knowledge MCP server"), and Kev runs from the served export,
+`/opt/recursica-knowledge/current/tools/kev`. Kev sends the screen's files as contents: the server
+runs as its own account and reads no file of Kev's.
+
 ```sh
 npm install
-export KNOWLEDGE_DIR=/path/to/recursica-knowledge   # engine defaults to http://localhost:8009
+export KNOWLEDGE_MCP_URL=http://127.0.0.1:4011/mcp       # the knowledge MCP server
+export KNOWLEDGE_MCP_KEY_FILE=/path/to/kev.key           # Kev's key; engine defaults to http://localhost:8009
 node bin/kev.mjs --root /path/to/app /path/to/app/src/routes/Users.jsx
 node bin/kev.mjs --json … > kev.json      # for eval
 KEV_MOCK=1 node bin/kev.mjs …         # offline dry run, fake numbers, token estimate
@@ -62,7 +72,7 @@ Provision an agent with the **socket** runtime (Members → Provision agent), th
 
 ```sh
 CC_BOT_TOKEN=cc_… WSS=wss://<host>/agent-socket CC_URL=https://<host> \
-KNOWLEDGE_DIR=… APP_ROOT=… TYPESAFE_API_KEY=… node agent.mjs
+KNOWLEDGE_MCP_URL=… KNOWLEDGE_MCP_KEY_FILE=… APP_ROOT=… TYPESAFE_API_KEY=… node agent.mjs
 ```
 
 Mention it with screen paths (relative to `APP_ROOT`). It reacts 👀, runs, and posts the report

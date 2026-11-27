@@ -83,7 +83,18 @@
     "nodes[].rustdesk: the cluster's RustDesk Server Pro, on one Linux or WSL computer whose address is",
     "its Tailscale IPv4 address: image (pinned by digest), console_host (the computer's Tailscale name)",
     "and backup_time. The secret RUSTDESK_RESTIC_PASSWORD encrypts its backup. remote_access.direct_ip",
-    "false: every firewall refuses RustDesk's direct-address ports. See circlechat/README.md, \"The RustDesk server\"."
+    "false: every firewall refuses RustDesk's direct-address ports. See circlechat/README.md, \"The RustDesk server\".",
+    "",
+    "knowledge: the knowledge MCP server on the control computer, the one way agents and programs read",
+    "the skills. The cluster's own stack only, so this example leaves the block out, like recursicachat:",
+    "  \"knowledge\": { \"port\": 4011, \"callers\": [",
+    "    { \"name\": \"example-harness\", \"account\": \"_example\", \"file\": \"/opt/example/run/knowledge.key\" },",
+    "    { \"name\": \"kev\", \"files\": [{ \"account\": \"_example\", \"file\": \"/opt/example/run/knowledge-kev.key\" }] },",
+    "    { \"name\": \"recursicachat\", \"agents\": [\"betty\", \"barb\"], \"builder\": \"agent-setup@example.com\" } ] }",
+    "port: the server's port on 127.0.0.1. callers: each program that reads the skills, with its key",
+    "file: account and file, or files for a program that runs under several accounts, such as Kev. The",
+    "recursicachat caller's key stays with the kit: the agent sync registers the server on RecursicaChat",
+    "for the agents listed, signed in as the builder. See circlechat/README.md, \"The knowledge MCP server\"."
   ],
   "site": {
     "public_host": "stack.example.ts.net",

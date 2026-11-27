@@ -1,5 +1,3 @@
-import fs from "node:fs";
-
 // Two component headings name the component — "When to use a button" — and are matched by shape;
 // the rest are fixed words, as in scripts/lib/skill-sections.mjs. Kev runs on its own and does not
 // import from scripts/, so the headings are repeated here.
@@ -52,8 +50,8 @@ export function brief(text, sections, cap) {
   return out.length > cap ? out.slice(0, cap) + "\n…(truncated)" : out;
 }
 
-export function loadSkill({ slug, path }) {
-  const text = fs.readFileSync(path, "utf8");
+// One skill, from its text as the knowledge server's skill_text gives it.
+export function loadSkill({ slug, path, text }) {
   const uncovered = section(text, UNCOVERED_HEADING);
   const desc = (text.match(/^description:\s*(.+)$/m) ?? [])[1] ?? slug;
   return {
