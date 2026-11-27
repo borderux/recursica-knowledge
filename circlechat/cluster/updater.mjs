@@ -26,6 +26,8 @@
 //     gets one line for each copy the job replaced.
 //   - Each morning, the cluster's channel gets a summary of this computer's backups and restore
 //     tests, and of any job that didn't run on time (daily-summary.mjs).
+//   - A Kev engine never stops on its own. A change to a running engine's unit, held by
+//     setup-node.sh, gets one post with the command a person runs (held-restarts.mjs).
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -187,6 +189,7 @@ async function main() {
   const { runUpgrade } = await import("./root-steps.mjs");
   // Loaded before the follow step, so the job loads no module from the new commit.
   const rootCopies = await rootCopiesStep();
+  const { HELD_DIR, readHeld, tellHeld } = await import("./held-restarts.mjs");
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
   // The kit's GitHub repo, read only from root's /etc/agent-cluster.conf (kit-repo.mjs).
@@ -238,6 +241,10 @@ async function main() {
     await followStep({ env, site, control, stacks, chat, state, kitRepo }).catch((e) => console.error(`kit follows main: ${e.message}`));
     await restartKit({ env, site, control, stacks, chat, state }).catch((e) => console.error(`kit restarts: ${e.message}`));
   }
+  // Kev engine restarts that wait for a person, after the follow step, so a hold from the setup the
+  // step just ran posts this hour (held-restarts.mjs).
+  await tellHeld({ computer: env.COMPUTER, kit: env.KIT, held: readHeld(path.join(env.OWNER_HOME, HELD_DIR)), state, post: (text) => chat.post(env.SLACK_CHANNEL_ID, "info", text) })
+    .catch((e) => console.error(`kev hold: ${e.message}`));
   // Each root-owned copy of a kit file gets the file's text at the checkout's commit (root-copies.mjs).
   // The step runs after the follow step, so the copies match the commit the checkout moved to.
   await rootCopies({ env, chat, state, kitRepo }).catch((e) => console.error(`root copies: ${e.message}`));

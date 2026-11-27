@@ -6,6 +6,17 @@
 #
 # Secrets a service needs (its "secret_env" names, e.g. KEV_API_KEY) are read from
 # ~/.recursica-node.env on this machine, never from site.json or the repository.
+#
+# A Kev engine never stops on its own. When a running engine's unit would change, such as a new
+# command or a changed secrets file, the setup leaves the engine running with the old unit and prints
+# the command that applies the change. To restart the engine with the change, run the setup with
+# KIT_RESTART_KEV=1, when the engine is idle:
+#
+#   KIT_RESTART_KEV=1 ./circlechat/setup-node.sh <node name>
+#
+# The update job runs the setup with KIT_HOLD_NETWORK=1, which ignores KIT_RESTART_KEV, so the job
+# never restarts a Kev engine. A Kev engine with no unit yet, or one that doesn't run, installs and
+# starts as any other service.
 set -euo pipefail
 NODE="${1:?usage: setup-node.sh <node name from site.json>}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -19,7 +30,8 @@ if [ -n "${TENANT:-}" ]; then
   SECRETS="${SECRETS:-$HOME/tenants/$TENANT/node.env}"
   export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
 fi
-SITE="${SITE:-$(stack_dir "$HOME" "${TENANT:-}")/site.json}"
+DEFAULT_SITE="$(stack_dir "$HOME" "${TENANT:-}")/site.json"
+SITE="${SITE:-$DEFAULT_SITE}"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
 [ -f "$SITE" ] || { echo "No $SITE. Copy this deployment's site.json here (it holds no secrets)."; exit 1; }
 
@@ -47,6 +59,39 @@ case "$want_os/$OS" in
   *) echo "$NODE is listed as $want_os, but this machine is $OS."; exit 1 ;;
 esac
 
+# A Kev engine: the service named kev-engine, or kev-engine-<name>.
+is_kev() { case "$1" in kev-engine|kev-engine-*) return 0 ;; esac; return 1; }
+# Whether a person asked for the Kev engine's restart: KIT_RESTART_KEV=1, never in the update job's
+# run (KIT_HOLD_NETWORK=1).
+kev_restart() { [ "${KIT_RESTART_KEV:-}" = 1 ] && [ "${KIT_HOLD_NETWORK:-}" != 1 ]; }
+# After install_unit for a Kev engine: a held change prints one line with the command that applies
+# the change, and is recorded in ~/.recursica-kit/held-restarts/<service>. The hourly update job
+# reads the record and posts once in the cluster's channel (cluster/held-restarts.mjs). An engine
+# with no held change removes the record. A client or demo stack's run, with TENANT, writes no
+# record: the update job runs the setup for the cluster's own stack only.
+#   kev_held <service name> <the settings file the engine reads, or empty>
+kev_held() {
+  local dir="${HELD_RESTARTS_DIR:-$HOME/.recursica-kit/held-restarts}" what="" part apply
+  if [ -z "$UNIT_HELD" ]; then
+    [ -n "${TENANT:-}" ] || rm -f "$dir/$1"
+    return 0
+  fi
+  for part in ${UNIT_HELD//,/ }; do
+    case "$part" in
+      command) part="the command" ;;
+      settings) part="the secrets file the engine reads, ${2:-$SECRETS}" ;;
+      *) part="the unit's other lines" ;;
+    esac
+    what="$what${what:+; }$part"
+  done
+  apply="KIT_RESTART_KEV=1 ${TENANT:+TENANT=$TENANT }"
+  [ "$SITE" = "$DEFAULT_SITE" ] || apply="${apply}SITE=$SITE "
+  apply="$apply$HERE/setup-node.sh $NODE"
+  echo "Held for a person: $1 runs, and the unit of $1 would change ($what). setup-node.sh never stops a Kev engine on its own, so $1 keeps running with the old unit. To restart $1 with the change, when the engine is idle, run: $apply"
+  [ -n "${TENANT:-}" ] && return 0
+  mkdir -p "$dir" && printf 'want=%s\nwhat=%s\n' "$UNIT_HELD_WANT" "$UNIT_HELD" > "$dir/$1"
+}
+
 # One line per service: name<TAB>dir<TAB>command-with-env
 node -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
@@ -58,7 +103,9 @@ node -e '
   [ -d "$dir" ] || { echo "$name: $dir does not exist on this machine; install it first."; continue; }
   # A service that reads the secrets file restarts when the file changes.
   settings=""; case "$cmd" in *"$SECRETS"*) settings="$SECRETS" ;; esac
-  UNIT_SETTINGS="$settings" install_unit "$name" "$cmd" "$dir" "$(id -un)"
+  hold=""; is_kev "$name" && ! kev_restart && hold=1
+  UNIT_HOLD="$hold" UNIT_SETTINGS="$settings" install_unit "$name" "$cmd" "$dir" "$(id -un)"
+  if is_kev "$name"; then kev_held "$name" "$settings"; fi
 done
 # The kit's Ollama server on a Linux helper, when the node has an `ollama` block (kit/setup-ollama.sh).
 if node -e 'process.exit(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).ollama ? 0 : 1)' "$SPEC"; then
