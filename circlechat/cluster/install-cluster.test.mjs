@@ -41,9 +41,9 @@ function sandbox(system, site = example) {
   return { run, calls, marker, written, home };
 }
 
-// The calls that change the firewall: a rule load, a write to pf.conf or the rule files, and the
-// start-up job that loads the rules.
-const FIREWALL = /nft -f|pfctl|\/etc\/pf\.conf|\/etc\/agentguard\.nft|pf-(base|lockdown|main)\.conf|nft-lockdown\.nft|agentguard-firewall/;
+// The calls that change the firewall: a rule load, a write to pf.conf or the rule files, the guard's
+// list loader and its load, and the start-up job that loads the rules.
+const FIREWALL = /nft -f|pfctl|\/etc\/pf\.conf|\/etc\/agentguard\.nft|pf-(base|lockdown|main)\.conf|nft-lockdown\.nft|lists\.mjs|agentguard-firewall/;
 
 test("with KIT_HOLD_NETWORK=1, install-cluster.sh changes no firewall rule, and installs every other service", () => {
   for (const system of ["Linux", "Darwin"]) {
@@ -71,6 +71,8 @@ test("without KIT_HOLD_NETWORK, install-cluster.sh loads the Linux firewall rule
   assert.match(calls, /^sudo bash \/var\/lib\/agent-cluster\/nft-load\.sh \/etc\/agentguard\.nft$/m);
   assert.doesNotMatch(calls, /^sudo nft -f \/etc\/agentguard\.nft$/m);
   assert.match(calls, /^sudo install -m 644 -o root \S+\/firewall\/nft-lockdown\.nft \/var\/lib\/agent-cluster\/nft-lockdown\.nft$/m);
+  assert.match(calls, /^sudo install -m 644 -o root \S+\/cluster\/lists\.mjs \/var\/lib\/agent-cluster\/lists\.mjs$/m);
+  assert.match(calls, /^sudo bash \/var\/lib\/agent-cluster\/nft-load\.sh \/etc\/agentguard\.nft\nsudo \S+ \/var\/lib\/agent-cluster\/lists\.mjs load$/m, "the lists load from the root-owned copy, right after the rules");
   assert.match(calls, /^sudo tee \S+\/agentguard-firewall\.service$/m);
   assert.equal(fs.readFileSync(s.marker, "utf8"), `${SHA}\n`);
 });
