@@ -941,18 +941,69 @@ On a Mac, launchd gives a job no `HOME`. Each job that runs as root, such as a b
 - pf keeps a record of each connection it lets through. A connection opened before the rules load has no record. pf then misses the connection's opening settings and drops the connection's next packets. Colima's ssh link from the Mac into the VM is one such connection.
 - Only programs on the Mac itself reach loopback. No rule in the anchor needs loopback, so skipping loopback opens nothing to other computers.
 
-**A Tailscale address passes only on Tailscale's interface.** The office network can send a packet that claims a Tailscale address, `100.64.0.0/10` or `fd7a:115c:a1e0::/48`. A rule that checks only the address lets that packet in. Each rule names Tailscale's interface too:
+**On a Mac, a Tailscale address passes from Tailscale's interface, whatever its number.** Tailscale takes the first free `utun` number at each start, and macOS has no interface groups. A rule that names `utun` interfaces can miss Tailscale's interface after a restart, and pf then refuses every connection over Tailscale, remote access too. So `pf-base.conf` and `pf-lockdown.conf` work the other way round, in two steps:
+
+1. A packet that claims a Tailscale address, `100.64.0.0/10` or `fd7a:115c:a1e0::/48`, on a physical interface is refused: `block in log quick on $physical_if inet from 100.64.0.0/10`. Such a packet is a forged source from the office network.
+2. Tailscale's addresses then pass with no interface named: `pass in quick inet from 100.64.0.0/10`. Only a virtual interface, such as Tailscale's `utun` interface or another VPN's, can still carry a Tailscale address.
+
+pf has no wildcard for interface names, so `physical_if` lists the names: `en0` to `en31` for Ethernet, Wi-Fi and each Thunderbolt or USB port and adapter, `bridge0` to `bridge7` for Thunderbolt Bridge, `bridge100` to `bridge107` for the bridges that macOS's virtual-machine networking makes, `awdl0` and `llw0` for Wi-Fi's peer-to-peer links, such as AirDrop's, and `ap1` for Wi-Fi's access-point interface. A Mac numbers its ports past `en10` already, so the list leaves room. pf takes a rule for an interface the Mac doesn't have. The blocked table and the rule for RustDesk's direct-address ports come before both steps.
+
+**On Windows and Linux, a Tailscale address passes only on Tailscale's interface.** The office network can send a packet that claims a Tailscale address. A rule that checks only the address lets that packet in, so each rule names Tailscale's interface too:
 
 | Computer | Tailscale's interface                                | Rule                                                                                                 |
 | -------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| A Mac    | A `utun` interface                                   | `pass in quick on $tailscale_if`, for `utun0` to `utun31`                                            |
 | Windows  | The `Tailscale` adapter                              | "AgentGuard: Tailscale peers" names the `Tailscale` adapter                                          |
 | WSL      | No adapter: a Hyper-V firewall rule takes no adapter | "AgentGuard: Tailscale peers to WSL" takes the computer's own Tailscale addresses as local addresses |
 | Linux    | `tailscale0`                                         | `iifname != "tailscale0" ip saddr 100.64.0.0/10 drop`, before the Tailscale accepts                  |
 
-macOS has no interface groups, and Tailscale takes the first free `utun` number, so the rule lists 32 `utun` numbers. On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. On Linux, the nftables rules refuse a Tailscale address on every interface but `tailscale0`, in the input chain and in the forward chain that Docker's published ports use, then pass the address. In WSL the nftables rules check only the address: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface, never on `tailscale0`.
+On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. On Linux, the nftables rules refuse a Tailscale address on every interface but `tailscale0`, in the input chain and in the forward chain that Docker's published ports use, then pass the address. In WSL the nftables rules check only the address: Tailscale runs on Windows, and its packets reach WSL on a mirrored interface, never on `tailscale0`.
 
 **In WSL with mirrored networking, loopback traffic arrives on `loopback0`, not on `lo`.** WSL sends `127.0.0.1` and `::1` through `loopback0`, by way of Windows' own loopback. Windows' loopback traffic, such as `tailscale serve`, arrives on `loopback0` too. So the nftables rules accept `loopback0` right after `lo`, and only from `127.0.0.0/8` and `::1`. Every kit service on `127.0.0.1` needs the rule in WSL, such as RustDesk's console, the job runner and the cluster agent. CircleChat and the app preview behind `tailscale serve` need the rule too. The lockdown rules let the same loopback traffic leave on `loopback0`. Without the rule, a connection to `127.0.0.1` in WSL times out, and `tailscale serve` answers 502.
+
+### Loading a Mac's new firewall rules with an automatic undo
+
+**`circlechat/cluster/firewall/pf-apply-tailnet.sh` loads the Mac's new pf rules, and puts the old rules back after 5 minutes unless confirmed.** A mistake in the rules can cut off a remote operator, so the script never loads rules with no way back. Rerunning `install-cluster.sh` loads the same rules with no undo. Run the script on the Mac, as root, from a RustDesk or SSH session over Tailscale:
+
+```bash
+sudo ~/recursica-knowledge/circlechat/cluster/firewall/pf-apply-tailnet.sh
+```
+
+The script reads the owner's `site.json` where `install-cluster.sh` reads it: `~/recursica-stack/site.json`, or `~/circlechat/site.json` on a computer a person has not moved yet (`kit/stack-paths.sh`). The owner's home comes from `/etc/agent-cluster.conf`. `--site <site.json>` names another file. The script prints one line for each step:
+
+```text
+Rendered the new rules from <kit>/circlechat/cluster/firewall with <owner home>/recursica-stack/site.json.
+Checked the new base and lockdown rules with pfctl -n: both parse.
+The change to the base rules:
+  <the diff between the installed rules and the new rules>
+Saved the undo copy: /var/lib/agent-cluster/pf-apply/old-base.conf.
+Armed the undo: the launchd job io.recursica.pf-apply-undo puts the old rules back at 14:05.
+Loaded the new rules into the agentguard anchor. The installed rules stay the old ones until --confirm.
+Next: open a NEW RustDesk or SSH session over Tailscale, and in that session run: sudo <kit>/circlechat/cluster/firewall/pf-apply-tailnet.sh --confirm
+With no --confirm by 14:05, the old rules come back.
+```
+
+Then open a new RustDesk or SSH session over Tailscale. A new session that connects proves the new rules let Tailscale in. In the new session, run:
+
+```bash
+sudo ~/recursica-knowledge/circlechat/cluster/firewall/pf-apply-tailnet.sh --confirm
+```
+
+```text
+This session comes from <Tailscale address>, a Tailscale address.
+Cancelled the undo job io.recursica.pf-apply-undo.
+Installed the new rules as /var/lib/agent-cluster/pf-base.conf and /var/lib/agent-cluster/pf-lockdown.conf. The boot job loads the new base rules at each start-up.
+Confirmed. The old rules stay in /var/lib/agent-cluster/pf-apply.last/old-base.conf.
+```
+
+In a RustDesk session's terminal, the first line reads "This session has no SSH address: a terminal on the Mac's own screen, such as RustDesk's." `--confirm` refuses an SSH session from outside `100.64.0.0/10` and `fd7a:115c:a1e0::/48`, and refuses the SSH session that ran the apply.
+
+**With no `--confirm` in 5 minutes, the old rules come back.** The undo job loads the undo copy back into the `agentguard` anchor, adds one line to `/var/lib/agent-cluster/pf-apply.log`, and deletes the job's plist. A launchd job runs the undo, so the undo runs after the terminal, the SSH session or the RustDesk session closes. A lost remote session reconnects over Tailscale once the old rules are back.
+
+- **A restart before `--confirm` comes back with the old rules.** Until `--confirm`, `/var/lib/agent-cluster/pf-base.conf` stays the old file, and the boot job loads that file.
+- **The script never fights the guard.** The script refuses to apply during a lockdown. During the 5 minutes, the guard's cut-off loads the lockdown rules, and the guard's release loads the installed, old base rules. After either load, the undo leaves the anchor as the guard set the anchor, and `--confirm` refuses.
+- **The blocked and allowed addresses stay.** A load keeps the anchor's tables, so the script never touches the blocked or allowed addresses.
+
+`--status` shows a pending apply: the undo's time, whether the anchor holds the new rules, and whether the undo job is loaded. `--undo` puts the old rules back at once. The script refuses a second apply while one is pending.
 
 ### Remote access
 

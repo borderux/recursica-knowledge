@@ -37,16 +37,9 @@ IFS=$'\x1f' read -r ROLE AGENTS EVIDENCE BACKUP_REMOTE CLUSTER_TZ SLACK_ICON EXP
 [ -n "$KIT_REPO" ] || echo "repos.knowledge in site.json is off GitHub, so GitHub can verify no kit commit. The update job moves the kit checkout to no new commit and replaces no root-owned helper."
 TSIP="$( { tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null || true; } | head -1 | tr -d '\r')"
 [ -n "$TSIP" ] || echo "No Tailscale address found: the cluster agent listens on 127.0.0.1 only, so other computers can't reach this computer's agent."
-CANARY_PORTS="2222, 2121, 8088"
-# RustDesk's direct-address ports, 21118 and 21119: refused from everywhere once every computer
-# reaches the others through the cluster's RustDesk server (remote_access.direct_ip false).
-DIRECT_IP="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(s.remote_access?.direct_ip === false ? "off" : "on")' "$SITE")"
-NFT_DIRECT=""; PF_DIRECT=""
-if [ "$DIRECT_IP" = off ]; then
-  # Two rules: GNU sed turns \n into a line break.
-  NFT_DIRECT='    tcp dport { 21118, 21119 } drop comment "rustdesk direct"\n    udp dport { 21118, 21119 } drop comment "rustdesk direct"'
-  PF_DIRECT='block in quick proto { tcp udp } to port { 21118 21119 }'
-fi
+# The decoys' ports, and the rules for RustDesk's direct-address ports (remote_access.direct_ip).
+# shellcheck source=circlechat/cluster/firewall/rules.sh
+. "$HERE/firewall/rules.sh" "$SITE"
 # On Linux, Tailscale's addresses pass only from tailscale0, Tailscale's interface: a packet that
 # claims a Tailscale address on another interface is refused as a forged source. WSL has no
 # tailscale0, because Tailscale runs on Windows, so in WSL the rules check only the address
@@ -99,7 +92,7 @@ elif [ "$OS" = Linux ]; then
   fi
 else
   for f in base lockdown; do
-    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/^@RUSTDESK_DIRECT@\$/$PF_DIRECT/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
+    pf_rules "$f" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
   sudo install -m 644 -o root "$HERE/firewall/pf-main.sh" /var/lib/agent-cluster/pf-main.sh
   bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf | sudo tee /var/lib/agent-cluster/pf-main.conf >/dev/null

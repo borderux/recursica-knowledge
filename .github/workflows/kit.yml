@@ -68,19 +68,27 @@ jobs:
         run: node --test circlechat/recursicachat/install.test.mjs
       - name: The pf rules parse
         run: |
-          # @RUSTDESK_DIRECT@ both ways install-cluster.sh fills it: empty, and the direct-address rule.
-          direct="$(sed -n "s/^  PF_DIRECT='\(.*\)'$/\1/p" circlechat/cluster/install-cluster.sh)"
-          [ -n "$direct" ]
-          for rule in "" "$direct"; do
+          # Rendered as install-cluster.sh renders them (firewall/rules.sh), with remote_access.direct_ip
+          # both ways: true leaves @RUSTDESK_DIRECT@ empty, false fills in the direct-address rule.
+          # physical_if names interfaces the runner lacks, so pfctl -n below also proves that pf takes
+          # a rule for an interface the computer doesn't have.
+          if ifconfig en31 >/dev/null 2>&1 || ifconfig bridge107 >/dev/null 2>&1; then echo "the runner has en31 or bridge107"; exit 1; fi
+          for direct in true false; do
+            echo "{\"remote_access\":{\"direct_ip\":$direct}}" > /tmp/site.json
             for f in base lockdown; do
-              sed "s/@CANARY_PORTS@/2222 2121 8088/; s/@SPLASHTOP_PORT@/6783/; s/^@RUSTDESK_DIRECT@\$/$rule/" "circlechat/cluster/firewall/pf-$f.conf" > "/tmp/pf-$f.conf"
+              ( . circlechat/cluster/firewall/rules.sh /tmp/site.json && pf_rules "$f" ) > "/tmp/pf-$f.conf"
+              if grep -v '^#' "/tmp/pf-$f.conf" | grep '@' >/dev/null; then echo "a placeholder is left in pf-$f.conf"; exit 1; fi
               sudo pfctl -a agentguard-ci -nf "/tmp/pf-$f.conf"
             done
+            [ "$direct" = true ] || grep -qx 'block in quick proto { tcp udp } to port { 21118 21119 }' /tmp/pf-base.conf
           done
           # macOS's main rules with the loopback skip and the agentguard anchor.
           bash circlechat/cluster/firewall/pf-main.sh < /etc/pf.conf > /tmp/pf-main.conf
           grep -qx 'set skip on lo0' /tmp/pf-main.conf
           sudo pfctl -nf /tmp/pf-main.conf
+      # The apply script with stand-ins for pfctl and launchctl, under macOS's own bash 3.2.
+      - name: pf-apply-tailnet.sh, with macOS's own bash
+        run: node --test circlechat/cluster/pf-apply.test.mjs
       # Loading rules into an anchor keeps the anchor's persist tables, checked with the runner's
       # real pf, in a throwaway anchor.
       - name: Loading pf rules again keeps the anchor's tables
