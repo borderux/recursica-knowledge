@@ -100,15 +100,18 @@ export const NETWORK_CODE = {
 };
 const CODE_BEGIN = /^\s*# network-code begin: (.+?)\s*$/, CODE_END = /^\s*# network-code end\s*$/;
 // The files that the apply scripts (APPLY_WITH_UNDO) don't load. A change to one needs the setup's
-// own run by hand, which has no automatic undo.
-const NOT_IN_APPLY = ["circlechat/cluster/firewall/pf-main.sh", ...Object.keys(NETWORK_CODE)];
+// own run by hand, which has no automatic undo. lists.mjs sits in firewall/ so that a change to it
+// waits for a person: install-cluster.sh's held firewall step installs the root-owned copy that the
+// start-up job runs, and the apply scripts never do.
+export const NOT_IN_APPLY = ["circlechat/cluster/firewall/pf-main.sh", "circlechat/cluster/firewall/lists.mjs", ...Object.keys(NETWORK_CODE)];
 // The scripts that apply the firewall rules with an automatic undo, for each operating system, when
 // the kit checkout has one. The script loads the new rules, and puts the old rules back after 5
 // minutes unless a person confirms from a new session.
 export const APPLY_WITH_UNDO = { darwin: "circlechat/cluster/firewall/pf-apply-tailnet.sh", linux: "circlechat/cluster/firewall/nft-apply-tailnet.sh" };
 // The installed rule files, for each operating system. A change to one clears the waiting firewall
 // rules, since the apply script installs the files only on --confirm. lists.mjs, the start-up job's
-// copy of the guard's list loader, changes only in install-cluster.sh's firewall step, run by hand.
+// copy of the guard's list loader (firewall/lists.mjs), changes only in install-cluster.sh's firewall
+// step, run by hand.
 export const INSTALLED_RULES = {
   darwin: ["/var/lib/agent-cluster/pf-base.conf", "/var/lib/agent-cluster/pf-lockdown.conf", "/var/lib/agent-cluster/lists.mjs"],
   linux: ["/etc/agentguard.nft", "/var/lib/agent-cluster/nft-lockdown.nft", "/var/lib/agent-cluster/nft-load.sh", "/var/lib/agent-cluster/lists.mjs"],

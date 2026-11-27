@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # CI only, on kit.yml's macOS and Linux runners: the start-up job's load of the guard's lists
-# (circlechat/cluster/lists.mjs) works with the runner's real pf or nftables. The script writes a
+# (circlechat/cluster/firewall/lists.mjs) works with the runner's real pf or nftables. The script writes a
 # blocked list with an IPv4 address, an IPv6 address and an entry that isn't an address, and an
 # allowed list with one address, loads both, and checks the firewall's lists. A throwaway anchor (pf)
 # or table (nftables), agentguard-lists-ci, holds the lists: nothing uses it, and the script deletes
@@ -37,7 +37,7 @@ fi
 # The start-up job runs a root-owned copy of lists.mjs, alone in /var/lib/agent-cluster
 # (install-cluster.sh), so the load runs a copy alone in a folder of its own too.
 mkdir "$dir/copy"
-cp "$HERE/../cluster/lists.mjs" "$dir/copy/lists.mjs"
+cp "$HERE/../cluster/firewall/lists.mjs" "$dir/copy/lists.mjs"
 out="$(sudo "$(command -v node)" "$dir/copy/lists.mjs" load "$dir" "$NAME")"
 echo "$out"
 sorted() { tr ' ' '\n' | sort | xargs; }

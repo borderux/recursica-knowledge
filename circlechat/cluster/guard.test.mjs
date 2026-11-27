@@ -88,7 +88,7 @@ test("release opens the firewall and unseals; allow-source also remembers the ad
 });
 
 // The firewall's lists empty at each restart, so the guard keeps both on disk, root-only, and the
-// start-up job loads them again (lists.mjs).
+// start-up job loads them again (firewall/lists.mjs).
 test("the cut-off writes each blocked source to blocked-sources.json; allow-source moves the source to allowed-sources.json", async () => {
   const file = (g, name) => path.join(g.stateDir, name);
   const read = (g, name) => JSON.parse(fs.readFileSync(file(g, name), "utf8"));

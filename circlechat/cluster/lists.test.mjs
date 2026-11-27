@@ -1,4 +1,4 @@
-// lists.mjs: the guard's blocked and allowed addresses on disk, and the start-up job's load of both
+// firewall/lists.mjs: the guard's blocked and allowed addresses on disk, and the start-up job's load of both
 // into the firewall. Stand-ins take the place of pfctl and nft, so nothing here touches a firewall.
 // kit.yml's circlechat/ci/lists-load.sh runs the same load with real pf and nftables.
 import { test } from "node:test";
@@ -7,7 +7,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { LIST_FILES, listCommands, loadLists, readList, writeList } from "./lists.mjs";
+import { LIST_FILES, listCommands, loadLists, readList, writeList } from "./firewall/lists.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), "lists-"));
@@ -67,7 +67,7 @@ test("the load adds the blocked list, then the allowed list; a failed command do
   assert.ok(log.includes("1 blocked address from blocked-sources.json") && log.includes("1 allowed address from allowed-sources.json"));
   calls.length = 0;
   ok = await loadLists({ stateDir: dir, platform: "darwin", log: (l) => log.push(l),
-    run: async (cmd, args) => (calls.push(args[2]), args[2] === "blocked" ? { code: 1, stderr: "pfctl: Table does not exist.\n" } : { code: 0 }) });
+    run: async (cmd, args) => (calls.push(args[3]), args[3] === "blocked" ? { code: 1, stderr: "pfctl: Table does not exist.\n" } : { code: 0 }) });
   assert.equal(ok, false);
   assert.deepEqual(calls, ["blocked", "allowed"]);
   assert.ok(log.some((l) => /^pfctl -a agentguard -t blocked -T add .*failed: pfctl: Table does not exist\.$/.test(l)));
@@ -80,7 +80,7 @@ test("node lists.mjs load, run from a lone copy, runs the platform's command fro
   const dir = tmp(), bin = tmp(), copy = tmp(), out = path.join(bin, "calls");
   for (const cmd of ["pfctl", "nft"]) fs.writeFileSync(path.join(bin, cmd), `#!/bin/bash\necho "${cmd} $*" >>"${out}"\n`, { mode: 0o755 });
   writeList(path.join(dir, LIST_FILES.blocked), ["192.0.2.10"]);
-  fs.copyFileSync(path.join(here, "lists.mjs"), path.join(copy, "lists.mjs"));
+  fs.copyFileSync(path.join(here, "firewall", "lists.mjs"), path.join(copy, "lists.mjs"));
   const r = spawnSync(process.execPath, [path.join(copy, "lists.mjs"), "load", dir], { env: { PATH: `${bin}:/usr/bin:/bin` }, encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   const want = process.platform === "darwin" ? "pfctl -a agentguard -t blocked -T add 192.0.2.10" : "nft add element inet agentguard blocked4 { 192.0.2.10 }";
@@ -90,7 +90,7 @@ test("node lists.mjs load, run from a lone copy, runs the platform's command fro
 
 // install-cluster.sh copies lists.mjs alone, so the file imports only node's own modules.
 test("lists.mjs imports only node: modules, so a copy of the one file runs", () => {
-  const src = fs.readFileSync(path.join(here, "lists.mjs"), "utf8");
+  const src = fs.readFileSync(path.join(here, "firewall", "lists.mjs"), "utf8");
   const specs = [...src.matchAll(/^\s*import\b[^;]*?\bfrom\s+["']([^"']+)["']/gm), ...src.matchAll(/\bimport\s*\(\s*["'`]([^"'`]+)["'`]/g), ...src.matchAll(/\brequire\s*\(\s*["'`]([^"'`]+)["'`]/g)].map((m) => m[1]);
   assert.ok(specs.length > 0, "the source has imports");
   for (const s of specs) assert.match(s, /^node:/, `lists.mjs imports ${s}`);
@@ -103,13 +103,13 @@ test("lists.mjs imports only node: modules, so a copy of the one file runs", () 
 // loads sit in the held firewall step.
 test("the start-up job and install-cluster.sh load the lists after the rules, from the root-owned copy", () => {
   const install = fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8");
-  const copy = 'sudo install -m 644 -o root "$HERE/lists.mjs" /var/lib/agent-cluster/lists.mjs';
+  const copy = 'sudo install -m 644 -o root "$HERE/firewall/lists.mjs" /var/lib/agent-cluster/lists.mjs';
   const load = 'sudo "$NODE_BIN" /var/lib/agent-cluster/lists.mjs load';
   const units = install.split("\n").filter((l) => l.includes("install_unit agentguard-firewall"));
   assert.equal(units.length, 2);
   assert.match(units.find((l) => l.includes("nft-load.sh")), /"bash \/var\/lib\/agent-cluster\/nft-load\.sh \/etc\/agentguard\.nft; \$NODE_BIN \/var\/lib\/agent-cluster\/lists\.mjs load" \/ root boot$/);
   assert.match(units.find((l) => l.includes("pfctl")), /; pfctl -a agentguard -f \/var\/lib\/agent-cluster\/pf-base\.conf; \$NODE_BIN \/var\/lib\/agent-cluster\/lists\.mjs load" \/ root boot$/);
-  assert.ok(!install.includes("$HERE/lists.mjs load") && !install.includes('$HERE/lists.mjs" load'), "nothing runs the kit checkout's lists.mjs");
+  assert.ok(!/\$HERE\/(firewall\/)?lists\.mjs"? load/.test(install), "nothing runs the kit checkout's lists.mjs");
   const lines = install.split("\n").map((l) => l.trim());
   assert.equal(lines.filter((l) => l === copy).length, 2, "a root-owned copy on Linux and on macOS");
   assert.equal(lines.filter((l) => l === load).length, 2);

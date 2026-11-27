@@ -15,7 +15,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { suspicious } from "./classify.mjs";
-import { LIST_FILES, readList, writeList } from "./lists.mjs";
+import { LIST_FILES, readList, writeList } from "./firewall/lists.mjs";
 
 export const WATCH_MS = 10 * 60_000;
 export const EXTEND_MS = 30 * 60_000;
@@ -30,7 +30,7 @@ export class Guard {
   set state(s) { fs.writeFileSync(this.file("lockdown.json"), JSON.stringify(s, null, 2), { mode: 0o600 }); }
   get allowed() { try { return JSON.parse(fs.readFileSync(this.file("allowed-sources.json"), "utf8")); } catch { return []; } }
   // The blocked and allowed addresses, kept on disk: the firewall's own lists empty at each restart,
-  // and the firewall's start-up job loads both files again (lists.mjs).
+  // and the firewall's start-up job loads both files again (firewall/lists.mjs).
   list(name) { return readList(this.file(LIST_FILES[name])); }
   saveList(name, addresses) { writeList(this.file(LIST_FILES[name]), addresses); }
 

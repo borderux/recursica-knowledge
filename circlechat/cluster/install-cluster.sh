@@ -80,7 +80,7 @@ CONF
 [ -f /etc/agent-cluster.env ] || sudo install -m 600 -o root /dev/null /etc/agent-cluster.env
 
 # Firewall rules, loaded now and at every start-up. After the rules, the guard's blocked and allowed
-# addresses load from /var/lib/agent-cluster (lists.mjs): the firewall keeps its lists in memory
+# addresses load from /var/lib/agent-cluster (firewall/lists.mjs): the firewall keeps its lists in memory
 # only, so a restart empties them. With KIT_HOLD_NETWORK=1 the rules wait for a person (network_held,
 # kit/lib.sh).
 # network-step begin: the firewall rules
@@ -91,7 +91,7 @@ elif [ "$OS" = Linux ]; then
   # update changes them only when a person applies the firewall rules.
   sudo install -m 644 -o root "$HERE/firewall/nft-lockdown.nft" /var/lib/agent-cluster/nft-lockdown.nft
   sudo install -m 755 -o root "$HERE/firewall/nft-load.sh" /var/lib/agent-cluster/nft-load.sh
-  sudo install -m 644 -o root "$HERE/lists.mjs" /var/lib/agent-cluster/lists.mjs
+  sudo install -m 644 -o root "$HERE/firewall/lists.mjs" /var/lib/agent-cluster/lists.mjs
   # The rules delete the agentguard table and make the table again; nft-load.sh keeps the addresses
   # in the blocked and allowed sets, so a rerun of this script unblocks nothing.
   sudo bash /var/lib/agent-cluster/nft-load.sh /etc/agentguard.nft
@@ -106,7 +106,7 @@ else
     sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/^@RUSTDESK_DIRECT@\$/$PF_DIRECT/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
   sudo install -m 644 -o root "$HERE/firewall/pf-main.sh" /var/lib/agent-cluster/pf-main.sh
-  sudo install -m 644 -o root "$HERE/lists.mjs" /var/lib/agent-cluster/lists.mjs
+  sudo install -m 644 -o root "$HERE/firewall/lists.mjs" /var/lib/agent-cluster/lists.mjs
   bash "$HERE/firewall/pf-main.sh" < /etc/pf.conf | sudo tee /var/lib/agent-cluster/pf-main.conf >/dev/null
   # The main rules skip loopback and load the agentguard anchor (firewall/pf-main.sh). A backup of
   # macOS's own rules stays in /etc/pf.conf.agentguard-backup.
