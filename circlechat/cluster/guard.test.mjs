@@ -155,10 +155,10 @@ test("a firewall that can't be read counts as a failed cut-off", async () => {
   assert.ok(c.problems.includes("the firewall couldn't be read (pfctl: Permission denied)"));
 });
 
-// pfctl -a agentguard -sr, as pfctl prints the base rules and the lockdown rules (tailscale_if expanded
-// and cut to one interface here); pfctl -T show and nft list set, as they print addresses.
+// pfctl -a agentguard -sr, as pfctl prints the base rules and the lockdown rules (cut short here);
+// pfctl -T show and nft list set, as they print addresses.
 test("the firewall read back: the lockdown rules by their outgoing block, and the blocked addresses", () => {
-  const base = ["block drop in log quick from <blocked> to any", "pass in quick on utun4 inet from 100.64.0.0/10 to any flags S/SA keep state", "block drop in log all", "pass out all flags S/SA keep state"].join("\n");
+  const base = ["block drop in log quick from <blocked> to any", "pass in quick inet from 100.64.0.0/10 to any flags S/SA keep state", "block drop in log all", "pass out all flags S/SA keep state"].join("\n");
   const lockdown = ["block drop in log quick from <blocked> to any", "block drop in log all", "pass out quick proto tcp from any to any port = 443 flags S/SA keep state", "pass out quick proto udp from any to any port = 53 keep state", "block drop out log all"].join("\n");
   assert.equal(pfLockdownLoaded(base), false, "the base rules, as in the real case");
   assert.equal(pfLockdownLoaded(lockdown), true);

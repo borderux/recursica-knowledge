@@ -12,14 +12,14 @@ import { tokenPort } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "../site.example.json"), "utf8"));
-const directRule = (name) => new RegExp(`^  ${name}='(.*)'$`, "m").exec(fs.readFileSync(path.join(here, "install-cluster.sh"), "utf8"))[1];
+const directRule = (name, file = "firewall/rules.sh") => new RegExp(`^  ${name}='(.*)'$`, "m").exec(fs.readFileSync(path.join(here, file), "utf8"))[1];
 
 // The base rules, filled each way install-cluster.sh fills the placeholders: @RUSTDESK_DIRECT@ empty
 // or the direct-address rule, and @TAILNET_IF@ the tailscale0 rules on Linux or empty in WSL.
 function baseRules(directOff = false, wsl = false) {
   const text = fs.readFileSync(path.join(here, "firewall/nft-base.nft"), "utf8").replaceAll("@CANARY_PORTS@", "2222, 2121, 8088");
   return text.replace(/^@RUSTDESK_DIRECT@$/m, directOff ? directRule("NFT_DIRECT").replaceAll("\\n", "\n") : "")
-    .replace(/^@TAILNET_IF@$/gm, wsl ? "" : directRule("NFT_TAILNET").replaceAll("\\n", "\n"));
+    .replace(/^@TAILNET_IF@$/gm, wsl ? "" : directRule("NFT_TAILNET", "install-cluster.sh").replaceAll("\\n", "\n"));
 }
 const lockdownRules = () => fs.readFileSync(path.join(here, "firewall/nft-lockdown.nft"), "utf8");
 
