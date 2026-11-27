@@ -157,8 +157,12 @@ settings_fingerprint() {
 # On macOS, UNIT_EXIT_TIMEOUT sets the seconds launchd waits for the service to stop, 20 by default.
 # On macOS, launchd gives a job no HOME. A root job gets HOME=/var/root, root's home folder, so a
 # program that keeps a cache in the home folder, such as restic in the backup, finds one.
+# With UNIT_HOLD=1, a long-running service that runs keeps running with the old unit when the unit
+# would change: nothing is written or restarted, and UNIT_HELD names what changed (unit_held).
 install_unit() {
   local name="$1" cmd="$2" dir="${3:-$HOME}" user="${4:-$(id -un)}" sched="${5:-}" stamp=""
+  # shellcheck disable=SC2034 # the caller reads UNIT_HELD and UNIT_HELD_WANT
+  UNIT_HELD="" UNIT_HELD_WANT=""
   [ -n "${UNIT_SETTINGS:-}" ] && stamp="settings $(settings_fingerprint $UNIT_SETTINGS)"
   if [ "$OS" = Linux ]; then
     # SYSTEMD_UNIT_DIR is for the tests.
@@ -186,7 +190,7 @@ UNIT
       if [ -n "$changed$relabel" ]; then sudo systemctl daemon-reload; fi
       sudo systemctl enable --quiet "$name.service"
     elif [ -z "$sched" ]; then
-      write_unit "$unit" "$(cat <<UNIT
+      local text; text="$(cat <<UNIT
 [Unit]
 Description=$name (agent cluster kit)
 After=network-online.target docker.service
@@ -203,7 +207,9 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 UNIT
-)" && changed=1 || { [ $? != 2 ] || relabel=1; }
+)"
+      if [ -n "${UNIT_HOLD:-}" ] && unit_held "$name" "$unit" "$text"; then return 0; fi
+      write_unit "$unit" "$text" && changed=1 || { [ $? != 2 ] || relabel=1; }
       if [ -n "$changed" ]; then
         sudo systemctl daemon-reload
         sudo systemctl enable --quiet "$name.service"
@@ -277,6 +283,7 @@ PLIST
     if [ "$(sudo cat "$plist" 2>/dev/null)" = "$body" ] && sudo launchctl print "system/$label" >/dev/null 2>&1; then
       echo "$name is running and unchanged"; return 0
     fi
+    if [ -z "$sched" ] && [ -n "${UNIT_HOLD:-}" ] && unit_held "$name" "$plist" "$body"; then return 0; fi
     printf '%s\n' "$body" | sudo tee "$plist" >/dev/null
     # bootout stops a loaded service, and bootstrap starts the service with the new plist.
     if sudo launchctl bootout system "$plist" 2>/dev/null; then
@@ -291,6 +298,48 @@ PLIST
   echo "installed $name${sched:+ ($sched)}"
 }
 # network-code end
+
+# The hold on a restart, for the job installer with UNIT_HOLD=1. setup-node.sh sets UNIT_HOLD=1 for
+# a Kev engine, which never stops on its own. True when the service runs and the service's unit
+# would change: the job installer then writes nothing and restarts nothing. UNIT_HELD lists what
+# would change, comma-separated: "command", "settings" for a settings file in UNIT_SETTINGS, and
+# "other" for any other line. UNIT_HELD_WANT holds a fingerprint of the unit the kit wants. A
+# service with no unit yet, a service that doesn't run, an unchanged unit and a new description
+# alone are never held.
+#   unit_held <service name> <unit file> <the unit's new text>
+unit_held() {
+  local old what="" part
+  old="$(sudo cat "$2" 2>/dev/null)" || old=""
+  [ -n "$old" ] || return 1
+  [ "$(grep -v '^Description=' <<<"$old")" != "$(grep -v '^Description=' <<<"$3")" ] || return 1
+  unit_running "$1" || return 1
+  for part in command settings other; do
+    [ "$(unit_part "$part" <<<"$old")" = "$(unit_part "$part" <<<"$3")" ] || what="$what${what:+,}$part"
+  done
+  # shellcheck disable=SC2034 # the caller reads UNIT_HELD and UNIT_HELD_WANT
+  UNIT_HELD="${what:-other}"
+  # shellcheck disable=SC2034
+  UNIT_HELD_WANT="$(printf '%s' "$3" | { sha256sum 2>/dev/null || shasum -a 256; } | cut -c1-16)"
+  return 0
+}
+# One part of a unit's text, read on stdin: the command line, the settings fingerprint line, or
+# every other line but the description.
+#   unit_part command|settings|other
+unit_part() {
+  case "$1" in
+    command) grep -E '^ExecStart=|<key>ProgramArguments</key>' ;;
+    settings) grep -E 'settings [0-9a-f]{16}' ;;
+    other) grep -vE '^Description=|^ExecStart=|<key>ProgramArguments</key>|settings [0-9a-f]{16}' ;;
+  esac
+  return 0
+}
+# Whether a long-running service from the job installer runs: systemd shows the service active, or
+# launchd has the service loaded.
+#   unit_running <service name>
+unit_running() {
+  if [ "$OS" = Linux ]; then sudo systemctl is-active --quiet "$1.service"
+  else sudo launchctl print "system/io.recursica.$1" >/dev/null 2>&1; fi
+}
 
 # The label of each LaunchDaemon outside the kit whose program runs <command>, such as local.colima
 # for colima. A daemon the kit installs has a label that starts with io.recursica.

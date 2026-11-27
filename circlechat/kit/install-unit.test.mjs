@@ -176,6 +176,84 @@ test("macOS: an unchanged service keeps running, and a changed command or settin
   assert.match(r.out, /github-tokens changed: restarted/);
 });
 
+// The hold on a restart (unit_held): setup-node.sh sets UNIT_HOLD=1 for a Kev engine, which never
+// stops on its own.
+test("Linux: with UNIT_HOLD=1, a running service whose unit would change keeps the old unit, and UNIT_HELD names the change", () => {
+  const s = sandbox("Linux");
+  const settings = path.join(s.dir, "node.env");
+  fs.writeFileSync(settings, "KEV_API_KEY=first\n");
+  const unit = path.join(s.units, "kev-engine.service");
+  const install = (port, hold = "UNIT_HOLD=1 ") => `${hold}install_unit kev-engine "set -a; . ${settings}; set +a; exec kev.serve --port ${port}" /kev owner; echo "held=$UNIT_HELD want=$UNIT_HELD_WANT"`;
+
+  let r = s.run(install(8009), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /^held= want=$/m, "a new service is never held");
+  assert.ok(r.calls.includes("systemctl restart kev-engine.service"), "a new service starts");
+  const first = fs.readFileSync(unit, "utf8");
+
+  r = s.run(install(8010), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /^held=command want=[0-9a-f]{16}$/m);
+  assert.equal(fs.readFileSync(unit, "utf8"), first, "the unit stays as it was");
+  assert.deepEqual(r.calls, ["systemctl is-active --quiet kev-engine.service"], "nothing reloads or restarts");
+
+  fs.writeFileSync(settings, "KEV_API_KEY=second\n");
+  r = s.run(install(8010), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /^held=command,settings want=[0-9a-f]{16}$/m);
+  r = s.run(install(8009), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /^held=settings want=[0-9a-f]{16}$/m);
+  assert.equal(fs.readFileSync(unit, "utf8"), first);
+  assert.doesNotMatch(r.out, /second/, "the output holds no secret");
+
+  // Without UNIT_HOLD, the same change restarts the service.
+  r = s.run(install(8009, ""), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /^held= want=$/m);
+  assert.ok(r.calls.includes("systemctl restart kev-engine.service"), r.calls.join("\n"));
+  r = s.run(install(8009), { UNIT_SETTINGS: settings });
+  assert.match(r.out, /kev-engine is running and unchanged/);
+  assert.match(r.out, /^held= want=$/m);
+});
+
+test("Linux: with UNIT_HOLD=1, a service that doesn't run gets the new unit and starts, and a new description alone is never held", () => {
+  const s = sandbox("Linux");
+  const unit = path.join(s.units, "kev-engine.service");
+  s.run(`install_unit kev-engine "exec kev.serve --port 8009" /kev owner`);
+  // systemctl is-active fails: the service doesn't run.
+  fs.writeFileSync(path.join(s.dir, "bin/systemctl"), `#!/usr/bin/env bash\necho "systemctl $*" >> "${path.join(s.dir, "calls.log")}"\n[ "$1" != is-active ]\n`);
+  let r = s.run(`UNIT_HOLD=1 install_unit kev-engine "exec kev.serve --port 8010" /kev owner; echo "held=$UNIT_HELD"`);
+  assert.match(r.out, /^held=$/m);
+  assert.match(fs.readFileSync(unit, "utf8"), /--port 8010/);
+  assert.ok(r.calls.includes("systemctl restart kev-engine.service"), "restart starts a stopped service");
+
+  fs.writeFileSync(unit, fs.readFileSync(unit, "utf8").replace("(agent cluster kit)", "(circlechat kit)"));
+  fs.writeFileSync(path.join(s.dir, "bin/systemctl"), `#!/usr/bin/env bash\necho "systemctl $*" >> "${path.join(s.dir, "calls.log")}"\n`);
+  r = s.run(`UNIT_HOLD=1 install_unit kev-engine "exec kev.serve --port 8010" /kev owner; echo "held=$UNIT_HELD"`);
+  assert.match(r.out, /^held=$/m);
+  assert.match(r.out, /kev-engine is running and unchanged, with a new description/);
+  assert.ok(!r.calls.some((c) => c.includes("restart")), r.calls.join("\n"));
+});
+
+test("macOS: with UNIT_HOLD=1, a loaded service whose plist would change keeps running with the old plist, and an unloaded one starts", () => {
+  const s = sandbox("Darwin");
+  const plist = path.join(s.units, "io.recursica.kev-engine.plist");
+  const install = (port) => `UNIT_HOLD=1 install_unit kev-engine "exec kev.serve --port ${port}" /kev owner; echo "held=$UNIT_HELD"`;
+
+  let r = s.run(install(8009));
+  assert.match(r.out, /installed kev-engine/);
+  assert.match(r.out, /^held=$/m, "a new service is never held");
+  const first = fs.readFileSync(plist, "utf8");
+
+  r = s.run(install(8010));
+  assert.match(r.out, /^held=command$/m);
+  assert.equal(fs.readFileSync(plist, "utf8"), first, "the plist stays as it was");
+  assert.ok(!r.calls.some((c) => /bootout|bootstrap/.test(c)), r.calls.join("\n"));
+
+  // launchd has no such job loaded: the new plist loads, and the service starts.
+  fs.writeFileSync(path.join(s.dir, "loaded"), "");
+  r = s.run(install(8010));
+  assert.match(r.out, /^held=$/m);
+  assert.match(r.out, /installed kev-engine/);
+  assert.match(fs.readFileSync(plist, "utf8"), /--port 8010/);
+});
+
 test("the setup scripts pass each service's settings files", () => {
   const node = fs.readFileSync(path.join(here, "../setup-node.sh"), "utf8");
   assert.match(node, /UNIT_SETTINGS="\$settings" install_unit "\$name"/);

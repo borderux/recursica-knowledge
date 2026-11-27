@@ -41,6 +41,17 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 
 **A rerun restarts only the services that change.** `setup-host.sh`, `setup-node.sh` and `install-cluster.sh` rewrite each service's systemd unit or launchd plist. A running service restarts when the service's command or settings change, such as a new `--host`. A change to a settings file, such as the secrets file, restarts the service too. A new kit release restarts each service that runs the kit's code: jobd, the token service and the cluster agent. Every other service keeps running. Each rerun prints `<service> changed: restarted` or `<service> is running and unchanged`. A change to a unit's description alone, such as `(agent cluster kit)`, reloads systemd and restarts no service.
 
+**A Kev engine never stops on its own, so `setup-node.sh` holds a Kev engine's restart for a person.** A Kev engine is the service named `kev-engine`, or `kev-engine-<name>`. When a running engine's unit would change, such as a new command or a changed secrets file, `setup-node.sh` writes nothing and restarts nothing. The engine keeps running with the old unit. The setup prints one line, `Held for a person: ...`, with what would change and the command that applies the change. The hold covers a run by hand and the update job's run. To restart the engine with the change, run the setup with `KIT_RESTART_KEV=1`, as the owner, when the engine is idle:
+
+```bash
+KIT_RESTART_KEV=1 ~/recursica-knowledge/circlechat/setup-node.sh <node name>
+```
+
+- The engine stops while the engine loads the model again.
+- The update job runs the setup with `KIT_HOLD_NETWORK=1`, which ignores `KIT_RESTART_KEV`, so the job never restarts a Kev engine.
+- An engine with no unit yet, or an engine that doesn't run, installs and starts as any other service.
+- The cluster's channel hears once about each held change, as "Kit services after an update" describes.
+
 ### Model servers
 
 **A computer can run more than one model server.** List each server under the node's `servers`, with the models the server serves. The kit supports two kinds of server:
@@ -544,7 +555,7 @@ tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_
 
 - A secret with the same value as the file's line stays as the line is, and the log says `<name> unchanged`.
 - With "restart" on, a service restarts only when a value that the service reads changed. jobd reads `JOBD_TOKEN`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. Each service in site.json reads the service's `secret_env`.
-- kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person. A key rotation is the one exception. See "Rotate the shared tokens".
+- kev-engine never restarts from a deploy, on any computer. When a value kev-engine reads changes, the deploy writes the value. The deploy then posts in the cluster's channel that kev-engine needs a restart by a person. A key rotation is the one exception. See "Rotate the shared tokens". To restart kev-engine with the new value, run `KIT_RESTART_KEV=1 ~/recursica-knowledge/circlechat/setup-node.sh <computer>` on the computer, as the owner, when the engine is idle. A plain `setup-node.sh` run holds the restart, as "Machines" describes.
 - A changed value in the control computer's `.env` restarts nothing. Each program reads `.env` at each run. The model gateway reads only its own copy of `KEV_ENGINE_KEY`, `kev-engine.key` in its state folder, which the deploy writes beside `.env`, and the gateway reads the copy at each request.
 - The log names the real result for each service: `restarted <service>`, `<service> is not installed`, `<service> failed to restart`, or a restart and then a stop. A failed restart fails the workflow.
 
@@ -1200,6 +1211,8 @@ The job posts again only for a newer network change, with every change that stil
 **Removing CircleChat 1.x's jobs is a held step.** The step in `setup-host.sh` removes the `circlechat-boot`, `backup`, `restore-test`, `release-watch` and `agents-sync` jobs. Removing a job can stop work that runs, so the update job skips the step and posts it. A run of `setup-host.sh` by hand removes the jobs. A job that is already gone needs no sudo.
 
 **The waiting change clears once a person applies the change.** A setup run by hand with no hold writes the kit's commit to `~/.recursica-kit/network-applied/<setup>` as the setup's last step. The job clears the setup's waiting change once that commit holds the change. For the firewall rules, the job also clears the change when the installed rule files change, as `pf-apply-tailnet.sh --confirm` installs them: `/var/lib/agent-cluster/pf-base.conf` and `pf-lockdown.conf` on a Mac, `/etc/agentguard.nft` and `/var/lib/agent-cluster/nft-lockdown.nft` on Linux.
+
+**A Kev engine's restart waits for a person, and the channel hears once a day while the restart waits.** `setup-node.sh` never restarts a running Kev engine on its own, as "Machines" describes. A held change is recorded in `~/.recursica-kit/held-restarts/<service>`, by a run by hand or by the update job's run. Each hour, on every computer, the update job reads the records and posts once for each held change, with what would change and the command to run by hand: `KIT_RESTART_KEV=1 <kit>/circlechat/setup-node.sh <computer>` (`cluster/held-restarts.mjs`). The job posts again for a newer change, or 24 hours after the last post. The record clears once a person runs that command, or once the engine's unit no longer changes. A client or demo stack's run, with `TENANT`, prints the line and records nothing, since the update job runs the setup for the cluster's own stack only.
 
 **A kit that follows main installs no release.** The control computer posts no new release, and "Upgrade now" installs nothing.
 

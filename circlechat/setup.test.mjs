@@ -228,6 +228,68 @@ test("a stack's job runner on its one computer gets its own port and the compute
   assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
 });
 
+// A Kev engine never stops on its own (kev_held in setup-node.sh, unit_held in kit/lib.sh). Run
+// with a sudo that runs each command, a stand-in for systemctl and a sandbox folder for the units.
+test("setup-node holds a running Kev engine's restart for a person, records the held change, and restarts the engine only with KIT_RESTART_KEV=1", () => {
+  const site = structuredClone(example);
+  const m1 = site.nodes.find((n) => n.name === "machine-1");
+  delete m1.jobs;
+  const s = sandbox(site, { system: "Linux" });
+  const kev = m1.services.find((v) => v.name === "kev-engine");
+  kev.dir = path.join(s.home, "kev-engine");
+  fs.mkdirSync(kev.dir);
+  const writeSite = () => fs.writeFileSync(path.join(s.cc, "site.json"), JSON.stringify(site));
+  writeSite();
+  s.stub("sudo", `exec "$@"`);
+  s.stub("systemctl", `[ "$1" != is-active ] || exit "\${FAKE_ACTIVE:-0}"`);
+  const secrets = path.join(s.home, ".recursica-node.env");
+  fs.writeFileSync(secrets, "KEV_API_KEY=first\n");
+  const unit = path.join(s.units, "kev-engine.service");
+  const record = path.join(s.home, ".recursica-kit/held-restarts/kev-engine");
+  const run = (extra = {}) => {
+    const before = s.calls().length;
+    const r = spawnSync("bash", [path.join(here, "setup-node.sh"), "machine-1"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, SYSTEMD_UNIT_DIR: s.units, ...extra }, encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    return { out: r.stdout, calls: s.calls().slice(before) };
+  };
+  const held = /^Held for a person: kev-engine runs, and the unit of kev-engine would change \(the secrets file the engine reads, .*\.recursica-node\.env\)\. setup-node\.sh never stops a Kev engine on its own, so kev-engine keeps running with the old unit\. To restart kev-engine with the change, when the engine is idle, run: KIT_RESTART_KEV=1 \/.*\/circlechat\/setup-node\.sh machine-1$/m;
+
+  // A new engine installs and starts.
+  let r = run();
+  assert.match(r.calls, /systemctl restart kev-engine\.service/);
+  assert.ok(!fs.existsSync(record));
+  const first = fs.readFileSync(unit, "utf8");
+
+  // A changed secrets file: the engine keeps running with the old unit, by hand and in the update job's run.
+  fs.writeFileSync(secrets, "KEV_API_KEY=second\n");
+  for (const extra of [{}, { KIT_HOLD_NETWORK: "1" }, { KIT_HOLD_NETWORK: "1", KIT_RESTART_KEV: "1" }]) {
+    r = run(extra);
+    assert.match(r.out, held, JSON.stringify(extra));
+    assert.doesNotMatch(r.out, /second/, "the line holds no secret");
+    assert.doesNotMatch(r.calls, /systemctl (restart|daemon-reload)/, JSON.stringify(extra));
+    assert.equal(fs.readFileSync(unit, "utf8"), first);
+    assert.match(fs.readFileSync(record, "utf8"), /^want=[0-9a-f]{16}\nwhat=settings\n$/);
+  }
+
+  // A person applies the change: the engine restarts once, and the record clears.
+  r = run({ KIT_RESTART_KEV: "1" });
+  assert.match(r.calls, /systemctl restart kev-engine\.service/);
+  assert.doesNotMatch(r.out, /Held for a person/);
+  assert.notEqual(fs.readFileSync(unit, "utf8"), first);
+  assert.ok(!fs.existsSync(record));
+  r = run();
+  assert.match(r.out, /kev-engine is running and unchanged/);
+
+  // An engine that doesn't run gets the new command and starts, with no hold.
+  kev.command += " --log-level info";
+  writeSite();
+  r = run({ FAKE_ACTIVE: "3" });
+  assert.doesNotMatch(r.out, /Held for a person/);
+  assert.match(r.calls, /systemctl restart kev-engine\.service/);
+  assert.match(fs.readFileSync(unit, "utf8"), /--log-level info/);
+  assert.ok(!fs.existsSync(record));
+});
+
 // tailscale serve status --json after the full setup: the app preview on 5173, on 127.0.0.1,
 // tailnet only.
 const host = example.site.public_host;
