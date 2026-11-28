@@ -238,6 +238,9 @@ test("a Kev label: every field of version 1, and the merge keeps main's lines, t
   assert.match(labelProblem(JSON.parse(label(1, { outcome: "missed" }))), /outcome must be/);
   assert.match(labelProblem(JSON.parse(label(1, { kev: { said: "maybe", score: null } }))), /kev.said/);
   assert.equal(labelProblem(JSON.parse(label(1, { kev: { said: "none", score: null } }))), null, "an item Kev set aside says none");
+  // an unsettled finding: Feisty could neither refute it with a quote nor confirm it, with her reason, or no reply read
+  assert.equal(labelProblem(JSON.parse(label(1, { outcome: "unsettled", feisty: { reason: "Feisty's refutation quoted nothing code could find", correction: null } }))), null);
+  assert.equal(labelProblem(JSON.parse(label(1, { outcome: "unsettled", feisty: null }))), null);
   const main = `${label(0)}\n`;
   assert.equal(merge(main, `${label(0)}\n`), main, "nothing new: main's file, unchanged");
   assert.equal(merge(label(0), `${label(1)}\n${label(1)}\n`), `${label(0)}\n${label(1)}\n`);

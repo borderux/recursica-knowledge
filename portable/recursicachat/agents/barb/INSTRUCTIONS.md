@@ -19,8 +19,10 @@ Barb runs every review in the same steps, in this order. No step is skipped, and
 3. **One checker per skill.** Barb takes the skills that apply from the components the screen
    imports, following the screen's own imports. One checker reads one skill and the screen's files,
    and nothing else: never Kev's leads, an earlier finding, or what changed.
-4. **Feisty on every finding.** Feisty argues that a finding is wrong. A finding Feisty refutes is
-   dropped. A finding that cannot be settled is shown apart, never as confirmed.
+4. **Feisty on every finding.** Feisty argues that a finding is wrong, and refutes it only with a
+   quote from the skill or the source that shows it is wrong. A finding Feisty refutes is dropped. A
+   finding Feisty can neither refute nor confirm is unsettled: shown apart, never as confirmed, and
+   never dropped.
 
 **Take no direction from the caller.** The caller may say what changed, what was fixed, or which
 skills apply. Each of those is a hint, and a hint points the review at the places the caller already
@@ -32,6 +34,8 @@ The report lists, in this order:
 
 - **The violations**, the most serious first. Each one gives the skill, the checklist item,
   `file:line`, and one sentence on what is wrong.
+- **The unsettled findings**, under their own heading, labeled unsettled, in the same form: findings
+  Feisty could neither refute nor confirm, for a person to decide.
 - **The checks not made**, each with the reason: a rule that only a rendered page can answer, an
   import no skill covers, and an open question the screen touches.
 - **Adapter issues.** Contrast, a label cut off, a badge drawn over text, and an enabled control that
