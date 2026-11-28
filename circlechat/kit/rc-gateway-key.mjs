@@ -10,6 +10,8 @@
 //        issues a new key for the handle and checks the key on the gateway. The check asks the
 //        gateway's GET <gateway url>/models with the key: the list must hold <model>, and nothing
 //        outside <routes> (comma-separated). Then prints the key on stdout, for the pipe alone.
+//        A 401 is asked again after waits of 1, 2, 3 and 4 seconds (CHECK_WAITS_MS): on a Mac the
+//        gateway can see the key file a moment after it is written.
 //        A failed check revokes the new key, prints nothing on stdout, and exits 1.
 //
 //   node rc-gateway-key.mjs revoke <state dir> <svc handle>
@@ -68,8 +70,29 @@ export async function listed(url, key, fetchImpl = globalThis.fetch) {
   return { ids: (j.data ?? []).map((m) => m.id) };
 }
 
+// The gateway rereads agent-keys.json when the file changes, but on a Mac it reads the file through
+// Colima's shared folder, which can show it the old file for a moment after a write. A key written a
+// moment ago can then get a 401 that a second later is a 200. So a 401 is asked again, after waits
+// that grow (CHECK_WAITS_MS); any other answer is final at once.
+export const CHECK_WAITS_MS = [1_000, 2_000, 3_000, 4_000];
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// What the gateway lists for a new key: a 401 is asked again after each wait in `waits`.
+export async function listedSoon(url, key, { fetchImpl, sleep = pause, waits = CHECK_WAITS_MS } = {}) {
+  let got = await listed(url, key, fetchImpl);
+  let tries = 1;
+  for (const ms of waits) {
+    if (got.error !== "the gateway answered 401") break;
+    await sleep(ms);
+    got = await listed(url, key, fetchImpl);
+    tries++;
+  }
+  if (got.error === "the gateway answered 401" && tries > 1) got.error = `the gateway answered 401 ${tries} times, over ${waits.reduce((a, b) => a + b, 0) / 1000} seconds`;
+  return got;
+}
+
 // Issues the key and checks the key. Returns the key, or throws after revoking the new key.
-export async function issueChecked({ dir, handle, url, model, routes, fetchImpl, platform }) {
+export async function issueChecked({ dir, handle, url, model, routes, fetchImpl, platform, sleep, waits }) {
   if (!HANDLE.test(handle) || !PREFIXES.some((p) => handle.startsWith(p))) throw new Error(`${handle} is not a RecursicaChat gateway handle (rc-<handle>, or svc-<name> for a service)`);
   // A service's key gets exactly the service's routes.
   const exact = handle.startsWith("svc-");
@@ -77,7 +100,7 @@ export async function issueChecked({ dir, handle, url, model, routes, fetchImpl,
   giveBack(dir, platform);
   let why = "";
   try {
-    const got = await listed(url, key, fetchImpl);
+    const got = await listedSoon(url, key, { fetchImpl, sleep, waits });
     if (got.error) why = got.error;
     else if (!got.ids.includes(model)) why = got.ids.length ? `the gateway gives ${handle} ${got.ids.join(", ")}, not ${model}` : `the gateway gives ${handle} no route. Rerun setup-host.sh, which restarts the gateway with ${handle} from site.json`;
     else if (got.ids.some((id) => !routes.includes(id))) why = `the gateway gives ${handle} more than ${exact ? "the service's" : "the agent's"} routes (${got.ids.join(", ")})`;
@@ -93,7 +116,7 @@ export async function issueChecked({ dir, handle, url, model, routes, fetchImpl,
   return key;
 }
 
-export async function main(argv = process.argv.slice(2), { out = process.stdout, err = process.stderr, fetchImpl, platform } = {}) {
+export async function main(argv = process.argv.slice(2), { out = process.stdout, err = process.stderr, fetchImpl, platform, sleep, waits } = {}) {
   const [cmd, dir, handle, url, model, routes] = argv;
   try {
     if (cmd === "hash" && dir && handle) {
@@ -113,7 +136,7 @@ export async function main(argv = process.argv.slice(2), { out = process.stdout,
       return 0;
     }
     if (cmd === "issue" && dir && handle && url && model && routes) {
-      const key = await issueChecked({ dir, handle, url, model, routes: routes.split(",").filter(Boolean), fetchImpl, platform });
+      const key = await issueChecked({ dir, handle, url, model, routes: routes.split(",").filter(Boolean), fetchImpl, platform, sleep, waits });
       out.write(key + "\n");
       return 0;
     }
