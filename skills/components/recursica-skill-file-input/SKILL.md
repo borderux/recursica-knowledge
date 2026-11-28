@@ -4,7 +4,7 @@ description: Rules for the Recursica file input, the compact choose-a-file field
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # File input

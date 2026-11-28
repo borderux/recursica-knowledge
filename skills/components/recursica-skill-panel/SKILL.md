@@ -4,7 +4,7 @@ description: Rules for the Recursica panel — when to use a panel beside the pa
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Panel

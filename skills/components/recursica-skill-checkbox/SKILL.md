@@ -4,7 +4,7 @@ description: Rules for the Recursica checkbox and checkbox group — zero-to-man
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Checkbox
