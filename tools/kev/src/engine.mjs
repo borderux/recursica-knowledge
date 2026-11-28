@@ -4,8 +4,9 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import { noul, TypeSafeClient } from "@typesafe-ai/sdk";
-import { config } from "./config.mjs";
+import { config, inFlight } from "./config.mjs";
 import { failover } from "./failover.mjs";
+import { gate, retrying } from "./limit.mjs";
 
 const hash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 32);
 
@@ -47,6 +48,9 @@ const engines = (urls) => failover(urls.map((u) => ({
 
 export function createEngine() {
   const client = config.mock ? mockClient() : engines(config.engineUrls);
+  // One limit across both of Kev's pools, and a wait after a 429 instead of a failed question.
+  const limit = gate(inFlight());
+  const ask = (req) => limit.run(() => retrying(() => client.systemOne(req), { log: (m) => console.error(m) }));
   const cache = new Cache(config.cachePath);
   const usage = { requests: 0, input_tokens: 0, output_tokens: 0 };
 
@@ -65,7 +69,7 @@ export function createEngine() {
     for (let i = 0; i < ids.length; i += config.batch) {
       const slice = ids.slice(i, i + config.batch);
       const qs = Object.fromEntries(slice.map((id) => [id, todo[id].q]));
-      const res = await client.systemOne({ state, questions: qs });
+      const res = await ask({ state, questions: qs });
       usage.requests++;
       usage.input_tokens += res.usage?.input_tokens ?? 0;
       usage.output_tokens += res.usage?.output_tokens ?? 0;

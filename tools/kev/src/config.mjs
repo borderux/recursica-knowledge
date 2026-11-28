@@ -44,7 +44,12 @@ export const config = {
   screenMaxLines: num("KEV_SCREEN_MAX_LINES", 1500),
   // Questions per engine request. Unknown server limit, so keep it modest and adjustable.
   batch: num("KEV_BATCH", 25),
+  // Engine requests at once. KEV_MAX_IN_FLIGHT, when set, is Kev's one limit: both of Kev's pools
+  // (skills, and units in each skill) run that wide, and one gate holds every engine request under
+  // it. Without it, KEV_CONCURRENCY is the pools' width and the gate's limit. A gateway key's
+  // max_parallel is the number to set: a request past it gets a 429.
   concurrency: num("KEV_CONCURRENCY", 8),
+  maxInFlight: num("KEV_MAX_IN_FLIGHT", 0),
   timeoutMs: num("KEV_TIMEOUT_MS", 30000),
 
   // Skill text sent with each chunk: these sections only, capped. The checklist item itself
@@ -63,3 +68,6 @@ export const config = {
 
   cachePath: process.env.KEV_CACHE ?? ".kev-cache.json",
 };
+
+/** Kev's one limit on engine requests in flight: KEV_MAX_IN_FLIGHT when set, else KEV_CONCURRENCY. */
+export const inFlight = () => Math.max(1, Math.floor(config.maxInFlight > 0 ? config.maxInFlight : config.concurrency));
