@@ -4,7 +4,7 @@ description: Rules for the Recursica tabs — when content is parts of one whole
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # Tabs
