@@ -5,7 +5,7 @@ targets: buzz, claude-code, circlechat, grok, recursicachat
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.2.0
+  version: 0.2.1
   portability: portable
 ---
 
