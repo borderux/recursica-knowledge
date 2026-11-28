@@ -1491,9 +1491,9 @@ Nothing from a refused folder or file is pushed. Every other folder and file sti
 | `repo`, `commit`, `file`, `lines` | The repo as `owner/name`, the commit's full sha, the file, and `[from, to]`, or `null` when no lines are named.                                         |
 | `skill`, `item`                   | The skill and its checklist item, word for word.                                                                                                        |
 | `kev`                             | `{ "said": "lead" \| "unsure" \| "clear" \| "none", "score": <number or null> }`: what Kev's first pass said; `"none"` when Kev set the item aside.     |
-| `outcome`                         | `"confirmed"`, `"refuted"`, `"unsettled"` or `"not-raised"`, from the checkers and Feisty. A miss is `"confirmed"` with `kev.said` other than `"lead"`. |
+| `outcome`                         | `"confirmed"`, `"refuted"`, `"unsettled"` or `"not-raised"`, from the checkers and Feisty. A miss is `"confirmed"` with `kev.said` other than `"lead"`. `"refuted"` needs a quote code found. `"unsettled"` is a finding Feisty could neither refute with such a quote nor confirm, or whose reply couldn't be read: neither a true nor a false finding until a person decides. |
 | `evidence`                        | The checker's evidence, or `null`.                                                                                                                      |
-| `feisty`                          | `{ "reason": ..., "correction": ... }`: Feisty's reason.                                                                                                |
+| `feisty`                          | `{ "reason": ..., "correction": ... }`: Feisty's reason, or `null` when no reply could be read. An unsettled finding's reason says why it is unsettled.         |
 | `person`                          | `null`, or `{ "verdict": "right" \| "wrong", "by": ..., "at": ..., "note": ... }`. A person's verdict outranks Feisty's.                                |
 
 A label holds no prompt text, no model reply beyond the evidence and Feisty's reason, no secret and no token.

@@ -83,7 +83,11 @@ All the skills add up to 62 skills and roughly 220k tokens. The 62 skills and an
 
 ### 3. An attempt to refute every finding
 
-**Try to refute every finding before reporting the finding.** Dispatch one `feisty` for each finding. Feisty is a subagent that argues a finding is wrong. Feisty marks a finding refuted whenever Feisty is uncertain. Report only the findings Feisty does not refute.
+**Try to refute every finding before reporting the finding.** Dispatch one `feisty` for each finding. Feisty is a subagent that argues a finding is wrong. Feisty refutes a finding only with a quote from the skill or the source that shows the finding is wrong. Feisty returns one of three verdicts:
+
+- **Refuted:** drop the finding.
+- **Confirmed:** report the finding as a violation.
+- **Unsettled:** Feisty could neither refute the finding with a quote nor confirm it. Report the finding in its own section, labeled unsettled. Never drop an unsettled finding, and never show it as confirmed.
 
 A checker that reads a rule and a file will produce some confident findings that are wrong. Examples are a cell style that was already correct, a width that was already set, and a rule that does not apply to the case. Wrong findings in a report teach the caller to stop reading the reports.
 
@@ -121,6 +125,8 @@ Report each of the limits below.
 
 List the violations first, the most serious first. For each violation, give the skill, the checklist item, `file:line`, and one sentence on what is wrong.
 
+Then list the unsettled findings under their own heading, labeled unsettled, in the same form. Each one is a finding Feisty could neither refute nor confirm, for a person to decide.
+
 Then, in a separate short list, name each check Barb could not make and the reason. The list covers rules that need a rendered page when no running instance exists, imports the manifest could not map, and uncovered items the screen touches.
 
 **After a full review of a file that Kev also checked, add a "Kev disagreements" section.** Add the section only after the full review, never before or during the checker runs. List each Kev lead the full review did not confirm, and each confirmed finding that Kev missed. Give each item one line on whether a reader could reasonably read the rule's wording the way Kev did. A rule that a small model keeps misreading is often a rule a person could misread too. So the Kev disagreements section holds knowledge notes as much as a score for Kev. The lines in the section are also the labels used to tune Kev.
@@ -157,7 +163,7 @@ After a review, take the following steps for every finding that survived Feisty.
   - `parentId` set to the task for the prototype, if the prototype has a task
 - Assign the task to @betty with `assign_task`.
 
-Then post one summary in the thread that lists the tasks created. Put each unconfirmed finding in the summary as "needs a rendered check", not as a task.
+Then post one summary in the thread that lists the tasks created. Put each unconfirmed finding in the summary as "needs a rendered check", not as a task. Put each finding Feisty left unsettled in the summary under its own heading, labeled unsettled, not as a task.
 
 ## Progress
 

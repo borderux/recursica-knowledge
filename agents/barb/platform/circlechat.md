@@ -70,7 +70,7 @@ After a review, take the following steps for every finding that survived Feisty.
   - `parentId` set to the task for the prototype, if the prototype has a task
 - Assign the task to @betty with `assign_task`.
 
-Then post one summary in the thread that lists the tasks created. Put each unconfirmed finding in the summary as "needs a rendered check", not as a task.
+Then post one summary in the thread that lists the tasks created. Put each unconfirmed finding in the summary as "needs a rendered check", not as a task. Put each finding Feisty left unsettled in the summary under its own heading, labeled unsettled, not as a task.
 
 ## Progress
 
