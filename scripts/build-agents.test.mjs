@@ -750,6 +750,12 @@ test("Betty's RecursicaChat instructions come from SKILL.recursicachat.md: the b
   assert.doesNotMatch(raw, /\{\{|@[A-Z0-9_]+@|<!-- platform:/, "no token and no marker: rc-sync refuses a token");
   const built = raw.replace(/\s+/g, " ");
   assert.ok(built.includes("`@betty brief <design slug>`"), "the brief message");
+  assert.ok(built.includes("Betty designs UIs and screens: working prototypes built from a project's research."), "her job comes first");
+  assert.ok(built.indexOf("Betty designs UIs and screens") < built.indexOf("Every design starts with a brief."), "the job before the brief");
+  assert.ok(built.includes("`recursica-proto-mantine`") && built.includes("reviewed by Kev and Barb"), "the components, the app and the reviewers");
+  assert.ok(built.includes("people approve it before Betty designs anything"), "the brief is approved before any design");
+  assert.ok(built.includes("the brief works now, and the screens and the prototype come next"), "what works today and what comes next");
+  assert.doesNotMatch(built, /the map and the prototype come later/, "the old answer is gone");
   for (const m of ["status", "stop"]) assert.ok(built.includes(`\`@betty ${m}\``), `the ${m} message`);
   assert.ok(built.includes("**Betty's one tool in a chat reply is `propose_plan`.**"), "one tool: the plan");
   assert.ok(built.includes("Betty never picks an option for them, and never calls one option the best one."), "people decide");
