@@ -53,16 +53,58 @@ test("a key the gateway does not serve is revoked, and nothing reaches stdout", 
     [gateway({ ids: [] }), /no route\. Rerun setup-host\.sh/],
     [gateway({ ids: ["local-small"] }), /gives rc-standin local-small, not local-large/],
     [gateway({ ids: ["local-large", "claude-sonnet-5-5"] }), /more than the agent's routes/],
-    [gateway({ status: 401 }), /answered 401/],
+    [gateway({ status: 401 }), /answered 401 5 times, over 10 seconds/],
   ]) {
     const dir = state();
     const out = sink();
     const err = sink();
-    assert.equal(await main(["issue", dir, "rc-standin", URL, "local-large", "local-large"], { out, err, fetchImpl: gw.fetchImpl, platform: "linux" }), 1);
+    assert.equal(await main(["issue", dir, "rc-standin", URL, "local-large", "local-large"], { out, err, fetchImpl: gw.fetchImpl, platform: "linux", sleep: async () => {} }), 1);
     assert.equal(out.text, "", "no key on stdout");
     assert.match(err.text, /failed the check, and is revoked/);
     assert.match(err.text, why);
     assert.equal(loadKeys(dir)["rc-standin"], undefined, "the new key is revoked");
+  }
+});
+
+// A stand-in gateway that answers 401 for the first `late` requests, as a gateway that sees a
+// just-written key file a moment late does, then lists `ids`.
+function lateGateway(late, ids = ["local-large"]) {
+  const seen = [];
+  const fetchImpl = async (url, opts) => {
+    seen.push({ url, auth: opts.headers.authorization });
+    const status = seen.length <= late ? 401 : 200;
+    return { ok: status === 200, status, json: async () => ({ object: "list", data: ids.map((id) => ({ id })) }) };
+  };
+  return { seen, fetchImpl };
+}
+
+test("a 401 for a key written a moment ago is asked again, after waits that grow, and the key passes", async () => {
+  const dir = state();
+  const gw = lateGateway(2);
+  const waited = [];
+  const out = sink();
+  assert.equal(await main(["issue", dir, "rc-standin", URL, "local-large", "local-large"], { out, fetchImpl: gw.fetchImpl, platform: "linux", sleep: async (ms) => { waited.push(ms); } }), 0);
+  const key = out.text.trim();
+  assert.match(key, /^ccg_[0-9a-f]{48}$/);
+  assert.equal(loadKeys(dir)["rc-standin"].sha256, sha(key), "the key stays");
+  assert.equal(gw.seen.length, 3, "two 401s, then the list");
+  assert.deepEqual(waited, [1_000, 2_000]);
+});
+
+test("a 401 on every try revokes the key after the last wait; any other failure revokes it at once", async () => {
+  for (const [gw, tries, waits] of [
+    [lateGateway(99), 5, [1_000, 2_000, 3_000, 4_000]],
+    [gateway({ status: 403 }), 1, []],
+    [gateway({ ids: [] }), 1, []],
+  ]) {
+    const dir = state();
+    const waited = [];
+    const err = sink();
+    assert.equal(await main(["issue", dir, "rc-standin", URL, "local-large", "local-large"], { out: sink(), err, fetchImpl: gw.fetchImpl, platform: "linux", sleep: async (ms) => { waited.push(ms); } }), 1);
+    assert.equal(gw.seen.length, tries);
+    assert.deepEqual(waited, waits);
+    assert.equal(loadKeys(dir)["rc-standin"], undefined, "the new key is revoked");
+    assert.match(err.text, /failed the check, and is revoked/);
   }
 });
 
