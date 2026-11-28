@@ -98,6 +98,13 @@ drops to ~90 requests. Most of that repeat cost is the whole-screen "missing" pa
 whenever any file changes. Knobs: `KEV_BATCH`, `KEV_SKILL_CHARS`, `KEV_CHUNK_LINES`,
 `KEV_SCREEN_MAX_LINES`, `KEV_CONCURRENCY`. See `src/config.mjs`.
 
+## Requests at once
+
+**Set `KEV_MAX_IN_FLIGHT` to the gateway key's `max_parallel`.** Kev holds every engine request under
+that one limit, across the pool over the skills and the pool over each skill's code units. Without it,
+`KEV_CONCURRENCY` is the limit. A request past the key's cap gets a 429 from the gateway. Kev waits as
+the answer's `retry-after` says, then asks again, up to 6 times.
+
 ## Known gaps
 
 - Kev-engine's request limits (questions per call, state size) weren't documented where I could read

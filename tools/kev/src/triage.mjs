@@ -1,7 +1,7 @@
 // A first pass, not a review. It finds leads fast and cheaply so the builder can fix them before
 // full Barb runs. It never decides a screen is clean — only full Barb's two quiet rounds do that.
 import path from "node:path";
-import { config } from "./config.mjs";
+import { config, inFlight } from "./config.mjs";
 import { lineCount, readScreen, units, whole } from "./chunks.mjs";
 import {
   APPLIES_GUIDE, appliesHere, breaksHere, CHUNK_GUIDE, checkableFromSource,
@@ -40,7 +40,7 @@ export async function triage(screenFiles, { root, knowledge } = {}) {
       uiUnits.map((u) => () =>
         engine.nouls({ how_to_judge: APPLIES_GUIDE, code: { file: u.file, lines: `${u.from}-${u.to}`, text: u.text } }, qs),
       ),
-      config.concurrency,
+      inFlight(),
     );
     gated.forEach((s, i) => { applies[s.slug] = Math.max(0, ...answers.map((a) => a[`skill_${i}`])); });
   }
@@ -77,7 +77,7 @@ export async function triage(screenFiles, { root, knowledge } = {}) {
             mine.map((u) => () =>
               engine.nouls({ how_to_judge: CHUNK_GUIDE, skill: skillBrief, code: { file: u.file, lines: `${u.from}-${u.to}`, text: u.text } }, breakQs),
             ),
-            config.concurrency,
+            inFlight(),
           )
         : [];
 
@@ -109,7 +109,7 @@ export async function triage(screenFiles, { root, knowledge } = {}) {
       });
       return { skill, items };
     }),
-    config.concurrency,
+    inFlight(),
   );
 
   engine.cache.save();
